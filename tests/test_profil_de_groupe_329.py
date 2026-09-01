@@ -1,37 +1,59 @@
 """Les arbitrages du lot 3 (#329) sont verrouillés dans le code exécuté.
 
-Une fiche de groupe agrège les **468 profils `roster_groupe`**, qui n'ont pas de
-page à eux — jamais les 13 `candidat_declare`. Cinq décisions y ont été rendues,
-et chacune est le genre de choix qu'une session suivante défait sans s'en
-apercevoir, parce qu'elle a l'air d'un détail de rendu :
+La fiche de groupe a été **reprise de bout en bout**. Sa première version était
+éditorialement irréprochable et structurellement inutilisable : ses sections
+s'appelaient « Cohésion de vote », « Empreinte thématique », « Amendements
+déposés » — le vocabulaire du schéma, pas les questions de quelqu'un qui cherche
+à comprendre un groupe. Et son fait le plus important, le rapport entre scrutins
+agrégés et scrutins mesurables, était enterré en fin de section « Vérification ».
 
-  1. **La cohésion se publie en six nombres, jamais en barre.** Une barre de
-     progression suggère une échelle du pire au meilleur ; ce sont des
-     catégories, et les mettre sur un dégradé fabriquerait un jugement
-     (AGENTS.md §2 règle 1). Les six décomptes forment une partition EXACTE de
-     `membres_eligibles` : vérifié sur les 19 832 entrées des 5 fiches AN,
-     `pour + contre + abstention + non_votant + absents + excuses ==
-     membres_eligibles` sur 19 832 / 19 832.
-  2. **`absents` se nomme « Sans trace de vote ».** Le pipeline compte là les
-     membres éligibles pour lesquels AUCUN vote n'a été trouvé — une absence de
-     donnée, pas une absence constatée. L'écrire « Absents » publierait un taux
-     de présence (§2 règle 3), agrégé mais fabriqué quand même.
-  3. **`excuses` vaut 0 sur les 19 832 entrées publiées**, faute de position
-     `excuse` dans le corpus — exactement le cas d'`absent` dans les 1 312 951
-     positions individuelles (#326). Un zéro structurel ne se publie pas comme
-     un zéro mesuré (§2 règle 5).
-  4. **Aucun compteur ne dit « aujourd'hui » (#653).** Les noms longs
-     (`a_la_date_de_reference`) sont lus, et les anciens noms le sont AUSSI :
-     les 2 fiches Sénat gelées (#516/#528) ne seront pas régénérées, et sans ce
-     repli leurs 17 cartes de mandats rendaient `undefined`.
-  5. **Une fiche de groupe ne nomme jamais qui s'est écarté de la ligne.**
+Une fiche de groupe agrège les **468 profils `roster_groupe`**, qui n'ont pas de
+page à eux — jamais les 13 `candidat_declare`.
+
+Neuf décisions y ont été rendues, et chacune est le genre de choix qu'une
+session suivante défait sans s'en apercevoir, parce qu'elle a l'air d'un détail
+de rendu :
+
+  1. **Six sections, dans l'ordre des questions**, une seule focale à la fois :
+     l'interne d'abord, la comparaison à la fin. Le **quorum ouvre la section
+     des votes**, pas la page — « tout ce qui suit porte sur les 341 » est utile
+     juste avant des chiffres de cohésion, et décourageant en première page.
+  2. **Les absences ne franchissent jamais l'écran.** `absents` et `excuses`
+     partitionnent `membres_eligibles` avec les quatre positions, et ne sortent
+     pas du fichier : publiés, agrégés ou non, ils deviennent un taux de présence
+     sur des personnes nommées (AGENTS.md §2 règle 3). La version précédente les
+     publiait sous des libellés prudents — un libellé prudent sur une donnée
+     interdite reste la donnée interdite.
+  3. **Aucun taux synthétique ne sort du fichier.** `taux_coherence`,
+     `taux_coherence_hors_absents`, `taux_participation` sont dans la donnée :
+     un chiffre unique par groupe est une note, et cinq notes un classement.
+  4. **Aucun intitulé de fonction n'est perdu.** 40 libellés distincts sur les 7
+     fiches ; ce que la table ne reconnaît pas tombe dans « Autres fonctions »,
+     qui est AFFICHÉ avec ses intitulés d'origine. Mesuré : la maquette de cette
+     refonte publiait 1 351 sièges simples pour `AN:SOC` là où la fiche en porte
+     1 352 — un « représentant suppléant » rangé nulle part.
+  5. **Déposer comme rapporteur et comme député sont deux actes** : `AGENTS.md`
+     §5 interdit d'en faire un taux commun. Deux lignes séparées, jamais
+     additionnées.
+  6. **La posture est recopiée, jamais déduite** (#686). Portée par 5 des 7
+     fiches depuis le commit de données `693b076d` ; les 2 fiches du Sénat,
+     gelées depuis #516, la DÉCLARENT absente. Dans les deux cas elle ne se
+     dérive d'aucun comportement de vote (§2 règle 1).
+  7. **La comparaison est réunie par posture, jamais alignée** sur une échelle
+     unique, et son ordre est celui du nombre de scrutins comparables — pas celui
+     de l'accord.
+  8. **« Nuance » n'est pas « opposé »** : une abstention face à une position
+     exprimée n'est pas un vote contraire. Mesuré : SOC et RN ne sont opposés que
+     46 fois sur 231, mais en nuance 106 — un décompte brut aurait affiché
+     « 152 divergences ».
+  9. **Une fiche de groupe ne nomme jamais qui s'est écarté de la ligne.**
      L'écart individu / groupe est une donnée de contrôle interne
      (`--rapport-interne`) : la publier serait un classement (§2 règles 1 et 7).
 
-Ces tests lisent le **code exécuté** — les commentaires sont retirés avant
-toute assertion, comme dans `tests/test_fondations_lecture_326.py`. Un
-commentaire qui parle de « barre de cohérence » ne doit pas faire échouer le
-test qui vérifie qu'elle a disparu.
+Ces tests lisent le **code exécuté** — les commentaires sont retirés avant toute
+assertion, comme dans `tests/test_fondations_lecture_326.py`. Un commentaire qui
+parle de « barre de cohérence » ne doit pas faire échouer le test qui vérifie
+qu'elle a disparu.
 """
 
 from __future__ import annotations
@@ -49,11 +71,25 @@ MODULE_REGLES_LECTURE = UI / "utils" / "lecture.js"
 COMPOSANT_GROUPE = UI / "components" / "GroupProfile.jsx"
 FEUILLE_GROUPE = UI / "components" / "GroupProfile.css"
 ADAPTATEUR = UI / "data" / "pivotAdapter.js"
+CHARGEUR = UI / "data" / "index.js"
+PROJECTION = RACINE / "web" / "UI_finale" / "scripts" / "comparaison-groupes.mjs"
 
-#: Les six décomptes d'une entrée de `cohesion_votes`, dans l'ordre publié par
-#: `schema_groupe.py`. Leur somme retrouve `membres_eligibles` sur les 19 832
-#: entrées des 5 fiches AN.
-DECOMPTES_COHESION = ("pour", "contre", "abstention", "non_votant", "absents", "excuses")
+#: Les six sections, dans l'ordre, telles qu'elles s'affichent. L'ordre EST la
+#: décision : une seule focale à la fois, l'interne d'abord.
+SECTIONS = (
+    "Qui sont-ils",
+    "Sur quoi ils choisissent de travailler",
+    "Ce qu'ils proposent, et ce qu'il en reste",
+    "Comment ils votent",
+    "Comment ils se situent parmi les groupes de la même législature",
+    "Ce que cette fiche ne dit pas, et pourquoi",
+)
+
+#: Les deux décomptes qui ne franchissent jamais l'écran.
+DECOMPTES_INTERDITS = ("absents", "excuses")
+
+#: Les trois taux synthétiques que la donnée porte et que la page ne publie pas.
+TAUX_INTERDITS = ("taux_coherence", "taux_coherence_hors_absents", "taux_participation")
 
 #: Les paires (nom long #653/#656, ancien nom encore porté par les 2 fiches
 #: Sénat gelées). Le rendu doit lire les DEUX : exiger le nom long ferait
@@ -95,21 +131,30 @@ def feuille() -> str:
     return sans_commentaires(FEUILLE_GROUPE.read_text(encoding="utf-8"))
 
 
-def test_le_module_des_regles_de_groupe_existe():
+@pytest.fixture(scope="module")
+def projection() -> str:
+    return sans_commentaires(PROJECTION.read_text(encoding="utf-8"))
+
+
+def test_les_modules_de_regles_existent():
     """Les règles propres au groupe vivent à UN endroit, comme celles du lot 1."""
     assert MODULE_REGLES_GROUPE.is_file(), f"{MODULE_REGLES_GROUPE} est attendu par #329"
     assert MODULE_REGLES_LECTURE.is_file(), (
         "le module du lot 1 est le socle de celui-ci : #329 le consomme, il ne le remplace pas"
+    )
+    assert PROJECTION.is_file(), (
+        "la projection de comparaison entre groupes (#329) est ce qui permet à la fiche de "
+        "comparer sans télécharger les fiches voisines"
     )
 
 
 def test_les_fondations_du_lot_1_sont_consommees_jamais_redefinies(regles, composant):
     """Six règles réécrites trois fois divergent trois fois (#326)."""
     assert "from './lecture'" in regles, (
-        "`utils/groupe.js` doit importer les primitives du lot 1 (`ratio`, "
-        "`formatNumber`) plutôt que d'en écrire une seconde version"
+        "`utils/groupe.js` doit importer les primitives du lot 1 (`ratio`, `formatNumber`, "
+        "`isWholeTextVote`, `normalizeLabel`) plutôt que d'en écrire une seconde version"
     )
-    for primitive in ("ratio", "formatNumber"):
+    for primitive in ("ratio", "formatNumber", "isWholeTextVote", "normalizeLabel"):
         assert not re.search(rf"^\s*(export\s+)?function\s+{primitive}\s*\(", regles, flags=re.M), (
             f"`{primitive}` est une primitive du lot 1 : `utils/groupe.js` ne la redéfinit pas"
         )
@@ -118,308 +163,426 @@ def test_les_fondations_du_lot_1_sont_consommees_jamais_redefinies(regles, compo
     )
 
 
-# ── 1. Six nombres, jamais une barre ────────────────────────────────────────
+# ── 1. Six sections, dans l'ordre, et le quorum en tête des votes ────────────
+
+def test_les_six_sections_sont_rendues_dans_l_ordre(composant):
+    """L'ordre EST la décision : une seule focale, l'interne avant la comparaison."""
+    positions = []
+    for titre in SECTIONS:
+        motif = re.escape(titre).replace(r"\'", "['’]")
+        trouve = re.search(rf'titre="{motif}"', composant)
+        assert trouve, f"la section « {titre} » a disparu du rendu (#329)"
+        positions.append(trouve.start())
+    assert positions == sorted(positions), (
+        "les six sections doivent se suivre dans l'ordre des questions : "
+        f"{SECTIONS}. L'interne d'abord, la comparaison à la fin — la première refonte "
+        "zigzaguait entre les deux, quatre changements de focale."
+    )
+
+
+def test_le_quorum_ouvre_la_section_des_votes_et_non_la_page(composant):
+    """« Tout ce qui suit porte sur les 341 » est décourageant en première page."""
+    quorum = composant.index("<Quorum quorum={group.quorum} />")
+    votes = composant.index('titre="Comment ils votent"')
+    partage = composant.index("<Partage partage={group.partage} />")
+    qui = composant.index('titre="Qui sont-ils"')
+    assert qui < votes < quorum < partage, (
+        "le quorum doit ouvrir la section des votes — après « qui sont-ils », et AVANT "
+        "tout chiffre de cohésion, parce que tout ce qui suit en dépend"
+    )
+
+
+# ── 2. Les absences ne franchissent jamais l'écran ──────────────────────────
+
+def test_les_deux_decomptes_interdits_sont_nommes_dans_les_regles(regles):
+    bloc = re.search(r"DECOMPTES_JAMAIS_PUBLIES\s*=\s*\[(.*?)\];", regles, flags=re.DOTALL)
+    assert bloc, (
+        "`DECOMPTES_JAMAIS_PUBLIES` déclare, dans le code exécuté, les décomptes que la "
+        "page ne publie pas. Une interdiction qui ne vit que dans un commentaire n'est pas "
+        "une interdiction"
+    )
+    declares = tuple(re.findall(r"'(\w+)'", bloc.group(1)))
+    assert declares == DECOMPTES_INTERDITS, (
+        f"les deux décomptes interdits sont {DECOMPTES_INTERDITS}, pas {declares}"
+    )
+
+
+@pytest.mark.parametrize("decompte", DECOMPTES_INTERDITS)
+def test_aucune_absence_n_est_lue_par_le_rendu(decompte, composant, adaptateur, projection):
+    """Un libellé prudent sur une donnée interdite reste la donnée interdite."""
+    for source, nom in (
+        (composant, COMPOSANT_GROUPE.name),
+        (adaptateur, ADAPTATEUR.name),
+        (projection, PROJECTION.name),
+    ):
+        assert not re.search(rf"[.\[]\s*'?{decompte}'?\s*\]?", source), (
+            f"`{decompte}` est lu dans {nom} : publié, agrégé ou non, ce décompte devient "
+            "un taux de présence sur des personnes nommées (AGENTS.md §2 règle 3). Il ne "
+            "doit franchir ni l'adaptateur, ni la projection, ni le composant"
+        )
+
+
+def test_les_largeurs_affichees_ne_rapportent_rien_aux_membres_eligibles(regles):
+    """Rapporter une barre à `membres_eligibles` ferait entrer une absence dans un %."""
+    bloc = re.search(r"export function partageDuGroupe\(groupe\) \{(.*?)\n\}", regles, flags=re.DOTALL)
+    assert bloc, "`partageDuGroupe` a disparu"
+    corps = bloc.group(1)
+    assert "d.valeur / total" in corps or "/ total" in corps, (
+        "la part de chaque position se calcule sur le total des voix EXPRIMÉES"
+    )
+    assert not re.search(r"/\s*(entree\.)?membres_eligibles", corps), (
+        "aucune largeur ne se rapporte à `membres_eligibles` : les absences n'entrent "
+        "dans aucun pourcentage affiché (AGENTS.md §2 règle 3). Le nombre d'éligibles "
+        "reste publié en clair à côté, comme dénominateur nommé"
+    )
+
+
+# ── 3. Aucun taux synthétique ne sort du fichier ────────────────────────────
+
+@pytest.mark.parametrize("taux", TAUX_INTERDITS)
+def test_aucun_taux_synthetique_n_atteint_l_ecran(taux, regles, composant, adaptateur, projection):
+    for source, nom in (
+        (regles, MODULE_REGLES_GROUPE.name),
+        (composant, COMPOSANT_GROUPE.name),
+        (adaptateur, ADAPTATEUR.name),
+        (projection, PROJECTION.name),
+    ):
+        assert taux not in source, (
+            f"`{taux}` est lu dans {nom} : un chiffre unique par groupe est une note, et "
+            "cinq notes sont un classement (AGENTS.md §2 règle 1). Ces taux restent dans "
+            "le fichier"
+        )
+
 
 def test_la_barre_de_coherence_a_disparu_du_rendu(composant, feuille):
     """Une barre suggère une échelle ; ce sont des catégories (§2 règle 1)."""
     for source, nom in ((composant, COMPOSANT_GROUPE.name), (feuille, FEUILLE_GROUPE.name)):
         for classe in ("gp-coherence-track", "gp-coherence-fill", "gp-coherence-nd"):
             assert classe not in source, (
-                f"`{classe}` subsiste dans {nom} : la cohésion de vote se publie en six "
-                "décomptes, jamais en barre de progression — une barre place quatre "
-                "positions sur une échelle du pire au meilleur (AGENTS.md §2 règle 1)"
+                f"`{classe}` subsiste dans {nom} : la cohésion ne se publie jamais en barre "
+                "de progression — une barre place les positions sur une échelle du pire au "
+                "meilleur (AGENTS.md §2 règle 1)"
             )
     assert not re.search(r"width:\s*`\$\{[^}]*coherence", composant), (
         "aucune largeur ne doit être calculée depuis un taux de cohérence"
     )
 
 
-def test_les_six_decomptes_sont_declares_dans_l_ordre_publie(regles):
-    bloc = re.search(r"ORDRE_DECOMPTE_COHESION\s*=\s*\[(.*?)\];", regles, flags=re.DOTALL)
-    assert bloc, "`ORDRE_DECOMPTE_COHESION` a disparu"
-    declares = tuple(re.findall(r"'(\w+)'", bloc.group(1)))
-    assert declares == DECOMPTES_COHESION, (
-        "les six décomptes d'une entrée de `cohesion_votes` doivent être déclarés "
-        f"dans l'ordre publié par schema_groupe.py : {DECOMPTES_COHESION}, pas {declares}"
+def test_le_refus_de_l_indice_est_ecrit_et_publie(regles, composant):
+    """Ce qui est interdit est écrit — du contenu publié, pas un commentaire."""
+    assert "'indice-de-cohesion'" in regles, (
+        "le refus de publier un indice de cohésion doit être une entrée de "
+        "`REFUS_FICHE_GROUPE`, donc du contenu publié"
+    )
+    assert "group.refus" in composant, (
+        "la section 6 doit rendre les refus : une page qui se contente de ne pas répondre "
+        "laisse croire qu'elle n'y a pas pensé"
     )
 
-    libelles = re.search(r"LIBELLES_DECOMPTE_COHESION\s*=\s*\{(.*?)\n\};", regles, flags=re.DOTALL)
-    assert libelles, "`LIBELLES_DECOMPTE_COHESION` a disparu"
-    for cle in DECOMPTES_COHESION:
-        assert re.search(rf"^\s{{2}}{cle}:", libelles.group(1), flags=re.M), (
-            f"le décompte `{cle}` doit porter son libellé publié"
+
+# ── 4. Aucun intitulé de fonction n'est perdu ───────────────────────────────
+
+def test_un_libelle_de_fonction_inconnu_tombe_dans_autre_et_jamais_dans_le_vide(regles):
+    bloc = re.search(r"export function classeDeFonction\(libelle\) \{(.*?)\n\}", regles, flags=re.DOTALL)
+    assert bloc, "`classeDeFonction` a disparu"
+    corps = bloc.group(1)
+    assert corps.rstrip().endswith("return 'autre';"), (
+        "un libellé que la table ne reconnaît pas doit tomber dans `autre`, jamais être "
+        "ignoré : la maquette de cette refonte a publié 1 351 sièges simples pour `AN:SOC` "
+        "là où la fiche en porte 1 352, faute d'avoir rangé « représentant suppléant »"
+    )
+    ordre = re.search(r"ORDRE_CLASSES_FONCTION\s*=\s*\[(.*?)\];", regles, flags=re.DOTALL)
+    assert ordre and "'autre'" in ordre.group(1), (
+        "`autre` doit faire partie de l'ordre d'affichage : une classe qui n'est pas rendue "
+        "est une classe perdue"
+    )
+
+
+def test_la_classe_autre_publie_les_intitules_de_la_source(regles, composant):
+    """Rangés d'office, ces intitulés mentiraient ; publiés, ils se vérifient."""
+    assert re.search(r"libelles:\s*\[", regles), (
+        "`fonctionsDuGroupe` doit conserver les intitulés d'origine de chaque classe"
+    )
+    assert "c.cle === 'autre'" in composant and "c.libelles" in composant, (
+        "le rendu doit afficher les intitulés d'origine des fonctions rangées dans "
+        "« Autres fonctions » — mesuré : 9 intitulés ministériels et de chargé de mission "
+        "sur `AN:REN`, qu'un rangement d'office aurait fait passer pour des sièges simples"
+    )
+
+
+def test_la_table_des_fonctions_ne_reconnait_pas_un_prefixe_de_presidence(regles):
+    """« membre de droit (président de la commission des lois) » est un siège."""
+    prefixes = re.search(r"PREFIXES_SIEGE\s*=\s*\[(.*?)\];", regles, flags=re.DOTALL)
+    assert prefixes, "`PREFIXES_SIEGE` a disparu"
+    assert "'membre de droit'" in prefixes.group(1), (
+        "« membre de droit (président de la commission…) » porte l'instance entre "
+        "parenthèses : c'est un siège occupé de droit, pas une présidence de plus. "
+        "Un motif cherché en sous-chaîne le rangerait parmi les présidences"
+    )
+
+
+# ── 5. Rapporteur et député ne s'additionnent pas ───────────────────────────
+
+def test_les_types_de_deposant_restent_des_lignes_separees(adaptateur, composant):
+    bloc = re.search(r"const TYPES_DEPOSANT = \[(.*?)\n\];", adaptateur, flags=re.DOTALL)
+    assert bloc, "`TYPES_DEPOSANT` a disparu"
+    for cle in ("depute", "commission_rapporteur", "gouvernement"):
+        assert f"cle: '{cle}'" in bloc.group(1), f"le type de déposant `{cle}` doit être publié à part"
+    assert "parTypeDeposant.map" in composant, (
+        "chaque type de déposant garde sa ligne : `AGENTS.md` §5 interdit d'agréger un "
+        "taux d'adoption sur des types de déposant différents"
+    )
+    assert "taux_adoption" not in adaptateur and "taux_adoption" not in composant, (
+        "`taux_adoption` est publié par le schéma de groupe et ne doit atteindre ni "
+        "l'adaptateur ni le rendu : un taux commun ne décrirait ni l'un ni l'autre des "
+        "deux actes (AGENTS.md §5)"
+    )
+
+
+def test_un_zero_de_procedure_se_declare_comme_un_fait(adaptateur):
+    """Un groupe parlementaire ne dépose pas au nom du gouvernement."""
+    assert "zeroEstUnFait" in adaptateur, (
+        "un 0 de procédure — les amendements du gouvernement sur une fiche de groupe — "
+        "se publie comme un fait, et un 0 non mesuré ne se publie pas du tout "
+        "(AGENTS.md §2 règle 5). Les deux cas ne se confondent pas"
+    )
+
+
+# ── 6. La posture est recopiée, jamais déduite ──────────────────────────────
+
+def test_une_posture_absente_se_declare_et_ne_se_replie_sur_rien(regles):
+    bloc = re.search(r"export function postureDuGroupe\(groupe\) \{(.*?)\n\}", regles, flags=re.DOTALL)
+    assert bloc, "`postureDuGroupe` a disparu"
+    corps = bloc.group(1)
+    assert "declaree: false" in corps, (
+        "5 des 7 fiches portent `position_politique` depuis le commit de données "
+        "`693b076d` ; les 2 fiches du Sénat, gelées depuis #516, ne l'auront jamais. "
+        "La fonction doit rendre `declaree: false` plutôt que se replier sur une valeur"
+    )
+    assert "position_politique" in corps, (
+        "la posture se lit dans le champ recopié du référentiel (#686)"
+    )
+    for signal in ("cohesion_votes", "position_majoritaire", "convergences("):
+        assert signal not in corps, (
+            f"`{signal}` apparaît dans `postureDuGroupe` : une posture ne se déduit JAMAIS "
+            "d'un comportement de vote (AGENTS.md §2 règle 1). Elle est recopiée de la "
+            "déclaration de l'Assemblée, ou déclarée absente"
         )
 
 
-def test_absents_ne_se_publie_jamais_sous_le_mot_absents(regles):
-    """« Absents » publierait un taux de présence (§2 règle 3), pas une mesure."""
-    libelles = re.search(r"LIBELLES_DECOMPTE_COHESION\s*=\s*\{(.*?)\n\};", regles, flags=re.DOTALL)
-    ligne = re.search(r"^\s*absents:\s*'([^']+)'", libelles.group(1), flags=re.M)
-    assert ligne, "le libellé de `absents` a disparu"
-    assert "bsent" not in ligne.group(1), (
-        f"`absents` ne doit pas s'afficher « {ligne.group(1)} » : le pipeline y compte les "
-        "membres éligibles pour lesquels AUCUN vote n'a été trouvé — une absence de "
-        "donnée, pas une absence constatée. Le nommer « absents » publierait un taux "
-        "de présence individuel agrégé (AGENTS.md §2 règle 3)"
+def test_non_declaree_reste_distincte_d_un_champ_absent(regles):
+    """`non_declaree` est une valeur PUBLIÉE ; l'absence du champ n'en est pas une."""
+    assert "non_declaree" in regles, (
+        "`non_declaree` fait partie du vocabulaire fermé de `position_politique.position` "
+        "(schema_groupe.py) : les 14 groupes de la XVIIe sont dans ce cas"
+    )
+    assert "'Posture non publiée'" in regles, (
+        "« l'Assemblée ne l'a pas déclaré » n'est pas « notre fiche ne porte pas le "
+        "champ » : les deux se disent différemment (AGENTS.md §2 règle 5)"
     )
 
 
-def test_un_zero_structurel_ne_se_publie_pas_comme_un_zero_mesure(regles, adaptateur):
-    """`excuses` vaut 0 sur les 19 832 entrées publiées (§2 règle 5)."""
-    assert re.search(r"export function excusesRenseignees\(", regles), (
-        "`excusesRenseignees` porte la mesure à l'échelle de la FICHE : une entrée "
-        "à 0 ne dit pas si la source ne renseigne pas la valeur ou si personne "
-        "n'était excusé ce jour-là ; un 0 partout sur 3 973 scrutins, si"
+# ── 7. La comparaison est réunie par posture ────────────────────────────────
+
+def test_la_comparaison_reunit_par_posture_et_ne_classe_pas(regles, composant):
+    assert re.search(r"export function comparaisonParPosture\(", regles), (
+        "la comparaison se réunit par posture : un groupe majoritaire et un groupe "
+        "d'opposition ne font pas le même métier, et les aligner sur une échelle unique "
+        "les mettrait en concurrence sur une tâche qu'ils ne partagent pas (§2 règle 1)"
     )
-    assert "excusesRenseignees(" in adaptateur, (
-        "l'adaptateur doit décider par la fiche entière si `excuses` est publié"
+    assert "posturesSansFiche" in regles and "posturesSansFiche" in composant, (
+        "les postures qu'aucune fiche ne porte se disent, plutôt que de laisser croire "
+        "qu'elles n'existent pas (AGENTS.md §2 règle 5)"
     )
-    assert "publierExcuses" in regles and "publierExcuses" in adaptateur, (
-        "`publierExcuses` est ce qui empêche un zéro structurel de s'afficher "
-        "comme un zéro mesuré (AGENTS.md §2 règle 5)"
+    assert "Aucun pourcentage n'est affiché" in composant, (
+        "la section doit écrire qu'aucun pourcentage n'y est publié : un taux d'adoption "
+        "comparé entre groupes serait un classement"
     )
 
 
-def test_le_ratio_de_cohesion_porte_ses_deux_nombres(regles):
-    """§2 règle 7 : numérateur, dénominateur, ou `N/D` — jamais un pourcentage seul."""
-    corps = re.search(r"export function ratioCohesion\(entree\)\s*\{(.*?)\n\}", regles, flags=re.DOTALL)
-    assert corps, "`ratioCohesion` a disparu"
-    assert "ratio(" in corps.group(1), (
-        "le ratio de cohésion passe par la primitive `ratio` du lot 1, qui rend "
-        "`N/D` sur un dénominateur absent ou nul plutôt que 0 %"
+def test_l_ordre_des_convergences_est_celui_des_scrutins_comparables(regles):
+    bloc = re.search(r"export function convergences\(comparaison, sigleDuGroupe\) \{(.*?)\n\}", regles, flags=re.DOTALL)
+    assert bloc, "`convergences` a disparu"
+    tri = re.search(r"\.sort\(\(a, b\) => (.*?)\);", bloc.group(1), flags=re.DOTALL)
+    assert tri and "b.communs - a.communs" in tri.group(1), (
+        "l'ordre est celui du nombre de scrutins comparables, pas celui de l'accord : "
+        "trier par accord ferait un classement des alliés (AGENTS.md §2 règle 1)"
     )
-    assert "membres_eligibles" in corps.group(1), (
-        "le dénominateur est `membres_eligibles`, borné par chambre depuis #492 : "
-        "une union sur tous les mandats électifs comptait un membre absent sur des "
-        "scrutins où il ne pouvait plus voter, donc un faux dénominateur (§2 règle 7)"
-    )
-    assert "taux_coherence" not in corps.group(1), (
-        "le taux pré-divisé ne se publie pas : la fiche publie ses deux nombres"
+    assert "meme_sens" not in tri.group(1), (
+        "le tri ne doit pas dépendre du nombre de scrutins votés dans le même sens"
     )
 
 
-# ── 2. Aucun compteur ne dit « aujourd'hui » ────────────────────────────────
+def test_la_comparaison_ne_compare_que_ce_qui_a_atteint_son_quorum(projection, regles):
+    """Les dénominateurs diffèrent d'une ligne à l'autre, et chacun est publié."""
+    assert "quorum_atteint !== true" in projection, (
+        "la projection n'embarque que les scrutins où le quorum est atteint : en dessous, "
+        "rien n'est publié — pas même approché, donc pas même transporté"
+    )
+    assert "denominateurLabel" in regles, (
+        "chaque ligne de convergence publie son dénominateur nommé (AGENTS.md §2 règle 7)"
+    )
 
-@pytest.mark.parametrize("long_nom,ancien_nom", NOMS_DATES_ET_REPLIS, ids=lambda v: v)
+
+# ── 8. « Nuance » n'est pas « opposé » ──────────────────────────────────────
+
+def test_une_abstention_n_est_jamais_comptee_comme_un_vote_contraire(regles):
+    bloc = re.search(
+        r"export function natureDeConvergence\(positionA, positionB\) \{(.*?)\n\}",
+        regles, flags=re.DOTALL,
+    )
+    assert bloc, "`natureDeConvergence` a disparu"
+    corps = bloc.group(1)
+    assert "'oppose'" in corps and "'nuance'" in corps, "les trois natures doivent être distinguées"
+    oppose = corps[corps.index("return 'oppose'") - 400 : corps.index("return 'oppose'")]
+    assert "abstention" not in oppose, (
+        "« opposé » ne se prononce que sur un couple pour / contre : une abstention face à "
+        "une position exprimée est une NUANCE. Mesuré au commit `e40d0d32` : SOC et RN ne "
+        "sont opposés que 46 fois sur 231, mais en nuance 106 — un décompte brut aurait "
+        "affiché « 152 divergences »"
+    )
+    assert "'autres'" in corps, (
+        "un couple que les trois natures ne décrivent pas se compte à part, plutôt que "
+        "d'être rangé d'office en nuance : il vaut 0 sur les quatre paires mesurées, et "
+        "ce zéro doit rester vérifiable (AGENTS.md §2 règle 5)"
+    )
+
+
+# ── 9. La fiche ne nomme jamais qui s'est écarté ────────────────────────────
+
+def test_la_fiche_ne_nomme_jamais_qui_s_est_ecarte_de_la_ligne(regles, composant, adaptateur):
+    """Désigner les écarts produirait un classement interne au groupe (§2 règles 1 et 7)."""
+    assert "'ecarts-individuels'" in regles, (
+        "le refus doit être une entrée de `REFUS_FICHE_GROUPE`, donc du contenu publié"
+    )
+    for source, nom in ((composant, COMPOSANT_GROUPE.name), (adaptateur, ADAPTATEUR.name)):
+        assert "ecartsAvecLeGroupe(" not in source or nom == ADAPTATEUR.name, (
+            f"{nom} ne doit pas calculer d'écart individu / groupe sur une fiche de groupe"
+        )
+    bloc = re.search(r"export function partageDuGroupe\(groupe\) \{(.*?)\n\}", regles, flags=re.DOTALL)
+    assert "membre" not in bloc.group(1).replace("membres_eligibles", ""), (
+        "les scrutins partagés se publient en DÉCOMPTES : combien de membres ont pris "
+        "chaque position, jamais lesquels"
+    )
+    assert "minoritaires" in bloc.group(1), (
+        "le nombre de voix minoritaires sert de critère de tri et ne s'affiche pas : un "
+        "« nombre de dissidents » publié serait l'indice individuel par un autre chemin"
+    )
+    assert "e.minoritaires" not in composant and "{e.minoritaires}" not in composant, (
+        "le nombre de voix minoritaires ne doit pas atteindre l'écran"
+    )
+
+
+# ── Ce que le lot précédent avait déjà réglé, et qui doit tenir ─────────────
+
+@pytest.mark.parametrize(("long_nom", "ancien_nom"), NOMS_DATES_ET_REPLIS)
 def test_les_deux_formes_de_chaque_compteur_sont_lues(long_nom, ancien_nom, regles, adaptateur):
-    """Les 2 fiches Sénat gelées gardent les anciens noms et ne seront pas régénérées.
-
-    Exiger la clé longue les ferait échouer au portail de qualité ; ne lire que
-    la clé longue rendait `undefined membre y a siégé au moins une fois` sur
-    leurs 17 cartes de mandats.
-    """
-    lu = regles + adaptateur
-    assert long_nom in lu, f"le nom daté `{long_nom}` (#653/#656) doit être lu"
-    assert re.search(rf"\b{ancien_nom}\b", lu), (
-        f"l'ancien nom `{ancien_nom}` doit être lu en repli : les 2 fiches Sénat "
-        "gelées (#516/#528) ne seront pas régénérées et ne portent que lui"
-    )
-
-
-def test_la_date_de_reference_est_publiee_a_cote_des_comptes(regles, composant):
-    """Un compteur daté qu'on ne peut pas dater à la lecture est un compteur nu."""
-    assert "ORIGINES_DATE_REFERENCE" in regles, (
-        "l'origine de la date (`cloture_legislature` | `generation`) se publie avec elle"
-    )
-    assert "dateReferenceDatee" in composant or "datee" in composant, (
-        "le rendu doit distinguer « rapporté à une date » de « rapporté à aucune date »"
-    )
-    assert "ne publie aucune date de référence" in composant, (
-        "sans date de référence, la page le DIT — elle n'en invente pas une et ne "
-        "laisse pas lire « aujourd'hui » (#653)"
+    """Les 2 fiches Sénat gelées (#516/#528) ne seront pas régénérées."""
+    ensemble = regles + adaptateur
+    assert long_nom in ensemble, f"le nom long `{long_nom}` (#653/#656) doit être lu"
+    assert ancien_nom in ensemble, (
+        f"l'ancien nom `{ancien_nom}` doit rester lu : les 2 fiches Sénat gelées le portent "
+        "encore, et exiger le nom long ferait échouer le rendu sur des fichiers publiés"
     )
 
 
 def test_aucun_compteur_publie_ne_se_dit_actuel(composant, adaptateur):
-    """« Effectif actuel » affichait `roster_total` : ni l'effectif, ni actuel."""
+    """« Actif » sur un groupe de la XVIe disait « encore député⋅e en 2026 » (#653)."""
     for source, nom in ((composant, COMPOSANT_GROUPE.name), (adaptateur, ADAPTATEUR.name)):
-        for libelle in re.findall(r"label:\s*'([^']*)'", source) + re.findall(
-            r"label:\s*\"([^\"]*)\"", source
-        ):
-            assert "actuel" not in libelle.lower(), (
-                f"{nom} publie le libellé « {libelle} » : aucun compteur d'une fiche "
-                "de groupe ne dit « aujourd'hui », parce qu'aucune des 7 fiches "
-                "publiées ne décrit la législature en cours (#653)"
-            )
+        assert not re.search(r"'[^']*[Aa]ctuel", source), (
+            f"un libellé « actuel » subsiste dans {nom} : aucune des 7 fiches ne décrit la "
+            "législature en cours, et un compteur « actuel » y mesurait la carrière "
+            "ultérieure des membres (#653)"
+        )
+
+
+def test_la_date_de_reference_est_publiee_a_cote_des_comptes(regles, composant):
+    assert re.search(r"export function dateDeReference\(", regles), "`dateDeReference` a disparu"
+    assert "dateReferenceDatee" in composant, (
+        "le rendu doit distinguer une fiche datée d'une fiche qui ne l'est pas : `datee: "
+        "false` ne veut pas dire « aujourd'hui »"
+    )
 
 
 def test_siege_et_passe_restent_deux_nombres(regles, composant):
-    """« Qui y siège » et « qui y est passé » ne se confondent pas (#656)."""
+    """Lire le cumul comme un effectif faisait dire à la fiche que 67 des 76 membres
+    LFI siégeaient aux finances quand ils sont 5 (#656)."""
     assert re.search(r"export function siegeEtPasse\(", regles), "`siegeEtPasse` a disparu"
-    assert "y est passé au moins une fois" in composant, (
-        "le cumul reste publié, nommé comme un cumul : lire le cumul comme un "
-        "effectif faisait dire à la fiche que 67 des 76 membres LFI siégeaient aux "
-        "finances quand ils sont 5 (#656)"
-    )
-    assert "y siégeaient" in composant, "« qui y siège » reste le chiffre de tête"
-    assert not re.search(r"poids_relatif", regles + composant), (
-        "`poids_relatif` est retiré depuis #656 : il ne disait plus de laquelle "
-        "des deux grandeurs il était le poids"
+    assert "m.passe" in composant and "m.siege" in composant, (
+        "un mandat agrégé porte deux quantités — qui y siège et qui y est passé —, et le "
+        "rendu doit les distinguer"
     )
 
-
-# ── 3. La troncature déclare sa règle (lot 1, règle 3) ──────────────────────
-
-def test_les_douze_cartes_declarent_leur_regle_et_leur_denominateur(regles, adaptateur, composant):
-    """`slice(0, 12)` sur 3 832 à 4 099 scrutins : le lecteur voyait une coupe."""
-    assert "NB_SCRUTINS_AFFICHES" in regles and "REGLE_TRONCATURE_COHESION" in regles, (
-        "le nombre affiché et la règle de coupe sont déclarés, pas écrits dans un `slice`"
-    )
-    assert not re.search(r"slice\(0,\s*\d", adaptateur[adaptateur.find("buildGroupView"):]), (
-        "le `slice` de la cohésion et celui des étiquettes doivent passer par les "
-        "constantes déclarées, pour que le dénominateur affiché ne puisse pas diverger"
-    )
-    assert "<Troncature" in composant, (
-        "la coupe s'annonce avec son total : c'est la règle 3 du lot 1 (#326)"
-    )
-
-    regle = re.search(r"REGLE_TRONCATURE_COHESION\s*=\s*'([^']+)'", regles)
-    assert regle, "`REGLE_TRONCATURE_COHESION` a disparu"
-    assert "récent" in regle.group(1), (
-        "la règle affichée est vérifiable et vérifiée : `cohesion_votes` est trié "
-        "par date de scrutin décroissante sur les 5 fiches AN (19 832 / 19 832 "
-        "entrées jointes à `pivot_data/scrutins.json`)"
-    )
-    assert "important" not in regle.group(1), (
-        "« les plus importants » serait un jugement (AGENTS.md §2 règle 1) ; "
-        "« les plus récents » est un fait"
-    )
-
-
-# ── 4. `meta` se lit, et rien ne le lisait ──────────────────────────────────
 
 def test_l_etat_et_la_preuve_de_couverture_sont_lus(regles, composant):
-    """15 profils sur 235 est un périmètre, pas une perte — et l'état le dit."""
-    assert "couverture_roster" in regles, "`meta.couverture_roster` doit être lu (#329)"
-    for etat in ("dans_le_perimetre", "hors_perimetre"):
-        assert etat in regles, (
-            f"l'état `{etat}` de `schema_groupe.ETATS_COUVERTURE_ROSTER` doit être "
-            "traduit : un ratio seul ne dit pas de quoi il est le ratio"
-        )
-    assert "preuve" in regles and "preuve" in composant, (
-        "la `preuve` est exigée par le schéma sur `hors_perimetre` et doit être "
-        "publiée verbatim : elle porte ses références et sa condition de reprise"
+    assert re.search(r"export function couvertureRoster\(", regles), "`couvertureRoster` a disparu"
+    assert "couverture.preuve" in composant, (
+        "`meta.couverture_roster.preuve` est publiée sur 7 / 7 fiches : le ratio seul ne "
+        "dit pas de quoi il est le ratio — `groupe-Senat-LR` publie 15 profils sur 235, et "
+        "c'est un périmètre, pas une perte"
     )
-    assert "seuilQuorum" in composant, (
-        "`meta.seuil_quorum` se publie à côté du quorum : sans lui, « quorum non "
-        "atteint » se lirait comme un seuil réglementaire"
+    assert "causeListeVide" in composant, (
+        "une liste vide dit POURQUOI, dans le vocabulaire du lot 1 (#326)"
     )
 
 
-def test_un_etat_de_couverture_inconnu_ne_devient_jamais_aucun_resultat(regles):
-    """Même règle que les quatre causes du lot 1 (§2 règle 5)."""
-    corps = re.search(
-        r"export function couvertureRoster\(groupe\)\s*\{(.*?)\n\}", regles, flags=re.DOTALL
-    )
-    assert corps, "`couvertureRoster` a disparu"
-    assert "connu ?" in corps.group(1) or "connu\n" in corps.group(1), (
-        "un état inconnu doit se déclarer comme non renseigné, jamais tomber sur "
-        "l'un des deux états connus"
-    )
-    assert "non publié" in corps.group(1) or "non publié" in regles, (
-        "un état absent se dit « non publié » : c'est un fait sur la fiche, pas sur le groupe"
+def test_une_fiche_hors_perimetre_ne_publie_pas_de_zeros_comparables(composant):
+    """Les 2 fiches Sénat portent 0 amendement parce que leur collecte est suspendue."""
+    assert "causeListeVide === 'non_collecte'" in composant, (
+        "sur une fiche dont la collecte est suspendue (#516/#528), la comparaison entre "
+        "groupes publierait des zéros qui ne sont pas des mesures (AGENTS.md §2 règle 5)"
     )
 
-
-# ── 5. Les écarts individu / groupe restent internes ────────────────────────
-
-def test_la_fiche_ne_nomme_jamais_qui_s_est_ecarte_de_la_ligne(regles, composant):
-    """§2 règle 7 : l'écart individu / groupe est un contrôle interne."""
-    assert "REFUS_FICHE_GROUPE" in regles, (
-        "ce qui est interdit est écrit, pas seulement omis (#326)"
-    )
-    assert "ne nomme jamais qui s'est écarté" in regles + composant, (
-        "la fiche déclare qu'elle ne nomme pas les écarts : les publier désignerait "
-        "qui s'est écarté de la ligne, c'est-à-dire un classement interne au groupe "
-        "(AGENTS.md §2 règles 1 et 7)"
-    )
-
-    # La carte de scrutin ne doit porter aucune liste nominative.
-    carte = re.search(r"gp-vote-card(.*?)gp-vote-footer", composant, flags=re.DOTALL)
-    assert carte, "la carte de scrutin a disparu"
-    for interdit in ("membres", "membre_id", "nom"):
-        assert not re.search(rf"vote\.{interdit}\b", carte.group(1)), (
-            f"une carte de scrutin ne lit jamais `vote.{interdit}` : elle publie des "
-            "décomptes, jamais qui a pris quelle position"
-        )
-
-
-# ── 6. L'empreinte thématique : jamais une étiquette sans son porteur ───────
-#
-# Passée de la case D à la case A du tableau de #329 le 31/08/2026 : le motif
-# de son report — « 0 / 468 membres de roster portent une intervention ou un
-# tag » — est périmé depuis #657. Re-mesuré au commit `c6edee05` : **448 des
-# 468** profils `roster_groupe` portent au moins une étiquette, les 5 fiches AN
-# en publient de **1 554** (`AN:SOC`) à **4 303** (`AN:REN`), et
-# `nb_membres_porteurs` y monte jusqu'à **99**. Les 2 fiches Sénat restent à 0,
-# parce qu'elles sont conservées et jamais régénérées (#528).
 
 def test_une_etiquette_ne_se_publie_jamais_sans_son_nombre_de_porteurs(regles, composant):
-    """Sinon la fiche donne l'empreinte d'UNE personne pour celle d'un groupe."""
-    corps = re.search(
-        r"export function etiquettesThematiques\(.*?\n\}", regles, flags=re.DOTALL
+    assert re.search(r"export function etiquettesThematiques\(", regles), (
+        "`etiquettesThematiques` a disparu"
     )
-    assert corps, "`etiquettesThematiques` a disparu"
-    assert "nb_membres_porteurs" in corps.group(0), (
-        "chaque étiquette part avec son `nb_membres_porteurs` : une étiquette "
-        "portée par 1 membre sur 76 ne dit pas ce que dit une étiquette portée "
-        "par 60 (AGENTS.md §2 règle 7)"
+    assert "t.porteurs" in composant and "t.denominateur" in composant, (
+        "une étiquette portée par 1 membre sur 76 ne dit pas ce que dit une étiquette "
+        "portée par 60 : le nombre de porteurs part AVEC l'étiquette, jamais après elle"
     )
-    assert "ratio(" in corps.group(0), (
-        "le nombre de porteurs passe par la primitive `ratio` du lot 1, qui rend "
-        "`N/D` plutôt qu'un nombre sans dénominateur"
-    )
-    assert "poids_relatif" not in corps.group(0), (
-        "`poids_relatif` est un ratio pré-divisé : la fiche publie ses deux "
-        "nombres, comme `mandats_agreges` depuis #656"
-    )
-
-    pastille = re.search(r"gp-tag-pill(.*?)</span>\s*\)\)\}", composant, flags=re.DOTALL)
-    assert pastille, "la pastille d'étiquette a disparu"
-    assert "porteurs" in pastille.group(1) and "denominateur" in pastille.group(1), (
-        "la pastille affiche les deux nombres, pas l'étiquette seule : c'est le "
-        "défaut exact que #657 a corrigé côté données"
-    )
-
-
-def test_le_denominateur_des_etiquettes_est_la_population_reellement_lue(regles):
-    """`len(membres)`, jamais `roster_total` — qui compte des membres sans profil."""
-    corps = re.search(
-        r"export function etiquettesThematiques\(.*?\n\}", regles, flags=re.DOTALL
-    )
-    assert "membres" in corps.group(0), "le dénominateur est le nombre d'entrées de `membres[]`"
-    assert "roster_total" not in corps.group(0), (
-        "`roster_total` compte des membres dont aucun profil n'est publié : "
-        "l'agrégation ne les a pas lus, ils ne peuvent pas être au dénominateur"
+    assert "poids_relatif" not in composant, (
+        "`poids_relatif` n'est pas publié : la fiche donne ses deux nombres (§2 règle 7)"
     )
 
 
 def test_les_etiquettes_ne_se_lisent_pas_comme_des_positions_du_groupe(composant):
-    """§2 règle 8 : aides à la lecture, jamais des positions déclarées."""
-    assert "Ce n'est pas une position" in composant, (
-        "la section doit écrire que ces étiquettes ne sont pas des positions du "
-        "groupe (AGENTS.md §2 règle 8) : ce sont les sujets sur lesquels ses "
-        "membres sont intervenus, et intervenir sur un texte c'est aussi bien le "
-        "combattre que le défendre"
+    # Le JSX enveloppe ses phrases : on compare sur une forme sans retour à la ligne.
+    aplati = re.sub(r"\s+", " ", composant)
+    assert "jamais des positions du groupe" in aplati, (
+        "la section doit écrire que ce sont les SUJETS sur lesquels les membres sont "
+        "intervenus, jamais des positions du groupe (AGENTS.md §2 règle 8)"
     )
-    for verbe in ("défend", "soutient", "priorité", "combat de"):
-        assert f"groupe {verbe}" not in composant.lower(), (
-            f"« groupe {verbe} » ferait de l'étiquette une position déclarée (§2 règle 8)"
-        )
 
 
-def test_une_empreinte_vide_dit_pourquoi_et_n_affiche_jamais_zero(composant):
-    """Les 2 fiches Sénat sont à 0 étiquette : c'est une décision, pas un résultat."""
-    bloc = re.search(
-        r"Empreinte thématique.*?gp-tags-card(.*?)\n          </div>", composant, flags=re.DOTALL
+# ── La borne de la vue « grandes lois » ─────────────────────────────────────
+
+def test_le_regroupement_par_texte_ne_pretend_pas_reconstruire_une_cle(regles, composant):
+    """`AGENTS.md` §4 : un `dossier_id` ne se reconstruit jamais depuis un titre."""
+    assert re.search(r"export function designationDuTexte\(", regles), (
+        "`designationDuTexte` a disparu"
     )
-    assert bloc, "la section « Empreinte thématique » a disparu"
-    assert "<ListeVide" in bloc.group(1), (
-        "une empreinte vide passe par `ListeVide` (règle 1 du lot 1) : les 2 fiches "
-        "Sénat sont à 0 étiquette parce qu'elles sont conservées et jamais "
-        "régénérées (#528), et ce vide est une décision, pas une mesure"
+    bloc = re.search(r"export function designationDuTexte\(intitule\) \{(.*?)\n\}", regles, flags=re.DOTALL)
+    assert "return null" in bloc.group(1), (
+        "un intitulé qui ne nomme aucun texte rend `null`, jamais une désignation inventée "
+        "ni un repli sur l'intitulé entier — qui ferait un « texte » par scrutin "
+        "(AGENTS.md §2 règle 5)"
     )
-    assert "causeListeVide" in bloc.group(1) and "motifListeVide" in bloc.group(1), (
-        "la cause ET son motif sont passés : une cause seule tomberait sur la "
-        "phrase par défaut, qui parle d'une collecte aboutie"
+    assert "dossier_id" not in regles, (
+        "la vue ne prétend pas porter la clé de dossier : `AGENTS.md` §4 interdit de la "
+        "reconstruire depuis un titre"
+    )
+    assert "sansDesignation" in composant, (
+        "la page publie sa borne : le nombre d'intitulés qui ne nomment aucun texte"
+    )
+
+
+def test_un_tiret_de_lecture_ne_se_lit_pas_comme_une_abstention(composant, feuille):
+    assert "Un tiret n'est pas une abstention" in composant, (
+        "une case vide signale une lecture où le quorum de CE groupe n'était pas atteint, "
+        "et la page doit le dire — sans quoi elle se lit comme une abstention"
+    )
+    assert ".gp-case--absente" in feuille, (
+        "la case sans position reste neutre : la colorer la ferait lire comme une position"
     )

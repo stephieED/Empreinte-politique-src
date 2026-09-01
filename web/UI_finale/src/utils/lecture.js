@@ -362,6 +362,36 @@ export function selectWholeTextVotes(scrutins) {
   return liste.filter(isWholeTextVote);
 }
 
+/* ── Livrable : le NOM du texte, quand c'est le texte qu'on nomme ────────────
+ *
+ * L'intitulé d'un vote sur l'ensemble commence par « l'ensemble du projet de
+ * loi… » et finit par la mention de lecture. Les deux disent la PLACE du vote,
+ * pas le nom du texte : une carte qui réunit les quatre lectures du projet de
+ * loi de finances rectificative pour 2022 ne peut pas s'intituler
+ * « (première lecture) », et « l'ensemble du… » y répète ce que la carte dit
+ * déjà (#329).
+ *
+ * Ce retrait vit ICI, à côté de `WHOLE_TEXT_VOTE_PATTERN` dont il est
+ * exactement le complément, et pas dans la vue qui l'affiche : un motif sur
+ * « l'ensemble » écrit une seconde fois est le défaut que #326 puis #672 ont
+ * fermé, et `tests/test_selection_vote_ensemble_672.py` le refuse.
+ *
+ * DEUX retraits, et deux seulement. Rien n'est reformulé : ce qui reste est la
+ * chaîne de la source, capitale initiale mise à part (§2 règle 2). La vue
+ * publie l'intitulé complet à côté — en infobulle, et par le lien de source du
+ * scrutin.
+ */
+const OUVERTURE_VOTE_ENSEMBLE = /^(?:sur )?l['’]ensemble (?:du |de la |de l['’]|des )?/i;
+const MENTION_DE_LECTURE =
+  /\s*\((?:première|premiere|nouvelle|deuxième|seconde|texte|lecture|c\.m\.p)[^)]*\)\s*\.?\s*$/i;
+
+export function titreDuTexteVote(intitule) {
+  if (typeof intitule !== 'string' || !intitule.trim()) return null;
+  const nu = intitule.replace(OUVERTURE_VOTE_ENSEMBLE, '').replace(MENTION_DE_LECTURE, '').trim();
+  if (!nu) return intitule;
+  return nu.charAt(0).toUpperCase() + nu.slice(1);
+}
+
 /* ── Livrable : la borne, en texte publié ────────────────────────────────────
  *
  * 925 est un PLANCHER, jamais un décompte exhaustif, et la page le dit (§2

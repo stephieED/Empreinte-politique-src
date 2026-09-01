@@ -160,6 +160,11 @@ SITES_PYTHON: dict[tuple[str, str], str] = {
 
 SITES_UI: dict[tuple[str, str], str] = {
     ("scripts/sync-data.mjs", "groupe"): GROUPE,
+    # #329 : la projection de comparaison regroupe par (chambre, législature).
+    # C'est le champ du SCHÉMA DE GROUPE — `schema_groupe.py` —, pas le scalaire
+    # `chambre` d'un profil pivot que #493 met en retrait : une comparaison ne
+    # traverse ni chambre ni législature, et la clé le dit.
+    ("scripts/comparaison-groupes.mjs", "groupe"): GROUPE,
     ("src/data/index.js", "g"): GROUPE,
     ("src/data/pivotAdapter.js", "groupe"): GROUPE,
     ("src/components/GovernmentProfile.jsx", "texte"): GROUPE,

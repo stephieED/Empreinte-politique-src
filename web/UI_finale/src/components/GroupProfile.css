@@ -1,9 +1,43 @@
+/*
+ * Fiche de groupe — lot 3 de la refonte #324 (issue #329), reprise de bout en
+ * bout.
+ *
+ * Charte : web/UI_finale/DESIGN_SYSTEM.md. Manrope seule, encre #14151A, blanc
+ * cassé #F7F6F4, jaune signal #DFFF00 JAMAIS en texte sur fond clair (contraste
+ * 1,05:1, échec AA) — il ne sert ici que d'aplat non textuel (la part mesurable
+ * de la jauge de quorum) et de liseré (la ligne du groupe décrit).
+ *
+ * Le site est en thème clair déclaré (`index.css` : `color-scheme: light`) : il
+ * n'y a pas de jeton de thème sombre à tenir en trois états, contrairement à la
+ * maquette, qui vivait dans un lecteur d'artifact bi-thème.
+ *
+ * DEUX RÈGLES DE COULEUR PROPRES À CETTE FICHE :
+ *
+ *  - une posture ne porte JAMAIS de teinte. Majorité, opposition et minorité se
+ *    distinguent par le motif de bordure — plein, tireté, pointillé —, comme
+ *    sur la fiche candidat. Une teinte en ferait une échelle du bon au mauvais
+ *    (AGENTS.md §2 règle 1) ;
+ *  - les trois natures de convergence sont une seule teinte institutionnelle
+ *    déclinée en pleine, atténuée et hachurée. Trois couleurs différentes
+ *    feraient de « même sens » un bien et de « sens opposé » un mal.
+ */
+
 .gp-main {
   flex: 1;
   min-width: 0;
   width: 100%;
+  max-width: 1100px;
   padding: 32px 40px 64px;
-  max-width: 1600px;
+}
+
+@media (max-width: 720px) {
+  .gp-main {
+    padding: 24px 18px 48px;
+  }
+}
+
+.gp-num {
+  font-variant-numeric: tabular-nums;
 }
 
 .gp-breadcrumb {
@@ -17,350 +51,264 @@
   font-weight: 600;
 }
 
-.gp-hero-grid {
-  display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: 16px;
-  margin-bottom: 20px;
+/* ── En-tête ─────────────────────────────────────────────────────────────── */
+.gp-entete {
+  padding-bottom: 8px;
 }
 
-.gp-banner {
-  background: var(--dark);
-  box-shadow: 0 2px 16px rgba(20, 15, 40, 0.07);
-  padding: 28px;
-  clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 28px, 100% 100%, 0 100%);
-}
-
-.gp-banner-tag {
-  display: inline-block;
-  border-radius: 2px;
-  padding: 5px 14px;
-  font-size: 12px;
+.gp-sourcil {
+  font-size: 11px;
   font-weight: 700;
-  border: 1.5px solid #ffffff;
-  color: #ffffff;
-  margin-bottom: 14px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
-.gp-banner h1 {
-  font-size: 32px;
+.gp-entete h1 {
+  font-size: 34px;
   font-weight: 800;
-  letter-spacing: -0.01em;
-  color: #ffffff;
+  letter-spacing: -0.02em;
+  line-height: 1.06;
+  margin-top: 8px;
+}
+
+.gp-entete-sous {
+  margin-top: 11px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.gp-periode {
+  font-size: 13.5px;
+  color: #6e6a78;
+  font-weight: 600;
+}
+
+/*
+ * La posture : une pilule dont la BORDURE porte le motif, jamais une teinte.
+ * Même vocabulaire que `cp-position` sur la fiche candidat — c'est la même
+ * déclaration, lue dans le même champ de la même archive.
+ */
+.gp-posture {
+  display: inline-flex;
+  padding: 5px 13px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border: 1.5px solid var(--border-strong);
+  color: #6e6a78;
+}
+
+.gp-posture--compacte {
+  font-size: 10.5px;
+  padding: 3px 9px;
+  border-width: 1px;
+}
+
+.gp-posture--majorite {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.gp-posture--opposition {
+  border-style: dashed;
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.gp-posture--minoritaire {
+  border-style: dotted;
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.gp-posture--inconnue,
+.gp-posture--absente {
+  border-style: dotted;
+  color: var(--muted);
+}
+
+/* ── Sections ────────────────────────────────────────────────────────────── */
+.gp-section {
+  margin-top: 44px;
+}
+
+.gp-section-bande {
+  display: flex;
+  align-items: center;
+  gap: 14px;
   margin-bottom: 8px;
 }
 
-.gp-banner p {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.gp-coverage-card {
-  border-radius: 18px;
-  background: var(--card);
-  box-shadow: 0 2px 16px rgba(20, 15, 40, 0.07);
-  padding: 24px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.gp-coverage-donut {
-  width: 82px;
-  height: 82px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-}
-
-.gp-coverage-donut-inner {
-  width: 62px;
-  height: 62px;
-  border-radius: 50%;
-  background: var(--card);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.gp-section-numero {
+  font-size: 11px;
   font-weight: 800;
-  font-size: 15px;
-  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.1em;
+  color: var(--muted);
 }
 
-.gp-coverage-title {
+.gp-section-trait {
+  flex: 1;
+  height: 1px;
+  background: var(--border-strong);
+}
+
+.gp-section-titre {
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.018em;
+}
+
+.gp-section-critere {
   font-size: 13px;
-  font-weight: 700;
-  margin-bottom: 4px;
+  color: #6e6a78;
+  max-width: 78ch;
+  margin-top: 8px;
+  line-height: 1.55;
 }
 
-.gp-coverage-sub {
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.4;
-}
-
-.gp-kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 14px;
-  margin-bottom: 32px;
-}
-
-.gp-kpi-card {
-  position: relative;
-  overflow: hidden;
-  border-radius: 18px;
-  background: var(--card);
-  box-shadow: 0 2px 12px rgba(20, 15, 40, 0.06);
-  padding: 18px;
-  transition: box-shadow 0.15s;
-}
-
-.gp-kpi-card:hover {
-  box-shadow: 0 6px 20px rgba(20, 15, 40, 0.14);
-}
-
-.gp-kpi-value {
-  font-size: 26px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-  max-width: 100%;
-  overflow-wrap: break-word;
-}
-
-.gp-kpi-label {
-  margin-top: 6px;
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.3;
-}
-
-.gp-kpi-caveat {
-  position: absolute;
-  inset: 0;
-  background: var(--dark);
-  color: #ffffff;
-  padding: 16px;
+.gp-section-corps {
+  margin-top: 16px;
   display: flex;
-  align-items: center;
-  font-size: 12px;
-  line-height: 1.4;
-  opacity: 0;
-  transition: opacity 0.15s;
-  pointer-events: none;
-}
-
-.gp-kpi-card:hover .gp-kpi-caveat {
-  opacity: 1;
-}
-
-.gp-section-title {
-  margin: 0 0 14px;
-  font-size: 16px;
-  font-weight: 800;
-}
-
-.gp-cohesion-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  flex-direction: column;
   gap: 12px;
-  margin-bottom: 32px;
 }
 
-.gp-vote-card {
-  border-radius: 18px;
-  background: var(--card);
-  box-shadow: 0 2px 12px rgba(20, 15, 40, 0.06);
-  padding: 18px;
+.gp-sous-titre {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin-top: 22px;
 }
 
-.gp-vote-position {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 9px;
-}
-
-.gp-vote-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-}
-
-.gp-vote-position-label {
+.gp-legende {
   font-size: 12px;
-  font-weight: 700;
+  color: var(--muted);
+  font-weight: 600;
 }
 
-.gp-vote-texte {
-  margin-bottom: 12px;
-  font-size: 14px;
-  line-height: 1.4;
-  min-height: 40px;
+/* ── Cartes et notes ─────────────────────────────────────────────────────── */
+.gp-carte {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 1px 10px rgba(20, 15, 40, 0.05);
 }
 
-/* #329 : la barre de cohérence (`.gp-coherence-track` / `.gp-coherence-fill`)
-   est RETIRÉE, pas masquée. Une barre suggère une échelle du pire au meilleur ;
-   les six décomptes d'un scrutin sont des catégories, et leur somme retrouve
-   exactement l'effectif éligible (19 832 / 19 832 entrées des 5 fiches AN). */
-.gp-decomptes {
+.gp-carte--simple,
+.gp-duo > .gp-carte {
+  padding: 22px 24px;
+}
+
+.gp-carte-titre {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.gp-carte-sous {
+  font-size: 12.5px;
+  color: #6e6a78;
+  margin-top: 8px;
+  line-height: 1.55;
+}
+
+.gp-duo {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
-  gap: 8px;
-  margin: 12px 0;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 760px) {
+  .gp-duo {
+    grid-template-columns: 1fr;
+  }
+}
+
+.gp-chiffre {
+  display: flex;
+  align-items: baseline;
+  gap: 11px;
+  margin-top: 14px;
+}
+
+.gp-chiffre b {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.gp-chiffre span {
+  font-size: 13px;
+  color: #6e6a78;
+  font-weight: 600;
+  max-width: 34ch;
+}
+
+.gp-note {
+  padding: 16px 20px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 14px;
+  background: #fbfaf8;
+  font-size: 13px;
+  line-height: 1.6;
+  max-width: 82ch;
+}
+
+.gp-note b {
+  font-weight: 800;
+}
+
+.gp-note em {
+  font-style: normal;
+  color: #6e6a78;
+}
+
+/* ── Pastilles ───────────────────────────────────────────────────────────── */
+.gp-pastilles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 11px 0 0;
   padding: 0;
   list-style: none;
 }
 
-.gp-decompte {
-  border-radius: 12px;
-  padding: 8px 10px;
-  background: color-mix(in srgb, var(--border) 30%, transparent);
+.gp-pastille {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: #fbfaf8;
+  font-size: 12.5px;
+  font-weight: 600;
 }
 
-/* « Non-votant », « Sans trace de vote » et « Excusés » ne sont pas des
-   positions exprimées : la forme les distingue, jamais une teinte (#326). */
-.gp-decompte--sans-teinte {
-  background: transparent;
-  border: 1px dashed var(--border-strong);
-}
-
-.gp-decompte-valeur {
-  display: block;
-  font-size: 18px;
+.gp-pastille b {
+  font-size: 11px;
   font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.1;
-}
-
-.gp-decompte--sans-teinte .gp-decompte-valeur {
   color: var(--muted);
 }
 
-.gp-decompte-label {
-  display: block;
-  margin-top: 3px;
-  font-size: 11px;
-  line-height: 1.25;
-  color: var(--muted);
+/* ── § 2 — instances et fonctions ────────────────────────────────────────── */
+.gp-instance {
+  padding: 18px 26px;
+  border-top: 1px solid var(--border);
 }
 
-.gp-vote-position-titre {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--muted);
+.gp-instance:first-child {
+  border-top: 0;
 }
 
-.gp-vote-sous-titre {
-  margin: 12px 0 0;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.gp-quorum {
-  margin: 0 0 10px;
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.45;
-}
-
-/* La date de référence est publiée à côté des comptes qu'elle date (#653). */
-.gp-date-reference {
-  margin: 0 0 20px;
-  padding: 12px 16px;
-  border-left: 3px solid var(--dark);
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--ink);
-  background: var(--card);
-}
-
-.gp-section-note {
-  margin: -6px 0 14px;
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--muted);
-  max-width: 72ch;
-}
-
-/* `meta` : couverture du roster, preuve, fraîcheur, seuil de quorum (#329). */
-.gp-verif {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 14px;
-  margin-bottom: 32px;
-}
-
-.gp-verif-bloc {
-  border-radius: 18px;
-  background: var(--card);
-  box-shadow: 0 2px 12px rgba(20, 15, 40, 0.06);
-  padding: 18px;
-}
-
-.gp-verif-titre {
-  margin: 0 0 8px;
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.gp-verif-texte {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.55;
-}
-
-/* La preuve est publiée verbatim : elle porte ses références et sa condition
-   de reprise, et la résumer reviendrait à la réécrire (AGENTS.md §2 règle 2). */
-.gp-verif-preuve {
-  margin: 10px 0 0;
-  font-size: 12px;
-  line-height: 1.55;
-  color: var(--muted);
-}
-
-.gp-verif-chapeau {
-  margin: 0 0 10px;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.gp-verif-liste {
-  margin: 0;
-  padding-left: 18px;
-  font-size: 12px;
-  line-height: 1.55;
-  color: var(--muted);
-}
-
-.gp-verif-liste li + li {
-  margin-top: 8px;
-}
-
-/* Ce qui est interdit est écrit, pas seulement omis (#326). */
-.gp-refus {
-  display: grid;
-  gap: 14px;
-}
-
-.gp-refus-item {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0 18px;
-  align-items: start;
-}
-
-.gp-refus-sujet {
-  margin: 3px 0 0;
-  min-width: 74px;
+.gp-instance-cle {
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.05em;
@@ -368,284 +316,633 @@
   color: var(--muted);
 }
 
-.gp-refus-phrase {
-  margin: 0 0 3px;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.gp-refus-pourquoi {
-  margin: 0;
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.55;
-}
-
-@media (max-width: 560px) {
-  .gp-refus-item {
-    grid-template-columns: 1fr;
-    gap: 4px;
-  }
-}
-
-.gp-vote-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 10px;
+/* ── Lignes clé / texte / nombre ─────────────────────────────────────────── */
+.gp-ligne {
+  display: grid;
+  grid-template-columns: 190px 1fr auto;
+  gap: 18px;
+  align-items: baseline;
+  padding: 16px 26px;
   border-top: 1px solid var(--border);
 }
 
-.gp-verified-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
+.gp-ligne:first-child {
+  border-top: 0;
+}
+
+@media (max-width: 760px) {
+  .gp-ligne {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+.gp-ligne-cle {
   font-size: 11px;
-  font-weight: 700;
-  color: var(--dark);
-  background: var(--accent);
-  padding: 3px 9px;
-  border-radius: 999px;
-}
-
-.gp-vote-meta {
-  font-size: 11px;
-  color: var(--muted);
-}
-
-.gp-mandats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 12px;
-  margin-bottom: 32px;
-}
-
-.gp-mandat-card {
-  border-radius: 18px;
-  background: var(--card);
-  box-shadow: 0 2px 12px rgba(20, 15, 40, 0.06);
-  padding: 18px;
-}
-
-.gp-mandat-category {
-  display: inline-block;
-  margin-bottom: 6px;
-  font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--muted);
+  line-height: 1.4;
 }
 
-.gp-mandat-label {
-  margin: 0 0 8px;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.3;
+.gp-ligne-texte {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #6e6a78;
 }
 
-.gp-mandat-count {
-  margin: 0 0 2px;
-  font-size: 12px;
+.gp-ligne-texte b {
   color: var(--ink);
-}
-
-/* Le cumul historique est un fait de second plan : il reste lisible, il ne
-   doit pas se lire comme l'effectif de la commission (#656). */
-.gp-mandat-count-cumul {
-  margin: 0 0 12px;
-  color: var(--muted);
-}
-
-.gp-mandat-fonctions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.gp-mandat-fonction-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  border-radius: 999px;
-  padding: 3px 9px;
-  font-size: 11px;
-  font-weight: 600;
-  background: var(--border);
-  color: var(--dark);
-}
-
-.gp-mandat-fonction-count {
-  opacity: 0.6;
   font-weight: 700;
 }
 
-.gp-two-col {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 32px;
-}
-
-.gp-amend-card {
-  border-radius: 18px;
-  background: var(--card);
-  box-shadow: 0 2px 12px rgba(20, 15, 40, 0.06);
-  padding: 20px;
-}
-
-.gp-amend-caption {
-  margin: 0 0 12px;
-  font-size: 12px;
+.gp-ligne-detail {
+  display: block;
+  margin-top: 6px;
+  font-size: 12.5px;
   color: var(--muted);
 }
 
-.gp-amend-bar {
-  display: flex;
-  height: 12px;
-  border-radius: 6px;
-  overflow: hidden;
-  margin-bottom: 12px;
-}
-
-.gp-amend-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.gp-amend-legend-item {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11px;
-  color: var(--muted);
-}
-
-.gp-amend-legend-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 2px;
-  display: inline-block;
-}
-
-.gp-tags-card {
-  border-radius: 18px;
-  background: var(--card);
-  box-shadow: 0 2px 12px rgba(20, 15, 40, 0.06);
-  padding: 20px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-content: flex-start;
-}
-
-.gp-tag-pill {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-  max-width: 100%;
-  border-radius: 14px;
-  padding: 6px 12px;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.35;
-  border: 1.5px solid var(--dark);
-  color: var(--dark);
-  overflow-wrap: anywhere;
-}
-
-/* Le nombre de porteurs fait partie de l'étiquette, il ne la suit pas : une
-   étiquette portée par 1 membre sur 76 ne dit pas ce que dit une étiquette
-   portée par 60 (AGENTS.md §2 règle 7). Il reste donc dans la même pastille,
-   simplement moins appuyé. */
-.gp-tag-count {
-  flex: 0 0 auto;
-  opacity: 0.65;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
+.gp-ligne-nombre {
+  font-size: 14px;
+  font-weight: 800;
+  text-align: right;
   white-space: nowrap;
 }
 
-/* Les intitulés viennent du compte rendu officiel et sont parfois très longs
-   (« projet de loi de financement rectificative de la sécurité sociale pour
-   2023 ») : ils passent à la ligne dans la pastille plutôt que de déborder. */
-/* La note et la coupe prennent toute la largeur de la carte, qui est une
-   grille de pastilles en `flex-wrap`. */
-.gp-tags-note {
-  flex-basis: 100%;
-  margin: 0 0 4px;
+.gp-ligne-nombre span {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
 }
 
-.gp-tags-card .lec-troncature {
-  flex-basis: 100%;
-  margin-top: 4px;
+.gp-ligne-nombre--mot {
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: lowercase;
 }
 
-.gp-members-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 8px;
-}
-
-.gp-member-row {
+/* ── § 3 — répartition des sorts ─────────────────────────────────────────── */
+.gp-empilement {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  border-radius: 16px;
-  background: var(--card);
-  box-shadow: 0 1px 8px rgba(20, 15, 40, 0.05);
-  padding: 10px 14px;
+  height: 20px;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-top: 11px;
+  background: var(--border);
 }
 
-.gp-member-avatar {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
+.gp-empilement-part {
+  display: block;
+  height: 100%;
+}
+
+/*
+ * « Sort non publié » n'est pas une issue : il ne prend pas de teinte, il prend
+ * une hachure. Lui donner une couleur le rangerait parmi les quatre autres
+ * (AGENTS.md §2 règle 5).
+ */
+.gp-empilement-part--sans-teinte {
+  background: repeating-linear-gradient(
+    135deg,
+    #f0eeeb 0 4px,
+    #e0ddd8 4px 6px
+  );
+}
+
+.gp-cles {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 9px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6e6a78;
+}
+
+.gp-cle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gp-cle i {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  display: block;
+}
+
+.gp-cle-puce--sans-teinte {
+  background: repeating-linear-gradient(135deg, #f0eeeb 0 3px, #e0ddd8 3px 5px);
+}
+
+.gp-cle b {
+  font-weight: 800;
+  color: var(--ink);
+}
+
+/* ── § 4 — le quorum ─────────────────────────────────────────────────────── */
+.gp-quorum {
   background: var(--dark);
-  color: #ffffff;
-  font-weight: 700;
+  color: #f7f6f4;
+  border-radius: 18px;
+  padding: 26px 30px 22px;
+}
+
+.gp-quorum-titre {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  max-width: 34ch;
+  line-height: 1.2;
+}
+
+.gp-quorum p {
+  margin-top: 10px;
   font-size: 13px;
+  color: #9c98a6;
+  max-width: 74ch;
+  line-height: 1.6;
+}
+
+.gp-quorum p b {
+  color: #f7f6f4;
+  font-weight: 700;
+}
+
+.gp-quorum em {
+  font-style: normal;
+}
+
+.gp-jauge {
+  margin-top: 18px;
+  height: 24px;
+  border-radius: 6px;
+  overflow: hidden;
+  display: flex;
+  background: #2c2f38;
+}
+
+.gp-jauge span {
+  display: block;
+  height: 100%;
+}
+
+/* Aplat non textuel : le seul usage du jaune signal autorisé sur cette fiche. */
+.gp-jauge-ok {
+  background: var(--accent);
+}
+
+.gp-jauge-non {
+  background: repeating-linear-gradient(
+    135deg,
+    transparent 0 5px,
+    #2c2f38 5px 6px
+  );
+}
+
+.gp-jauge-legende {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 9px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #9c98a6;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.gp-jauge-legende b {
+  color: #f7f6f4;
+}
+
+/* ── § 4 — les scrutins partagés ─────────────────────────────────────────── */
+.gp-scrutin {
+  display: grid;
+  grid-template-columns: 1fr 230px;
+  gap: 20px;
+  align-items: center;
+  padding: 15px 26px;
+  border-top: 1px solid var(--border);
+}
+
+.gp-scrutin:first-child {
+  border-top: 0;
+}
+
+@media (max-width: 760px) {
+  .gp-scrutin {
+    grid-template-columns: 1fr;
+  }
+}
+
+.gp-scrutin-texte {
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.gp-scrutin-meta {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+/*
+ * La répartition des voix EXPRIMÉES, et d'elles seules : les absences n'entrent
+ * dans aucune largeur affichée. Rapporter la barre à `membres_eligibles`
+ * ferait entrer une absence dans un pourcentage, c'est-à-dire un taux de
+ * présence (AGENTS.md §2 règle 3).
+ */
+.gp-repartition {
+  display: flex;
+  height: 22px;
+  border-radius: 5px;
+  overflow: hidden;
+  background: var(--border);
+}
+
+.gp-repartition-part {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 auto;
+  height: 100%;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
 }
 
-.gp-member-name {
-  flex: 1;
-  font-size: 14px;
-}
-
-.gp-member-status {
-  border-radius: 999px;
-  padding: 3px 10px;
-  font-size: 10px;
+.gp-repartition-legende {
+  font-size: 11px;
   font-weight: 700;
+  color: var(--muted);
+  margin-top: 6px;
+  text-align: right;
+}
+
+/* ── § 4 — les grandes lois ──────────────────────────────────────────────── */
+.gp-loi {
+  padding: 20px 26px;
+  border-top: 1px solid var(--border);
+}
+
+.gp-loi:first-child {
+  border-top: 0;
+}
+
+.gp-loi-entete {
+  display: grid;
+  grid-template-columns: 1fr 130px;
+  gap: 18px;
+  align-items: baseline;
+}
+
+.gp-loi-titre {
+  font-size: 14.5px;
+  font-weight: 700;
+  line-height: 1.35;
+  max-width: 62ch;
+}
+
+.gp-loi-nombre {
+  font-size: 22px;
+  font-weight: 800;
+  text-align: right;
+  letter-spacing: -0.02em;
+}
+
+.gp-loi-nombre span {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0;
+  line-height: 1.3;
+}
+
+.gp-loi-colonnes,
+.gp-loi-lecture {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 16px;
+  align-items: center;
+}
+
+.gp-loi-colonnes {
+  margin-top: 13px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--border);
+}
+
+.gp-loi-lecture {
+  padding: 8px 0;
+}
+
+@media (max-width: 900px) {
+  .gp-loi-entete,
+  .gp-loi-colonnes,
+  .gp-loi-lecture {
+    grid-template-columns: 1fr;
+  }
+}
+
+.gp-loi-cle,
+.gp-loi-date {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.gp-matrice-entete,
+.gp-matrice {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 5px;
+  text-align: center;
+}
+
+.gp-matrice-entete b {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.gp-matrice-entete b.gp-matrice-moi {
+  color: var(--ink);
+}
+
+.gp-case {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 0;
+  border-radius: 5px;
+  font-size: 10.5px;
+  font-weight: 700;
+  background: #fbfaf8;
+  color: var(--muted);
+  overflow: hidden;
+}
+
+.gp-case .lec-position {
+  font-size: 10.5px;
+}
+
+/* Le groupe décrit garde le liseré, jamais une teinte de plus. */
+.gp-case--moi {
+  outline: 1.5px solid var(--ink);
+  outline-offset: -1.5px;
+}
+
+/*
+ * Une case vide n'est pas une position : le quorum de ce groupe n'était pas
+ * atteint sur ce scrutin. Elle est neutre et le reste — la colorer la ferait
+ * lire comme une abstention.
+ */
+.gp-case--absente {
+  background: var(--border);
+}
+
+/* ── § 4 — les convergences ──────────────────────────────────────────────── */
+.gp-accord {
+  display: grid;
+  grid-template-columns: 64px 1fr 150px;
+  gap: 18px;
+  align-items: center;
+  padding: 15px 26px;
+  border-top: 1px solid var(--border);
+}
+
+.gp-accord:first-child {
+  border-top: 0;
+}
+
+@media (max-width: 760px) {
+  .gp-accord {
+    grid-template-columns: 1fr;
+  }
+}
+
+.gp-accord-sigle {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.gp-accord-barre {
+  display: flex;
+  height: 22px;
+  border-radius: 5px;
+  overflow: hidden;
+  background: var(--border);
+}
+
+.gp-accord-part {
+  display: block;
+  height: 100%;
+}
+
+/*
+ * UNE teinte institutionnelle, déclinée en trois intensités. Trois couleurs
+ * distinctes feraient de « même sens » un bien et de « sens opposé » un mal —
+ * or deux groupes peuvent voter dans le même sens pour des raisons opposées.
+ */
+.gp-accord-part--meme_sens {
+  background: #3f5166;
+}
+
+.gp-accord-part--nuance {
+  background: #3f5166;
+  opacity: 0.42;
+}
+
+.gp-accord-part--oppose {
+  background: repeating-linear-gradient(
+    45deg,
+    #3f5166 0 3px,
+    transparent 3px 7px
+  );
+  box-shadow: inset 0 0 0 1px #3f5166;
+}
+
+.gp-accord-puce {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  display: block;
+}
+
+.gp-accord-total {
+  font-size: 14px;
+  font-weight: 800;
+  text-align: right;
+}
+
+.gp-accord-total span {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  line-height: 1.3;
+}
+
+/* ── § 5 — la comparaison, réunie par posture ────────────────────────────── */
+.gp-comparaison-entete {
+  padding: 13px 26px;
+  border-top: 1px solid var(--border-strong);
+  background: #fbfaf8;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-}
-
-.gp-member-status-actif {
-  background: var(--dark);
-  color: #ffffff;
-}
-
-.gp-member-status-ancien {
-  background: transparent;
-  border: 1px solid #c9c4be;
   color: var(--muted);
 }
 
-/* Une appartenance non renseignée n'est pas un départ (AGENTS.md §2 règle 5) :
-   le contour tireté la distingue de « Parti avant », comme `non_votant` se
-   distingue d'une position exprimée (#326). */
-.gp-member-status-inconnu {
-  background: transparent;
-  border: 1px dashed var(--border-strong);
-  color: var(--muted);
+.gp-comparaison > div:first-child .gp-comparaison-entete {
+  border-top: 0;
 }
 
-.gp-empty {
+.gp-comparaison-ligne {
+  display: grid;
+  grid-template-columns: 96px 1fr 150px;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 26px;
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 760px) {
+  .gp-comparaison-ligne {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Le liseré jaune marque la fiche lue, jamais une valeur. */
+.gp-comparaison-ligne--moi {
+  background: #fbfaf8;
+  border-left: 4px solid var(--accent);
+}
+
+.gp-comparaison-sigle {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.gp-comparaison-sigle small {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.gp-comparaison-barre {
+  position: relative;
+  height: 20px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  display: block;
+}
+
+.gp-comparaison-barre i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: #3f5166;
+  display: block;
+}
+
+.gp-comparaison-barre u {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: #007a45;
+  display: block;
+  text-decoration: none;
+}
+
+.gp-comparaison-nombres {
+  font-size: 12.5px;
+  font-weight: 700;
+  text-align: right;
+  color: #6e6a78;
+  line-height: 1.5;
+}
+
+.gp-comparaison-nombres b {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.gp-comparaison-absente {
+  padding: 14px 26px;
   font-size: 13px;
+  color: #6e6a78;
+  line-height: 1.5;
+}
+
+.gp-comparaison-absente b {
+  color: var(--ink);
+}
+
+.gp-comparaison-absente em {
+  font-style: normal;
   color: var(--muted);
+}
+
+/* ── § 1 — la table des postures ─────────────────────────────────────────── */
+.gp-postures {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.gp-postures li {
+  display: grid;
+  grid-template-columns: 118px 1fr;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.gp-postures-phrase {
+  font-size: 12.5px;
+  color: #6e6a78;
+  line-height: 1.45;
+}
+
+/* ── § 6 — couverture et avertissements ──────────────────────────────────── */
+.gp-preuve {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-left: 2px solid var(--border-strong);
+  font-size: 12.5px;
+  color: #6e6a78;
+  line-height: 1.55;
+}
+
+.gp-avertissements {
   margin: 0;
+  padding-left: 18px;
+  font-size: 12.5px;
+  color: #6e6a78;
+  line-height: 1.6;
+}
+
+/* ── Pied ────────────────────────────────────────────────────────────────── */
+.gp-pied {
+  margin-top: 46px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-strong);
+  font-size: 12.5px;
+  color: var(--muted);
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
 }
