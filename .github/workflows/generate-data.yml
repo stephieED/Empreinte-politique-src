@@ -2421,6 +2421,23 @@ jobs:
             --profiles-dir pivot_data/profiles \
             --out-dir pivot_data/partis
 
+      # Commission saisie au fond, par dossier législatif (#328) — l'acte
+      # `AN1-COM-FOND-SAISIE` des archives de dossiers déjà restaurées par le
+      # cache ci-dessus, résolu en organe par le référentiel AMO30.
+      #
+      # Ne dépend d'AUCUN profil : c'est une table du référentiel, pas un
+      # agrégat du corpus. Elle est donc construite ici plutôt qu'à l'intérieur
+      # d'une passe pivot, et sa fusion est additive — un run sans archive
+      # lisible conserve la table publiée au lieu de la vider (AGENTS.md §3a).
+      #
+      # Non bloquant : sans cette table, « L'essentiel » de la fiche candidat
+      # n'affiche simplement pas la répartition par commission. Elle n'est
+      # jamais déduite d'un intitulé de dossier — ce serait une classification
+      # construite par ce dépôt (§2 règle 1).
+      - name: Construire la table des commissions saisies au fond
+        continue-on-error: true
+        run: python3 src/build_commissions_dossiers.py
+
       # existing_profiles=overwrite → recréation complète des groupes.
       # Sinon → --merge-existing : membres absents du roster live réintégrés
       #         depuis le fichier précédent (résilience réseau).
@@ -3002,6 +3019,13 @@ jobs:
           # ici depuis #432 — constaté et corrigé en même temps que l'ajout
           # d'`amendements/`, la panne aurait été la même.
           git add raw_data/profiles pivot_data/profiles pivot_data/partis pivot_data/groupes pivot_data/gouvernements pivot_data/scrutins.json pivot_data/amendements
+          # Table des commissions saisies au fond (#328), ajoutée seulement si
+          # elle existe : `git add` sur un chemin absent échoue, et le step qui
+          # la produit est non bloquant. Un run sans archive lisible ne doit pas
+          # coûter le commit des profils, qui sont corrects.
+          if [ -f pivot_data/commissions_dossiers.json ]; then
+            git add pivot_data/commissions_dossiers.json
+          fi
           if git diff --cached --quiet; then
             echo "Aucun changement de données à committer."
             echo "pushed=false" >> "$GITHUB_OUTPUT"

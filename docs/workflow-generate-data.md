@@ -288,7 +288,9 @@ additive des profils bruts des trois familles d'artifacts
 (`src/merge_profile.py --dirs _artifacts/an _artifacts/ue _artifacts/roster`) ;
 **première** passe `--pivot-only` sur `raw_data/candidats.json`, avec
 `--enrich-parltrack` ; **seconde** passe `--pivot-only` sur le
-`roster_candidats.json` du run ; profils de parti, de groupe parlementaire réel,
+`roster_candidats.json` du run ; profils de parti ; **la table des commissions
+saisies au fond** (`build_commissions_dossiers.py`, #328 — non bloquante, elle
+dérive du référentiel et non du corpus) ; profils de groupe parlementaire réel,
 de gouvernement ; `check_quality_gate.py` ; les **quatre contrôles** de la §8 ;
 la vérification que `src/` et `raw_data/*.json` n'ont pas bougé sur la branche
 pendant le run ; le commit et le push ; **le signal disant si ce commit
@@ -299,8 +301,12 @@ de données ; le déclenchement de `deploy-pages.yml`.
 base : il checkoute le dépôt, et la fusion ne réécrit que les slugs présents
 dans les artifacts. Il lit aussi `.cache/dossiers_an` (restauré par son propre
 `actions/cache`, §5) : depuis #639, la construction de `pivot_data/amendements/`
-y joint chaque `texte_vise` à son dossier législatif. Archives absentes → aucun
-rattachement ajouté, aucun retiré, et le job le dit dans son log. **Produit** le commit de données sur `main`, poussé sous
+y joint chaque `texte_vise` à son dossier législatif, et depuis #328 la table
+`pivot_data/commissions_dossiers.json` y lit l'acte `AN1-COM-FOND-SAISIE` de
+chaque dossier. Archives absentes → aucun rattachement ajouté, aucun retiré,
+aucune commission ajoutée, et le job le dit dans son log ; le `git add` de la
+table est conditionné à son existence, pour qu'un run sans archive ne coûte pas
+le commit des profils. **Produit** le commit de données sur `main`, poussé sous
 `secrets.DATA_PUSH_SSH_KEY` — secret qui **n'existe pas** aujourd'hui, si bien
 que le push repart sous le `GITHUB_TOKEN` et qu'aucun workflow ne voit le commit
 (#685, §6). C'est le seul job à porter

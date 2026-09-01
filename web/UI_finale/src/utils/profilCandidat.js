@@ -511,9 +511,14 @@ export function nomDeDossier(dossierTitre, texteVise) {
   return null;
 }
 
-/** Combien de dossiers nommés le coup d'œil montre — les suivants ne sont pas
+/** Combien de dossiers nommés « L'essentiel » montre — les suivants ne sont pas
  * cachés, ils sont ailleurs sur la page, dans « ce qu'il a proposé ». */
 export const NB_DOSSIERS_NOMMES = 3;
+
+/** Combien de commissions la barre de répartition porte. Trois, parce qu'au-delà
+ * les segments deviennent trop courts pour que leur longueur se compare — pas
+ * parce qu'un quatrième compterait moins. Le total est publié à côté. */
+export const NB_COMMISSIONS_MONTREES = 3;
 
 /*
  * UNE SEULE PASSE sur les amendements, et jamais de forme plate rematérialisée.
@@ -526,11 +531,26 @@ export const NB_DOSSIERS_NOMMES = 3;
  *
  * `positionALaDate` rend la position déclarée du groupe à une date : c'est elle
  * qui accompagne le chiffre, jamais une moyenne de législature.
+ *
+ * `commissionDuDossier` rend la commission saisie au fond d'un dossier, lue
+ * dans `pivot_data/commissions_dossiers.json` (#328). Absente, la répartition
+ * n'est pas publiée — jamais remplacée par une déduction depuis l'intitulé.
  */
-export function agregerAmendements(amendementsJoints, positionALaDate) {
+export function agregerAmendements(
+  amendementsJoints,
+  positionALaDate,
+  commissionDuDossier = () => null,
+) {
   const parLeg = new Map();
   const parBase = new Map();
   const parDossier = new Map();
+  // La borne, comptée à part et jamais fondue dans le compte de dossiers : un
+  // dépôt que la source ne rattache à aucun dossier n'est pas un dossier de
+  // plus. Les deux compteurs vivaient sur une clé `dossier_id || texte_vise`,
+  // qui publiait « 34 dossiers législatifs » là où il y en a 25 et 9 textes
+  // visés orphelins — le défaut de clé `a or b` que décrit AGENTS.md §3a (#668).
+  const textesSansDossier = new Set();
+  let depotsSansDossier = 0;
   let totalAuteur = 0;
 
   for (const a of amendementsJoints) {
@@ -550,12 +570,18 @@ export function agregerAmendements(amendementsJoints, positionALaDate) {
       parBase.set(base, (parBase.get(base) || 0) + 1);
     }
 
-    const cle = a.dossier_id || a.texte_vise;
-    if (cle) {
-      if (!parDossier.has(cle)) {
-        parDossier.set(cle, { cle, nom: nomDeDossier(a.dossier_titre, a.texte_vise), n: 0 });
+    if (a.dossier_id) {
+      if (!parDossier.has(a.dossier_id)) {
+        parDossier.set(a.dossier_id, {
+          cle: a.dossier_id,
+          nom: nomDeDossier(a.dossier_titre, a.texte_vise),
+          n: 0,
+        });
       }
-      parDossier.get(cle).n += 1;
+      parDossier.get(a.dossier_id).n += 1;
+    } else {
+      depotsSansDossier += 1;
+      if (a.texte_vise) textesSansDossier.add(a.texte_vise);
     }
   }
 
@@ -584,13 +610,47 @@ export function agregerAmendements(amendementsJoints, positionALaDate) {
   // ne nomme pas, qui reste visible au lieu d'être absorbé dans le total.
   const classes = [...parDossier.values()].sort((a, b) => b.n - a.n || a.cle.localeCompare(b.cle));
   const nommes = classes.filter((d) => d.nom);
-  const dossiers = classes.length
+
+  // La commission SAISIE AU FOND de chaque dossier, comptée en dossiers et
+  // jamais en dépôts : un dossier très amendé ne pèse pas plus lourd qu'un
+  // autre dans la répartition, sans quoi la barre mesurerait un épisode de
+  // dépôt en masse (574 des 2 429 dépôts de Jérôme Guedj, 23,6 %, portent sur
+  // le seul PLFRSS 2023) au lieu d'une manière de travailler.
+  //
+  // Départage alphabétique à égalité — jamais l'ordre d'insertion, qui rendrait
+  // une égalité comme une avance. Laurent Wauquiez a 4 et 4 en tête : c'est la
+  // DONNÉE qui ne produit pas de tendance, et la barre le montre en n'en
+  // montrant pas.
+  const parCommission = new Map();
+  let dossiersSansCommission = 0;
+  for (const d of classes) {
+    const commission = commissionDuDossier(d.cle);
+    const sigle = commission?.sigle || commission?.nom || null;
+    if (!sigle) {
+      dossiersSansCommission += 1;
+      continue;
+    }
+    if (!parCommission.has(sigle)) parCommission.set(sigle, { sigle, nom: commission.nom ?? null, n: 0 });
+    parCommission.get(sigle).n += 1;
+  }
+  const commissions = [...parCommission.values()].sort(
+    (a, b) => b.n - a.n || a.sigle.localeCompare(b.sigle, 'fr'),
+  );
+
+  const dossiers = classes.length || depotsSansDossier
     ? {
-        rattaches: classes.reduce((s, d) => s + d.n, 0),
         distincts: classes.length,
+        depots: classes.reduce((s, d) => s + d.n, 0),
         nommes: nommes.slice(0, NB_DOSSIERS_NOMMES),
         distinctsNommes: nommes.length,
         depotsNommes: nommes.reduce((s, d) => s + d.n, 0),
+        commissions,
+        dossiersAvecCommission: commissions.reduce((s, c) => s + c.n, 0),
+        dossiersSansCommission,
+        // La borne se déclare, elle ne se comble pas (§2 règle 5). Elle est
+        // grande : 2 499 des 2 831 dépôts de Jean-Luc Mélenchon, faute d'index
+        // de la XIVe et de textes visés non résolus (issue #696).
+        sansDossier: { depots: depotsSansDossier, textesVises: textesSansDossier.size },
       }
     : null;
 
@@ -678,6 +738,49 @@ export function estProjetDeLoi(texte) {
   return PROJET_DE_LOI.test(normalizeLabel(texte?.titre));
 }
 
+/*
+ * De quelle institution un texte porté relève — la SEULE attribution de rôle du
+ * dépôt qui soit un fait sourcé texte par texte (#689).
+ *
+ * DEUX CHAMPS, PAS UN. La nature ne suffit pas : Gabriel Attal est RAPPORTEUR
+ * d'un projet de loi, ce qui est un acte parlementaire sur un texte du
+ * gouvernement. Le ranger au gouvernement sur sa seule nature serait le
+ * contresens exact que #689 a corrigé dans l'autre sens. `role` est lu d'abord,
+ * et il est lui-même dérivé de la nature par #689 — sauf `rapporteur` /
+ * `co-rapporteur`, qui existent indépendamment d'elle.
+ *
+ * TROIS ÉTATS, PAS DEUX : quand ni le rôle ni la nature ne tranchent (4 des 423
+ * textes portés des 13 candidats déclarés, tous `role: auteur` sans nature), le
+ * texte n'est attribué à AUCUNE institution. Ranger par défaut au parlement
+ * inventerait une initiative personnelle (§2 règle 5).
+ *
+ * `estProjetDeLoi` ci-dessus répond à une AUTRE question — « de quelle nature
+ * est ce texte » — et reste indifférent au rôle : les deux ne se confondent pas
+ * et ne se remplacent pas.
+ */
+const ROLE_INSTITUTION = {
+  initiateur_projet_de_loi: INSTITUTION_GOUVERNEMENT,
+  auteur_proposition_de_loi: INSTITUTION_PARLEMENT,
+  auteur_proposition_de_resolution: INSTITUTION_PARLEMENT,
+  rapporteur: INSTITUTION_PARLEMENT,
+  'co-rapporteur': INSTITUTION_PARLEMENT,
+};
+
+export function institutionDuTexte(texte) {
+  const parLeRole = ROLE_INSTITUTION[texte?.role];
+  if (parLeRole) return parLeRole;
+  const nature = texte?.nature_texte;
+  if (nature === 'projet_de_loi') return INSTITUTION_GOUVERNEMENT;
+  if (nature === 'proposition_de_loi' || nature === 'proposition_de_resolution') {
+    return INSTITUTION_PARLEMENT;
+  }
+  if (nature) return null;
+  // Repli d'intitulé, déclaré : il ne tranche que vers le gouvernement — un
+  // intitulé qui ne commence pas par « projet de loi » ne prouve pas une
+  // initiative parlementaire.
+  return PROJET_DE_LOI.test(normalizeLabel(texte?.titre)) ? INSTITUTION_GOUVERNEMENT : null;
+}
+
 export function textesPortes(textes) {
   const liste = textes || [];
   const publies = liste.filter((t) => STADES_PUBLIES.includes(t.stade_procedural));
@@ -691,12 +794,16 @@ export function textesPortes(textes) {
       .map((t) => ({
         titre: t.titre,
         role: LIBELLE_ROLE_TEXTE[t.role] || t.role || 'Rôle non publié',
+        // La CLÉ brute à côté du libellé : composer une phrase sur le libellé
+        // la casserait au premier changement de mot (`LIBELLE_ROLE_TEXTE`).
+        roleCle: t.role ?? null,
         stade: LIBELLE_STADE[t.stade_procedural] || t.stade_procedural,
         stadeCle: t.stade_procedural,
         legislature: t.legislature ?? null,
         dateMin: t.date_min ?? null,
         dateMax: t.date_max ?? null,
         projetDeLoi: estProjetDeLoi(t),
+        institution: institutionDuTexte(t),
         sourceUrl: t.source_url ?? null,
       }))
       .sort((a, b) => String(b.dateMax || '').localeCompare(String(a.dateMax || ''))),
@@ -707,6 +814,9 @@ export function textesPortes(textes) {
     })),
     promulgues: parStade.get('promulgue') || 0,
     projetsDeLoi: liste.filter(estProjetDeLoi).length,
+    // Les textes publiés que la source ne qualifie pas : ni projet, ni
+    // proposition. Comptés, jamais rangés par défaut d'un côté (§2 règle 5).
+    sansNature: publies.filter((t) => institutionDuTexte(t) === null).length,
     ecartes: {
       total: ecartes.length,
       deposes: ecartes.filter((t) => t.stade_procedural === 'depose').length,
@@ -789,14 +899,29 @@ export function regimeQualiteOrateur(interventions) {
  * donnent 723 séparément ; les conjoindre évite qu'un `fonction: "rapporteur"`
  * — 204 chez lui — compte un jour pour une qualité ministérielle.
  */
+export function depuisLeBancDuGouvernement(interventions, appartenances) {
+  const liste = interventions || [];
+  const periodes = appartenances || [];
+  const dansGouvernement = (date) =>
+    Boolean(date) && periodes.some((p) => p.debut <= date && date <= p.fin);
+  const ministerielles = liste.filter((i) => i.fonction && dansGouvernement(i.date)).length;
+  return {
+    total: liste.length,
+    ministerielles,
+    // La MAJORITÉ tranche, et rien d'autre : un profil sans qualité publiée
+    // (Jérôme Guedj, 0 des 2 702) tombe du côté parlementaire, ce qui est le
+    // constat de la source et non une déduction sur la personne. Le compte des
+    // deux est publié à côté du verdict, pour que le lecteur voie sur quoi il
+    // repose.
+    banc: ministerielles > liste.length / 2 ? INSTITUTION_GOUVERNEMENT : INSTITUTION_PARLEMENT,
+  };
+}
+
 export function directionQuestionsGouvernement(interventions, appartenances) {
   const qag = (interventions || []).filter((i) => i.type_detail === 'question_gouvernement');
   if (!qag.length) return null;
 
-  const periodes = appartenances || [];
-  const dansGouvernement = (date) =>
-    Boolean(date) && periodes.some((p) => p.debut <= date && date <= p.fin);
-  const ministerielles = qag.filter((i) => i.fonction && dansGouvernement(i.date)).length;
+  const { ministerielles, banc } = depuisLeBancDuGouvernement(qag, appartenances);
 
   const parSujet = new Map();
   for (const i of qag) {
@@ -816,7 +941,8 @@ export function directionQuestionsGouvernement(interventions, appartenances) {
     ministerielles,
     avecSujet,
     sujetsDistincts: parSujet.size,
-    sens: ministerielles > qag.length / 2 ? 'recues' : 'posees',
+    banc,
+    sens: banc === INSTITUTION_GOUVERNEMENT ? 'recues' : 'posees',
     sujets: [...parSujet.entries()]
       .map(([label, n]) => ({ label, n }))
       .sort((a, b) => b.n - a.n || a.label.localeCompare(b.label, 'fr'))
@@ -970,12 +1096,16 @@ export function ecartsAvecLeGroupe(votesJoints, fichesGroupe) {
   };
 }
 
-/* ── Livrable : le coup d'œil ────────────────────────────────────────────────
+/* ── Livrable : L'essentiel ──────────────────────────────────────────────────
  *
- * Cinq points, tirés de cinq jeux de données distincts. Aucun rapprochement
- * thématique, aucune synthèse : Empreinte politique ne classe pas les textes
- * par sujet (§2 règle 8), et chaque point est DÉRIVÉ par comptage d'un champ de
- * la source, jamais d'une table de mots-clés écrite à la main.
+ * Cinq points, tirés d'un VIVIER de sept, chacun issu d'un jeu de données
+ * distinct. Aucun rapprochement thématique, aucune synthèse : Empreinte
+ * politique ne classe pas les textes par sujet (§2 règle 8), et chaque point est
+ * DÉRIVÉ par comptage d'un champ de la source, jamais d'une table de mots-clés
+ * écrite à la main.
+ *
+ * La section s'appelait « Coup d'œil ». Le titre promettait de la rapidité, pas
+ * du contenu, et c'est le contenu qui est en jeu ici.
  *
  * ── Ce que chaque point doit porter ────────────────────────────────────────
  *
@@ -988,33 +1118,84 @@ export function ecartsAvecLeGroupe(votesJoints, fichesGroupe) {
  *    laquelle et combien elle pèse. C'est ce qui empêche d'écrire « sujets très
  *    ciblés » là où l'on décrirait notre collecte en croyant décrire son
  *    travail (§2 règle 5). Le numérateur et le dénominateur sont TOUJOURS de la
- *    même population : le point « questions » divisait le compte du premier
- *    sujet par TOUTES les questions, y compris celles dont aucun sujet n'est
- *    publié — un dénominateur faux dès que la couverture n'est pas totale.
+ *    même population.
  *
  * 3. LE MOINS DE NOTES POSSIBLE. Une note qui met en garde contre un contresens
  *    est une information et se garde (`garde`) : « questions reçues depuis le
  *    banc du gouvernement, pas des questions posées » évite de lire à l'envers
  *    les 743 questions de Gabriel Attal. Une note qui justifie notre méthode ne
- *    sert qu'à nous et se retire : « le plus petit nombre de dossiers
- *    atteignant 90 % de ses dépôts » a disparu avec la mesure qu'elle défendait.
+ *    sert qu'à nous et se retire.
  *
- * ── Le cadre parlementaire ne vaut pas pour un ministre ────────────────────
+ * 4. SON RÔLE, qui est un fait collecté. Voir ci-dessous.
  *
- * « Ce qu'on fait quand on choisit » est parlementaire par construction : un
- * ministre ne réagit pas à l'ordre du jour, il le fixe, et une question au
- * gouvernement lui est POSÉE. La trame ne se dédouble pas pour autant — les
- * points restent les mêmes, dans le même ordre, tirés des mêmes champs. Ce qui
- * s'adapte est la seule phrase d'introduction, et le déclencheur est un fait
- * collecté, pas une catégorie éditoriale : avoir été MEMBRE d'un gouvernement
- * (`appartenancesGouvernementales`, 6 des 13 candidats déclarés au SHA e40d0d3,
- * 01/09/2026 — un parlementaire en mission n'en est pas un).
+ * ── Le vivier et la garantie de rôle (option C) ────────────────────────────
+ *
+ * LE DÉFAUT QU'ELLE CORRIGE EST STRUCTUREL. Les cinq points étaient cinq
+ * CATÉGORIES FIXES — interventions, amendements, commissions, questions, textes
+ * — qui décrivent le métier d'un⋅e député⋅e. Chez un⋅e ancien⋅ne ministre elles
+ * se remplissent surtout de ce que son ministère a produit, et son travail
+ * parlementaire disparaît : les 34 « textes portés » de Gabriel Attal étaient à
+ * 31 des projets de loi du gouvernement, ses 743 « questions au gouvernement »
+ * lui étaient posées, et ses 49 amendements de député se lisaient comme un
+ * résidu à côté.
+ *
+ * LE RÔLE SE LIT SUR UN FAIT COLLECTÉ, jamais sur une catégorie éditoriale :
+ *
+ *  - `gouvernement` est tenu si la personne a été MEMBRE d'un gouvernement
+ *    (`appartenancesGouvernementales`) — 6 des 13 candidats déclarés au SHA
+ *    f635cb60, 01/09/2026 : Bruno Retailleau, Édouard Philippe, Gabriel Attal,
+ *    Laurent Wauquiez, Ségolène Royal, Xavier Bertrand. Un⋅e parlementaire EN
+ *    MISSION auprès d'un ministère n'en est pas membre : les 2 mandats « en
+ *    mission » de Jérôme Guedj sont correctement écartés ;
+ *  - `parlement` est tenu dès qu'un point du vivier en relève.
+ *
+ * ET LE RÔLE DE CHAQUE POINT AUSSI. Aucun n'est étiqueté à la main :
+ *
+ *  - `amendements` → parlement. Les 6 651 dépôts comme auteur principal des 13
+ *    candidats déclarés portent `type_deposant` `depute` (6 645) ou
+ *    `commission_rapporteur` (6), JAMAIS `gouvernement`, et aucun ne tombe dans
+ *    une période d'appartenance gouvernementale ;
+ *  - `commissions` → parlement : un siège en commission est un mandat
+ *    parlementaire, la source le range sous `mandats` ;
+ *  - `interventions` et `questions` → le banc d'où la parole est portée, par la
+ *    règle à deux conditions de `depuisLeBancDuGouvernement` (qualité publiée
+ *    par la source ET date dans une période de gouvernement) ;
+ *  - `textes` → SCINDÉ EN DEUX POINTS par `nature_texte` (#689), et c'est la
+ *    réparation principale : porter un projet de loi au nom du gouvernement
+ *    n'est pas déposer une proposition comme parlementaire, et la source
+ *    rangeait les deux sous le même `role: auteur` jusqu'à #689 ;
+ *  - `qualite` → aucun rôle : il compte les qualités d'orateur des deux bancs
+ *    confondus. Un point sans rôle ne peut pas satisfaire la garantie ; il ne
+ *    remplit qu'une place restante.
+ *
+ * LA GARANTIE. Pour chaque rôle tenu, le premier point du vivier qui en relève
+ * est retenu AVANT que les places restantes ne soient remplies dans l'ordre.
+ * L'ordre du vivier est fixe pour les treize ; la sélection est ensuite remise
+ * dans cet ordre, si bien que la garantie change QUI est retenu, jamais dans
+ * quel ordre la page se lit.
+ *
+ * ELLE NE FABRIQUE RIEN. Un rôle tenu dont le vivier ne porte aucun point ne
+ * reçoit pas de place : la section le DIT (`rolesSansPoint`) au lieu d'inventer
+ * un chiffre. C'est le cas de Ségolène Royal et de Xavier Bertrand, membres de
+ * gouvernement dont le corpus ne publie ni intervention, ni question, ni texte
+ * porté.
+ *
+ * ELLE VAUT IDENTIQUEMENT POUR UN⋅E DÉPUTÉ⋅E PUR⋅E : un seul rôle tenu, tous
+ * les points en relèvent, la garantie retient le premier — c'est-à-dire ce que
+ * l'ordre fixe aurait donné. AUCUN SECOND GABARIT : mêmes points possibles,
+ * même ordre, mêmes champs pour les treize.
+ *
+ * CE QU'ELLE NE FAIT PAS AUJOURD'HUI : elle ne déplace aucun point sur les 13
+ * profils publiés — sur chacun, l'ordre fixe suffisait déjà à représenter les
+ * rôles tenus. Elle est écrite quand même, parce que c'est la règle qui empêche
+ * le défaut de revenir quand le vivier ou le corpus bouge, et elle est
+ * verrouillée sur un cas construit (`tests/test_essentiel_328.py`).
  *
  * L'ordre est fixe pour les treize ; ne sont rendus que les points dont la
  * donnée existe, cinq au plus. Un point absent n'est pas remplacé : c'est la
  * trame qui uniformise les emplacements, pas leur remplissage.
  */
-export const NB_POINTS_COUP_OEIL = 5;
+export const NB_POINTS_ESSENTIEL = 5;
 
 /** « puis « X » (12) et « Y » (7) » — les suivants, nommés, jamais résumés. */
 function suiteNommee(items, format) {
@@ -1031,9 +1212,49 @@ function pluriel(n, singulier, pluriels) {
 }
 
 const entreGuillemets = ({ label, n }) => `« ${label} » (${formatNumber(n)})`;
-const sansGuillemets = ({ label, n }) => `${label} (${formatNumber(n)})`;
 
-export function coupOeil({
+/** Ce que le lot parlementaire contient VRAIMENT — déposer une proposition et
+ * rapporter un texte ne sont pas le même acte, et écrire « propositions » sur un
+ * lot qui contient un rapport serait faux. Le libellé se compose du contenu, il
+ * n'est pas choisi d'avance. */
+function natureDesTextesPortes(lot) {
+  const rapportes = lot.filter((t) => t.roleCle === 'rapporteur' || t.roleCle === 'co-rapporteur').length;
+  const deposes = lot.length - rapportes;
+  const morceaux = [];
+  if (deposes > 0) morceaux.push(pluriel(deposes, 'proposition déposée', 'propositions déposées'));
+  if (rapportes > 0) morceaux.push(pluriel(rapportes, 'texte rapporté', 'textes rapportés'));
+  return morceaux.join(' et ');
+}
+
+/** Comment un point se donne à voir. La forme suit le cas, jamais l'inverse :
+ * « 27 sur 60 » se compare mal en prose, cinq intitulés de texte se lisent très
+ * bien en liste. Valeur fermée — un rendu inconnu retombe sur `ratio`. */
+export const RENDU_RATIO = 'ratio';
+export const RENDU_COUPLE = 'couple';
+export const RENDU_PODIUM = 'podium';
+export const RENDUS_POINT = [RENDU_RATIO, RENDU_COUPLE, RENDU_PODIUM];
+
+/** Les libellés des deux rôles, tels que la page les écrit. « au banc du
+ * gouvernement » et non « comme ministre » : la source publie une appartenance,
+ * pas toujours un portefeuille. */
+export const LIBELLE_ROLE_POINT = {
+  [INSTITUTION_PARLEMENT]: 'comme parlementaire',
+  [INSTITUTION_GOUVERNEMENT]: 'au banc du gouvernement',
+};
+
+/** Le même rôle, nommé pour la phrase qui déclare qu'AUCUN point ne le
+ * documente. Forme nominale : « son passage au gouvernement » se lit, « au banc
+ * du gouvernement » ne s'insère pas dans cette phrase-là. */
+export const LIBELLE_ROLE_ABSENT = {
+  [INSTITUTION_PARLEMENT]: 'son travail parlementaire',
+  [INSTITUTION_GOUVERNEMENT]: 'son passage au gouvernement',
+};
+
+/*
+ * Le vivier : tous les points que la donnée permet, dans l'ordre fixe des
+ * treize. La sélection vient après, et elle seule décide lesquels sont rendus.
+ */
+function vivierDesPoints({
   interventions,
   dossiers,
   fonctions,
@@ -1048,6 +1269,10 @@ export function coupOeil({
   //    couverture est le nerf : une intervention dont le compte rendu ne donne
   //    pas le point de l'ordre du jour n'est pas classable, et l'inclure au
   //    dénominateur ferait passer un trou de collecte pour de la dispersion.
+  //
+  //    Pas de barre ici, et c'est un choix de cas : 417 points de l'ordre du
+  //    jour forment un vocabulaire OUVERT, où trois segments sur 417 ne disent
+  //    rien de la forme. C'est le nombre 417 qui la dit.
   const liste = interventions || [];
   const situees = liste.filter((i) => i.sujet);
   if (situees.length) {
@@ -1057,8 +1282,11 @@ export function coupOeil({
       .map(([label, n]) => ({ label, n }))
       .sort((a, b) => b.n - a.n || a.label.localeCompare(b.label, 'fr'));
     const muettes = liste.length - situees.length;
+    const { banc, ministerielles } = depuisLeBancDuGouvernement(liste, appartenances);
     points.push({
       cle: 'interventions',
+      role: banc,
+      rendu: RENDU_RATIO,
       valeur: classes[0].n,
       sur: situees.length,
       texte: `${pluriel(classes[0].n, 'intervention porte', 'interventions portent')} sur « ${classes[0].label} »`,
@@ -1068,53 +1296,132 @@ export function coupOeil({
         (muettes > 0
           ? `, et ${formatNumber(muettes)} ${pluriel(muettes, 'intervention dont le compte rendu n’indique', 'interventions dont le compte rendu n’indique')} aucun point`
           : ''),
-      garde: null,
+      garde:
+        banc === INSTITUTION_GOUVERNEMENT
+          ? `${ministerielles === liste.length ? `toutes ces ${formatNumber(liste.length)}` : `${formatNumber(ministerielles)} de ces ${formatNumber(liste.length)}`} interventions portent une qualité ministérielle publiée par la source, à une date d’appartenance à un gouvernement`
+          : null,
     });
   }
 
-  // 2. Les dossiers où les dépôts se sont portés — nommés. Ce que la source ne
-  //    nomme pas reste compté à part : c'est une lacune d'index, pas une
-  //    dispersion du travail (§2 règle 5).
-  if (dossiers) {
-    const nomme = dossiers.nommes[0] || null;
-    const anonymes = dossiers.distincts - dossiers.distinctsNommes;
-    const depotsAnonymes = dossiers.rattaches - dossiers.depotsNommes;
-    // Le dénominateur suit le numérateur : quand un dossier est nommé, les deux
-    // se comptent sur les dépôts DONT LE DOSSIER EST NOMMÉ. Le reste ne
-    // disparaît pas, il est chiffré à côté.
+  // 2. Le COUPLE : combien de dossiers législatifs, et combien de dépôts sur
+  //    eux. Un nombre seul appellerait un classement ; deux nombres qui varient
+  //    en sens inverse appellent une lecture. Marine Le Pen fait 83 dossiers
+  //    pour 685 dépôts (large et léger), Laurent Wauquiez 14 pour 326
+  //    (l'inverse) — aucun des deux n'est « meilleur », et c'est ce qui rend le
+  //    couple publiable (§2 règle 1).
+  //
+  //    Ce qui a été écarté, et pourquoi (mesures du 01/09/2026, 13 candidats
+  //    déclarés) : le COMPTE BRUT ne dit rien — la médiane de dépôts par dossier
+  //    va de 2,5 à 8 sur les quatre profils qui en portent plus de 50, et
+  //    l'écart entre 2 831 et 584 mesure la participation à un épisode de dépôt
+  //    en masse : 574 des 2 429 dépôts de Jérôme Guedj (23,6 %) portent sur le
+  //    seul PLFRSS 2023, 182 des 584 de Laurent Wauquiez (31,2 %) sur le seul
+  //    PLF 2026. FILTRER SUR LES ADOPTÉS
+  //    mesure le terrain, pas la personne, et le `sort` est inconnu sur 1 822
+  //    de ces 2 831 : un décompte sur un dénominateur amputé de 64 % viole
+  //    §2 règle 5, et §6 interdit tout taux d'adoption entre types de
+  //    déposants. COMPTER LES `texte_vise` DISTINCTS est faux : ce sont des
+  //    LECTURES, pas des lois — Jérôme Guedj passe de 47 lectures à 25 dossiers.
+  //
+  //    QUAND AUCUN DOSSIER N'EST RÉSOLU, le point ne disparaît pas : il dit le
+  //    nombre de dépôts et pourquoi il ne peut rien en dire de plus. Xavier
+  //    Bertrand (62 dépôts) et Édouard Philippe (6) sont dans ce cas — leurs
+  //    textes visés relèvent de la XIVe législature, dont l'archive de dossiers
+  //    n'est pas ingérée. Supprimer le point ferait disparaître 68 dépôts
+  //    collectés (§2 règle 5).
+  if (dossiers && dossiers.distincts === 0 && dossiers.sansDossier.depots > 0) {
+    const { depots: horsDossier, textesVises } = dossiers.sansDossier;
     points.push({
       cle: 'amendements',
-      valeur: nomme ? nomme.n : dossiers.rattaches,
-      sur: nomme ? dossiers.depotsNommes : dossiers.rattaches,
-      texte: nomme
-        ? `amendements déposés comme auteur principal portent sur « ${nomme.nom} »`
-        : 'amendements déposés comme auteur principal',
+      role: INSTITUTION_PARLEMENT,
+      rendu: RENDU_RATIO,
+      valeur: horsDossier,
+      sur: horsDossier,
+      texte: `${pluriel(horsDossier, 'amendement déposé comme auteur principal', 'amendements déposés comme auteur principal')}`,
+      suite: null,
+      socle: null,
+      garde: `${pluriel(horsDossier, 'il vise', 'ils visent')} ${formatNumber(textesVises)} ${pluriel(textesVises, 'texte que la source ne rattache', 'textes que la source ne rattache')} à aucun dossier législatif : ni le dossier, ni la commission qui l’a examiné ne sont publiables ici`,
+    });
+  } else if (dossiers && dossiers.distincts > 0) {
+    const nomme = dossiers.nommes[0] || null;
+    const anonymes = dossiers.distincts - dossiers.distinctsNommes;
+    const { depots: horsDossier, textesVises } = dossiers.sansDossier;
+    points.push({
+      cle: 'amendements',
+      role: INSTITUTION_PARLEMENT,
+      rendu: RENDU_COUPLE,
+      couple: [
+        {
+          n: dossiers.distincts,
+          label: pluriel(dossiers.distincts, 'dossier législatif amendé', 'dossiers législatifs amendés'),
+        },
+        {
+          n: dossiers.depots,
+          label: pluriel(dossiers.depots, 'amendement déposé sur eux', 'amendements déposés sur eux'),
+        },
+      ],
+      // « examinées par », jamais « travaille sur » : une commission n'est pas
+      // un sujet — « Lois » couvre l'immigration, la justice et les
+      // institutions. Aide à la lecture (§2 règle 8), pas position déclarée.
+      repartition: dossiers.commissions.length
+        ? {
+            titre: 'Dossiers examinés par',
+            segments: dossiers.commissions.slice(0, NB_COMMISSIONS_MONTREES),
+            // Le dénominateur de la barre est le TOTAL des dossiers, pas la
+            // somme des trois segments : ce qui reste — autres commissions,
+            // dossiers sans commission publiée — reste visible comme du vide,
+            // au lieu d'être normalisé à 100 % (DESIGN_SYSTEM §5).
+            total: dossiers.distincts,
+            reste:
+              dossiers.commissions.length > NB_COMMISSIONS_MONTREES
+                ? dossiers.commissions.length - NB_COMMISSIONS_MONTREES
+                : 0,
+            sansCommission: dossiers.dossiersSansCommission,
+          }
+        : null,
+      texte: nomme ? `le plus amendé : « ${nomme.nom} » (${formatNumber(nomme.n)})` : null,
       suite: nomme
         ? suiteNommee(
             dossiers.nommes.map((d) => ({ label: d.nom, n: d.n })),
             entreGuillemets,
           )
         : null,
-      socle: anonymes === dossiers.distincts
-        ? `${formatNumber(dossiers.distincts)} ${pluriel(dossiers.distincts, 'dossier législatif', 'dossiers législatifs')}, qu’aucune entrée d’index ne nomme`
-        : `${formatNumber(dossiers.distincts)} ${pluriel(dossiers.distincts, 'dossier législatif', 'dossiers législatifs')} en tout` +
-          (anonymes > 0
-            ? ` ; ${formatNumber(depotsAnonymes)} ${pluriel(depotsAnonymes, 'dépôt porte', 'dépôts portent')} sur ${formatNumber(anonymes)} ${pluriel(anonymes, 'dossier que la source ne nomme pas', 'dossiers que la source ne nomme pas')}`
-            : ''),
-      garde: null,
+      socle:
+        anonymes > 0
+          ? `${formatNumber(anonymes)} ${pluriel(anonymes, 'de ces dossiers n’est nommé par aucune entrée d’index', 'de ces dossiers ne sont nommés par aucune entrée d’index')}`
+          : null,
+      // LA BORNE SE DÉCLARE. Chez Jean-Luc Mélenchon la répartition reposerait
+      // sur 12 % de ses dépôts : la page l'écrit au lieu de la présenter comme
+      // complète (§2 règle 5).
+      garde:
+        horsDossier > 0
+          ? `${formatNumber(horsDossier)} ${pluriel(horsDossier, 'autre dépôt vise', 'autres dépôts visent')} ${formatNumber(textesVises)} ${pluriel(textesVises, 'texte que la source ne rattache', 'textes que la source ne rattache')} à aucun dossier : ${pluriel(horsDossier, 'il ne figure', 'ils ne figurent')} ni dans les deux nombres ci-dessus${dossiers.commissions.length ? ', ni dans les commissions' : ''}`
+          : null,
     });
   }
 
   // 3. Les commissions. Déjà nommées, rien à réparer — la suite l'est aussi.
+  //    En PODIUM : « 27 sur 60 » se compare mal en prose, trois rangs côte à
+  //    côte se comparent d'un regard. Un siège en commission est un mandat
+  //    parlementaire, quel que soit ce que la personne a fait par ailleurs.
   const commissions = (fonctions || []).find((f) => f.cle === 'commission');
   if (commissions?.items.length) {
     points.push({
       cle: 'commissions',
+      role: INSTITUTION_PARLEMENT,
+      rendu: RENDU_PODIUM,
       valeur: commissions.items[0].n,
       sur: commissions.total,
+      rangs: commissions.items.slice(0, NB_COMMISSIONS_MONTREES),
       texte: `${pluriel(commissions.items[0].n, 'mandat en commission est', 'mandats en commission sont')} à la ${commissions.items[0].label}`,
-      suite: suiteNommee(commissions.items, sansGuillemets),
-      socle: null,
+      // Pas de `suite` : le podium NOMME déjà les deux suivantes avec leur
+      // compte. La garder ferait lire deux fois la même liste, une fois en
+      // prose et une fois en colonnes.
+      suite: null,
+      socle:
+        commissions.items.length > NB_COMMISSIONS_MONTREES
+          ? `${formatNumber(commissions.items.length)} commissions en tout`
+          : null,
       garde: null,
     });
   }
@@ -1133,6 +1440,8 @@ export function coupOeil({
     if (avecSujet > 0) {
       points.push({
         cle: 'questions',
+        role: questions.banc,
+        rendu: RENDU_RATIO,
         valeur: questions.sujets[0].n,
         sur: avecSujet,
         texte: `${pluriel(questions.sujets[0].n, 'question au gouvernement porte', 'questions au gouvernement portent')} sur « ${questions.sujets[0].label} »`,
@@ -1147,6 +1456,8 @@ export function coupOeil({
     } else {
       points.push({
         cle: 'questions',
+        role: questions.banc,
+        rendu: RENDU_RATIO,
         valeur: questions.total,
         sur: questions.total,
         texte: `${pluriel(questions.total, 'question au gouvernement, qui ne porte', 'questions au gouvernement, dont aucune ne porte')} de sujet publié`,
@@ -1157,48 +1468,82 @@ export function coupOeil({
     }
   }
 
-  // 5. Les textes portés. Ce qui « ressort » d'un texte, c'est son sort : le
-  //    nommer sans dire où il s'est arrêté ne se lit pas. Seuls les textes
+  // 5 et 6. Les textes portés, SCINDÉS par l'institution qui les initie.
+  //    Rien de graphique : cinq intitulés se lisent en liste. Seuls les textes
   //    ayant atteint l'examen en commission sont publiés (§6), et ceux qui sont
   //    restés au dépôt sont comptés plutôt que tus.
   if (textes && textes.publies.length) {
-    const promulgues = textes.publies.filter((t) => t.stadeCle === 'promulgue');
-    // `publies` est déjà trié du plus récent au plus ancien : nommer les trois
-    // premiers est un ORDRE, pas un choix, et la phrase le dit. Sans elle, le
-    // lecteur croirait à une sélection éditoriale.
-    const nommables = (promulgues.length ? promulgues : textes.publies).slice(0, 3);
     const { total: ecartes, deposes, sansStade } = textes.ecartes;
-    points.push({
-      cle: 'textes',
-      valeur: promulgues.length || textes.publies.length,
-      sur: promulgues.length ? textes.publies.length : textes.total,
-      texte: promulgues.length
-        ? `${pluriel(promulgues.length, 'texte porté a été promulgué', 'textes portés ont été promulgués')}`
-        : `${pluriel(textes.publies.length, 'texte porté a atteint', 'textes portés ont atteint')} l’examen en commission`,
-      suite: `${pluriel(nommables.length, 'le plus récent', 'les plus récents')} : ${nommables.map((t) => `« ${t.titre} »`).join(', ')}`,
-      socle:
-        ecartes === 0
-          ? null
-          : sansStade === 0
-            ? `${formatNumber(ecartes)} ${pluriel(ecartes, 'autre texte en est resté', 'autres textes en sont restés')} au dépôt`
-            : `${formatNumber(ecartes)} ${pluriel(ecartes, 'autre texte', 'autres textes')} : ${formatNumber(deposes)} au dépôt, ${formatNumber(sansStade)} dont la source ne publie pas le stade`,
-      // Un projet de loi engage le gouvernement, pas la personne qui le signe
-      // comme ministre : le compter comme une initiative personnelle serait un
-      // contresens, et la source range les deux sous le même `role: auteur`.
-      garde:
-        textes.projetsDeLoi > 0
-          ? `dont ${formatNumber(textes.projetsDeLoi)} ${pluriel(textes.projetsDeLoi, 'projet de loi', 'projets de loi')} — des textes du gouvernement signés comme ministre, pas des propositions déposées comme parlementaire`
+    // Le socle des écartés est commun aux deux points : il décrit la même
+    // liste, et le répéter deux fois le ferait lire comme deux lacunes.
+    const socleEcartes =
+      ecartes === 0
+        ? null
+        : sansStade === 0
+          ? `${formatNumber(ecartes)} ${pluriel(ecartes, 'autre texte porté en est resté', 'autres textes portés en sont restés')} au dépôt`
+          : `${formatNumber(ecartes)} ${pluriel(ecartes, 'autre texte porté', 'autres textes portés')} : ${formatNumber(deposes)} au dépôt, ${formatNumber(sansStade)} dont la source ne publie pas le stade`;
+
+    let premierPointDeTexte = true;
+    for (const institution of [INSTITUTION_GOUVERNEMENT, INSTITUTION_PARLEMENT]) {
+      const lot = textes.publies.filter((t) => t.institution === institution);
+      if (!lot.length) continue;
+      const promulgues = lot.filter((t) => t.stadeCle === 'promulgue');
+      // `publies` est déjà trié du plus récent au plus ancien : nommer les trois
+      // premiers est un ORDRE, pas un choix, et la phrase le dit. Sans elle, le
+      // lecteur croirait à une sélection éditoriale.
+      const nommables = (promulgues.length ? promulgues : lot).slice(0, 3);
+      const gouvernemental = institution === INSTITUTION_GOUVERNEMENT;
+      // Le socle des écartés et le compte des textes sans nature décrivent la
+      // MÊME liste : ils vont sur le premier point de texte réellement produit,
+      // jamais sur une moitié fixe — l'accrocher au point gouvernemental le
+      // faisait disparaître de tous les profils qui n'en ont pas.
+      const porteLeSocle = premierPointDeTexte;
+      premierPointDeTexte = false;
+      points.push({
+        cle: gouvernemental ? 'textes_gouvernement' : 'textes_parlement',
+        role: institution,
+        rendu: RENDU_RATIO,
+        // Le dénominateur est l'ENSEMBLE des textes publiés de la personne :
+        // c'est ce qui dit quelle part de ses textes portés relève de ce banc.
+        valeur: lot.length,
+        sur: textes.publies.length,
+        texte:
+          (gouvernemental
+            ? `${pluriel(lot.length, 'projet de loi porté au nom du gouvernement', 'projets de loi portés au nom du gouvernement')}`
+            : natureDesTextesPortes(lot)) +
+          (promulgues.length
+            ? `, dont ${formatNumber(promulgues.length)} ${pluriel(promulgues.length, 'promulgué', 'promulgués')}`
+            : ''),
+        suite: `${pluriel(nommables.length, 'le plus récent', 'les plus récents')} : ${nommables.map((t) => `« ${t.titre} »`).join(', ')}`,
+        socle: porteLeSocle
+          ? [
+              socleEcartes,
+              textes.sansNature > 0
+                ? `${formatNumber(textes.sansNature)} ${pluriel(textes.sansNature, 'texte publié que la source ne qualifie ni de projet ni de proposition', 'textes publiés que la source ne qualifie ni de projet ni de proposition')}`
+                : null,
+            ]
+              .filter(Boolean)
+              .join(' ; ') || null
           : null,
-    });
+        // Un projet de loi engage le gouvernement, pas la personne qui le signe
+        // comme ministre. La garde disait cela sous un point qui mélangeait les
+        // deux ; la scission la rend au point qu'elle concerne.
+        garde: gouvernemental
+          ? 'des textes du gouvernement, portés comme membre de celui-ci — pas des propositions déposées comme parlementaire'
+          : null,
+      });
+    }
   }
 
-  // 6. La qualité d'orateur. Le dénominateur est le nombre d'interventions dont
+  // 7. La qualité d'orateur. Le dénominateur est le nombre d'interventions dont
   //    la source PUBLIE la qualité : 35 des 3 933 de Jean-Luc Mélenchon. Diviser
   //    par le total ferait lire 1 % là où la mesure porte sur 100 % de ce
-  //    qu'on sait.
+  //    qu'on sait. AUCUN RÔLE : il compte les deux bancs confondus.
   if (qualite?.sourcees > 0 && qualite.fonctions.length) {
     points.push({
       cle: 'qualite',
+      role: null,
+      rendu: RENDU_RATIO,
       valeur: qualite.fonctions[0].n,
       sur: qualite.sourcees,
       texte: `${pluriel(qualite.fonctions[0].n, 'intervention a été prononcée', 'interventions ont été prononcées')} comme « ${qualite.fonctions[0].label} »`,
@@ -1211,11 +1556,81 @@ export function coupOeil({
     });
   }
 
+  return points;
+}
+
+/**
+ * Retient au plus `NB_POINTS_ESSENTIEL` points, en réservant une place au
+ * premier point de chaque rôle tenu.
+ *
+ * Le résultat est remis dans l'ordre du vivier : la garantie change QUI est
+ * retenu, jamais l'ordre de lecture. `rolesTenus` est une liste, jamais un
+ * booléen — un troisième rôle s'ajouterait sans toucher à cette fonction.
+ */
+export function selectionnerPoints(vivier, rolesTenus, limite = NB_POINTS_ESSENTIEL) {
+  const retenus = new Set();
+  for (const role of rolesTenus) {
+    if (retenus.size >= limite) break;
+    const premier = vivier.findIndex((p) => p.role === role);
+    if (premier >= 0) retenus.add(premier);
+  }
+  for (let i = 0; i < vivier.length && retenus.size < limite; i += 1) retenus.add(i);
+  return [...retenus].sort((a, b) => a - b).map((i) => vivier[i]);
+}
+
+export function essentiel({
+  interventions,
+  dossiers,
+  fonctions,
+  questions,
+  qualite,
+  textes,
+  appartenances,
+}) {
+  const vivier = vivierDesPoints({
+    interventions,
+    dossiers,
+    fonctions,
+    questions,
+    qualite,
+    textes,
+    appartenances,
+  });
+
+  // Les rôles TENUS, dans l'ordre où la page les nomme. `gouvernement` est un
+  // fait collecté ; `parlement` est tenu dès qu'un point du vivier en relève —
+  // trois des treize (David Lisnard, Marine Tondelier, Nathalie Arthaud) n'ont
+  // aucun point du tout, et la section ne s'affiche pas.
+  const rolesTenus = [];
+  if (vivier.some((p) => p.role === INSTITUTION_PARLEMENT)) rolesTenus.push(INSTITUTION_PARLEMENT);
+  if ((appartenances || []).length > 0) rolesTenus.push(INSTITUTION_GOUVERNEMENT);
+
+  const points = selectionnerPoints(vivier, rolesTenus);
+
   return {
-    points: points.slice(0, NB_POINTS_COUP_OEIL),
+    points,
+    // Combien le vivier portait : sans ce nombre, cinq points sur sept se
+    // liraient comme cinq points sur cinq, c'est-à-dire comme un relevé complet.
+    vivier: vivier.length,
+    rolesTenus,
+    // Les rôles que le vivier documente RÉELLEMENT : c'est sur eux que la
+    // garantie porte, et c'est eux que la phrase d'annonce peut promettre.
+    // Promettre « au moins un par rôle » à Laurent Wauquiez, dont le corpus ne
+    // publie rien de son passage au gouvernement, contredirait la ligne
+    // suivante.
+    rolesRepresentes: rolesTenus.filter((r) => vivier.some((p) => p.role === r)),
+    // Un rôle tenu que le vivier ne documente pas. La page le DIT plutôt que de
+    // laisser croire que la personne n'y a rien fait (§2 règle 5) : Laurent
+    // Wauquiez, Ségolène Royal et Xavier Bertrand sont dans ce cas.
+    rolesSansPoint: rolesTenus.filter((r) => !vivier.some((p) => p.role === r)),
     // Le cadre initiative/réaction ne tient pas au banc du gouvernement. Un
     // seul fait le déclenche, et il est collecté.
     aSiegeAuGouvernement: (appartenances || []).length > 0,
+    // Le rôle ne s'affiche que s'il distingue : cinq fois « comme
+    // parlementaire » sur un profil qui n'a jamais été ministre est du bruit,
+    // et le champ existe pourtant sur les treize. Même conditionnel, même fait
+    // collecté que la phrase d'introduction.
+    montrerLesRoles: rolesTenus.length > 1,
   };
 }
 

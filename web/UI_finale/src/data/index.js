@@ -71,14 +71,39 @@ function loadAmendementsLegislature(legislature) {
         .then((r) => (r.ok ? r.json() : null))
         // `textes` est conservé depuis #328 : il porte, par `texte_vise`, le
         // `dossier_id` et le titre du dossier législatif. Sans lui, les dépôts
-        // se compteraient sur les textes visés — 47 là où il y a 34 dossiers
+        // se compteraient sur les textes visés — 47 là où il y a 25 dossiers
         // chez Jérôme Guedj — et aucun dossier ne pourrait être NOMMÉ au
-        // lecteur, ce qui est tout ce que le coup d'œil publie désormais.
+        // lecteur, ce qui est l'essentiel de ce que la section publie.
         .then((d) => ({ amendements: d?.amendements || {}, textes: d?.textes || {} }))
         .catch(() => ({ amendements: {}, textes: {} })),
     );
   }
   return amendementsPromises.get(legislature);
+}
+
+/**
+ * Commission saisie au fond, par dossier législatif (#328).
+ *
+ * Un seul fichier, chargé une fois : la commission est une propriété du
+ * DOSSIER, pas du texte visé — la ranger dans la table `textes` de chaque
+ * législature la recopierait une fois par texte visé et la dupliquerait entre
+ * législatures.
+ *
+ * Non bloquant, et l'absence n'est pas comblée : sans cette table, « L'essentiel »
+ * n'affiche simplement pas la répartition par commission. Elle n'est jamais
+ * déduite d'un intitulé de dossier — ce serait une classification construite
+ * ici (AGENTS.md §2 règle 1).
+ */
+let commissionsPromise = null;
+
+function loadCommissionsDossiers() {
+  if (!commissionsPromise) {
+    commissionsPromise = fetch('/data/commissions_dossiers.json')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d?.commissions || null)
+      .catch(() => null);
+  }
+  return commissionsPromise;
 }
 
 /**
@@ -163,11 +188,12 @@ export async function getCandidateProfile(id) {
   const manifest = await loadManifest();
   const entry = manifest.candidates.find((c) => c.slug === id);
   if (!entry) return null;
-  const [pivot, scrutins, fichesGroupe, gouvernements] = await Promise.all([
+  const [pivot, scrutins, fichesGroupe, gouvernements, commissions] = await Promise.all([
     fetchJson(`/data/profiles/${entry.slug}.pivot.json`),
     loadScrutins(),
     loadFichesGroupe(manifest, entry),
     loadGouvernements(manifest, entry.slug),
+    loadCommissionsDossiers(),
   ]);
   if (!pivot) return null;
   // L'index des amendements se charge APRÈS le profil : ce sont les
@@ -180,6 +206,7 @@ export async function getCandidateProfile(id) {
     amendements,
     fichesGroupe.filter(Boolean),
     gouvernements.filter(Boolean),
+    commissions,
   );
 }
 
