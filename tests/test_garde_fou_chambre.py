@@ -142,6 +142,10 @@ SITES_PYTHON: dict[tuple[str, str], str] = {
     # trois consommateurs de `groupes_reels.json` nomment un groupe pareil.
     ("groupes_config.py", "libelle_groupe"): GROUPE,
     ("check_quality_gate.py", "_report_groupes"): GROUPE,
+    # #686 : la §4b ne réclame une position politique déclarée qu'aux fiches de
+    # l'Assemblée. AMO30 ne qualifie que ses propres organes, et exiger la
+    # donnée d'une fiche sénatoriale serait en exiger une qui n'existe pas.
+    ("check_quality_gate.py", "_report_position_politique"): GROUPE,
     ("audit_groupe_dataset.py", "compute_tableau_croise_groupes"): GROUPE,
     ("audit_groupe_dataset.py", "compute_plage_dates_groupes"): GROUPE,
     ("audit_groupe_dataset.py", "_md_section_tableau_croise_groupes"): GROUPE,
