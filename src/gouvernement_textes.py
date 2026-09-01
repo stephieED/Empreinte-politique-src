@@ -199,6 +199,23 @@ _DOC_PREFIX_PARLEMENTAIRE = "PION"    # proposition de loi
 # PNRE (proposition de résolution) et les dossiers sans document de dépôt ne
 # sont pas des textes de loi : ni gouvernementaux, ni parlementaires.
 
+# Nature du texte déposé (#689) : la MÊME lecture de la même source, rendue une
+# valeur plus fine que l'origine. `_origine` en dérive (voir `_origine`), pour
+# qu'un seul endroit du dépôt lise ce que l'archive encode.
+#
+# `PNRE` y gagne une valeur propre, là où `_origine` le range avec l'inconnu.
+# Pour une fiche de gouvernement c'est sans effet (une résolution n'est pas un
+# texte du Gouvernement, donc hors périmètre dans les deux cas) ; pour un texte
+# porté par un·e parlementaire c'est un fait distinct et sourcé — une
+# proposition de résolution est une initiative personnelle, et la confondre
+# avec « nature non établie » perdrait 31 des 472 entrées publiées (relevé du
+# 01/09/2026).
+_NATURE_PAR_PREFIXE_DOCUMENT: dict[str, str] = {
+    _DOC_PREFIX_GOUVERNEMENTAL: "projet_de_loi",
+    _DOC_PREFIX_PARLEMENTAIRE: "proposition_de_loi",
+    "PNRE": "proposition_de_resolution",
+}
+
 # Signal de repli : `procedureParlementaire.code`, quand aucun document de
 # dépôt n'est résolvable. Ne couvre que les procédures législatives dont
 # l'origine est univoque — les codes 5 et 7 (« Projet **ou** proposition de loi
@@ -216,6 +233,23 @@ _PROCEDURE_CODES_PARLEMENTAIRES = frozenset({
     "2",   # Proposition de loi ordinaire
     "23",  # Proposition de loi présentée en application de l'article 11
 })
+# Même critère d'univocité, pour la nature seulement (#689) : ces deux libellés
+# ne désignent qu'une proposition de résolution. Aucune incidence sur `_origine`,
+# qui ne connaît que les textes de loi. Ne se déclenche aujourd'hui sur AUCUNE
+# des 472 entrées publiées : les 31 résolutions du corpus portent toutes leur
+# document `PNRE`, et le repli ne sert qu'aux dossiers qui n'en ont pas.
+_PROCEDURE_CODES_RESOLUTION = frozenset({
+    "8",   # Résolution
+    "22",  # Résolution Article 34-1
+})
+
+# Nature -> origine (art. 39). Une proposition de résolution n'est ni un texte
+# gouvernemental ni un texte de loi parlementaire : absente de la table, elle
+# rend `None`, exactement ce que `_origine` rendait avant #689.
+_ORIGINE_PAR_NATURE: dict[str, str] = {
+    "projet_de_loi": "gouvernemental",
+    "proposition_de_loi": "parlementaire",
+}
 
 # fam_code -> (statut, sort_49_3). Toute autre valeur produit un warning et
 # `statut = None` (voir docstring du module) : la nomenclature reste fermée.
@@ -510,11 +544,64 @@ def _initiateurs_acteur_refs(dossier: dict[str, Any]) -> Optional[list[str]]:
     return refs or None
 
 
+def nature_texte_depose(dossier: dict[str, Any]) -> Optional[str]:
+    """Nature du texte déposé, telle que la source l'encode (#689) :
+    `"projet_de_loi"` / `"proposition_de_loi"` / `"proposition_de_resolution"`,
+    ou `None` quand la source ne l'établit pas.
+
+    **Un seul signal, celui du dépôt** : le préfixe de l'uid du document associé
+    à l'acte `*-DEPOT` le plus ancien (`PRJL`/`PION`/`PNRE`). Jamais le libellé
+    du dossier. Une clé tirée d'un libellé rouille et se tait en rouillant
+    (#672) : sur la XV, où les intitulés sont descriptifs (« Bioéthique »,
+    « CETA », « Coopération avec le Luxembourg »), un discriminant « commence
+    par *Projet de loi* » manque **283 des 304** textes portés hors mandat des
+    candidats déclarés, dont la totalité de ceux d'`edouard-philippe`.
+
+    Un document présent mais d'un préfixe inconnu rend `None` **sans** repli :
+    la source a dit ce qu'elle a déposé, ce n'est simplement pas un texte que
+    cette nomenclature nomme. Le repli sur `procedureParlementaire.code` ne
+    s'applique donc qu'aux dossiers **sans** document résolvable, et seulement
+    pour les codes univoques — les codes 5 et 7 (« Projet **ou** proposition de
+    loi organique/constitutionnelle ») en sont exclus, deviner violerait
+    AGENTS.md §2.5.
+
+    Fonction publique : c'est elle que lit `candidate_profile.py` pour qualifier
+    `textes_portes[]`, sur le patron de #435 (le parseur extrait, l'appelant
+    interprète). Les deux étages lisent ainsi le même champ de la même archive.
+    """
+    document = _document_depot_initial(dossier.get("actesLegislatifs"))
+    if document:
+        for prefixe, nature in _NATURE_PAR_PREFIXE_DOCUMENT.items():
+            if document.startswith(prefixe):
+                return nature
+        return None
+
+    procedure = dossier.get("procedureParlementaire") or {}
+    code = procedure.get("code")
+    code = str(code) if code is not None else None
+    if code in _PROCEDURE_CODES_GOUVERNEMENTAUX:
+        return "projet_de_loi"
+    if code in _PROCEDURE_CODES_PARLEMENTAIRES:
+        return "proposition_de_loi"
+    if code in _PROCEDURE_CODES_RESOLUTION:
+        return "proposition_de_resolution"
+    return None
+
+
 def _origine(dossier: dict[str, Any]) -> Optional[str]:
     """Classe un dossier en `"gouvernemental"` / `"parlementaire"` / `None`
     (non déterminable, donc exclu plutôt que deviné — AGENTS.md §2.5).
 
-    Le signal primaire est le **type du document déposé** (`PRJL`/`PION`), pas
+    **Dérivée de `nature_texte_depose` depuis #689**, et non plus lectrice de
+    l'archive elle-même : l'origine d'un texte de loi EST sa nature, lue à
+    travers l'article 39 de la Constitution. Deux lectures du même champ
+    auraient fini par diverger ; une seule ne le peut pas. Le verdict est
+    inchangé sur les trois archives — vérifié dossier à dossier avant/après sur
+    les 10 674 dossiers des XV/XVI/XVII (01/09/2026) —, une proposition de
+    résolution restant absente d'`_ORIGINE_PAR_NATURE`, donc `None` comme
+    avant.
+
+    Le signal primaire reste le **type du document déposé** (`PRJL`/`PION`), pas
     le préfixe du titre. Le titre ne porte l'origine que sur les XVI/XVII : sur
     la XV les titres sont descriptifs (« Taxe sur les services numériques »,
     « Démocratie plus représentative, responsable, efficace »), et le filtre par
@@ -527,22 +614,7 @@ def _origine(dossier: dict[str, Any]) -> Optional[str]:
     est bien un `PRJL`. Le type du document réellement déposé fait donc foi, et
     la procédure ne sert que de repli quand aucun document n'est résolvable.
     """
-    document = _document_depot_initial(dossier.get("actesLegislatifs"))
-    if document:
-        if document.startswith(_DOC_PREFIX_GOUVERNEMENTAL):
-            return "gouvernemental"
-        if document.startswith(_DOC_PREFIX_PARLEMENTAIRE):
-            return "parlementaire"
-        return None  # PNRE (résolution) et autres : pas un texte de loi
-
-    procedure = dossier.get("procedureParlementaire") or {}
-    code = procedure.get("code")
-    code = str(code) if code is not None else None
-    if code in _PROCEDURE_CODES_GOUVERNEMENTAUX:
-        return "gouvernemental"
-    if code in _PROCEDURE_CODES_PARLEMENTAIRES:
-        return "parlementaire"
-    return None
+    return _ORIGINE_PAR_NATURE.get(nature_texte_depose(dossier))
 
 
 def _iter_actes(node: Any):

@@ -11,6 +11,9 @@ Produit cinq sections de rapport :
   3. Profils avec un faible nombre d'interventions.
   4. Groupes parlementaires : hard fail sur structure cassée, soft fail sur
      qualité dégradée (couverture, signaux réseau).
+  5c. Textes portés : compteur de qualification (#689) — combien d'entrées
+     publiées distinguent un projet de loi porté au nom du Gouvernement d'une
+     proposition de loi personnelle, et combien restent à requalifier. Soft.
   5. Gouvernements : hard fail sur structure cassée, soft fail sur qualité
      dégradée (couverture ministérielle, textes vides sur une période
      couverte par la source, signaux réseau) — miroir de la section 4, sur
@@ -60,7 +63,11 @@ except ImportError:
 # `chambres` en direct. Deux filtres de population en dépendent — la §3c et la
 # couverture Syceron —, et le corpus publié ne porte pas encore `chambres`.
 # stdlib pure, aucune I/O, comme `couverture_dossiers` juste dessous.
-from schema_pivot import libelle_chambres, lire_chambres  # noqa: E402
+from schema_pivot import (  # noqa: E402
+    ROLES_INITIATEUR_TEXTE,
+    libelle_chambres,
+    lire_chambres,
+)
 
 # Suspension d'extraction d'un groupe (#516) : stdlib pure, aucune I/O. Le
 # gate est le seul des trois consommateurs de `groupes_reels.json` à VOIR le
@@ -2183,6 +2190,149 @@ def _report_correspondance_acteurs(
 
 
 # ---------------------------------------------------------------------------
+# Section 5c — Qualification des textes portés (#689)
+# ---------------------------------------------------------------------------
+
+#: Clés retenues à la lecture d'un pivot pour la §5c. Même patron que
+#: `population_profils._crochet_provenance` (#628) : 623 Mo de profils sur
+#: disque font ~2,6 Gio d'objets Python, et cette section n'ouvre que deux
+#: blocs. Le décodeur construit bien les listes, mais des listes de `None`.
+_CLES_QUALIFICATION_TEXTES = frozenset({
+    "meta", "provenance", "textes_portes", "role", "nature_texte",
+})
+
+
+def _crochet_qualification_textes(pairs: list) -> dict | None:
+    garde = {cle: valeur for cle, valeur in pairs if cle in _CLES_QUALIFICATION_TEXTES}
+    return garde or None
+
+
+def _report_qualification_textes_portes(
+    profiles_dir: Path,
+) -> tuple[list[str], str, str]:
+    """Compte, sur la donnée PUBLIÉE, ce que #689 a qualifié et ce qui reste.
+
+    Retourne `(soft_warnings, console_text, markdown_text)`. **Soft**, comme la
+    §3c : la correction n'atteint un profil qu'au run réel qui le recollecte, et
+    bloquer le commit interdirait précisément les runs censés la propager (même
+    raisonnement qu'en #447, cause #450).
+
+    Ce que cette section mesure, et pourquoi elle existe : `textes_portes[]`
+    publiait sous un unique `role: "auteur"` la proposition de loi qu'un·e
+    parlementaire dépose ET le projet de loi qu'un membre du Gouvernement porte
+    au nom de l'exécutif — 316 des 472 entrées publiées, dont 282 des 283
+    d'`edouard-philippe`, toutes déposées pendant qu'il était Premier ministre.
+    Un correctif qui ne se vérifie que dans les tests ne dit rien de ce que le
+    site montre : ce compteur-ci lit le corpus.
+
+    Le compteur d'attente (`auteur` sans `nature_texte`) est le mètre de
+    migration, sur le patron du warning « chambres non corroborée » de #493 : il
+    part du corpus entier et décroît à chaque run, et sa condition de retrait
+    est écrite — la §5c se retire quand il atteint 0 **et** que le corpus ne
+    porte plus d'entrée d'initiateur sans nature autre que les 5 dossiers dont
+    la source n'établit pas la nature.
+
+    **Aucun ratio n'est calculé** (AGENTS.md §2.1) : des effectifs, avec leur
+    population nommée (#630).
+    """
+    par_role: dict[str, int] = defaultdict(int)
+    attente_par_profil: list[tuple[str, int, int]] = []
+    provenances_qualifiees: list[str] = []
+    total_entrees = 0
+    n_attente = 0
+
+    if profiles_dir.exists():
+        for path in sorted(profiles_dir.glob("*.pivot.json")):
+            if path.name.startswith("."):
+                continue  # #518 : `Path.glob` rend les dotfiles
+            try:
+                with open(path, encoding="utf-8") as f:
+                    data = json.load(f, object_pairs_hook=_crochet_qualification_textes)
+            except (json.JSONDecodeError, OSError):
+                continue
+            if not isinstance(data, dict):
+                continue
+            textes = data.get("textes_portes") or []
+            if not isinstance(textes, list) or not textes:
+                continue
+            provenance = provenance_du_profil(data)
+            attente = 0
+            qualifie = 0
+            for t in textes:
+                if not isinstance(t, dict):
+                    continue
+                total_entrees += 1
+                role = t.get("role")
+                par_role[role if isinstance(role, str) else "—"] += 1
+                if role in ROLES_INITIATEUR_TEXTE:
+                    if t.get("nature_texte"):
+                        qualifie += 1
+                    else:
+                        attente += 1
+            n_attente += attente
+            if qualifie:
+                provenances_qualifiees.append(provenance)
+            if attente:
+                attente_par_profil.append((_slug_from_stem(path.stem), attente, len(textes)))
+
+    soft: list[str] = []
+    if n_attente:
+        soft.append(
+            f"{n_attente} texte(s) porté(s) d'initiateur sans `nature_texte` sur "
+            f"{total_entrees} entrée(s) publiée(s) — un projet de loi porté au nom "
+            "du Gouvernement y reste indistinguable d'une proposition de loi "
+            "personnelle (#689). Se résorbe au prochain run réel qui recollecte "
+            "les dossiers législatifs."
+        )
+
+    ventilation_qualifiee = ventiler_provenances(provenances_qualifiees)
+    n_projets = par_role.get("initiateur_projet_de_loi", 0)
+    icone = "✓" if n_attente == 0 else "⚠"
+    lignes = [
+        "",
+        "┌─ 5c/6  Qualification des textes portés (#689) ─────────────────────",
+        f"│  Entrées publiées : {total_entrees}",
+        f"│  Projets de loi portés au nom du Gouvernement : {n_projets}",
+        f"│  {icone} Initiateurs sans nature établie : {n_attente}",
+        "│",
+    ]
+    for role, n in sorted(par_role.items(), key=lambda kv: (-kv[1], kv[0])):
+        lignes.append(f"│    · {role} : {n}")
+    if attente_par_profil:
+        lignes.append("│")
+        lignes.append(
+            f"│  Profils en attente de requalification : {len(attente_par_profil)}"
+        )
+        for slug, attente, total in sorted(attente_par_profil, key=lambda r: -r[1])[:10]:
+            lignes.append(f"│    · {slug} : {attente}/{total}")
+        if len(attente_par_profil) > 10:
+            lignes.append(f"│    · … et {len(attente_par_profil) - 10} autre(s)")
+    lignes.append("└" + "─" * 68)
+
+    md_lines = [
+        "### 5c · Qualification des textes portés (#689)",
+        "",
+        "| Indicateur | Valeur |",
+        "| --- | --- |",
+        f"| Entrées `textes_portes[]` publiées | {total_entrees} |",
+        f"| Projets de loi portés au nom du Gouvernement | {n_projets} |",
+        f"| Initiateurs sans `nature_texte` (en attente) | {n_attente} |",
+        f"| Profils portant au moins une entrée qualifiée | {ventilation_qualifiee.cellule_markdown()} |",
+        "",
+    ]
+    if n_attente:
+        md_lines.append(
+            "> ⚠️ Signal **non bloquant** : la qualification n'atteint un profil "
+            "qu'au run réel qui recollecte ses dossiers législatifs "
+            "(`docs/decisions/qualification-textes-portes-689.md`).\n"
+        )
+    else:
+        md_lines.append("_Tout texte porté d'initiateur porte la nature du texte déposé._\n")
+
+    return soft, "\n".join(lignes), "\n".join(md_lines)
+
+
+# ---------------------------------------------------------------------------
 # Section 6 — Couverture ParlTrack (optionnelle)
 # ---------------------------------------------------------------------------
 
@@ -2512,6 +2662,14 @@ def main() -> int:
     )
     corr_exit = 1 if corr_hard else 0
 
+    # ── Section 5c : Qualification des textes portés (#689) ────────────────
+    # Soft, comme la §3c : la qualification n'atteint un profil qu'au run réel
+    # qui recollecte ses dossiers législatifs, et bloquer le commit interdirait
+    # les runs censés la propager (#447, cause #450).
+    txt_soft, txt_console, txt_md = _report_qualification_textes_portes(
+        args.profiles_dir
+    )
+
     # ── Section 6 : Couverture ParlTrack (optionnelle) ─────────────────────
     pt_console = ""
     pt_md = ""
@@ -2583,6 +2741,7 @@ def main() -> int:
     print(pos_console)
     print(gouv_console)
     print(corr_console)
+    print(txt_console)
     if pt_console:
         print(pt_console)
     if blob_console:
@@ -2617,6 +2776,7 @@ def main() -> int:
         pos_md,
         gouv_md,
         corr_md,
+        txt_md,
         pt_md,
         blob_md,
     ])
@@ -2649,6 +2809,8 @@ def main() -> int:
         _gha_annotation("warning", f"Gouvernement — qualité dégradée : {warn}")
     for warn in syc_soft:
         _gha_annotation("warning", f"Syceron — couverture faible : {warn}")
+    for warn in txt_soft:
+        _gha_annotation("warning", f"Textes portés — qualification incomplète : {warn}")
     for warn in amd_soft:
         if warn == amd_regression:
             _gha_annotation(

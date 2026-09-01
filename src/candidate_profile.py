@@ -72,6 +72,7 @@ from gouvernement_textes import (
     DOSSIERS_CACHE_DIR,
     ensure_dossiers_zips_downloaded,
     iter_dossiers_bruts,
+    nature_texte_depose,
 )
 from profil_brut import ecrire_profil_brut
 from licences import LICENCE_AN
@@ -3238,7 +3239,12 @@ def _build_acteur_textes_portes_index() -> dict[str, list[dict[str, Any]]]:
     toujours null, voir docs/sources/an-opendata.md), cet index est réellement propre à
     chaque acteur. Non-fatal en cas d'échec (retourne {})."""
     with _DOSSIERS_TEXTES_PORTES_LOCK:
-        index_path = DOSSIERS_CACHE_DIR / "index_acteur_textes_v2.json"  # cf. #400
+        # `_v3` depuis #689 : un index construit avant lui ne porte pas
+        # `nature_texte`, et l'existence d'un cache n'est pas la preuve de sa
+        # conformité (même règle que pour les caches d'amendements et de
+        # scrutins). Le relire ferait republier « auteur » sur les 316 projets
+        # de loi du corpus, sans qu'aucune étape n'échoue.
+        index_path = DOSSIERS_CACHE_DIR / "index_acteur_textes_v3.json"  # cf. #400, #689
         if index_path.is_file():
             try:
                 with open(index_path, encoding="utf-8") as f:
@@ -3263,6 +3269,15 @@ def _build_acteur_textes_portes_index() -> dict[str, list[dict[str, Any]]]:
             acteur_roles, stade, date_min, date_max = _collect_acteur_roles(dossier)
             if not acteur_roles:
                 continue
+            # #689 : la nature du texte déposé, lue dans la MÊME archive et par
+            # la MÊME fonction que les fiches de gouvernement (#435). Sans elle,
+            # un projet de loi porté au nom de l'exécutif et une proposition de
+            # loi déposée comme parlementaire sortaient d'ici sous le seul
+            # `role: "auteur"` — 316 des 472 entrées publiées, dont les 282
+            # d'`edouard-philippe`, tous déposés alors qu'il était Premier
+            # ministre. L'information n'était pas perdue à la source : elle
+            # était jetée ici.
+            nature = nature_texte_depose(dossier)
             legislature = dossier.get("legislature")
             source_url = (
                 f"https://www.assemblee-nationale.fr/dyn/{legislature}/dossiers/{titre_chemin}"
@@ -3273,6 +3288,7 @@ def _build_acteur_textes_portes_index() -> dict[str, list[dict[str, Any]]]:
                     "id": dossier.get("uid"),
                     "titre": titre,
                     "role": role,
+                    "nature_texte": nature,
                     "type_rapport": type_rapport,
                     "stade_procedural": stade,
                     "date_min": date_min,

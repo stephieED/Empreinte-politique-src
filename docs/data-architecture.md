@@ -193,7 +193,7 @@ reprend :
 | `identite` | nom, civilité, groupe politique, profession, circonscription… Depuis #659 le bloc porte `civilite` (`etatCivil.ident.civ` d'AMO30, 3 117/3 117 fiches) et les deux niveaux de la nomenclature PCS de l'INSEE — `famille_socioprofessionnelle`/`categorie_socioprofessionnelle`, depuis `profession.socProcINSEE` (2 177/3 117) —, recopiés verbatim et `null` quand la source ne classe pas, ce qui n'est **pas** la famille « Sans profession déclarée » |
 | `mandats` | **tous** les mandats électifs (#640 : une entrée par siège, regroupée sur `(legislature, dateDebut)` d'AMO30 — plus le seul mandat courant) **et** les responsabilités réelles, avec rôle, dates et drapeau `actif` |
 | `votes` | positions de vote et leur source (`votes_source`, qui liste **toutes** les législatures couvertes). Chaque vote porte sa `legislature` et son `url_source` — la page du scrutin AN — puisqu'un profil couvre désormais plusieurs législatures |
-| `dossiers_legislatifs` | les dossiers législatifs de la chambre. Renommé `textes_portes` dans le pivot ; son `id` (`DLR5L15N37607`, 472 / 472) y devient `dossier_id` depuis #639 — même nom que `gouvernements/*.json` → `textes[].dossier_id` |
+| `dossiers_legislatifs` | les dossiers législatifs de la chambre. Renommé `textes_portes` dans le pivot ; son `id` (`DLR5L15N37607`, 472 / 472) y devient `dossier_id` depuis #639 — même nom que `gouvernements/*.json` → `textes[].dossier_id`. Chaque entrée porte depuis #689 sa `nature_texte` (`projet_de_loi` / `proposition_de_loi` / `proposition_de_resolution` / `null`), lue par `gouvernement_textes.nature_texte_depose` dans la même archive que les fiches de gouvernement — le préfixe de l'uid du document déposé, jamais le libellé |
 | `interventions` | prises de parole : date, sujet, texte, rôle du moment, format estimé sur la longueur. Source depuis #510 : les comptes rendus Syceron de l'AN **uniquement**, plus les questions officielles QE/QG/QOSD — le repli par recherche NosDéputés a été retiré, donc une collecte vide **reste vide** et se déclare dans `meta.warnings[]`. Une entrée portant `collecte: "theme_seul"` (#657) a été collectée **sans son verbatim** : ses champs lourds sont absents, jamais publiés à `null`, et `meta.collecte_reduite` porte la déclaration du run |
 | `amendements_partitionnes` | le manifeste des tranches, à la place exacte qu'occupait `amendements` (#580) |
 | `mandat_europeen` | présent seulement si le candidat a des enregistrements au Parlement européen |
@@ -362,6 +362,7 @@ chaque run). Un index qui ne la porterait pas serait refusé, jamais relu —
 |---|---|
 | `votes`, `mandats`, `interventions` | additif, l'ancienne entrée gagne (`merge_lists_by_key`) |
 | `amendements`, `textes_portes` | la nouvelle entrée gagne (`merge_dossier_records`) — permet de corriger un stade ou une issue |
+| `dossiers_legislatifs` (brut) | additif, l'ancienne entrée gagne — mais `nature_texte` est **reportée** sur elle par `backfill_dossier_nature` (#689), sans quoi un champ ajouté à la collecte n'atteindrait jamais les entrées déjà collectées |
 | scalaires | nouvelle valeur si renseignée, sinon on garde l'ancienne — jamais de régression vers `null` |
 
 Clé de fusion d'un amendement : son `amendement_id`, ou — pour une entrée non
@@ -433,7 +434,10 @@ ressemble un fichier :
   "identite": { },
   "mandats": [ ],
   "votes": [ ],
-  "textes_portes": [ {"titre": "...", "dossier_id": "DLR5L15N37607", "role": "auteur", "...": null} ],
+  "textes_portes": [ {"titre": "...", "dossier_id": "DLR5L15N37607",
+                     "role": "initiateur_projet_de_loi",   // dérivé de (rôle brut × nature), #689
+                     "nature_texte": "projet_de_loi",      // le fait sourcé (PRJL/PION/PNRE)
+                     "...": null} ],
   "amendements": [ ],
   "interventions": [ ],
   "tags_thematiques": ["budget", "fiscalite"],
