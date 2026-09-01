@@ -203,6 +203,70 @@ def backfill_vote_qualification(
     return result
 
 
+#: Qualification sourcée d'un dossier législatif porté (#689) : la nature du
+#: texte réellement déposé, lue par `gouvernement_textes.nature_texte_depose`.
+#: Un seul champ, nommé — reporter tout ce qui manque ferait de la fusion
+#: additive une fusion champ par champ, ce qu'elle n'est pas.
+CHAMPS_QUALIFICATION_DOSSIER: tuple[str, ...] = ("nature_texte",)
+
+
+def backfill_dossier_nature(
+    merged: list[dict[str, Any]],
+    new_list: Optional[list[dict[str, Any]]],
+    key_fn: Callable[[dict[str, Any]], Key],
+) -> list[dict[str, Any]]:
+    """Reporte la nature d'un dossier neuf sur l'entrée ancienne de même clé (#689).
+
+    **Le maillon où la qualification se perdrait, pour la troisième fois.**
+    `merge_raw_profile` fusionne `dossiers_legislatifs[]` en additif pur : les
+    423 textes portés déjà collectés des 13 candidats déclarés portent la même
+    clé `_dossier_key` que ceux d'une nouvelle collecte, donc les anciens
+    gagnent — tous sans `nature_texte`. Le profil brut n'acquérant jamais le
+    champ, `normalize_profil` ne pourrait que republier `role: "auteur"` sur les
+    316 projets de loi du corpus, sans qu'aucune étape n'échoue. C'est le trou
+    de #639 (`backfill_vote_qualification`) et celui de #492
+    (`backfill_mandat_chambre`), au même endroit et pour la même raison : un
+    filtre posé avant la fusion additive ne filtre rien.
+
+    Strictement croissant en information — ne remplit qu'un champ absent, vide
+    ou nul, n'écrase rien, ne touche aucun autre champ, ne réordonne rien, ne
+    crée aucune entrée. **La clé de fusion ne change pas** : `_dossier_key`
+    reste ce qu'elle était, et c'est ce qui distingue ce report du défaut de
+    #668, où la clé elle-même avait changé de branche.
+
+    Ce que ce report ne peut pas faire : requalifier un dossier qu'une nouvelle
+    collecte ne rend pas. Un texte porté dont l'AN ne sert plus le dossier garde
+    `nature_texte: null` et son `role: "auteur"` — un trou déclaré, pas un trou
+    comblé (AGENTS.md §2 règle 5).
+    """
+    if not new_list:
+        return merged
+
+    qualifications_neuves: dict[Key, dict[str, Any]] = {}
+    for d in new_list:
+        if not isinstance(d, dict):
+            continue
+        renseignes = {c: d[c] for c in CHAMPS_QUALIFICATION_DOSSIER if d.get(c)}
+        if renseignes:
+            deja = qualifications_neuves.setdefault(key_fn(d), {})
+            for champ, valeur in renseignes.items():
+                deja.setdefault(champ, valeur)
+
+    if not qualifications_neuves:
+        return merged
+
+    result: list[dict[str, Any]] = []
+    for d in merged:
+        if isinstance(d, dict):
+            neuves = qualifications_neuves.get(key_fn(d))
+            if neuves:
+                manquants = {c: n for c, n in neuves.items() if not d.get(c)}
+                if manquants:
+                    d = {**d, **manquants}
+        result.append(d)
+    return result
+
+
 def backfill_mandat_chambre(
     merged: list[dict[str, Any]],
     new_list: Optional[list[dict[str, Any]]],
@@ -1111,9 +1175,17 @@ def merge_raw_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dic
         key=lambda v: v.get("date") or "",
         reverse=True,
     )
+    # #689 : la nature du texte déposé est reportée sur les dossiers déjà
+    # collectés. Sans elle, l'entrée ancienne gagne et le profil brut n'acquiert
+    # jamais `nature_texte` — donc `normalize_profil` republie indéfiniment
+    # `role: "auteur"` sur un projet de loi porté au nom du Gouvernement.
     merged["dossiers_legislatifs"] = sorted(
         (
-            d for d in merge_lists_by_key(old.get("dossiers_legislatifs"), new.get("dossiers_legislatifs"), _dossier_key)
+            d for d in backfill_dossier_nature(
+                merge_lists_by_key(old.get("dossiers_legislatifs"), new.get("dossiers_legislatifs"), _dossier_key),
+                new.get("dossiers_legislatifs"),
+                _dossier_key,
+            )
             if d.get("role")  # écarte la liste globale héritée de NosDéputés (mêmes dossiers
                               # pour tout le monde sur une législature, role toujours absent/null
                               # — voir candidate_profile.fetch_textes_portes_officiels)
