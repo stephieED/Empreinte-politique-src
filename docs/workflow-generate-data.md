@@ -144,8 +144,16 @@ liste roster-driven, filtrée par sigle) *et* `raw_data/rosters_bruts.json` (la
 **même** collecte, avant filtrage), publiés dans **un seul** artifact
 `roster-candidats` ; puis calcule la liste des 8 shards roster.
 
-**Consomme** `raw_data/groupes_reels.json`. **Produit** l'artifact
-`roster-candidats` et les sorties `shards` / `shard_total`. Le filtrage se fait
+**Consomme** `raw_data/groupes_reels.json` — **12 entrées** depuis #700, dont 10
+actives : un fetch de roster par couple `(roster_chambre, législature)`
+distinct, donc **deux** côté AN (`("deputes", "16")` et `("deputes", "17")`),
+lus dans la **même** archive AMO30 déjà en cache — pas de téléchargement
+supplémentaire. **Produit** l'artifact `roster-candidats` et les sorties
+`shards` / `shard_total`. Un membre de roster **sans slug** n'entre pas dans
+`roster_candidats.json` : il est compté et nommé par l'annotation
+`ROSTER_SANS_SLUG`, jamais doté d'un slug inventé (#525/#527) — les 5 groupes de
+la XVIIe en comptent 156 sur 461, et c'est pourquoi les ajouter ne produit
+**aucun profil neuf**. Le filtrage se fait
 **sur le code de sortie, dans le shell** : seul le code 2 (« extraction de tous
 les groupes suspendue ») est toléré, le code 1 (collecte incomplète) ne l'est
 pas — un `continue-on-error: true` avalerait les deux.

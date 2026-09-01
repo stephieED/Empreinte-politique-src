@@ -84,6 +84,7 @@ from groupes_config import (
     partitionner_groupes,
     position_politique_publiee,
     resume_suspension,
+    succession_publiee,
 )
 from amendements_index import (
     DEFAULT_AMENDEMENTS_DIR,
@@ -291,8 +292,17 @@ def generate_all(
         out_path = out_dir / groupe["fichier"]
         try:
             position_politique = None
+            succede_a = None
             if groupe.get("chambre") == "AN":
                 position_politique = position_politique_publiee(
+                    groupe["groupe_sigle"], groupe.get("legislature"), chemin_config
+                )
+                # La succession sort de la même table et lève de la même façon
+                # (#700) : `None` veut dire « pas de prédécesseur dans le
+                # périmètre » — les 5 fiches de la XVIe —, jamais « je n'ai pas
+                # su ». Une cible qui ne résout pas a déjà fait lever
+                # `charger_correspondance_sigles`.
+                succede_a = succession_publiee(
                     groupe["groupe_sigle"], groupe.get("legislature"), chemin_config
                 )
             generate_groupe_profile_from_roster(
@@ -310,6 +320,7 @@ def generate_all(
                 scrutins_index=scrutins_index,
                 amendements_index=amendements_index,
                 position_politique=position_politique,
+                succede_a=succede_a,
             )
         except CorrespondanceSiglesInvalide as exc:
             # Nommée à part de l'échec générique : ce n'est ni le réseau ni un

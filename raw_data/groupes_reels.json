@@ -1,9 +1,9 @@
 {
   "_meta": {
-    "description": "Liste validée manuellement (voir README §6) des groupes parlementaires réels à générer via generate_group_profiles.py / group_profile.py --from-roster. Couvre les candidats actuellement identifiés dans raw_data/candidats.json ayant un mandat parlementaire réel (AN/Sénat).",
+    "description": "Liste validée manuellement (voir README §6) des groupes parlementaires réels à générer via generate_group_profiles.py / group_profile.py --from-roster. Couvre les candidats actuellement identifiés dans raw_data/candidats.json ayant un mandat parlementaire réel (AN/Sénat). Une fiche par groupe ET par législature : le nom de fichier le porte depuis l'origine (`groupe-AN-REN-16.json`), et les 5 groupes de la 17e y sont depuis #700.",
     "suspension": "Une entrée portant `extraction_suspendue` n'est ni interrogée en réseau (generate_roster_candidats.py) ni régénérée (generate_group_profiles.py) : son fichier de groupe déjà publié reste en place, gelé à sa dernière génération réussie, et le quality gate le contrôle toujours structurellement mais ne mesure plus sa couverture. Le bloc exige `depuis`, `motif`, `references` et `condition_reprise` — voir docs/decisions/extraction-groupe-suspendue-516.md.",
     "avertissement": "Les données sources (NosDéputés.fr, NosSénateurs.fr) reflètent la dernière composition connue avant la dissolution du 9 juin 2024 (16e législature) ou avant l'arrêt du site — voir l'avertissement meta.warnings de chaque profil de groupe généré.",
-    "correspondance_sigles": "La clé `correspondance_sigles_an` est la table sigle publié → sigle(s) AN (#526), lue par src/an_roster.py. Elle EST consommée par le pipeline, à deux titres : le roster de groupe la lit depuis que `an_roster.AN_ROSTER_ACTIF` est levé (#527), et `groupes_config.position_politique_publiee` en tire la position déclarée que chaque fiche de groupe publie (#686). Corrigé le 01/09/2026 : cette note affirmait encore le contraire — « pas consommée tant que le drapeau est baissé » — alors que le drapeau vaut True. Une note qui décrit un état révolu se lit comme un fait et dispense de vérifier. Les entrées de la 17e législature n'ont toujours pas de fiche publiée — c'est un périmètre décidé, pas un écart (voir docs/decisions/roster-an-derive-amo30-526.md)."
+    "correspondance_sigles": "La clé `correspondance_sigles_an` est la table sigle publié → sigle(s) AN (#526), lue par src/an_roster.py. Elle EST consommée par le pipeline, à deux titres : le roster de groupe la lit depuis que `an_roster.AN_ROSTER_ACTIF` est levé (#527), et `groupes_config.position_politique_publiee` en tire la position déclarée que chaque fiche de groupe publie (#686). Corrigé le 01/09/2026 : cette note affirmait encore le contraire — « pas consommée tant que le drapeau est baissé » — alors que le drapeau vaut True. Une note qui décrit un état révolu se lit comme un fait et dispense de vérifier. Depuis #700 les 5 groupes de la 17e législature sont aussi dans `groupes[]` : leurs fiches paraissent au prochain run, et jusque-là `effectif_publie` reste null. `succede_a` est lu par `groupes_config.succession_publiee` et publié sur la fiche : c'est une RELECTURE HUMAINE datée, pas un champ de l'AN — l'Assemblée ouvre et ferme des organes, elle ne les chaîne pas (voir docs/decisions/fiches-groupe-17e-legislature-700.md)."
   },
   "correspondance_sigles_an": {
     "_description": "Sigle publié par ce dépôt → sigle(s) AN (`organe.libelleAbrev` du référentiel AMO30), par législature. Committée et relue, jamais devinée : `RE` ne se déduit pas de `REN`, ni `DR` de `LR`. `libelleAbrev` et non `libelleAbrege`, parce que lui seul distingue les deux organes SOC successifs de la 16e (`SOC` puis `SOC-A`) et les deux UDR de la 17e (`UDR` puis `UDDPLR`).",
@@ -139,7 +139,7 @@
         "effectif_publie": null,
         "succede_a": "AN:REN",
         "verifie_le": "2026-08-26",
-        "ecart_motif": "Fiche non publiée : périmètre élargi à la 17e législature (#526), la publication est le lot 1b. 99 des 123 membres ont déjà un slug dans raw_data/correspondance_acteurs_an.json.",
+        "ecart_motif": "Publication configurée par #700 : cette entrée est désormais dans `groupes[]`, la fiche paraît au prochain run. 99 des 123 membres ont un slug dans raw_data/correspondance_acteurs_an.json ; les 24 autres n'en ont pas, et build_roster_candidats_detaille laisse tomber un membre sans slug — ils sont hors de la fiche et nommés par l'annotation ROSTER_SANS_SLUG (#527). `effectif_publie` reste null jusqu'à la parution ; la mention « lot 1b » qui figurait ici désignait #527, qui a basculé la SOURCE du roster sur AMO30 et n'a jamais publié de fiche.",
         "membres_avec_slug": 99,
         "ecart_membres": []
       },
@@ -161,7 +161,7 @@
         "effectif_publie": null,
         "succede_a": "AN:SOC",
         "verifie_le": "2026-08-26",
-        "ecart_motif": "Fiche non publiée : périmètre élargi à la 17e législature (#526), la publication est le lot 1b. 29 des 70 membres ont déjà un slug dans raw_data/correspondance_acteurs_an.json.",
+        "ecart_motif": "Publication configurée par #700 : cette entrée est désormais dans `groupes[]`, la fiche paraît au prochain run. 29 des 70 membres ont un slug dans raw_data/correspondance_acteurs_an.json ; les 41 autres n'en ont pas, et build_roster_candidats_detaille laisse tomber un membre sans slug — ils sont hors de la fiche et nommés par l'annotation ROSTER_SANS_SLUG (#527). `effectif_publie` reste null jusqu'à la parution ; la mention « lot 1b » qui figurait ici désignait #527, qui a basculé la SOURCE du roster sur AMO30 et n'a jamais publié de fiche.",
         "membres_avec_slug": 29,
         "ecart_membres": []
       },
@@ -183,7 +183,7 @@
         "effectif_publie": null,
         "succede_a": "AN:RN",
         "verifie_le": "2026-08-26",
-        "ecart_motif": "Fiche non publiée : périmètre élargi à la 17e législature (#526), la publication est le lot 1b. 79 des 131 membres ont déjà un slug dans raw_data/correspondance_acteurs_an.json.",
+        "ecart_motif": "Publication configurée par #700 : cette entrée est désormais dans `groupes[]`, la fiche paraît au prochain run. 79 des 131 membres ont un slug dans raw_data/correspondance_acteurs_an.json ; les 52 autres n'en ont pas, et build_roster_candidats_detaille laisse tomber un membre sans slug — ils sont hors de la fiche et nommés par l'annotation ROSTER_SANS_SLUG (#527). `effectif_publie` reste null jusqu'à la parution ; la mention « lot 1b » qui figurait ici désignait #527, qui a basculé la SOURCE du roster sur AMO30 et n'a jamais publié de fiche.",
         "membres_avec_slug": 79,
         "ecart_membres": []
       },
@@ -205,7 +205,7 @@
         "effectif_publie": null,
         "succede_a": "AN:LFI",
         "verifie_le": "2026-08-26",
-        "ecart_motif": "Fiche non publiée : périmètre élargi à la 17e législature (#526), la publication est le lot 1b. 56 des 73 membres ont déjà un slug dans raw_data/correspondance_acteurs_an.json.",
+        "ecart_motif": "Publication configurée par #700 : cette entrée est désormais dans `groupes[]`, la fiche paraît au prochain run. 56 des 73 membres ont un slug dans raw_data/correspondance_acteurs_an.json ; les 17 autres n'en ont pas, et build_roster_candidats_detaille laisse tomber un membre sans slug — ils sont hors de la fiche et nommés par l'annotation ROSTER_SANS_SLUG (#527). `effectif_publie` reste null jusqu'à la parution ; la mention « lot 1b » qui figurait ici désignait #527, qui a basculé la SOURCE du roster sur AMO30 et n'a jamais publié de fiche.",
         "membres_avec_slug": 56,
         "ecart_membres": []
       },
@@ -227,7 +227,7 @@
         "effectif_publie": null,
         "succede_a": "AN:LR",
         "verifie_le": "2026-08-26",
-        "ecart_motif": "Fiche non publiée : périmètre élargi à la 17e législature (#526), la publication est le lot 1b. 42 des 64 membres ont déjà un slug dans raw_data/correspondance_acteurs_an.json.",
+        "ecart_motif": "Publication configurée par #700 : cette entrée est désormais dans `groupes[]`, la fiche paraît au prochain run. 42 des 64 membres ont un slug dans raw_data/correspondance_acteurs_an.json ; les 22 autres n'en ont pas, et build_roster_candidats_detaille laisse tomber un membre sans slug — ils sont hors de la fiche et nommés par l'annotation ROSTER_SANS_SLUG (#527). `effectif_publie` reste null jusqu'à la parution ; la mention « lot 1b » qui figurait ici désignait #527, qui a basculé la SOURCE du roster sur AMO30 et n'a jamais publié de fiche.",
         "membres_avec_slug": 42,
         "ecart_membres": []
       }
@@ -278,6 +278,51 @@
       "chambre": "AN",
       "legislature": "16",
       "fichier": "groupe-AN-LR-16.json"
+    },
+    {
+      "roster_chambre": "deputes",
+      "groupe_id": "AN:EPR",
+      "groupe_sigle": "EPR",
+      "groupe_nom": "Ensemble pour la République",
+      "chambre": "AN",
+      "legislature": "17",
+      "fichier": "groupe-AN-EPR-17.json"
+    },
+    {
+      "roster_chambre": "deputes",
+      "groupe_id": "AN:SOC:17",
+      "groupe_sigle": "SOC",
+      "groupe_nom": "Socialistes et apparentés",
+      "chambre": "AN",
+      "legislature": "17",
+      "fichier": "groupe-AN-SOC-17.json"
+    },
+    {
+      "roster_chambre": "deputes",
+      "groupe_id": "AN:RN:17",
+      "groupe_sigle": "RN",
+      "groupe_nom": "Rassemblement National",
+      "chambre": "AN",
+      "legislature": "17",
+      "fichier": "groupe-AN-RN-17.json"
+    },
+    {
+      "roster_chambre": "deputes",
+      "groupe_id": "AN:LFI:17",
+      "groupe_sigle": "LFI",
+      "groupe_nom": "La France insoumise - Nouveau Front Populaire",
+      "chambre": "AN",
+      "legislature": "17",
+      "fichier": "groupe-AN-LFI-17.json"
+    },
+    {
+      "roster_chambre": "deputes",
+      "groupe_id": "AN:DR",
+      "groupe_sigle": "DR",
+      "groupe_nom": "Droite Républicaine",
+      "chambre": "AN",
+      "legislature": "17",
+      "fichier": "groupe-AN-DR-17.json"
     },
     {
       "roster_chambre": "senateurs",

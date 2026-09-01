@@ -35,6 +35,26 @@ qu'on relit pour savoir si on peut réactiver.
 
 Une valeur fausse (`false`, `null`, absente) = groupe actif. Le groupe n'est
 jamais « à moitié » suspendu : la granularité est l'entrée de config entière.
+
+Les trois décisions à relire avant de toucher à ce fichier
+----------------------------------------------------------
+Cinq décisions nomment un symbole de ce module ; la liste complète et à jour est
+dans `docs/decisions-par-module.md`. Ces trois-là portent ce que la
+configuration **autorise à publier** :
+
+- `docs/decisions/extraction-groupe-suspendue-516.md` — suspendre n'est pas
+  retirer : retirer une entrée supprime un fichier publié, ce que
+  `audit_diff_profils` bloque. Les quatre champs de `extraction_suspendue` sont
+  exigés, et le portail de qualité en fait une erreur dure.
+- `docs/decisions/position-politique-groupes-686.md` — la qualification d'un
+  groupe est celle que l'Assemblée déclare, recopiée depuis la table committée
+  et **jamais déduite d'une ressemblance de sigle** (`RE` ne se déduit pas de
+  `REN`). `position` est le résumé dérivé de `organes[]`, jamais un choix.
+- `docs/decisions/fiches-groupe-17e-legislature-700.md` — `succede_a` est
+  **notre affirmation, pas un champ de l'AN** : le bloc publié porte
+  `etabli_par` et **refuse** un `source_url`, miroir exact du précédent. Une
+  succession qui ne résout pas est refusée, et la validation se fait **après**
+  la boucle pour que le verdict ne dépende pas de l'ordre des entrées.
 """
 
 from __future__ import annotations
@@ -44,6 +64,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from schema_groupe import (
+    ETABLI_PAR_RELECTURE_HUMAINE,
     POSITIONS_POLITIQUES_GROUPE,
     resumer_position_politique,
 )
@@ -213,6 +234,13 @@ CLE_CORRESPONDANCE_SIGLES = "correspondance_sigles_an"
 #: l'Assemblée nationale donne elle-même au groupe (#686).
 CLE_POSITION_POLITIQUE = "position_politique_an"
 
+#: Clé portant, dans une entrée de cette table, le `groupe_id` du groupe de la
+#: législature précédente dont celui-ci prend la suite (#700). **Optionnelle** :
+#: les 5 entrées de la XVIe n'ont pas de prédécesseur dans le périmètre du
+#: dépôt, et une clé absente dit exactement cela — jamais « succession
+#: inconnue ». Présente, elle doit résoudre : voir `_valider_succession`.
+CLE_SUCCESSION = "succede_a"
+
 
 class CorrespondanceSiglesInvalide(ValueError):
     """La table sigle publié → sigle(s) AN est absente ou viole un invariant."""
@@ -302,6 +330,70 @@ def _valider_position_politique_an(
     return bloc
 
 
+def _valider_successions(
+    entrees: list[dict[str, Any]],
+    chemin: Path,
+) -> None:
+    """Vérifie que chaque `succede_a` de la table atteint une entrée qui existe.
+
+    Une succession qui ne résout pas est une **référence orpheline** : le même
+    défaut que #485 traite sur les clés publiées, à ceci près qu'ici il se
+    corrige dans le fichier de configuration plutôt que dans un index. Un
+    `succede_a` pointant sur un `groupe_id` absent publierait sur la fiche un
+    `fichier` qu'aucun document ne porte — la vue empilée n'aurait rien à
+    empiler, et rien ne le dirait.
+
+    Trois refus, tous à seuil 0 :
+
+    - le prédécesseur n'est pas dans la table ;
+    - il n'a pas de `fichier` — l'affirmation n'atteindrait aucun document ;
+    - il est l'entrée elle-même : un groupe ne se succède pas.
+
+    Ce que cette fonction ne vérifie **pas** : que le fichier existe sur le
+    disque. Cette table ne connaît pas `pivot_data/groupes/`, et c'est le §4 du
+    portail de qualité qui tient ce contrôle-là, avec le répertoire sous la
+    main.
+
+    Raises:
+        CorrespondanceSiglesInvalide: la première succession qui ne résout pas,
+            **nommée** avec l'identifiant qu'elle cherchait.
+    """
+    par_groupe_id: dict[str, dict[str, Any]] = {
+        str(entree["groupe_id"]): entree
+        for entree in entrees
+        if entree.get("groupe_id")
+    }
+    for entree in entrees:
+        cible = entree.get(CLE_SUCCESSION)
+        if cible is None:
+            continue
+        libelle = f"{entree['groupe_sigle']}-{entree['legislature']}"
+        if not isinstance(cible, str) or not cible.strip():
+            raise CorrespondanceSiglesInvalide(
+                f"{libelle} : '{CLE_SUCCESSION}' doit être le `groupe_id` du "
+                f"prédécesseur, reçu : {cible!r}."
+            )
+        if cible == entree.get("groupe_id"):
+            raise CorrespondanceSiglesInvalide(
+                f"{libelle} : '{CLE_SUCCESSION}' vaut son propre `groupe_id` "
+                f"({cible!r}) — un groupe ne se succède pas à lui-même."
+            )
+        predecesseur = par_groupe_id.get(cible)
+        if predecesseur is None:
+            raise CorrespondanceSiglesInvalide(
+                f"{libelle} : '{CLE_SUCCESSION}' nomme {cible!r}, qui n'est le "
+                f"`groupe_id` d'aucune entrée de {chemin}. Une succession qui "
+                "ne résout pas publierait une fiche renvoyant vers un document "
+                "inexistant (#700)."
+            )
+        if not predecesseur.get("fichier"):
+            raise CorrespondanceSiglesInvalide(
+                f"{libelle} : le prédécesseur {cible!r} n'a pas de 'fichier' — "
+                "l'affirmation de succession n'atteindrait aucune fiche "
+                "publiée (#700)."
+            )
+
+
 def charger_correspondance_sigles(
     chemin: Optional[Path] = None,
 ) -> list[dict[str, Any]]:
@@ -383,6 +475,12 @@ def charger_correspondance_sigles(
             )
         vues.add(cle)
         valides.append(entree)
+
+    # La succession se valide APRÈS la boucle, et pas dedans : elle est le seul
+    # invariant de cette table qui parle d'une AUTRE entrée. La vérifier au fil
+    # de l'eau ferait dépendre le verdict de l'ordre des entrées dans le
+    # fichier — un prédécesseur écrit plus bas passerait pour introuvable.
+    _valider_successions(valides, chemin)
     return valides
 
 
@@ -463,4 +561,54 @@ def position_politique_publiee(
         "source_url": url_source_correspondance(chemin),
         "verifie_le": bloc["verifie_le"],
         "organes": [dict(organe) for organe in bloc["organes"]],
+    }
+
+
+def succession_publiee(
+    groupe_sigle: str,
+    legislature: Optional[str],
+    chemin: Optional[Path] = None,
+) -> Optional[dict[str, Any]]:
+    """Le bloc `succede_a` à publier sur une fiche de groupe (#700), ou `None`.
+
+    `None` quand l'entrée ne déclare pas de prédécesseur — les 5 groupes de la
+    XVIe, dont la XVe n'est pas couverte par ce dépôt. C'est un périmètre, pas
+    un trou : le champ sort `null`, et un champ absent ne prétend rien.
+
+    Composé de la table committée, comme `position_politique_publiee` — et pour
+    une raison de plus : ce que la table porte est une **relecture humaine**,
+    et rien dans une archive ne pourrait la remplacer. `sigles_an` et
+    `organes_an` du prédécesseur sont recopiés verbatim ; ils sont la preuve de
+    ce que la lecture rapproche, jamais sa source.
+
+    Le bloc ne porte **pas** de `source_url`, et `validate_profil_groupe` le
+    refuse s'il en apparaît une : l'Assemblée ouvre et ferme des organes, elle
+    ne les chaîne pas.
+
+    Raises:
+        CorrespondanceSiglesInvalide: pas d'entrée pour ce couple, table
+            invalide, ou succession qui ne résout pas. Jamais un repli
+            silencieux.
+    """
+    if not legislature:
+        raise CorrespondanceSiglesInvalide(
+            f"{groupe_sigle} : la succession se lit PAR législature ; aucune ne "
+            "peut être publiée sans elle."
+        )
+    entrees = charger_correspondance_sigles(chemin)
+    entree = entree_correspondance(groupe_sigle, legislature, chemin)
+    cible = entree.get(CLE_SUCCESSION)
+    if not cible:
+        return None
+    # `_valider_successions` a déjà refusé une cible qui ne résout pas : la
+    # recherche ci-dessous ne peut donc pas rendre `None`.
+    predecesseur = next(e for e in entrees if e.get("groupe_id") == cible)
+    return {
+        "groupe_id": str(cible),
+        "fichier": predecesseur["fichier"],
+        "legislature": predecesseur["legislature"],
+        "sigles_an": list(predecesseur["sigles_an"]),
+        "organes_an": list(predecesseur["organes_an"]),
+        "etabli_par": ETABLI_PAR_RELECTURE_HUMAINE,
+        "verifie_le": entree["verifie_le"],
     }

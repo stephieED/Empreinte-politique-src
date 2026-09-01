@@ -126,7 +126,7 @@ from schema_groupe import (
     make_empty_amendements_stats,
     validate_profil_groupe,
 )
-from groupes_config import position_politique_publiee
+from groupes_config import position_politique_publiee, succession_publiee
 from merge_profile import load_existing_document, preserve_stable_freshness_timestamps
 from normalize_profil import normalize_profil
 from amendements_index import (
@@ -1714,6 +1714,7 @@ def build_groupe_profile(
     amendements_index: Optional[AmendementsIndex] = None,
     appartenances: Optional[dict[str, dict[str, Any]]] = None,
     position_politique: Optional[dict[str, Any]] = None,
+    succede_a: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     """Construit un profil de groupe à partir d'une liste de profils individuels pivot v1.
 
@@ -1755,6 +1756,14 @@ def build_groupe_profile(
                     ne lit aucune archive, et déduire une posture des votes
                     agrégés serait le jugement que ce dépôt refuse de porter
                     (AGENTS.md §2 règle 1).
+        succede_a: bloc `succede_a` déjà composé par
+                    `groupes_config.succession_publiee` (#700) — le groupe de la
+                    législature précédente dont celui-ci prend la suite. `None`
+                    = pas de prédécesseur dans le périmètre du dépôt (les 5
+                    fiches de la XVIe). **Jamais dérivé ici** : c'est une
+                    relecture humaine committée, et aucun calcul sur les
+                    membres ne la produirait — l'Assemblée ne chaîne pas ses
+                    organes.
 
     Returns:
         Profil de groupe dict conforme au schéma de groupe v1.
@@ -1941,6 +1950,10 @@ def build_groupe_profile(
     # distincts, et les confondre ferait passer une fiche sénatoriale pour un
     # groupe que l'Assemblée aurait omis de qualifier.
     profil_groupe["position_politique"] = position_politique
+    # Recopié tel quel, jamais dérivé des membres (#700). `None` reste `None` :
+    # ne pas succéder à un groupe couvert par ce dépôt est un périmètre, pas
+    # une donnée manquante.
+    profil_groupe["succede_a"] = succede_a
     profil_groupe["date_reference"] = date_reference
     profil_groupe["effectif"] = effectif
     profil_groupe["cohesion_votes"] = cohesion_votes
@@ -2132,6 +2145,7 @@ def generate_groupe_profile_from_roster(
     scrutins_index: Optional[ScrutinsIndex] = None,
     amendements_index: Optional[AmendementsIndex] = None,
     position_politique: Optional[dict[str, Any]] = None,
+    succede_a: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     """Construit (et écrit si `out_path` fourni) un profil de groupe à partir d'un
     roster déjà récupéré (voir `fetch_group_roster`, ou `fetch_full_roster` +
@@ -2251,6 +2265,7 @@ def generate_groupe_profile_from_roster(
         # exactement ce que ce lot retire.
         appartenances=appartenances,
         position_politique=position_politique,
+        succede_a=succede_a,
     )
 
     profil_groupe["meta"]["couverture_roster"] = couverture_roster
@@ -2339,10 +2354,12 @@ def main(argv: Optional[list[str]] = None) -> int:
         # que publie `generate_group_profiles.py`, sans quoi régénérer une
         # fiche à la main la ferait discrètement régresser sur ce champ.
         position_politique = None
+        succede_a = None
         if args.chambre == "AN":
             position_politique = position_politique_publiee(
                 args.groupe_sigle, args.legislature
             )
+            succede_a = succession_publiee(args.groupe_sigle, args.legislature)
 
         out_path = Path(args.out) if args.out else None
         profil_groupe = generate_groupe_profile_from_roster(
@@ -2361,6 +2378,7 @@ def main(argv: Optional[list[str]] = None) -> int:
             validate=args.validate,
             rapport_interne_path=Path(args.rapport_interne) if args.rapport_interne else None,
             position_politique=position_politique,
+            succede_a=succede_a,
         )
         if not out_path:
             print(json.dumps(profil_groupe, ensure_ascii=False, indent=2))
