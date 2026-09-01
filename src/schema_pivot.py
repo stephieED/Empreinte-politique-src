@@ -768,6 +768,28 @@ KNOWN_POSITIONS_HEMICYCLE: frozenset[str] = frozenset({
     "majorite", "opposition", "minoritaire", "gouvernement",
 })
 
+# Correspondance `organe.positionPolitique` (référentiel AMO30 de l'Assemblée
+# nationale) → valeur du schéma. L'Assemblée qualifie **elle-même** chacun de
+# ses groupes politiques ; ce n'est donc pas une qualification que ce dépôt
+# produit, et il n'y a rien ici à inférer (AGENTS.md §2 règle 1).
+#
+# Canonique, parce que deux consommateurs la lisent et qu'ils publient la même
+# valeur à deux étages différents : `candidate_profile` sur
+# `mandats[].position_dans_hemicycle` d'un profil individuel (#354), et
+# `an_roster` sur `position_politique` d'une fiche de groupe (#686). Deux
+# tables jumelles auraient dérivé — c'est exactement ce que la table des sigles
+# de #526 refuse déjà, un cran plus loin.
+#
+# Une valeur absente ou hors table n'a **pas** d'entrée ici : elle se publie
+# `non_declaree` (fiche de groupe) ou se traduit par une absence de mandat
+# qualifié (profil individuel), jamais par un repli sur « opposition », qui est
+# 24 des 40 organes qualifiés (AGENTS.md §2 règle 5).
+POSITION_POLITIQUE_AN_VERS_PIVOT: dict[str, str] = {
+    "Majoritaire": "majorite",
+    "Minoritaire": "minoritaire",
+    "Opposition": "opposition",
+}
+
 # Mode de déclenchement d'une commission d'enquête.
 KNOWN_MODES_DECLENCHEMENT: frozenset[str] = frozenset({"droit_tirage", "demande_votee"})
 
