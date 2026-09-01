@@ -326,6 +326,20 @@ tolerance is **partitioned** — no input disarms another's check.
   dated line in `membres_sans_slug`. Guarded by `tests/test_an_roster.py`, on a
   **reduction** of the real archive — never a hand-written fixture (#510).
   → `docs/decisions/roster-an-derive-amo30-526.md`
+- **A group's political position is the Assembly's own declaration, read from the
+  committed table (#686).** `organe.positionPolitique` qualifies 40 of the 63 `GP` organs;
+  the sheet publishes `position_politique` — `position`, `source_url` **required even on
+  `non_declaree`** (mirror of §2 rule 6), `verifie_le`, and `organes[]` carrying each
+  organ's **verbatim source string**. Wired through `correspondance_sigles_an`
+  (`position_politique_an`), **never by sigle resemblance** — `RE` is not `REN`, and the
+  direct match returned `None` on two sheets of five, the majority one included.
+  `non_declaree` is a **published value**, never a vote-derived guess (§2 rule 1): the
+  XVIIth's 14 groups are all in that case. Two successive organs that disagree publish
+  **`divergente`**, never folded onto the last one; `position` must be **exactly** the
+  summary of `organes[]`, so an invented posture is a schema error. **Gate §4b hard-fails,
+  threshold 0**, on a published AN sheet with no entry. No rate, ranking or average by
+  posture — the posture *explains* figures, it does not *correct* them.
+  → `docs/decisions/position-politique-groupes-686.md`
 - **A configured group's extraction can be suspended, never silently (#516).** A
   `groupes_reels.json` entry carrying `extraction_suspendue` is not fetched, not
   regenerated, **not counted as a failure**, and keeps its **hard** gate checks but not
@@ -417,8 +431,8 @@ tolerance is **partitioned** — no input disarms another's check.
 ### 3f. Quality gate
 
 - **Hard fail**: IncompleteRead over threshold, invalid or missing groupe/gouvernement
-  file, broken structure (#212), §5b's unmapped published slug (#525), §7's 80 MiB blob
-  (#580). **Soft**: low interventions, low coverage, network signals, partial identifier
+  file, broken structure (#212), §4b's unmapped published AN group sheet (#686), §5b's
+  unmapped published slug (#525), §7's 80 MiB blob (#580). **Soft**: low interventions, low coverage, network signals, partial identifier
   coverage in `amendements[]` (§3c), index freshness (§3d), couverture ministérielle,
   empty `textes[]` (§5, mirroring groupes §4).
 - **Partial `uid` coverage is soft on purpose** — mixed profiles were expected during the

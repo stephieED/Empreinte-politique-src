@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 196 décisions
+gouverne sans avoir à fouiller les 197 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -37,16 +37,16 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 
 | Module | Décisions qui le gouvernent |
 | --- | ---: |
+| `src/groupes_config.py` | 4 |
 | `src/budget_collecte.py` | 3 |
 | `src/normalize_parltrack_dumps.py` | 3 |
 | `src/profil_brut.py` | 3 |
+| `src/schema_groupe.py` | 3 |
 | `src/scrutins_index.py` | 3 |
 | `src/audit_gouvernement_dataset.py` | 2 |
 | `src/audit_pipeline.py` | 2 |
 | `src/gouvernement_profile.py` | 2 |
-| `src/groupes_config.py` | 2 |
 | `src/parse_syceron.py` | 2 |
-| `src/schema_groupe.py` | 2 |
 | `src/avertissements.py` | 1 |
 | `src/build_amendements_index.py` | 1 |
 | `src/candidate_profile_ue.py` | 1 |
@@ -69,12 +69,13 @@ Le mentionnent sans le gouverner : [`lectures-pipeline-par-projection-635`](deci
 
 ## `src/an_roster.py`
 
-5 décision(s) le gouvernent ; le module en cite 3.
+6 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
-| [La bascule : le roster des groupes AN vient d'AMO30 (#527, lot 1b de l'épic « une seule source AN ») (2026-08-26)](decisions/bascule-roster-an-amo30-527.md) | `AN_ROSTER_ACTIF`, `CorrespondanceSiglesInvalide`, `RosterAnInactif`, `RosterAnIndisponible`, `fetch_full_roster_an` |
+| [La bascule : le roster des groupes AN vient d'AMO30 (#527, lot 1b de l'épic « une seule source AN ») (2026-08-26)](decisions/bascule-roster-an-amo30-527.md) | `AN_ROSTER_ACTIF`, `RosterAnInactif`, `RosterAnIndisponible`, `fetch_full_roster_an` |
 | [`debut_dans_groupe` se lit sur le mandat de groupe, plus sur le premier mandat électif (#653) (2026-08-31)](decisions/dates-appartenance-groupe-653.md) | `deriver_membres_organes`, `organes_du_groupe` |
+| [La position politique d'un groupe est celle que l'Assemblée déclare, lue dans une table committée (#686) (2026-09-01)](decisions/position-politique-groupes-686.md) | `VERSION_INDEX_GP` |
 | [NosDéputés sort du pipeline (#529, lot 5 de l'épic « une seule source AN ») (2026-08-27)](decisions/retrait-nosdeputes-529.md) | `AN_ROSTER_ACTIF`, `RosterAnInactif` |
 | [Le Sénat sort du périmètre, et le job qui concluait vert sans rien produire est retiré (#528, lot 3 de l'épic « une seule source AN ») (2026-08-26)](decisions/retrait-senat-528.md) | `AN_ROSTER_ACTIF` |
 | [Le roster des groupes AN est dérivé d'AMO30, derrière un drapeau baissé (#526, lot 1 de l'épic « une seule source AN ») (2026-08-26)](decisions/roster-an-derive-amo30-526.md) | `AN_ROSTER_ACTIF`, `RosterAnIndisponible`, `fetch_full_roster_an` |
@@ -328,7 +329,7 @@ Le mentionnent sans le gouverner : [`consommateurs-chambres-migres`](decisions/c
 
 ## `src/check_quality_gate.py`
 
-8 décision(s) le gouvernent ; le module en cite 7.
+8 décision(s) le gouvernent ; le module en cite 8.
 
 | Décision | Nomme |
 | --- | --- |
@@ -352,7 +353,7 @@ Le mentionnent sans le gouverner : [`absences-publiees-comme-faits-556-558-560`]
 | [La bascule : le roster des groupes AN vient d'AMO30 (#527, lot 1b de l'épic « une seule source AN ») (2026-08-26)](decisions/bascule-roster-an-amo30-527.md) | `CorrespondanceInvalide` |
 | [La correspondance slug ↔ acteur AN devient un artefact committé (#525, lot 2 de l'épic « une seule source AN ») (2026-08-26)](decisions/correspondance-acteurs-an-525.md) | `est_declare_hors_an`, `resoudre_acteur_ref` |
 
-Le mentionnent sans le gouverner : [`civilite-et-pcs-insee-659`](decisions/civilite-et-pcs-insee-659.md), [`identite-profils-539`](decisions/identite-profils-539.md), [`roster-an-derive-amo30-526`](decisions/roster-an-derive-amo30-526.md), [`sparse-checkout-extract-an-674`](decisions/sparse-checkout-extract-an-674.md).
+Le mentionnent sans le gouverner : [`civilite-et-pcs-insee-659`](decisions/civilite-et-pcs-insee-659.md), [`identite-profils-539`](decisions/identite-profils-539.md), [`position-politique-groupes-686`](decisions/position-politique-groupes-686.md), [`roster-an-derive-amo30-526`](decisions/roster-an-derive-amo30-526.md), [`sparse-checkout-extract-an-674`](decisions/sparse-checkout-extract-an-674.md).
 
 ## `src/couverture_dossiers.py`
 
@@ -455,7 +456,7 @@ Le mentionnent sans le gouverner : [`audit-599-projection-blocs-lus-628`](decisi
 | [Cloisonnement de la branche roster, et le code 2 « suspension totale » (#524) (2026-08-26)](decisions/cloisonnement-branche-roster-524.md) | `EXIT_ROSTER_INDISPONIBLE` |
 | [Le plafond de lecture du roster, et le commit qui ne paie plus pour une source lente (#518, second incident) (2026-08-24)](decisions/plafond-roster-et-commit-518.md) | `ResultatGeneration` |
 
-Le mentionnent sans le gouverner : [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`extraction-groupe-suspendue-516`](decisions/extraction-groupe-suspendue-516.md), [`gouvernement-profile-rattachement`](decisions/gouvernement-profile-rattachement.md), [`integrite-referentielle-pivot`](decisions/integrite-referentielle-pivot.md), [`roster-an-derive-amo30-526`](decisions/roster-an-derive-amo30-526.md), [`senat-periode-debut`](decisions/senat-periode-debut.md).
+Le mentionnent sans le gouverner : [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`extraction-groupe-suspendue-516`](decisions/extraction-groupe-suspendue-516.md), [`gouvernement-profile-rattachement`](decisions/gouvernement-profile-rattachement.md), [`integrite-referentielle-pivot`](decisions/integrite-referentielle-pivot.md), [`position-politique-groupes-686`](decisions/position-politique-groupes-686.md), [`roster-an-derive-amo30-526`](decisions/roster-an-derive-amo30-526.md), [`senat-periode-debut`](decisions/senat-periode-debut.md).
 
 ## `src/generate_roster_candidats.py`
 
@@ -575,12 +576,14 @@ Le mentionnent sans le gouverner : [`cloisonnement-branche-roster-524`](decision
 
 ## `src/groupes_config.py`
 
-2 décision(s) le gouvernent ; le module en cite 0.
+4 décision(s) le gouvernent ; le module en cite 0.
 
 | Décision | Nomme |
 | --- | --- |
 | [Trois absences publiées comme des faits (#556, #558, #560) (2026-08-29)](decisions/absences-publiees-comme-faits-556-558-560.md) | `anomalies_suspension`, `index_membres_de_groupes_suspendus` |
+| [La bascule : le roster des groupes AN vient d'AMO30 (#527, lot 1b de l'épic « une seule source AN ») (2026-08-26)](decisions/bascule-roster-an-amo30-527.md) | `CorrespondanceSiglesInvalide` |
 | [Suspendre l'extraction des deux groupes Sénat, sans les retirer de la config (#516) (2026-08-24)](decisions/extraction-groupe-suspendue-516.md) | `anomalies_suspension` |
+| [La position politique d'un groupe est celle que l'Assemblée déclare, lue dans une table committée (#686) (2026-09-01)](decisions/position-politique-groupes-686.md) | `CHEMIN_CONFIG_GROUPES`, `CLE_CORRESPONDANCE_SIGLES`, `CorrespondanceSiglesInvalide`, `charger_correspondance_sigles`, `entree_correspondance`, `position_politique_publiee` |
 
 ## `src/json_io.py`
 
@@ -764,12 +767,13 @@ Le mentionnent sans le gouverner : [`deduplication-entrees-membres`](decisions/d
 
 ## `src/schema_groupe.py`
 
-2 décision(s) le gouvernent ; le module en cite 0.
+3 décision(s) le gouvernent ; le module en cite 0.
 
 | Décision | Nomme |
 | --- | --- |
 | [Les agrégats publiés entrent dans le contrôle de perte, et l'ordre de grandeur reste hors contrat (#649) (2026-08-31)](decisions/agregats-publies-controle-perte-649.md) | `make_empty_amendements_stats` |
 | [Tous les comptes d'une fiche de groupe se rapportent à une date, et elle est publiée (#653) (2026-08-31)](decisions/date-de-reference-des-comptes-de-groupe-653.md) | `validate_profil_groupe` |
+| [La position politique d'un groupe est celle que l'Assemblée déclare, lue dans une table committée (#686) (2026-09-01)](decisions/position-politique-groupes-686.md) | `POSITIONS_POLITIQUES_GROUPE`, `resumer_position_politique` |
 
 Le mentionnent sans le gouverner : [`audit-plages-temporelles`](decisions/audit-plages-temporelles.md), [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`dates-appartenance-groupe-653`](decisions/dates-appartenance-groupe-653.md), [`pivot-freshness-timestamps-stables`](decisions/pivot-freshness-timestamps-stables.md), [`plage-dates-groupes`](decisions/plage-dates-groupes.md).
 
@@ -779,7 +783,7 @@ Le mentionnent sans le gouverner : [`pivot-freshness-timestamps-stables`](decisi
 
 ## `src/schema_pivot.py`
 
-29 décision(s) le gouvernent ; le module en cite 5.
+30 décision(s) le gouvernent ; le module en cite 5.
 
 | Décision | Nomme |
 | --- | --- |
@@ -803,6 +807,7 @@ Le mentionnent sans le gouverner : [`pivot-freshness-timestamps-stables`](decisi
 | [Normaliser les votes : une liste partagée, un mapping, et deux invariants devenus des jointures (#432) (2026-08-19)](decisions/normalisation-votes.md) | `validate_profil`, `validate_scrutins_index` |
 | [`genere_le`/`synchro_le` des pivots ne doivent avancer que si le contenu change réellement (#343) (2026-08-16)](decisions/pivot-freshness-timestamps-stables.md) | `make_empty_profil` |
 | [Les deux populations de `pivot_data/profiles/` sont portées par les outils, pas par une consigne (#630, 2026-08-30)](decisions/populations-profils-portees-par-les-outils-630.md) | `KNOWN_PROVENANCES` |
+| [La position politique d'un groupe est celle que l'Assemblée déclare, lue dans une table committée (#686) (2026-09-01)](decisions/position-politique-groupes-686.md) | `POSITION_POLITIQUE_AN_VERS_PIVOT` |
 | [Quelle source a rempli quel champ, et quand — un bloc à côté d'`identite` (#603) (2026-08-30)](decisions/provenance-par-champ-603.md) | `BLOCS_PROVENANCE_CHAMPS`, `valider_provenance_champs` |
 | [Provenance des profils pivot : candidat_declare vs roster_groupe (2026-08-10)](decisions/provenance-pivot.md) | `KNOWN_PROVENANCES`, `validate_profil` |
 | [La qualification d'un scrutin se perdait entre la collecte et le profil brut (#639, rang 1) (2026-08-31)](decisions/qualification-perdue-a-la-fusion-639.md) | `validate_scrutins_index` |
