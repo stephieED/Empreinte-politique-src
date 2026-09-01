@@ -288,7 +288,9 @@ additive des profils bruts des trois familles d'artifacts
 (`src/merge_profile.py --dirs _artifacts/an _artifacts/ue _artifacts/roster`) ;
 **première** passe `--pivot-only` sur `raw_data/candidats.json`, avec
 `--enrich-parltrack` ; **seconde** passe `--pivot-only` sur le
-`roster_candidats.json` du run ; profils de parti, de groupe parlementaire réel,
+`roster_candidats.json` du run ; profils de parti ; **la table des commissions
+saisies au fond** (`build_commissions_dossiers.py`, #328 — non bloquante, elle
+dérive du référentiel et non du corpus) ; profils de groupe parlementaire réel,
 de gouvernement ; `check_quality_gate.py` ; les **quatre contrôles** de la §8 ;
 la vérification que `src/` et `raw_data/*.json` n'ont pas bougé sur la branche
 pendant le run ; le commit et le push ; **le signal disant si ce commit
@@ -299,18 +301,26 @@ de données ; le déclenchement de `deploy-pages.yml`.
 base : il checkoute le dépôt, et la fusion ne réécrit que les slugs présents
 dans les artifacts. Il lit aussi `.cache/dossiers_an` (restauré par son propre
 `actions/cache`, §5) : depuis #639, la construction de `pivot_data/amendements/`
-y joint chaque `texte_vise` à son dossier législatif. Archives absentes → aucun
-rattachement ajouté, aucun retiré, et le job le dit dans son log. Il lit aussi
-`raw_data/amendements_an_figes/` (committé, pas caché) : depuis #696, la même
-construction **relit** dans l'archive figée le `texte_vise` des entrées qui
-portent un intitulé au lieu de l'uid du document AN — 2 500 des 484 132
-amendements publiés au 01/09/2026, que la fusion additive ne pouvait pas
-corriger seule. Aucune archive n'est ouverte pour une législature sans entrée
-fautive, et ce que le report ne répare pas est compté dans le log
+y joint chaque `texte_vise` à son dossier législatif, et depuis #328 la table
+`pivot_data/commissions_dossiers.json` y lit l'acte `AN1-COM-FOND-SAISIE` de
+chaque dossier. Archives absentes → aucun rattachement ajouté, aucun retiré,
+aucune commission ajoutée, et le job le dit dans son log ; le `git add` de la
+table est conditionné à son existence, pour qu'un run sans archive ne coûte pas
+le commit des profils. Il lit aussi `raw_data/amendements_an_figes/` (committé,
+pas caché) : depuis #696, la même construction **relit** dans l'archive figée le
+`texte_vise` des entrées qui portent un intitulé au lieu de l'uid du document AN
+— 2 500 des 484 132 amendements publiés au 01/09/2026, que la fusion additive ne
+pouvait pas corriger seule. Aucune archive n'est ouverte pour une législature
+sans entrée fautive, et ce que le report ne répare pas est compté dans le log
 ([report `texte_vise`](decisions/report-texte-vise-source-696.md)). **Produit** le commit de données sur `main`, poussé sous
-`secrets.DATA_PUSH_SSH_KEY` — secret qui **n'existe pas** aujourd'hui, si bien
-que le push repart sous le `GITHUB_TOKEN` et qu'aucun workflow ne voit le commit
-(#685, §6). C'est le seul job à porter
+`secrets.DATA_PUSH_SSH_KEY` — **renseigné depuis le 01/09/2026**, avec sa clé de
+déploiement `data-push (#508)` en écriture et son entrée `DeployKey` dans les
+`bypass_actors` du ruleset. Le push émet donc bien un événement `push` :
+`f635cb60` a déclenché `tests.yml`, qui a réussi. Le check requis
+`Suite complète` est posé sur `main` (#693) — il ne bloque pas ce commit, qui
+contourne par la clé, mais il rend le refus bruyant `GH013` déclenchable le jour
+où la clé casse, ce qui est précisément le silence qui avait laissé passer quinze
+commits (#685, §6). C'est le seul job à porter
 `permissions: contents: write`.
 
 **Pourquoi comme ça** : les quatre contrôles sont **cloisonnés**, aucune
