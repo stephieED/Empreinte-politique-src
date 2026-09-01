@@ -82,6 +82,37 @@ Format d'un profil de groupe v1 :
         "max_historique": null          # max. sur la période (null si non calculé)
     },
 
+    "position_politique": {             # QUALIFICATION DÉCLARÉE PAR L'ASSEMBLÉE (#686).
+                                        # Recopiée, jamais produite : `organe.positionPolitique`
+                                        # du référentiel AMO30. ABSENTE des fiches publiées avant
+                                        # le lot (les 2 `groupe-Senat-*`, gelées par #516, et
+                                        # toute fiche non régénérée) : optionnelle, jamais
+                                        # obligatoire.
+        "position": "majorite",         # POSITIONS_POLITIQUES_GROUPE : majorite | minoritaire |
+                                        # opposition | non_declaree | divergente. `non_declaree`
+                                        # est une VALEUR PUBLIÉE, distincte d'un champ absent —
+                                        # les 14 groupes de la XVIIe sont dans ce cas. Jamais
+                                        # déduite d'un comportement de vote (AGENTS.md §2 règle 1).
+        "source_url": "https://data.assemblee-nationale.fr/…AMO30_…json.zip",
+                                        # OBLIGATOIRE dès que le bloc est présent, y compris sur
+                                        # `non_declaree` : un constat d'absence nomme sa source
+                                        # comme un constat de présence (§2 règle 2). Miroir de la
+                                        # règle 6, qui exige déjà un `source_url` sur
+                                        # `mandats[].position_dans_hemicycle`.
+        "verifie_le": "2026-09-01",     # date de relecture de la table committée
+        "organes": [                    # LA PREUVE, organe par organe, dans l'ordre de succession.
+                                        # Un groupe peut avoir deux organes successifs dans une
+                                        # même législature (`SOC` puis `SOC-A`, XVIe) : les deux
+                                        # sont publiés, aucun n'est replié sur l'autre.
+            {
+                "organe_an": "PO800538",     # uid de l'organe dans AMO30
+                "sigle_an": "RE",            # organe.libelleAbrev — PAS le sigle publié (`REN`)
+                "valeur_source": "Majoritaire",  # la chaîne de l'AN, verbatim ; null si muette
+                "position": "majorite"       # sa traduction, ou null si `valeur_source` est null
+            }
+        ]
+    },
+
     "cohesion_votes": [                 # une entrée par scrutin sur lequel ≥1 membre a voté
         {
             "scrutin_id": "an:16:4084",  # référence vers pivot_data/scrutins.json (#432).
@@ -255,7 +286,11 @@ Usage :
 import time
 from typing import Any
 
-from schema_pivot import KNOWN_CHAMBRES, KNOWN_TYPES_DEPOSANT
+from schema_pivot import (
+    KNOWN_CHAMBRES,
+    KNOWN_TYPES_DEPOSANT,
+    POSITION_POLITIQUE_AN_VERS_PIVOT,
+)
 
 # Version du schéma de groupe ; indépendante de SCHEMA_VERSION du pivot individuel.
 SCHEMA_GROUPE_VERSION = "1"
@@ -320,6 +355,74 @@ ORIGINES_DATE_REFERENCE: tuple[str, ...] = (
     ORIGINE_DATE_REFERENCE_CLOTURE,
     ORIGINE_DATE_REFERENCE_GENERATION,
 )
+
+# Position politique déclarée d'un groupe (#686).
+#
+# L'Assemblée nationale qualifie **elle-même** chacun de ses groupes dans le
+# référentiel AMO30 (`organe.positionPolitique`). Ce champ recopie cette
+# déclaration ; il n'en produit aucune. C'est ce qui l'autorise à figurer sur
+# une fiche publiée sans contrevenir à la règle 1 d'AGENTS.md §2 — et c'est
+# aussi ce qui interdit d'en déduire quoi que ce soit d'un comportement de
+# vote, ce qui serait, cette fois, un jugement porté par ce dépôt.
+#
+# Deux valeurs n'existent pas dans le référentiel et sont **produites ici**,
+# parce qu'un champ absent ne dit rien tandis qu'une valeur publiée dit
+# quelque chose (AGENTS.md §2 règle 5) :
+#
+# - `non_declaree` : aucun organe du groupe ne porte de qualification. C'est
+#   le cas des **14 groupes de la XVIIe législature** — l'AN ne qualifie ses
+#   groupes qu'une fois la législature achevée. Ce n'est pas « pas de
+#   position », c'est « position non déclarée par la source ».
+# - `divergente` : deux organes successifs du même groupe dans la même
+#   législature portent des qualifications **différentes**. Aucun des deux ne
+#   l'emporte : choisir serait décider laquelle des deux moitiés de la
+#   législature définit le groupe. Mesuré nul au 01/09/2026 (les deux organes
+#   `SOC` de la XVIe sont tous deux `Opposition`) — publié quand même, parce
+#   qu'un cas non prévu se replierait sinon sur le premier organe venu.
+#
+# Il n'y a **pas** de quatrième valeur produite : un groupe dont une partie des
+# organes est qualifiée et l'autre muette prend la qualification déclarée, et
+# le détail reste lisible dans `organes[]`, où l'organe muet porte
+# `position: null`.
+POSITION_GROUPE_NON_DECLAREE = "non_declaree"
+POSITION_GROUPE_DIVERGENTE = "divergente"
+
+#: Vocabulaire fermé de `position_politique.position`. Les trois premières
+#: valeurs sont celles du référentiel, traduites par
+#: `POSITION_POLITIQUE_AN_VERS_PIVOT` — les mêmes que
+#: `mandats[].position_dans_hemicycle` d'un profil individuel, volontairement :
+#: c'est la même déclaration, lue dans le même champ de la même archive.
+POSITIONS_POLITIQUES_GROUPE: tuple[str, ...] = (
+    *sorted(set(POSITION_POLITIQUE_AN_VERS_PIVOT.values())),
+    POSITION_GROUPE_NON_DECLAREE,
+    POSITION_GROUPE_DIVERGENTE,
+)
+
+
+def resumer_position_politique(organes: list[dict[str, Any]]) -> str:
+    """Résume les déclarations organe par organe en **une** valeur publiable.
+
+    Règle unique, et elle ne choisit jamais à la place de la source :
+
+    - aucune déclaration → `non_declaree` ;
+    - les organes qui déclarent disent tous la même chose → cette valeur ;
+    - ils se contredisent → `divergente`.
+
+    Fonction pure. C'est aussi l'invariant que `validate_profil_groupe`
+    vérifie : un résumé que les déclarations ne portent pas est une
+    qualification inventée, pas une qualification recopiée.
+    """
+    declarees = {
+        o.get("position")
+        for o in organes
+        if isinstance(o, dict) and o.get("position")
+    }
+    if not declarees:
+        return POSITION_GROUPE_NON_DECLAREE
+    if len(declarees) == 1:
+        return next(iter(declarees))
+    return POSITION_GROUPE_DIVERGENTE
+
 
 ETAT_ROSTER_DANS_LE_PERIMETRE = "dans_le_perimetre"
 ETAT_ROSTER_HORS_PERIMETRE = "hors_perimetre"
@@ -391,6 +494,7 @@ def make_empty_profil_groupe(
         },
         "historique_noms": [],
         "membres": [],
+        "position_politique": None,
         "date_reference": None,
         "effectif": {
             "a_la_date_de_reference": 0,
@@ -455,6 +559,97 @@ def _valider_couverture_roster(couverture: dict[str, Any]) -> list[str]:
     return errors
 
 
+def _valider_position_politique(bloc: dict[str, Any]) -> list[str]:
+    """Vérifie `position_politique` (#686) : recopie déclarée, jamais résumé libre.
+
+    Quatre invariants, et le dernier est le seul qui compte vraiment :
+
+    1. `position` appartient au vocabulaire fermé ;
+    2. `source_url` est présente — y compris sur `non_declaree`, parce qu'un
+       constat d'absence nomme sa source comme un constat de présence ;
+    3. `verifie_le` est présente — une qualification non datée ne se relit pas,
+       même règle que `verifie_le` de la table de correspondance (#526) ;
+    4. `position` est **exactement** ce que `organes[]` porte
+       (`resumer_position_politique`). C'est l'invariant qui interdit de
+       publier une posture que les déclarations de la source ne portent pas :
+       replier deux organes divergents sur l'un des deux, ou repêcher une
+       posture pour un groupe que l'AN n'a pas qualifié, deviennent des erreurs
+       de schéma et non des choix d'implémentation.
+    """
+    errors: list[str] = []
+    position = bloc.get("position")
+    if position not in POSITIONS_POLITIQUES_GROUPE:
+        errors.append(
+            f"'position_politique.position' non reconnue : {position!r}. "
+            f"Valeurs connues : {list(POSITIONS_POLITIQUES_GROUPE)}."
+        )
+    source_url = bloc.get("source_url")
+    if not (isinstance(source_url, str) and source_url.strip()):
+        errors.append(
+            "'position_politique.source_url' est obligatoire : la qualification "
+            "est celle de l'Assemblée, elle doit pointer vers le référentiel qui "
+            "la porte (AGENTS.md §2 règle 2). Vaut aussi pour "
+            f"'{POSITION_GROUPE_NON_DECLAREE}' — un constat d'absence nomme sa source."
+        )
+    if not bloc.get("verifie_le"):
+        errors.append(
+            "'position_politique.verifie_le' est absente : une qualification non "
+            "datée n'est pas relisible (#526)."
+        )
+
+    organes = bloc.get("organes")
+    if not isinstance(organes, list):
+        errors.append("'position_politique.organes' doit être une liste.")
+        return errors
+
+    for i, organe in enumerate(organes):
+        if not isinstance(organe, dict):
+            errors.append(f"'position_politique.organes[{i}]' doit être un objet.")
+            continue
+        organe_an = organe.get("organe_an")
+        if not (isinstance(organe_an, str) and organe_an.startswith("PO")):
+            errors.append(
+                f"'position_politique.organes[{i}].organe_an' doit être un uid "
+                f"d'organe AN (PO######), reçu : {organe_an!r}."
+            )
+        pos_organe = organe.get("position")
+        if pos_organe is not None and pos_organe not in POSITION_POLITIQUE_AN_VERS_PIVOT.values():
+            errors.append(
+                f"'position_politique.organes[{i}].position' non reconnue : "
+                f"{pos_organe!r}. Un organe porte la qualification du référentiel "
+                f"({sorted(set(POSITION_POLITIQUE_AN_VERS_PIVOT.values()))}) ou `null` — "
+                f"jamais '{POSITION_GROUPE_NON_DECLAREE}' ni '{POSITION_GROUPE_DIVERGENTE}', "
+                "qui résument plusieurs organes et n'en décrivent aucun."
+            )
+        valeur_source = organe.get("valeur_source")
+        if "valeur_source" not in organe:
+            errors.append(
+                f"'position_politique.organes[{i}].valeur_source' absente : c'est "
+                "la preuve, la chaîne du référentiel telle quelle."
+            )
+        elif valeur_source is None and pos_organe is not None:
+            errors.append(
+                f"'position_politique.organes[{i}]' traduit une qualification que "
+                "la source ne porte pas (`valeur_source` null)."
+            )
+        elif valeur_source is not None and (
+            POSITION_POLITIQUE_AN_VERS_PIVOT.get(valeur_source) != pos_organe
+        ):
+            errors.append(
+                f"'position_politique.organes[{i}]' : {valeur_source!r} ne se "
+                f"traduit pas en {pos_organe!r} (voir POSITION_POLITIQUE_AN_VERS_PIVOT)."
+            )
+
+    attendu = resumer_position_politique(organes)
+    if position in POSITIONS_POLITIQUES_GROUPE and position != attendu:
+        errors.append(
+            f"'position_politique.position' vaut {position!r} alors que les "
+            f"déclarations publiées dans 'organes' donnent {attendu!r}. Le résumé "
+            "est dérivé des déclarations, jamais choisi (#686)."
+        )
+    return errors
+
+
 def validate_profil_groupe(profil: dict[str, Any]) -> list[str]:
     """Vérifie les invariants de base du schéma de groupe v1.
 
@@ -505,6 +700,19 @@ def validate_profil_groupe(profil: dict[str, Any]) -> list[str]:
     periode = profil.get("periode")
     if not isinstance(periode, dict):
         errors.append("'periode' doit être un dict.")
+
+    # `position_politique` est OPTIONNELLE, jamais obligatoire (#686) : les 7
+    # fiches publiées avant le lot ne la portent pas, et les 2 `groupe-Senat-*`
+    # ne la porteront jamais — le référentiel AMO30 ne qualifie que des groupes
+    # de l'Assemblée. Même précédent que `date_reference` (#653) et
+    # `couverture_roster.etat` (#558) : l'exiger ferait échouer le portail de
+    # qualité sur du publié qui ne sera pas régénéré.
+    position_politique = profil.get("position_politique")
+    if position_politique is not None:
+        if not isinstance(position_politique, dict):
+            errors.append("'position_politique' doit être un dict ou null.")
+        else:
+            errors.extend(_valider_position_politique(position_politique))
 
     # `date_reference` est OPTIONNELLE, jamais obligatoire (#653) : les 2 fiches
     # `groupe-Senat-*` publiées avant le lot ne la portent pas et ne seront pas
