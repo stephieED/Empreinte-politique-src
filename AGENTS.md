@@ -87,7 +87,18 @@ via `src/population_profils.py`.
   index file carries an optional `textes` table (`texte_vise` → `{dossier_id, titre}`),
   filled uid-to-uid from `document.dossierRef` — never by matching a label, not even an
   exact one. A texte with no resolved dossier has **no entry**, and the count is printed.
-  → `docs/decisions/dossier-des-amendements-639.md`
+  **The published index does not heal on its own (#696)**: the additive merge lets « the
+  new value win if it is populated », and a label *is* populated — 2 500 of the 484 132
+  published amendments still carried one on 01/09/2026, and the merge can even
+  *reintroduce* it on a sound entry (last profile read wins, alphabetical order). The
+  remedy is the named backfill `amendements_index.backfill_texte_vise`, run between the
+  merge and `resoudre_textes`, reading the sourced uid from
+  `raw_data/amendements_an_figes/<legislature>/` — never rebuilt from a title, never
+  matched on a label. Its criterion is the AN uid **grammar**
+  (`textes_vises_figes.est_uid_texte`), and it is wired on **both** call paths: CI never
+  goes through `build_amendements_index_pivot.py`.
+  → `docs/decisions/dossier-des-amendements-639.md`,
+  `docs/decisions/report-texte-vise-source-696.md`
 - **Both shared indexes must be in the workflow's `git add`.** They are the only
   cross-file dependencies inside `pivot_data/`; an uncommitted index leaves every mapping
   pointing at nothing, silently.

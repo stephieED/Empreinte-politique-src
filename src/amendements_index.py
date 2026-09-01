@@ -74,11 +74,12 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Any, Iterable, Iterator, Optional
+from typing import Any, Callable, Iterable, Iterator, Optional
 
 from json_io import ecrire_profil_json
 from licences import LICENCE_AN
 from profil_brut import iter_amendements_du_profil
+from textes_vises_figes import est_uid_texte
 
 SCHEMA_VERSION = "amendements-v1"
 COSIGNATURES_SCHEMA_VERSION = "amendements-cosignatures-v1"
@@ -376,6 +377,114 @@ def construire_index(amendements: Iterable[dict[str, Any]]) -> AmendementsIndex:
             courant[champ] = intern(valeur) if isinstance(valeur, str) else valeur
 
     return AmendementsIndex(par_id, cosignatures)
+
+
+#: Champ que le report de #696 rétablit, nommé en **un seul endroit** —
+#: reporter tout ce qui paraît fautif ferait de la fusion additive une fusion
+#: champ par champ, ce qu'elle n'est pas (même règle que
+#: `CHAMPS_QUALIFICATION_VOTE` de #639 et `CHAMPS_QUALIFICATION_DOSSIER` de
+#: #689, qui sont des tuples parce qu'ils portent plusieurs champs ; ici il n'y
+#: en a qu'un, et un tuple d'un élément se lirait comme une invitation à en
+#: ajouter).
+CHAMP_REPORT_TEXTE_VISE = "texte_vise"
+
+#: Lecteur de la valeur sourcée : `(législature, uid d'amendement) -> {uid:
+#: texte_vise}`. Injecté plutôt qu'importé, exactement comme `table_textes` de
+#: #639 : `backfill_texte_vise` ne doit connaître ni le disque, ni le format des
+#: archives figées — c'est ce qui le rend testable sans que rien ne lise
+#: `raw_data/` (AGENTS.md §3b).
+LecteurTextesVises = Callable[[str, set[str]], dict[str, str]]
+
+
+def backfill_texte_vise(
+    index: AmendementsIndex,
+    lire: Optional[LecteurTextesVises],
+) -> dict[str, int]:
+    """Rétablit le `texte_vise` sourcé des entrées qui n'en portent pas un (#696).
+
+    **Le maillon où la correction de #639 n'arrivait pas.** #639 a corrigé la
+    collecte, qui écrasait le code du document amendé par le titre du dossier.
+    Mais l'index publié est fusionné additivement avec le précédent, et
+    `merge_amendements_index` laisse gagner « la nouvelle valeur si elle est
+    renseignée » : un intitulé **est** renseigné. Une entrée écrite avant #639
+    gardait donc son intitulé à chaque reconstruction — et, mesuré le
+    01/09/2026, un amendement dont trois profils bruts portent le code correct
+    (`an:AMANR5L15PO59051B4857P0D1N000045`) était **malgré tout** publié avec
+    l'intitulé, parce que le quatrième signataire l'emporte par l'ordre des
+    fichiers. La fusion ne se contentait pas de conserver le défaut, elle
+    pouvait le réintroduire.
+
+    Strictement monotone. Ne touche **que** les entrées dont le `texte_vise`
+    n'est pas un uid de document AN (`est_uid_texte`), ne substitue **que** des
+    valeurs qui en sont un, n'écrase jamais un uid déjà en place, ne vide rien,
+    ne touche aucun autre champ, ne crée ni ne supprime aucune entrée, et ne
+    réordonne rien.
+
+    **La clé de fusion ne change pas** : `amendement_id` reste `an:<uid AN>`.
+    L'élargir pour y porter le texte visé serait le défaut de #668 — 468
+    doublons sur 940 entrées de `textes_portes`.
+
+    Ce que ce report ne peut pas faire : réparer un amendement dont l'archive
+    figée n'a pas non plus l'uid, et réparer une législature qui n'a pas
+    d'archive figée (la XVIIe, en cours). Les deux sont **comptés et nommés**
+    dans le relevé rendu, jamais comblés par une seconde source silencieuse.
+
+    Retourne le relevé, pour que l'appelant le publie plutôt que de le taire :
+    `entrees_a_reparer`, `entrees_sans_texte_vise`, `entrees_corrigees`,
+    `entrees_sans_source`, `legislatures_lues`, `legislatures_sans_source`.
+    """
+    releve = {
+        "entrees_a_reparer": 0,
+        "entrees_sans_texte_vise": 0,
+        "entrees_corrigees": 0,
+        "entrees_sans_source": 0,
+        "legislatures_lues": 0,
+        "legislatures_sans_source": 0,
+    }
+
+    # Relève d'abord, lit ensuite : l'archive d'une législature sans entrée
+    # fautive n'est jamais ouverte, et le coût du report est nul sur un index
+    # sain (610 Mio de RSS évités par législature, mesuré).
+    a_reparer: dict[str, dict[str, str]] = {}
+    for amendement_id, amendement in index.par_id.items():
+        valeur = amendement.get(CHAMP_REPORT_TEXTE_VISE)
+        if est_uid_texte(valeur):
+            continue
+        releve["entrees_a_reparer"] += 1
+        if valeur is None or valeur == "":
+            releve["entrees_sans_texte_vise"] += 1
+        uid = decomposer_id(amendement_id)
+        if uid is None:
+            # Pas d'uid AN : rien à relire dans une archive keyée par uid.
+            releve["entrees_sans_source"] += 1
+            continue
+        legislature = legislature_de_uid(uid) or LEGISLATURE_INCONNUE
+        a_reparer.setdefault(legislature, {})[uid] = amendement_id
+
+    if not a_reparer:
+        return releve
+    if lire is None:
+        # Aucun lecteur déclaré : rien n'est relu, rien n'est perdu, et le
+        # compte le dit — même convention que `table_textes=None` (#639).
+        releve["entrees_sans_source"] += sum(len(v) for v in a_reparer.values())
+        releve["legislatures_sans_source"] += len(a_reparer)
+        return releve
+
+    for legislature, par_uid in sorted(a_reparer.items()):
+        sources = lire(legislature, set(par_uid)) or {}
+        if sources:
+            releve["legislatures_lues"] += 1
+        else:
+            releve["legislatures_sans_source"] += 1
+        for uid, amendement_id in par_uid.items():
+            sourcee = sources.get(uid)
+            if not est_uid_texte(sourcee):
+                releve["entrees_sans_source"] += 1
+                continue
+            index.par_id[amendement_id][CHAMP_REPORT_TEXTE_VISE] = sys.intern(sourcee)
+            releve["entrees_corrigees"] += 1
+
+    return releve
 
 
 def resoudre_textes(
@@ -685,6 +794,7 @@ def rafraichir(
     fusionner: bool = True,
     genere_le: Optional[str] = None,
     table_textes: Optional[dict[str, dict[str, Any]]] = None,
+    lire_textes_vises: Optional[LecteurTextesVises] = None,
     comptes: Optional[dict[str, int]] = None,
 ) -> AmendementsIndex:
     """Reconstruit l'index depuis `profils_dir` et l'écrit, en fusionnant avec
@@ -702,10 +812,23 @@ def rafraichir(
     `textes_dossiers_an.charger_table()`. `None` (le défaut) laisse l'index tel
     quel : les rattachements déjà publiés sont conservés, aucun n'est ajouté —
     un run sans archives de dossiers ne perd rien et n'invente rien.
+
+    `lire_textes_vises` (#696) est le lecteur des archives figées de
+    `textes_vises_figes.lire_textes_vises`. `None` (le défaut) suit la même
+    convention : aucun `texte_vise` n'est relu, aucun n'est perdu, et le relevé
+    de `backfill_texte_vise` le dit.
     """
     index = construire_index(iter_amendements_du_repertoire(profils_dir))
     if fusionner:
         index = merge_amendements_index(charger(dossier), index)
+    # Report AVANT la résolution des dossiers (#696) : un `texte_vise` réparé
+    # doit gagner son dossier dans le MÊME run, sinon la correction ne se voit
+    # qu'à la reconstruction suivante. Et après la fusion, pour la raison qui
+    # vaut pour la résolution : la fusion peut réintroduire un intitulé sur une
+    # entrée qu'un profil brut portait correctement.
+    releve_textes_vises = backfill_texte_vise(index, lire_textes_vises)
+    if comptes is not None:
+        comptes.update(releve_textes_vises)
     # Résolution APRÈS la fusion : les amendements des profils non retraités
     # sont déjà là, et ils ont autant droit à leur dossier que les nouveaux.
     if table_textes is not None:

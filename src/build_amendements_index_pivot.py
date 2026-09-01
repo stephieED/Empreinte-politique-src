@@ -34,11 +34,19 @@ Elle est publiée sous forme de **table de fichier** — voir
 `amendements_index.resoudre_textes`. `--sans-dossiers` s'en passe : les
 rattachements déjà publiés sont alors conservés, aucun n'est ajouté.
 
+Un report nommé, depuis #696 : `amendements_index.backfill_texte_vise` relit
+dans les archives figées le `texte_vise` des entrées qui portent un **intitulé**
+au lieu de l'uid du document AN — 2 500 des 484 132 amendements publiés,
+mesuré le 01/09/2026. La fusion additive ne pouvait pas les corriger seule, et
+pouvait même réintroduire l'intitulé : voir la docstring de ce report.
+`--sans-report-texte-vise` s'en passe, en comptant ce qu'il laisse.
+
 Usage :
     python3 src/build_amendements_index_pivot.py
     python3 src/build_amendements_index_pivot.py --profils-dir raw_data/profiles --out pivot_data/amendements
     python3 src/build_amendements_index_pivot.py --no-merge     # reconstruction complète
     python3 src/build_amendements_index_pivot.py --sans-dossiers  # sans la jointure dossiers
+    python3 src/build_amendements_index_pivot.py --sans-report-texte-vise  # sans le report #696
 """
 
 import argparse
@@ -53,6 +61,7 @@ from amendements_index import (  # noqa: E402
     rafraichir,
 )
 from textes_dossiers_an import charger_table  # noqa: E402
+from textes_vises_figes import lire_textes_vises  # noqa: E402
 
 DEFAUT_PROFILS_DIR = Path("raw_data") / "profiles"
 
@@ -74,6 +83,12 @@ def main(argv: list[str] | None = None) -> int:
                         help="N'établit pas la jointure texte → dossier législatif (#639). "
                              "Les rattachements déjà publiés sont conservés, aucun n'est "
                              "ajouté : à réserver aux exécutions sans archives de dossiers.")
+    parser.add_argument("--sans-report-texte-vise", action="store_true",
+                        help="Ne relit pas dans les archives figées le `texte_vise` des "
+                             "amendements qui portent un intitulé au lieu de l'uid du "
+                             "document AN (#696). Les entrées fautives sont alors comptées "
+                             "et laissées telles quelles : à réserver aux exécutions sans "
+                             "raw_data/amendements_an_figes/.")
     args = parser.parse_args(argv)
 
     table_textes = None if args.sans_dossiers else charger_table()
@@ -90,6 +105,7 @@ def main(argv: list[str] | None = None) -> int:
         fusionner=not args.no_merge,
         genere_le=time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         table_textes=table_textes,
+        lire_textes_vises=None if args.sans_report_texte_vise else lire_textes_vises,
         comptes=comptes,
     )
 
@@ -97,7 +113,17 @@ def main(argv: list[str] | None = None) -> int:
     for legislature in index.legislatures():
         n = len(index.ids_de_legislature(legislature))
         print(f"      législature {legislature} : {n} amendement(s)")
-    if comptes:
+    if comptes.get("entrees_a_reparer"):
+        # Nommé même quand le report ne répare rien : un compte tu est le trou
+        # de #510. `entrees_sans_texte_vise` est un sous-ensemble de
+        # `entrees_a_reparer` — l'absence et l'intitulé ne se confondent pas.
+        print(f"      texte visé (#696) : {comptes['entrees_a_reparer']} entrée(s) sans uid "
+              f"de document, dont {comptes['entrees_sans_texte_vise']} sans texte visé du "
+              f"tout ; {comptes['entrees_corrigees']} corrigée(s) depuis les archives figées, "
+              f"{comptes['entrees_sans_source']} sans valeur sourcée "
+              f"({comptes['legislatures_lues']} législature(s) relue(s), "
+              f"{comptes['legislatures_sans_source']} sans archive figée exploitable)")
+    if "amendements_rattaches" in comptes:
         print(f"      dossiers : {comptes['amendements_rattaches']} amendement(s) rattaché(s), "
               f"{comptes['amendements_sans_dossier']} sans dossier "
               f"({comptes['textes_resolus']} texte(s) résolu(s), "
