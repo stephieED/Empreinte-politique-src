@@ -69,16 +69,16 @@
   max-width: 72ch;
 }
 
-/* ── Coup d'œil : le faisceau ────────────────────────────────────────────── */
-.cp-faisceau {
+/* ── Coup d'œil ──────────────────────────────────────────────────────────── */
+.cp-coup-oeil {
   margin-top: 26px;
   background: var(--dark);
   color: #f7f6f4;
   border-radius: 18px;
-  padding: 28px 32px 24px;
+  padding: 28px 32px 26px;
 }
 
-.cp-faisceau-label {
+.cp-coup-oeil-label {
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -86,63 +86,77 @@
   color: #9c98a6;
 }
 
-.cp-faisceau h2 {
-  font-size: 22px;
-  font-weight: 800;
+/* La thèse : réaction d'un côté, initiative de l'autre. Le contraste est
+   TYPOGRAPHIQUE — poids, teinte, taille — jamais un emoji : la charte n'en
+   emploie nulle part et il introduirait un ton. */
+.cp-these {
+  margin-top: 12px;
+  max-width: 54ch;
   letter-spacing: -0.015em;
-  margin-top: 9px;
-  max-width: 30ch;
 }
 
-.cp-faisceau-note,
-.cp-faisceau-pied {
-  font-size: 13px;
+.cp-these span {
+  display: block;
+}
+
+.cp-these-reaction {
+  font-size: 17px;
+  font-weight: 500;
   color: #9c98a6;
+  line-height: 1.35;
+}
+
+.cp-these-initiative {
+  font-size: 22px;
+  font-weight: 800;
+  color: #f7f6f4;
+  line-height: 1.22;
+  margin-top: 6px;
+}
+
+.cp-these-gouvernement,
+.cp-coup-oeil-voici {
+  font-size: 13px;
   line-height: 1.55;
   max-width: 70ch;
 }
 
-.cp-faisceau-note {
-  margin-top: 10px;
+.cp-these-gouvernement {
+  margin-top: 12px;
+  color: #9c98a6;
 }
 
-.cp-faisceau-pied {
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid #2c2f38;
-}
-
-.cp-faisceau-pied b,
-.cp-faisceau-note b {
+.cp-coup-oeil-voici {
+  margin-top: 12px;
   color: #f7f6f4;
   font-weight: 700;
 }
 
-.cp-traces {
-  margin-top: 22px;
+.cp-points {
+  margin-top: 18px;
 }
 
-.cp-trace {
+.cp-point {
   display: grid;
   grid-template-columns: 120px 1fr;
   gap: 20px;
   align-items: baseline;
-  padding: 13px 0;
+  padding: 14px 0;
   border-top: 1px solid #2c2f38;
 }
 
-.cp-trace:first-child {
+.cp-point:first-child {
   border-top: 0;
 }
 
-.cp-trace-nombre {
+.cp-point-nombre {
   font-size: 22px;
   font-weight: 800;
   letter-spacing: -0.02em;
   white-space: nowrap;
 }
 
-.cp-trace-nombre small {
+.cp-point-nombre small {
   font-size: 12px;
   font-weight: 600;
   color: #9c98a6;
@@ -150,15 +164,45 @@
   letter-spacing: 0;
 }
 
-.cp-trace-texte {
+.cp-point-texte {
   font-size: 13.5px;
   line-height: 1.5;
   max-width: 66ch;
 }
 
-.cp-trace-texte em {
-  font-style: normal;
+.cp-point-texte span {
+  display: block;
+}
+
+.cp-point-suite,
+.cp-point-socle {
   color: #9c98a6;
+  margin-top: 3px;
+}
+
+.cp-point-socle {
+  font-size: 12.5px;
+}
+
+/* Une garde n'est pas une note de méthode : elle prévient un contresens de
+   lecture — « questions reçues, pas posées ». Elle est donc marquée, pas
+   estompée comme la couverture. Le filet est neutre et NON le jaune signal :
+   DESIGN_SYSTEM §3 le réserve à la sélection, à l'action et à la source
+   vérifiée — l'employer ici lui ferait dire « attention », c'est-à-dire un
+   jugement. */
+.cp-point-garde {
+  margin-top: 7px;
+  padding-left: 10px;
+  border-left: 2px solid #4a4d58;
+  font-size: 12.5px;
+  color: #e4e2e8;
+}
+
+@media (max-width: 640px) {
+  .cp-point {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
 }
 
 /* ── Sections ────────────────────────────────────────────────────────────── */
