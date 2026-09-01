@@ -590,21 +590,36 @@ export const LIBELLE_STADE = {
 };
 
 export const LIBELLE_ROLE_TEXTE = {
+  // #689 a scindé `auteur`, qui couvrait deux actes de nature différente. Les
+  // trois valeurs neuves DOIVENT figurer ici : sans libellé, la fiche
+  // afficherait la clé technique telle quelle dès le premier run qualifié.
+  initiateur_projet_de_loi: 'Initiateur (projet de loi)',
+  auteur_proposition_de_loi: 'Auteur (proposition de loi)',
+  auteur_proposition_de_resolution: 'Auteur (proposition de résolution)',
   auteur: 'Auteur',
   rapporteur: 'Rapporteur',
   'co-rapporteur': 'Co-rapporteur',
 };
 
 /*
- * Un texte dont l'intitulé officiel commence par « projet de loi » est un texte
- * du GOUVERNEMENT, signé comme ministre — pas une proposition déposée comme
- * parlementaire. Le corpus les range sous le même `role: auteur` (13 des 34
- * textes d'Attal) : la distinction ne tient qu'à l'intitulé, et la page le dit
- * au lieu de laisser lire 34 initiatives personnelles.
+ * Un projet de loi est un texte du GOUVERNEMENT, porté comme ministre — pas une
+ * proposition déposée comme parlementaire.
+ *
+ * `nature_texte` (#689) est le fait sourcé : le préfixe de l'uid du document
+ * déposé, lu dans l'archive AN. Il fait foi dès qu'il est présent, y compris
+ * contre l'intitulé.
+ *
+ * Le repli par intitulé est CONSERVÉ, et il est déclaré : le corpus publié ne
+ * porte `nature_texte` qu'à partir du run qui recollecte les dossiers, et le
+ * retirer aujourd'hui afficherait 0 projet de loi là où la page en signale 13.
+ * Il ne tient que sur les XVI/XVII — les dossiers de la XV portent des
+ * intitulés descriptifs (« Bioéthique », « CETA ») et il en manque 283 sur 304.
+ * Condition de retrait : la §5c du quality gate à 0 initiateur sans nature.
  */
 const PROJET_DE_LOI = /^projet de loi\b/;
 
 export function estProjetDeLoi(texte) {
+  if (texte?.nature_texte) return texte.nature_texte === 'projet_de_loi';
   return PROJET_DE_LOI.test(normalizeLabel(texte?.titre));
 }
 
