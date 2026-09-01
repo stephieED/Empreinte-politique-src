@@ -180,10 +180,20 @@ via `src/population_profils.py`.
   `python3 scripts/rendu_formulaire.py` before touching a label** — reading the YAML hides
   exactly the defect #578 fixed.
   → `docs/decisions/ci-cd.md`, `docs/decisions/deux-axes-formulaire-578.md`
-- **The data push goes out under a deploy key, not the `GITHUB_TOKEN` (#508).** A missing
-  secret falls back to the token and the push is rejected **loudly**, naming the rule. A
-  deploy-key push emits a `push` event, so `tests.yml` really runs on data commits.
-  → `docs/decisions/push-donnees-cle-de-deploiement-508.md`
+- **The push identity decides whether any workflow sees the data commit — and today none
+  does (#508, #685).** A `GITHUB_TOKEN` push emits **no `push` event**; only a deploy-key
+  push does. #508 wired `ssh-key: ${{ secrets.DATA_PUSH_SSH_KEY }}` into `merge-and-pivot`,
+  but the three manual gestures its §7 names — deploy key, secret, ruleset — were **never
+  performed** (measured 01/09/2026: zero deploy keys, no such secret, no
+  `required_status_checks`), so the push still goes out under the token and **0 of the 15
+  data commits since `tests.yml` exists carry a test run**, the 11 since #508 included. Its
+  **loud** rejection cannot fire either: it speaks only on a `GH013`, which needs the
+  required check that was never restored — two omissions covering each other, which is why
+  fifteen commits went unnoticed. `merge-and-pivot` now **measures the remote it actually
+  pushed to** and says so in an annotation and in the job summary, non-blocking; the
+  guarantee returns only with #508 §7, never by editing this line.
+  → `docs/decisions/push-donnees-cle-de-deploiement-508.md`,
+  `docs/decisions/identite-du-push-et-declenchement-des-tests-685.md`
 - **A job never writes a cache key for a directory it does not fill.** Three times:
   #412 §2.3 → #424 → #505. A job carrying a `--skip-*` flag uses `actions/cache/restore`;
   a key whose **content** depends on an input carries that input; two jobs sharing a key

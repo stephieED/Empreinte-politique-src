@@ -93,6 +93,17 @@ Convention d'écriture : `AGENTS.md` §8.
 
 ## Known bugs
 
+- **Aucun commit de données n'est couvert par la suite de tests, et le rétablir
+  demande trois gestes hors du dépôt (#685).** Mesuré le 01/09/2026 : **0 des 15**
+  commits de données arrivés sur `main` depuis le premier run de `tests.yml`
+  (20/08) n'en porte un. Le dépôt n'a **aucune** clé de déploiement et le secret
+  `DATA_PUSH_SSH_KEY` n'existe pas, donc le push repart sous le `GITHUB_TOKEN`,
+  qui n'émet pas d'événement `push`. Remède : les trois gestes de
+  `docs/decisions/push-donnees-cle-de-deploiement-508.md` §7, **dans cet ordre** —
+  clé de déploiement + secret, entrée `DeployKey` dans les `bypass_actors`, puis
+  seulement le check requis. Depuis #685 chaque run le signale ; il ne le répare
+  pas.
+
 - **Les index figés de scrutins sont à régénérer, et chaque run paie 20,0 Mo en
   attendant (#639).** `raw_data/scrutins_an_figes/{14,15,16}` porte la projection à
   cinq champs d'avant #639 ; elle est refusée, l'archive est retéléchargée.

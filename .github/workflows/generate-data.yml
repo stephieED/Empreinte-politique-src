@@ -3091,6 +3091,66 @@ jobs:
           fi
           exit 1
 
+      # ── Le push a-t-il émis un événement `push` ? (#685) ──────────────────
+      # POURQUOI CE STEP EXISTE. `AGENTS.md` §3b affirmait, au titre de #508 :
+      # « A deploy-key push emits a `push` event, so `tests.yml` really runs on
+      # data commits. » Mesuré le 01/09/2026 : sur les **15** commits de
+      # données arrivés sur `main` depuis que `tests.yml` existe (20/08/2026),
+      # **aucun** ne porte de run de la suite — dont les **11** postérieurs à
+      # #508. Le dépôt n'a AUCUNE clé de déploiement (`GET /repos/{o}/{r}/keys`
+      # rend `[]`) et le secret `DATA_PUSH_SSH_KEY` n'existe pas : `ssh-key`
+      # vaut la chaîne vide, `actions/checkout` retombe sur le GITHUB_TOKEN en
+      # HTTPS, et un push sous le GITHUB_TOKEN n'émet aucun événement
+      # (protection anti-boucle des workflows).
+      #
+      # CE QUI A RENDU LA PANNE INVISIBLE quinze commits durant, ce n'est pas
+      # le repli — il est documenté et voulu — c'est qu'il est MUET. Le « rejet
+      # bruyant » que #508 promet ne parle que sur un `GH013`, lequel suppose
+      # le check requis… qui n'a jamais été rétabli non plus. Les deux gestes
+      # omis se couvrent l'un l'autre : le push passe, et rien ne dit que la
+      # suite ne tournera pas.
+      #
+      # CE QUI EST MESURÉ, ET PAS DEVINÉ : l'URL du dépôt distant telle que le
+      # push vient réellement de l'employer. `actions/checkout` pose
+      # `git@github.com:` quand `ssh-key` est renseignée, `https://github.com/`
+      # sinon — tester `secrets.DATA_PUSH_SSH_KEY != ''` serait un indice sur
+      # l'intention, ceci est le fait sur l'exécution.
+      #
+      # NON BLOQUANT DÉLIBÉRÉMENT : les trois gestes qui répareraient le
+      # mécanisme (clé de déploiement, secret, check requis) vivent hors du
+      # dépôt et hors de portée d'un run. Faire échouer le job priverait le
+      # site de ses données fraîches pour une configuration que seule une
+      # humaine peut poser. Un signal, donc, et sur les deux canaux qui se
+      # relisent : l'annotation du run et le résumé du job.
+      #
+      # Voir docs/decisions/identite-du-push-et-declenchement-des-tests-685.md.
+      - name: Le commit de données déclenchera-t-il `tests.yml` ? (#685)
+        if: steps.commit.outputs.pushed == 'true'
+        run: |
+          set -euo pipefail
+          url_distante="$(git remote get-url origin)"
+          titre="### Suite de tests sur le commit de données"
+          case "$url_distante" in
+            git@*|ssh://*)
+              echo "Push sous clé de déploiement (${url_distante}) : l'événement \`push\` est émis, \`tests.yml\` se déclenche sur ce commit de données."
+              {
+                echo "$titre"
+                echo
+                echo "Push SSH sous clé de déploiement — \`tests.yml\` se déclenche sur ce commit."
+              } >> "$GITHUB_STEP_SUMMARY"
+              ;;
+            *)
+              echo "::warning::Ce commit de données est parti sous le GITHUB_TOKEN (${url_distante}) et non sous une clé de déploiement : GitHub n'émet AUCUN événement \`push\` pour lui, donc \`tests.yml\` ne tournera pas dessus et rien ne vérifiera les invariants que la suite verrouille. Le secret DATA_PUSH_SSH_KEY est absent ou vide. Réparation : les trois gestes de docs/decisions/push-donnees-cle-de-deploiement-508.md §7 (#685)."
+              {
+                echo "$titre"
+                echo
+                echo "**\`tests.yml\` NE tournera PAS sur ce commit.** Il est parti sous le"
+                echo "\`GITHUB_TOKEN\` (\`${url_distante}\`), qui n'émet pas d'événement \`push\`."
+                echo "Voir \`docs/decisions/identite-du-push-et-declenchement-des-tests-685.md\`."
+              } >> "$GITHUB_STEP_SUMMARY"
+              ;;
+          esac
+
       # ── Publication du site avec les données fraîches (#416) ──────────────
       # POURQUOI CE DÉCLENCHEMENT EXPLICITE EXISTE (#416) : tant que le push
       # ci-dessus se faisait avec le GITHUB_TOKEN, GitHub n'émettait AUCUN
