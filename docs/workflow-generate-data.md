@@ -291,7 +291,8 @@ additive des profils bruts des trois familles d'artifacts
 `roster_candidats.json` du run ; profils de parti, de groupe parlementaire réel,
 de gouvernement ; `check_quality_gate.py` ; les **quatre contrôles** de la §8 ;
 la vérification que `src/` et `raw_data/*.json` n'ont pas bougé sur la branche
-pendant le run ; le commit et le push ; la fenêtre de rétention de l'historique
+pendant le run ; le commit et le push ; **le signal disant si ce commit
+déclenchera `tests.yml`** (#685, §6) ; la fenêtre de rétention de l'historique
 de données ; le déclenchement de `deploy-pages.yml`.
 
 **Consomme** tous les artifacts ci-dessus — mais **aucun** pour la ligne de
@@ -300,7 +301,9 @@ dans les artifacts. Il lit aussi `.cache/dossiers_an` (restauré par son propre
 `actions/cache`, §5) : depuis #639, la construction de `pivot_data/amendements/`
 y joint chaque `texte_vise` à son dossier législatif. Archives absentes → aucun
 rattachement ajouté, aucun retiré, et le job le dit dans son log. **Produit** le commit de données sur `main`, poussé sous
-`secrets.DATA_PUSH_SSH_KEY` (§6). C'est le seul job à porter
+`secrets.DATA_PUSH_SSH_KEY` — secret qui **n'existe pas** aujourd'hui, si bien
+que le push repart sous le `GITHUB_TOKEN` et qu'aucun workflow ne voit le commit
+(#685, §6). C'est le seul job à porter
 `permissions: contents: write`.
 
 **Pourquoi comme ça** : les quatre contrôles sont **cloisonnés**, aucune
@@ -442,12 +445,27 @@ profil partiel et déclare la troncature dans `meta.warnings[]`. Gardé par
 sans PR : la règle lui est insatisfiable, pas seulement lente. L'app GitHub
 Actions ne peut pas être `bypass_actor` sur un dépôt **personnel**, la clé si.
 
-Deux conséquences à connaître : un push par clé de déploiement **émet un
-événement `push`** (le `GITHUB_TOKEN` non), donc `tests.yml` s'exécute
-réellement sur les commits de données ; et `deploy-pages.yml` se déclenche deux
-fois, sérialisé par son groupe de concurrence `pages`. Secret absent ⇒ le
-checkout retombe sur le token et le push est refusé **bruyamment**, en nommant la
-règle. Voir `docs/decisions/push-donnees-cle-de-deploiement-508.md`.
+Un push par clé de déploiement **émet un événement `push`**, là où le
+`GITHUB_TOKEN` n'en émet aucun : c'est cette bascule qui décide si `tests.yml` et
+`deploy-pages.yml` voient passer le commit de données.
+
+**Aujourd'hui elle n'a pas lieu, et c'est mesuré (#685).** Le dépôt n'a **aucune**
+clé de déploiement et le secret `DATA_PUSH_SSH_KEY` n'existe pas : `ssh-key` vaut
+la chaîne vide, `actions/checkout` retombe sur le `GITHUB_TOKEN` en HTTPS, et
+**0 des 15** commits de données arrivés sur `main` depuis que `tests.yml` existe
+ne porte de run de la suite. Le refus **bruyant** annoncé sur secret absent ne
+parle que sur un `GH013`, lequel suppose le check requis — jamais rétabli non
+plus : les deux omissions se couvrent l'une l'autre. Le déclenchement explicite
+de `deploy-pages.yml` par `gh workflow run` (#416) est ce qui empêche cette
+absence de coûter la publication du site.
+
+Le dernier step du job **mesure** donc `git remote get-url origin` après un push
+abouti et dit, en annotation et dans le résumé du job, si `tests.yml` tournera —
+non bloquant, parce que les trois gestes qui répareraient le mécanisme (clé,
+secret, check requis) vivent hors du dépôt. La garantie revient avec eux, et pas
+en réécrivant cette page. Voir
+`docs/decisions/push-donnees-cle-de-deploiement-508.md` et
+`docs/decisions/identite-du-push-et-declenchement-des-tests-685.md`.
 
 Le workflow porte `permissions: contents: read` au niveau global, et
 `contents: write` uniquement sur `merge-and-pivot` (#413 §6). Concurrence :
