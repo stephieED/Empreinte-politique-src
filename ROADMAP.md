@@ -32,6 +32,22 @@ qui suivent, dont chacun a coûté assez cher pour ne pas être re-découvert.
 
 ### Constats de cadrage, à ne pas re-trancher
 
+**Rattacher un scrutin ou une intervention à sa loi : instruit, mesuré, écarté
+(#639, 01/09/2026).** La tentation revient à chaque lecture du corpus, parce que
+`texte_lie_id` est `null` sur les 17 748 scrutins publiés et qu'un champ vide se
+lit comme un travail facile. Il ne l'est pas : **81,8 % des scrutins n'ont aucun
+rattachement sourcé**, dont **100 % de la XIVe législature**, et côté
+interventions l'AN ne publie **aucune** référence de dossier — 0 occurrence sur
+1 206 comptes rendus Syceron, la seule route sourcée plafonnant à 0,097 % du
+corpus. **Une borne déclarée ne rattrape pas ça** : le vide serait systématique
+par période, et un lecteur y lirait « il n'a pas voté sur ces lois ».
+
+Le détail, les trois routes chiffrées et surtout les **conditions de
+réouverture** — trois pour les scrutins, deux pour les interventions, toutes
+conjointes — sont dans
+[`rattachement-au-dossier-interventions-et-scrutins-639`](docs/decisions/rattachement-au-dossier-interventions-et-scrutins-639.md).
+Ne rouvrez pas sans les avoir relues : elles sont mesurables hors ligne.
+
 **Un constat chiffré recopié d'une issue vieillit — #484 l'a démontré deux fois.**
 L'issue est close depuis le 30/08/2026 ; ce qui suit n'est plus un appel à la
 re-vérifier, c'est la trace de ce que la re-mesure a coûté. Son constat d'origine —
@@ -137,23 +153,6 @@ Convention d'écriture : `AGENTS.md` §8.
   seulement le check requis. Depuis #685 chaque run le signale ; il ne le répare
   pas.
 
-- **Les index figés de scrutins sont à régénérer, et chaque run paie 20,0 Mo en
-  attendant (#639).** `raw_data/scrutins_an_figes/{14,15,16}` porte la projection à
-  cinq champs d'avant #639 ; elle est refusée, l'archive est retéléchargée.
-  Remède : `python3 src/build_scrutins_index_figes.py --toutes` hors CI, puis
-  committer les trois index. Tant que les profils ne sont pas régénérés, les
-  9 314 scrutins publiés des législatures 14-16 restent sans `type_scrutin` et
-  leurs 43 motions de censure sans qualification (donnée absente, jamais fausse).
-
-- **`objet.dossierLegislatif.dossierRef` rattache 2 608 scrutins de la 17e à leur
-  dossier, et personne ne le lit (#639, rang 4 à réordonner).** Mesuré le
-  31/08/2026 sur l'archive réelle : renseigné sur 2 608 / 8 434 scrutins bruts de
-  la 17e (30,9 %, 75 dossiers distincts), et **jamais renseignée** sur les
-  législatures 14, 15 et 16 (0 / 9 876, la clé n'y figure même pas). L'investigation de l'issue n'avait
-  examiné que `objet.referenceLegislative` et concluait à 715 / 17 748 par lien
-  inverse : il existe donc un rattachement **direct et sourcé**, plus large, sur
-  la législature en cours. Renseigner `texte_lie_id` depuis là change sa
-  sémantique et mérite sa propre décision.
 - **`amendements_agreges` est un dénominateur publié qu'aucun contrôle pré-commit
   ne regarde** (relevé pendant #643, 31/08/2026). `audit_diff_profils.py` ne compare
   que les champs déclarés dans ses `Collection`, et `COLLECTION_GROUPES` ne nomme
