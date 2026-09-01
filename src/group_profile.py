@@ -49,6 +49,11 @@ Cas limites gérés :
   - mandats_agreges : adhésion d'une journée ou moins (43 % des adhésions de
     commission publiées) → comptée dans nb_membres_cumul_historique, absente de
     nb_membres_a_la_date_de_reference. Distinguée, jamais filtrée (#656).
+  - effectif : `min_historique`/`max_historique` sont l'amplitude sur la
+    période, `{valeur, date}` chacun (#702). Une seule entrée `membres[]` sans
+    `debut_dans_groupe` les laisse à `null` — seuil 0, motif en clair dans
+    meta.warnings. Un départ suivi d'un retour reste invisible : `membres[]` ne
+    porte qu'un intervalle par membre (périodes recollées, #526).
 
 Les trois décisions à relire avant de toucher à une agrégation
 --------------------------------------------------------------
@@ -110,7 +115,7 @@ import sys
 import time
 import unicodedata
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 from typing import Any, Iterable, Optional
 
@@ -404,6 +409,161 @@ def _stamper_presences(
         membre["present_a_la_date_de_reference"] = _appartenance_couvre(
             membre, date_reference
         )
+
+
+# ---------------------------------------------------------------------------
+# Amplitude d'effectif sur la période de la fiche (#702)
+# ---------------------------------------------------------------------------
+
+#: Motifs de non-publication de `effectif.min_historique`/`max_historique`.
+#: Ils ne sont pas publiés dans la fiche — ils nomment l'avertissement lecteur
+#: qui l'est. Un `null` sans motif dit « on n'a pas calculé » ; un `null` avec
+#: son motif dit ce que la donnée ne permet pas d'établir (AGENTS.md §2 règle 5).
+MOTIF_AMPLITUDE_FENETRE_NON_BORNEE = "fenetre_non_bornee"
+MOTIF_AMPLITUDE_APPARTENANCE_NON_ETABLIE = "appartenance_non_etablie"
+
+
+def _fenetre_de_la_fiche(
+    periode_debut: Optional[str],
+    periode_fin: Optional[str],
+    date_reference: Optional[str],
+) -> Optional[tuple[str, str]]:
+    """La fenêtre sur laquelle l'effectif est balayé : `[debut, fin]`, incluse.
+
+    C'est **la période de la fiche, jamais au-delà** : `periode.debut` →
+    `periode.fin`. Quand la période est encore ouverte (`periode.fin` à `None`,
+    au moins une appartenance sans fin), la borne haute est
+    `date_reference.date` — la date de génération, seul instant où « qui siège »
+    a un sens sur une législature qui court (#653). Le lecteur peut donc
+    reconstituer la fenêtre depuis la fiche : `periode.fin` sinon
+    `date_reference.date`.
+
+    Rend `None` dès qu'une borne manque — une fenêtre non bornée couvrirait
+    toutes les dates, ce qui est exactement l'inverse de la règle de
+    `_appartenance_couvre` sur une borne absente. C'est le cas des 2 fiches
+    `groupe-Senat-*` gelées (#516) : période ouverte et pas de `date_reference`.
+    """
+    if not periode_debut:
+        return None
+    fin = periode_fin or date_reference
+    if not fin or fin < periode_debut:
+        return None
+    return (periode_debut, fin)
+
+
+def _dates_de_reevaluation(
+    membres: list[dict[str, Any]], fenetre: tuple[str, str]
+) -> list[str]:
+    """Les dates auxquelles l'effectif peut changer, dans la fenêtre.
+
+    L'effectif est une fonction en escalier du temps : il **monte** le jour
+    d'un `debut_dans_groupe`, et **descend le lendemain** d'un
+    `fin_dans_groupe` — la borne de fin est inclusive (`_appartenance_couvre`),
+    donc un membre dont l'appartenance s'achève le 20 est encore compté ce
+    jour-là et ne l'est plus le 21.
+
+    Balayer ces dates-là suffit : tout palier de la fonction commence à l'une
+    d'elles, et `periode.debut` ouvre le premier. Une date hors fenêtre est
+    écartée — la fiche ne décrit pas ce qui se passe après sa période.
+    """
+    debut, fin = fenetre
+    dates: set[str] = {debut}
+    for membre in membres:
+        d = membre.get("debut_dans_groupe")
+        if d and debut <= d <= fin:
+            dates.add(d)
+        f = _parse_date(membre.get("fin_dans_groupe"))
+        if f is not None:
+            lendemain = str(f + timedelta(days=1))
+            if debut <= lendemain <= fin:
+                dates.add(lendemain)
+    return sorted(dates)
+
+
+def _effectif_sur_la_periode(
+    membres: list[dict[str, Any]],
+    periode_debut: Optional[str],
+    periode_fin: Optional[str],
+    date_reference: Optional[str],
+) -> tuple[Optional[dict[str, Any]], Optional[dict[str, Any]], Optional[str]]:
+    """Minimum et maximum d'effectif sur la période de la fiche (#702).
+
+    Un groupe parlementaire n'a pas un effectif, il en a une trajectoire :
+    `a_la_date_de_reference` est exact et daté (#653), mais c'est un
+    instantané présenté pour décrire deux ans. Cette fonction rend les deux
+    bornes de la trajectoire, **chacune avec la date où elle est atteinte** :
+    un minimum sans sa date est un nombre sans fait.
+
+    La règle, en trois points :
+
+    1. **Qui est présent à une date** est décidé par `_appartenance_couvre`, la
+       même fonction que `present_a_la_date_de_reference` — jamais une seconde
+       implémentation de la même règle. Une **borne de début absente rend
+       l'appartenance ouverte à aucune date**, jamais à toutes (#653) : une
+       donnée manquante ne peut pas couvrir tout l'axe du temps
+       (AGENTS.md §2 règle 5).
+    2. **Les dates évaluées** sont celles où l'effectif peut changer
+       (`_dates_de_reevaluation`), dans la **fenêtre de la fiche**
+       (`_fenetre_de_la_fiche`), jamais au-delà.
+    3. **Une entrée sans `debut_dans_groupe` interdit la publication**, seuil
+       **0**. Ce membre n'est comptable à aucune date : le minimum et le
+       maximum obtenus sans lui sont des **bornes inférieures**, et une borne
+       inférieure publiée sous le nom « minimum » est un chiffre faux. `null`
+       est une réponse, pas un chiffre faux. Mesuré au 01/09/2026 : 0 entrée
+       sans date sur les 452 des 5 fiches AN, 14 sur 15 et 4 sur 5 sur les 2
+       fiches Sénat gelées (#516) — la règle sépare exactement les deux
+       populations.
+
+    Ce que ce calcul **ne peut pas** établir : `membres[]` ne porte qu'un
+    intervalle par membre, `mandat_debut`/`mandat_fin` recollés par
+    `an_roster._fusionner_periodes` (#526). Un membre parti puis revenu est
+    publié comme présent en continu, et son absence n'apparaît dans aucune
+    borne. Le calcul lit ce que la fiche publie — le corriger demanderait de
+    changer le contrat du roster, pas cette fonction.
+
+    Args:
+        membres: entrées `membres[]` déjà dérivées (dates d'appartenance).
+        periode_debut: `periode.debut` de la fiche.
+        periode_fin: `periode.fin` de la fiche (`None` si encore ouverte).
+        date_reference: `date_reference.date`, borne haute de repli.
+
+    Returns:
+        `(min_historique, max_historique, motif)` — les deux bornes sous la
+        forme `{"valeur": int, "date": "YYYY-MM-DD"}`, ou `(None, None, motif)`
+        avec le motif de non-publication.
+    """
+    # Une fiche sans aucune entrée n'a pas de fenêtre non plus (`periode.debut`
+    # se dérive des mêmes dates) ; c'est le motif de fenêtre qui est rendu, dire
+    # « 0 des 0 entrées ne sont datées » n'apprendrait rien.
+    if not membres:
+        return None, None, MOTIF_AMPLITUDE_FENETRE_NON_BORNEE
+    # L'ordre compte : quand les deux motifs sont vrais, c'est le nombre
+    # d'entrées non datées qui apprend quelque chose au lecteur, pas la borne
+    # manquante qui en découle.
+    if any(not m.get("debut_dans_groupe") for m in membres):
+        return None, None, MOTIF_AMPLITUDE_APPARTENANCE_NON_ETABLIE
+
+    fenetre = _fenetre_de_la_fiche(periode_debut, periode_fin, date_reference)
+    if fenetre is None:
+        return None, None, MOTIF_AMPLITUDE_FENETRE_NON_BORNEE
+
+    # Ordre croissant : à valeur égale, la PREMIÈRE date où l'effectif atteint
+    # la borne est retenue. Convention arbitraire mais fixe, et écrite : sans
+    # elle, deux runs sur la même donnée pourraient dater différemment la même
+    # valeur.
+    serie = [
+        (d, sum(1 for m in membres if _appartenance_couvre(m, d)))
+        for d in _dates_de_reevaluation(membres, fenetre)
+    ]
+    valeur_min = min(n for _, n in serie)
+    valeur_max = max(n for _, n in serie)
+    date_min = next(d for d, n in serie if n == valeur_min)
+    date_max = next(d for d, n in serie if n == valeur_max)
+    return (
+        {"valeur": valeur_min, "date": date_min},
+        {"valeur": valeur_max, "date": date_max},
+        None,
+    )
 
 
 def appartenances_depuis_roster(
@@ -1835,10 +1995,18 @@ def build_groupe_profile(
 
     # --- Effectif ---
     n_presents = sum(1 for m in membres if m["present_a_la_date_de_reference"])
+    # L'amplitude est calculée ICI, sur la même liste `membres[]` et par la même
+    # fonction de présence (`_appartenance_couvre`) que le compteur ci-dessus
+    # (#702). Un agrégat pré-calculé ailleurs survivrait à la correction de sa
+    # source : ce qui rendrait cette amplitude fausse, ce sont les dates
+    # d'appartenance, et elles sont lues au même instant que le reste de la fiche.
+    min_historique, max_historique, motif_amplitude = _effectif_sur_la_periode(
+        membres, periode_debut, periode_fin, date_ref
+    )
     effectif: dict[str, Any] = {
         "a_la_date_de_reference": n_presents,
-        "min_historique": None,  # non calculé (nécessiterait une analyse de timeline)
-        "max_historique": None,
+        "min_historique": min_historique,
+        "max_historique": max_historique,
     }
     if (date_reference or {}).get("origine") == ORIGINE_DATE_REFERENCE_CLOTURE:
         warnings.append(avertissement(
@@ -1857,6 +2025,38 @@ def build_groupe_profile(
             f"{date_ref}, date de génération — au moins une appartenance au groupe est "
             "encore ouverte, la législature court. La valeur bougera au prochain run "
             "(#653).",
+            DESTINATAIRE_LECTEUR,
+        ))
+
+    # --- Ce que l'amplitude d'effectif dit, et ce qu'elle ne dit pas (#702) ---
+    if motif_amplitude == MOTIF_AMPLITUDE_APPARTENANCE_NON_ETABLIE:
+        n_sans_date = sum(1 for m in membres if not m.get("debut_dans_groupe"))
+        warnings.append(avertissement(
+            f"effectif_sur_la_periode : `min_historique` et `max_historique` sont publiés "
+            f"`null` — {n_sans_date} des {len(membres)} entrées de `membres[]` n'ont pas de "
+            "`debut_dans_groupe`, donc ne sont comptables à aucune date. Un minimum calculé "
+            "sans elles serait une borne inférieure publiée sous le nom « minimum » (#702).",
+            DESTINATAIRE_LECTEUR,
+        ))
+    elif motif_amplitude == MOTIF_AMPLITUDE_FENETRE_NON_BORNEE:
+        warnings.append(avertissement(
+            "effectif_sur_la_periode : `min_historique` et `max_historique` sont publiés "
+            "`null` — la période de la fiche n'est pas bornée : `periode.debut` est absent, "
+            "ou `periode.fin` et `date_reference.date` le sont toutes les deux. Une fenêtre "
+            "non bornée couvrirait toutes les dates (#702).",
+            DESTINATAIRE_LECTEUR,
+        ))
+    elif min_historique and max_historique:
+        borne_haute = periode_fin or date_ref
+        warnings.append(avertissement(
+            f"effectif_sur_la_periode : entre {periode_debut} et {borne_haute}, le groupe a "
+            f"compté au minimum {min_historique['valeur']} membres "
+            f"({min_historique['date']}) et au maximum {max_historique['valeur']} "
+            f"({max_historique['date']}) — première date à laquelle chaque borne est "
+            "atteinte. L'effectif est réévalué à chaque entrée et à chaque lendemain de "
+            "sortie, jamais hors de cette fenêtre. `membres[]` ne porte qu'un intervalle "
+            "par membre (périodes recollées, #526) : un départ suivi d'un retour n'y "
+            "apparaît pas, et aucune de ces deux bornes ne le voit (#702).",
             DESTINATAIRE_LECTEUR,
         ))
 

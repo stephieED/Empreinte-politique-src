@@ -608,6 +608,31 @@ n'est pas concerné : il décrit la période, pas un effectif à un instant.
 #516 ne seront pas régénérées et gardent les anciens noms. Tout lecteur doit
 accepter les deux (`audit_groupe_dataset.CHAMPS_EFFECTIF` le fait).
 
+**L'amplitude sur la période** (#702) : `effectif.min_historique` et
+`effectif.max_historique` valaient `null` sur les 7 fiches depuis l'origine du
+schéma. Ils publient désormais `{"valeur": 167, "date": "2024-03-09"}` — un
+minimum sans sa date est un nombre sans fait, et deux champs voisins se
+recopient l'un sans l'autre. L'effectif est réévalué à chaque
+`debut_dans_groupe` et au **lendemain** de chaque `fin_dans_groupe` (la borne de
+fin est inclusive), sur la **fenêtre de la fiche** : `periode.debut` →
+`periode.fin`, `date_reference.date` prenant le relais de la borne haute tant
+que la période est ouverte, jamais au-delà. À valeur égale, la **première** date
+atteinte. Mesuré sur les 5 fiches AN de la XVIe : REN 167 → 175, RN 87 → 89,
+LFI 74 → 75, LR et SOC plates (61, 31). L'écart entre `membres[]` et
+`a_la_date_de_reference` (24 sur `AN:REN-16`) est de la **rotation**, pas une
+amplitude.
+
+Les deux champs sortent `null`, **motif publié dans `meta.warnings`**, dès
+qu'une entrée `membres[]` n'a pas de `debut_dans_groupe` (seuil 0) : ce membre
+n'est comptable à aucune date, et les bornes obtenues sans lui sont des bornes
+inférieures (0 / 452 sur les 5 fiches AN ; 14 / 15 et 4 / 5 sur les 2 fiches
+Sénat gelées). Trois formes se lisent — `null`, entier nu hérité, objet
+`{valeur, date}` —, une seule se produit ; `schema_groupe.valeur_borne_effectif`
+rend l'entier des trois. Limite qu'aucun `null` ne couvre : `membres[]` ne porte
+qu'un intervalle par membre (périodes recollées, #526), donc un départ suivi
+d'un retour est invisible et l'amplitude est un **minorant**.
+→ [`effectif-du-groupe-dans-le-temps-702.md`](decisions/effectif-du-groupe-dans-le-temps-702.md)
+
 À ne pas confondre avec le job CI `extract-roster-groupes`, qui utilise aussi
 `group_roster.py` (via `generate_roster_candidats.py`) mais pour produire des
 profils **individuels** bruts couvrant tous les membres du roster, en amont de

@@ -32,6 +32,34 @@ qui suivent, dont chacun a coûté assez cher pour ne pas être re-découvert.
 
 ### Constats de cadrage, à ne pas re-trancher
 
+**Le corpus a un plancher, et il n'est pas le même selon la matière
+(mesuré le 01/09/2026 sur les archives en cache et les index figés).** Aucune
+décision ne l'avait posé comme un choix éditorial ; il existait en fait, sans
+être consigné, ce qui le rendait rouvrable au premier prétexte.
+
+| Matière | Législatures disponibles | Depuis |
+| --- | --- | --- |
+| Scrutins | 14 · 15 · 16 · 17 | 03/07/2012 |
+| Amendements | 14 · 15 · 16 (figés) · 17 | idem |
+| Dossiers législatifs | **15** · 16 · 17 | 2017 |
+| Interventions (Syceron) | **15** · 16 · 17 | 2017 |
+
+**Rien avant la XIVe, et la XIVe est partielle** — des votes et des amendements,
+mais ni dossiers ni interventions. Une fiche de groupe construite sur la XIVe
+serait un squelette, et sur la XIIIe elle n'aurait aucune matière.
+
+**Ce que ça interdit concrètement**, mesuré sur les mandats de groupe des 13
+candidats déclarés : parmi les 9 groupes qu'ils ont touchés, quatre sont hors
+d'atteinte — `UMP` (2007-2015), `Les Républicains` (2015-2017),
+`Rassemblement-UMP` (2012-2013) et `SRC` (2012-2014). Deux sont atteignables et
+ne le sont pas encore : `FI` (Mélenchon, 2017-2022) et `LaREM` (Attal,
+2017-2018), tous deux dans la XVe, qui est complète. Les trois derniers ont déjà
+leur fiche.
+
+**Ne rouvrez pas « et si on remontait plus loin » sans regarder ce tableau
+d'abord** : la limite n'est pas un arbitrage de périmètre, c'est ce que la source
+publie.
+
 **Rattacher un scrutin ou une intervention à sa loi : instruit, mesuré, écarté
 (#639, 01/09/2026).** La tentation revient à chaque lecture du corpus, parce que
 `texte_lie_id` est `null` sur les 17 748 scrutins publiés et qu'un champ vide se
@@ -162,16 +190,6 @@ Convention d'écriture : `AGENTS.md` §8.
   C'est la faille que #470 avait payée sur `tags_thematiques`, sur un autre champ.
   `allow_declared_losses` n'a donc rien à déclarer pour #643, contrairement à ce que
   son issue annonçait.
-- **`membres_eligibles` sous-estime massivement l'effectif éligible tant que les 5
-  fiches AN n'ont pas été régénérées depuis #647** (mesuré le 31/08/2026 en rejouant
-  `_periodes_mandats_assemblee` sur l'archive AMO30 en cache) : `AN:SOC` publie 4,8
-  membres éligibles en moyenne sur 3 843 scrutins pour 31 membres, contre **30,9**
-  après ; `AN:RN` 10,6 contre **88,6** (× 8,4). `taux_participation`,
-  `taux_coherence` et `quorum_atteint` en dépendent tous. Rien à corriger dans
-  `_compute_cohesion_votes`, qui lisait fidèlement des mandats incomplets — le
-  tableau des cinq fiches est dans
-  `docs/decisions/amendements-distincts-et-signatures-643.md`.
-
 - **Chaque shard `extract-an` réindexe les archives Syceron 15 et 16 pour rien**
   (dérivé de #546, mesuré sur le run `33110395663` du 27/08/2026) : **113 à 219 s par
   shard**, le même travail refait par les 7 shards porteurs, soit 40 à 60 % de

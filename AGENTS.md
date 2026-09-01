@@ -527,7 +527,25 @@ elective mandate** (38/38, 85/85, 60/60 on `LR`, `REN`, `LFI` — re-elected in
   key would hard-fail the quality gate on already-published files. Readers must
   therefore accept both names — `audit_groupe_dataset.CHAMPS_EFFECTIF` does.
 
-→ `docs/decisions/date-de-reference-des-comptes-de-groupe-653.md`,
+- **L'amplitude sur la période porte sa date, ou ne se publie pas (#702).**
+  `effectif.min_historique`/`max_historique` sont des objets `{valeur, date}` —
+  un minimum sans sa date est un nombre sans fait. Réévalués à chaque
+  `debut_dans_groupe` et au **lendemain** de chaque `fin_dans_groupe` (borne de
+  fin inclusive), sur la fenêtre `periode.debut` → `periode.fin`
+  (`date_reference.date` en relais tant que la période est ouverte), **jamais
+  au-delà**. **Seuil 0** : une seule entrée sans `debut_dans_groupe` laisse les
+  deux à `null` avec son motif — ce membre n'est comptable à aucune date, et une
+  borne inférieure publiée sous le nom « minimum » est un chiffre faux (§2
+  règle 5). Mesuré : REN 167 → 175, RN 87 → 89, LFI 74 → 75, LR et SOC plates ;
+  l'écart `membres[]` / `a_la_date_de_reference` est de la **rotation**, pas une
+  amplitude. Trois formes lues (`null`, entier nu hérité, objet), une seule
+  produite. `membres[]` ne portant qu'un intervalle par membre (#526), un départ
+  suivi d'un retour est invisible : l'amplitude est un **minorant**, et le
+  calcul vit dans `build_groupe_profile`, sur la même liste et la même fonction
+  de présence que les compteurs de #653.
+
+→ `docs/decisions/effectif-du-groupe-dans-le-temps-702.md`,
+`docs/decisions/date-de-reference-des-comptes-de-groupe-653.md`,
 `docs/decisions/dates-appartenance-groupe-653.md` (where the membership dates
 themselves come from), `docs/decisions/mandats-agreges-siege-vs-passe-656.md`
 (the two counters they feed).
