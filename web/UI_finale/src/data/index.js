@@ -183,16 +183,47 @@ export async function getCandidateProfile(id) {
   );
 }
 
+/**
+ * Projection de comparaison entre les groupes d'une même législature (#329).
+ *
+ * Les sections « comment ils votent » et « comment ils se situent » comparent le
+ * groupe à ceux de la MÊME législature : mêmes scrutins, même période, mêmes
+ * dénominateurs. Elles n'ont pas besoin des fiches voisines — 15,1 Mo pour les 5
+ * fiches AN de la XVIe —, seulement de leur sigle, de leur effectif, de leurs
+ * amendements agrégés, de leur position politique déclarée et des positions
+ * majoritaires des scrutins où LEUR quorum est atteint : 51 Ko, écrits au build
+ * par `scripts/comparaison-groupes.mjs`.
+ *
+ * Mémoïsé, et non bloquant : un échec de chargement rend `null`, et les trois
+ * sections concernées DISENT que la comparaison manque. Elles n'affichent pas
+ * des tableaux vides, qui se liraient comme des zéros mesurés (§2 règle 5).
+ */
+const comparaisonsPromises = new Map();
+
+function loadComparaison(fichier) {
+  if (!fichier) return Promise.resolve(null);
+  if (!comparaisonsPromises.has(fichier)) {
+    comparaisonsPromises.set(
+      fichier,
+      fetch(`/data/groupes/${fichier}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null),
+    );
+  }
+  return comparaisonsPromises.get(fichier);
+}
+
 export async function getGroupProfile(id) {
   const manifest = await loadManifest();
   const entry = manifest.groupes.find((g) => g.id === id);
   if (!entry) return null;
-  const [groupe, scrutins] = await Promise.all([
+  const [groupe, scrutins, comparaison] = await Promise.all([
     fetchJson(`/data/groupes/${entry.fichier}`),
     loadScrutins(),
+    loadComparaison(entry.comparaison),
   ]);
   if (!groupe) return null;
-  return buildGroupView(groupe, scrutins);
+  return buildGroupView(groupe, scrutins, comparaison);
 }
 
 export async function getGovernmentsList() {

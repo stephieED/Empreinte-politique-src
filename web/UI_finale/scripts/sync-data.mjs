@@ -6,6 +6,7 @@
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, cpSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { cleLegislature, construireComparaisons } from './comparaison-groupes.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(here, '..');
@@ -95,10 +96,12 @@ const manifestCandidates = candidats
 const slugByMembreId = new Map(manifestCandidates.map((c) => [c.slug, c]));
 const groupeFiles = readdirSync(pivotGroupesDir).filter((f) => f.endsWith('.json'));
 const manifestGroupes = [];
+const fichesPourComparaison = [];
 for (const file of groupeFiles) {
   cpSync(path.join(pivotGroupesDir, file), path.join(outDir, 'groupes', file));
   const groupe = JSON.parse(readFileSync(path.join(pivotGroupesDir, file), 'utf-8'));
   const id = file.replace(/^groupe-/, '').replace(/\.json$/, '');
+  fichesPourComparaison.push({ id, groupe });
   manifestGroupes.push({
     id,
     fichier: file,
@@ -108,6 +111,10 @@ for (const file of groupeFiles) {
     chambre: groupe.chambre,
     legislature: groupe.legislature,
     rosterTotal: groupe.meta?.couverture_roster?.roster_total ?? null,
+    // #329 : la fiche compare les groupes de la MÊME législature. Le manifeste
+    // porte la clé pour que l'UI sache quel fichier de comparaison charger,
+    // sans télécharger une seule fiche voisine (les 5 fiches AN pèsent 15,1 Mo).
+    comparaison: `comparaison-${cleLegislature(groupe)}.json`,
   });
   // Rattache chaque candidat au groupe réel dont il est membre (membre_id ->
   // slug), pour permettre le filtrage "Candidats" par "Groupes" côté UI sans
@@ -120,6 +127,18 @@ for (const file of groupeFiles) {
       candidate.groupIds.push(id);
     }
   }
+}
+
+// --- comparaisons par législature (#329) ---
+// Une projection par (chambre, législature) : sigle, effectif, amendements
+// agrégés, position politique déclarée, et les positions majoritaires des seuls
+// scrutins où le quorum est atteint. C'est ce qui permet à la fiche de comparer
+// sans faire télécharger les fiches voisines — 150 Ko au lieu de 15,1 Mo.
+for (const [cle, comparaison] of construireComparaisons(fichesPourComparaison)) {
+  writeFileSync(
+    path.join(outDir, 'groupes', `comparaison-${cle}.json`),
+    JSON.stringify(comparaison),
+  );
 }
 
 // --- profils de gouvernement réels ---
