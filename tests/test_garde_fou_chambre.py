@@ -159,6 +159,14 @@ SITES_UI: dict[tuple[str, str], str] = {
     ("src/data/index.js", "g"): GROUPE,
     ("src/data/pivotAdapter.js", "groupe"): GROUPE,
     ("src/components/GovernmentProfile.jsx", "texte"): GROUPE,
+    # #328 : la fiche candidat lit la chambre SUR LE MANDAT, jamais sur le
+    # profil. `siegesElectifs` regroupe les enregistrements en sièges et
+    # `rolesDuParcours` en tire le rôle affiché (« Député·e », « Sénateur·rice »).
+    # C'est la source dont `chambres` dérive — elle ne migre pas, elle est ce
+    # vers quoi on migre.
+    ("src/utils/profilCandidat.js", "m"): MANDAT,
+    ("src/utils/profilCandidat.js", "existant"): MANDAT,
+    ("src/utils/profilCandidat.js", "siege"): MANDAT,
     # Le seul consommateur du champ profil qui reste, et il n'est pas dans le
     # recensement de #486/#494 : celui-ci ne couvrait que `src/*.py`.
     # `chambreLabel(pivot.chambre, actif)` fabrique le libellé de profession de
