@@ -1,287 +1,957 @@
-import { useMemo, useState } from 'react';
+/*
+ * La fiche d'un candidat déclaré — lot 2 de la refonte #324 (issue #328).
+ *
+ * Sept sections, identiques pour les treize candidats déclarés, toujours dans
+ * le même ordre. Ce qui varie est le contenu, jamais la forme — et chaque
+ * emplacement est rempli à hauteur de ce que la donnée porte : uniformiser la
+ * forme ne veut pas dire niveler le contenu.
+ *
+ * Ce composant REND. Les règles vivent dans `utils/profilCandidat.js` (#328),
+ * les six fondations communes dans `utils/lecture.js` (#326) : les couleurs de
+ * vote, les ratios, les troncatures, les listes vides et les badges de source
+ * sont importés, jamais redéfinis. C'est exactement la duplication que le
+ * lot 1 a supprimée.
+ */
 import '../styles/shell.css';
 import './CandidateProfile.css';
-// #326 : les couleurs de vote sont définies UNE fois. Elles vivaient dupliquées
-// ici et dans GroupProfile, sans `non_votant` — 21 229 positions du corpus s'y
-// affichaient sans couleur ni libellé.
-import { PositionVote } from './Lecture';
-import { OUTCOME_COLOR, styleForPosition } from '../utils/lecture';
+import { BadgeSource, Interdits, ListeVide, PositionVote } from './Lecture';
+import { OUTCOME_COLOR, WHOLE_TEXT_VOTE_BOUND, formatNumber } from '../utils/lecture';
+import {
+  INSTITUTION_GOUVERNEMENT,
+  INSTITUTION_MISSION,
+  INSTITUTION_PARLEMENT,
+  POSITION_NON_DECLAREE,
+  SORT_NON_PUBLIE,
+  libellePosition,
+  motifPosition,
+  positionSurAxe,
+} from '../utils/profilCandidat';
 
-function VerifiedIcon() {
+const MOIS = [
+  'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+  'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre',
+];
+
+function jour(iso) {
+  if (!iso) return null;
+  const [a, m, j] = iso.split('-');
+  if (!a) return null;
+  if (!m) return a;
+  return `${Number(j)} ${MOIS[Number(m) - 1]} ${a}`;
+}
+
+function annee(iso) {
+  return iso ? iso.slice(0, 4) : null;
+}
+
+function periode(debut, fin, actif) {
+  if (actif) return `depuis le ${jour(debut)}`;
+  return `${jour(debut)} → ${jour(fin)}`;
+}
+
+/*
+ * Un en-tête de section : son numéro, son titre, et le critère qui dit ce que
+ * la section montre ET ce qu'elle refuse de montrer. Le critère est du contenu
+ * publié, pas une légende décorative — c'est lui qui empêche de lire un
+ * décompte comme une note.
+ */
+function Section({ numero, titre, critere, children }) {
   return (
-    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-      <path d="M2.5 9.5L9 3" stroke="#14151A" strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M5.7 4.8l1.4 1.4" stroke="#14151A" strokeWidth="1.8" strokeLinecap="round" />
-    </svg>
+    <section className="cp-section">
+      <div className="cp-section-bande">
+        <span className="cp-section-numero">{numero}</span>
+        <span className="cp-section-trait" />
+      </div>
+      <h2 className="cp-section-titre">{titre}</h2>
+      {critere && <p className="cp-section-critere">{critere}</p>}
+      <div className="cp-section-corps">{children}</div>
+    </section>
   );
 }
 
-const TABS = [
-  { key: 'votes', label: 'Votes' },
-  { key: 'textes', label: 'Textes' },
-  { key: 'donnees', label: 'Données' },
+/*
+ * Une pastille de position déclarée. Elle accompagne TOUJOURS le chiffre
+ * qu'elle explique, jamais renvoyée en légende de bas de page : « 1 968
+ * déposés, 67 adoptés » doit porter « groupe déclaré d'opposition » sur la même
+ * ligne, sinon le lecteur lit une incompétence là où il y a une fonction.
+ */
+function Position({ position }) {
+  const motif = motifPosition(position);
+  return (
+    <span className={`cp-position cp-position--${motif}`}>{libellePosition(position)}</span>
+  );
+}
+
+/* ── § 1 — le parcours ───────────────────────────────────────────────────────
+ *
+ * UNE seule bande, une ligne par rôle, ordonnées par date de début, quelle que
+ * soit l'institution : rien n'est au-dessus parce que c'est la date qui range.
+ * La bande ne porte AUCUN texte — un libellé dans un segment de 2 % ne tient
+ * pas, quelle que soit sa position. Des repères numérotés la surmontent et la
+ * liste dessous porte les intitulés complets : la frise donne la silhouette, la
+ * liste la nomme.
+ */
+const ECART_MINIMAL_REPERES = 3.4;
+
+function classeInstitution(role) {
+  if (role.institution === INSTITUTION_MISSION) return 'cp-fs--mission';
+  if (role.institution === INSTITUTION_GOUVERNEMENT) {
+    return role.chef ? 'cp-fs--chef' : 'cp-fs--gouvernement cp-fs--motif-rayures';
+  }
+  return `cp-fs--parlement cp-fs--motif-${motifPosition(role.position)}`;
+}
+
+const LEGENDE_FRISE = [
+  { classe: 'cp-fs--parlement cp-fs--motif-plein', label: 'Parlementaire · groupe majoritaire' },
+  { classe: 'cp-fs--parlement cp-fs--motif-diagonales', label: "Parlementaire · groupe d'opposition" },
+  { classe: 'cp-fs--parlement cp-fs--motif-points', label: 'Parlementaire · groupe minoritaire' },
+  { classe: 'cp-fs--parlement cp-fs--motif-fines-rayures', label: POSITION_NON_DECLAREE.label },
+  { classe: 'cp-fs--gouvernement cp-fs--motif-rayures', label: 'Membre du gouvernement' },
+  { classe: 'cp-fs--chef', label: 'Chef du gouvernement' },
+  { classe: 'cp-fs--mission', label: 'Parlementaire en mission auprès d’un ministère' },
 ];
 
-export default function CandidateProfile({ candidate }) {
-  const [tab, setTab] = useState('votes');
-  const [openFlyout, setOpenFlyout] = useState(null);
-  const [themeFilter, setThemeFilter] = useState('all');
+function Frise({ parcours }) {
+  const { roles, nbLignes, bornes } = parcours;
+  if (!roles.length || !bornes) return null;
 
-  const toggleFlyout = (key) => setOpenFlyout((cur) => (cur === key ? null : key));
+  const hauteurLigne = 100 / nbLignes;
 
-  const kpis = [
-    {
-      key: 'anciennete',
-      value: candidate.kpis.anciennete,
-      label: 'Ancienneté du mandat',
-      caveat: "Mesure la durée, pas l'implication.",
-      onClick: () => toggleFlyout('mandats'),
-    },
-    {
-      key: 'responsabilites',
-      value: candidate.kpis.responsabilites,
-      label: 'Responsabilités',
-      caveat: 'Fonctions dédupliquées par intitulé. Jamais un score.',
-      onClick: () => toggleFlyout('resp'),
-    },
-    {
-      key: 'votes',
-      value: candidate.kpis.votes,
-      label: 'Votes de texte',
-      caveat: 'Positions documentées (pour/contre/abstention) ; absences non publiées.',
-      onClick: null,
-    },
-    {
-      key: 'theme',
-      value: candidate.kpis.theme,
-      label: 'Thème dominant',
-      caveat: 'Aide de lecture par mots-clés, pas une position déclarée.',
-      onClick: null,
-    },
-  ];
-
-  const votes = candidate.votes.map((v) => ({ ...v, ...styleForPosition(v.position) }));
-  const outcomes = candidate.outcomes.map((o) => ({ ...o, color: OUTCOME_COLOR[o.key] }));
-  const totalAmendements = outcomes.reduce((sum, o) => sum + o.count, 0);
-
-  const scopeCompare = useMemo(() => {
-    const maxScope = Math.max(1, ...candidate.scopeBuckets.map((b) => Math.max(b.textes, b.amend)));
-    return candidate.scopeBuckets.map((b) => ({
-      label: b.label,
-      textesCount: b.textes,
-      amendCount: b.amend,
-      textesPct: Math.round((b.textes / maxScope) * 100),
-      amendPct: Math.round((b.amend / maxScope) * 100),
-    }));
-  }, [candidate.scopeBuckets]);
-
-  const themeCounts = useMemo(() => {
-    const counts = {};
-    candidate.textes.forEach((t) => {
-      counts[t.theme] = (counts[t.theme] || 0) + 1;
-    });
-    return counts;
-  }, [candidate.textes]);
-
-  const themePills = useMemo(() => {
-    const themes = Object.keys(themeCounts);
-    return [
-      { key: 'all', label: `Tous les thèmes (${candidate.textes.length})` },
-      ...themes.map((k) => ({ key: k, label: `${k} (${themeCounts[k]})` })),
-    ];
-  }, [themeCounts, candidate.textes]);
-
-  const themeShelves = useMemo(() => {
-    const visible = themeFilter === 'all' ? candidate.textes : candidate.textes.filter((t) => t.theme === themeFilter);
-    const byTheme = new Map();
-    visible.forEach((t) => {
-      if (!byTheme.has(t.theme)) byTheme.set(t.theme, []);
-      byTheme.get(t.theme).push(t);
-    });
-    return Array.from(byTheme.entries()).map(([label, items]) => ({ label, items }));
-  }, [themeFilter, candidate.textes]);
-
-  const flyoutTitle = openFlyout === 'mandats' ? 'Mandats en cours' : openFlyout === 'resp' ? 'Responsabilités' : '';
-  const flyoutItems = openFlyout === 'mandats' ? candidate.mandats : openFlyout === 'resp' ? candidate.responsabilites : [];
+  // Repères : un numéro par rôle. Repliés sur un second niveau quand deux
+  // débuts sont trop proches pour ne pas se chevaucher.
+  const niveaux = [-Infinity, -Infinity];
+  const reperes = roles.map((r) => {
+    const x = positionSurAxe(r.debut, bornes);
+    let n = 0;
+    if (x - niveaux[0] < ECART_MINIMAL_REPERES) n = x - niveaux[1] < ECART_MINIMAL_REPERES ? 0 : 1;
+    niveaux[n] = x;
+    return { numero: r.numero, x, niveau: n };
+  });
+  const deuxNiveaux = reperes.some((r) => r.niveau === 1);
 
   return (
-    <main className="main">
-      <div className="breadcrumb">
-        Candidats / <strong>{candidate.nom}</strong>
+    <div className="cp-carte cp-frise">
+      <div className="cp-reperes" style={{ height: deuxNiveaux ? 46 : 30 }}>
+        {reperes.map((r) => (
+          <span
+            className="cp-repere"
+            key={r.numero}
+            style={{ left: `${r.x.toFixed(2)}%`, top: r.niveau === 0 ? 0 : '38%', height: r.niveau === 0 ? '100%' : '62%' }}
+          >
+            <b>{r.numero}</b>
+            <i />
+          </span>
+        ))}
       </div>
 
-        <div className="banner">
-          <span className="banner-tag">{candidate.parti}</span>
-          <h1>{candidate.nom}</h1>
-          <p>
-            {candidate.groupe} · {candidate.profession}
+      <div className="cp-bande">
+        {roles.map((r) => {
+          const gauche = positionSurAxe(r.debut, bornes);
+          const largeur = Math.max(0.6, positionSurAxe(r.fin, bornes) - gauche);
+          return (
+            <span
+              className={`cp-fs ${classeInstitution(r)}`}
+              key={r.numero}
+              style={{
+                left: `${gauche.toFixed(2)}%`,
+                width: `${largeur.toFixed(2)}%`,
+                top: `${(r.ligne * hauteurLigne).toFixed(2)}%`,
+                height: `${hauteurLigne.toFixed(2)}%`,
+              }}
+              title={`${r.role} — ${periode(r.debut, r.fin, r.actif)}`}
+            />
+          );
+        })}
+      </div>
+
+      <div className="cp-axe">
+        <span>{annee(bornes.debut)}</span>
+        <span>{annee(bornes.fin)}</span>
+      </div>
+
+      <div className="cp-legende">
+        <p className="cp-legende-titre">Légende</p>
+        <div className="cp-legende-grille">
+          {LEGENDE_FRISE.map((l) => (
+            <span className="cp-legende-item" key={l.label}>
+              <span className={`cp-legende-pave ${l.classe}`} />
+              {l.label}
+            </span>
+          ))}
+        </div>
+        <p className="cp-legende-note">
+          <b>La teinte porte l’institution, le motif porte la position.</b> Les deux familles sont
+          désaturées et n’évoquent aucun parti ; elles ne forment aucune progression — ce sont deux
+          catégories, pas deux niveaux. Le vert et le rouge restent réservés aux positions de vote.
+          La couleur ne porte jamais seule : chaque situation se distingue aussi par son motif et
+          reste lisible en niveaux de gris. Majorité, minorité et opposition sont les trois valeurs
+          que <b>l’Assemblée nationale publie elle-même</b> sur chaque groupe politique ; elle ne
+          les publie pas pour la législature en cours.
+          {nbLignes > 1 && (
+            <>
+              {' '}
+              Quand deux rôles se chevauchent, la bande se scinde et le rôle commencé le premier
+              occupe la ligne du haut : <b>c’est un rangement, pas une hiérarchie.</b>
+            </>
+          )}
+        </p>
+      </div>
+
+      <ul className="cp-roles">
+        {roles.map((r) => (
+          <li className="cp-role" key={r.numero}>
+            <span className="cp-role-numero">{r.numero}</span>
+            <span className="cp-role-dates">{periode(r.debut, r.fin, r.actif)}</span>
+            <span className="cp-role-intitule">
+              <b>{r.role}</b>
+              {r.institution === INSTITUTION_PARLEMENT && <Position position={r.position} />}
+              {r.detail && <span className="cp-role-detail"> · {r.detail}</span>}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/*
+ * Les fonctions qu'on choisit d'exercer. Un bloc par catégorie, jamais un
+ * total : un groupe d'amitié et une commission d'enquête ne s'additionnent pas.
+ */
+function Fonctions({ fonctions }) {
+  if (!fonctions.length) return null;
+  return (
+    <div className="cp-carte cp-fonctions">
+      {fonctions.map((c) => (
+        <div className="cp-fonctions-bloc" key={c.cle}>
+          <p className="cp-fonctions-titre">
+            {c.titre} · <span className="cp-num">{formatNumber(c.total)}</span>{' '}
+            {c.total > 1 ? 'mandats' : 'mandat'}
           </p>
-        </div>
-
-        <div className="kpi-grid">
-          {kpis.map((kpi) => (
-            <button
-              key={kpi.key}
-              type="button"
-              className="kpi-card"
-              onClick={kpi.onClick ?? undefined}
-              style={{ cursor: kpi.onClick ? 'pointer' : 'default' }}
-            >
-              <div className="kpi-value">{kpi.value}</div>
-              <div className="kpi-label">{kpi.label}</div>
-              <div className="kpi-caveat">{kpi.caveat}</div>
-            </button>
-          ))}
-        </div>
-
-        {openFlyout && (
-          <div className="flyout">
-            <p className="flyout-title">{flyoutTitle}</p>
-            <div className="flyout-list">
-              {flyoutItems.map((item) => (
-                <div className="flyout-row" key={item.label}>
-                  <span>{item.label}</span>
-                  <span className="period">{item.period}</span>
-                </div>
-              ))}
-            </div>
-            <p className="flyout-note">Échantillon illustratif — liste complète non représentée dans cette maquette.</p>
-          </div>
-        )}
-
-        <div className="tabs">
-          {TABS.map((t) => (
-            <button
-              key={t.key}
-              type="button"
-              className={`tab-btn ${tab === t.key ? 'active' : ''}`}
-              onClick={() => setTab(t.key)}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-
-        {tab === 'votes' && (
-          <div className="votes-grid">
-            {votes.length === 0 && <p className="donnees-text">Aucune position de vote documentée pour ce mandat.</p>}
-            {votes.map((vote) => (
-              <div className="vote-card" key={vote.titre}>
-                <div className="vote-position">
-                  <PositionVote position={vote.position} />
-                </div>
-                <p className="vote-title">{vote.titre}</p>
-                <div className="vote-footer">
-                  <span className="vote-badge">
-                    <VerifiedIcon /> Source vérifiée
-                  </span>
-                  <span className="vote-meta">{vote.meta}</span>
-                </div>
-              </div>
+          <div className="cp-puces">
+            {c.items.map((i) => (
+              <span className="cp-puce" key={i.label}>
+                {i.label}
+                {i.n > 1 && <b className="cp-num">{i.n}</b>}
+              </span>
             ))}
           </div>
-        )}
+        </div>
+      ))}
+    </div>
+  );
+}
 
-        {tab === 'textes' && (
-          <>
-            <div className="textes-card">
-              <p className="textes-caption">
-                Répartition des amendements par scène décisionnelle. Ne pas lire comme un score d&apos;influence.
-              </p>
-              {totalAmendements === 0 ? (
-                <p className="donnees-text">Aucun amendement recensé pour ce mandat.</p>
-              ) : (
-                <>
-                  <div className="outcome-bar">
-                    {outcomes.map((seg) => (
-                      <div key={seg.key} style={{ flex: `${seg.count} 0 0`, background: seg.color }} />
-                    ))}
-                  </div>
-                  <div className="outcome-legend">
-                    {outcomes.map((seg) => (
-                      <span className="outcome-legend-item" key={seg.key}>
-                        <span className="outcome-legend-dot" style={{ background: seg.color }} />
-                        {seg.label} ({seg.count})
-                      </span>
-                    ))}
-                  </div>
-                </>
-              )}
-              <div className="compare-header">
-                <span />
-                <span>Textes portés</span>
-                <span>Amendements</span>
+/*
+ * Une barre empilée générique. Les segments portent leur couleur en `style`
+ * pour que la source de vérité reste `OUTCOME_COLOR` (lot 1) ; un segment sans
+ * couleur reçoit un motif hachuré, jamais une teinte de repli — c'est ce qui
+ * distingue « sort non publié » d'un sort.
+ */
+function Barre({ segments, total }) {
+  if (!total) return null;
+  return (
+    <>
+      <div className="cp-barre">
+        {segments.map((s) => (
+          <span
+            className={`cp-barre-seg${s.color ? '' : ' cp-barre-seg--sans-teinte'}`}
+            key={s.cle}
+            style={{ width: `${((s.n / total) * 100).toFixed(2)}%`, background: s.color || undefined }}
+          />
+        ))}
+      </div>
+      <div className="cp-cles">
+        {segments.map((s) => (
+          <span className="cp-cle" key={s.cle}>
+            <i
+              className={s.color ? undefined : 'cp-cle-pastille--sans-teinte'}
+              style={s.color ? { background: s.color } : undefined}
+            />
+            {s.label} <b className="cp-num">{formatNumber(s.n)}</b>
+          </span>
+        ))}
+      </div>
+    </>
+  );
+}
+
+/* ── § 2 — les gouvernements dont il a été membre ────────────────────────────
+ *
+ * En ensembles, jamais en liste attribuée. Cette section précède les actes
+ * personnels parce qu'elle en donne le contexte, non parce qu'elle vaudrait
+ * davantage.
+ */
+const LIBELLE_STATUT_TEXTE = {
+  promulgue: 'promulgué',
+  adopte: 'adopté',
+  adopte_cmp: 'adopté en CMP',
+  adopte_49_3: 'adopté sans vote (49.3)',
+  navette_en_cours: 'en navette',
+  rejete: 'rejeté',
+  rejete_49_3: 'rejeté après 49.3',
+  retire: 'retiré',
+  depose: 'déposé',
+};
+
+const COULEUR_STATUT = {
+  promulgue: '#14151A',
+  adopte_cmp: '#4F9B77',
+  adopte: OUTCOME_COLOR['adopté'],
+  navette_en_cours: '#8B8794',
+  rejete: OUTCOME_COLOR['rejeté'],
+  retire: OUTCOME_COLOR['retiré'],
+  depose: '#DCD9D3',
+};
+
+function Gouvernements({ gouvernements, cause, voix }) {
+  if (!gouvernements.length) {
+    return (
+      <div className="cp-carte">
+        <ListeVide
+          cause={cause}
+          motif={`${voix.Sujet} n’a jamais été membre d’un gouvernement. C’est un fait établi, pas une donnée manquante : ses mandats sont collectés et aucun n’est une fonction gouvernementale.`}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="cp-carte">
+        {gouvernements.map((g) => {
+          const segments = g.statuts.map((s) => ({ cle: s.cle, label: s.label, n: s.n, color: COULEUR_STATUT[s.cle] }));
+          if (g.adoptesSansVote > 0) {
+            segments.push({ cle: '49_3', label: 'adoptés sans vote (49.3)', n: g.adoptesSansVote, color: null });
+          }
+          return (
+            <div className={`cp-gouv${g.chef ? ' cp-gouv--chef' : ''}`} key={g.id}>
+              <div className="cp-gouv-tete">
+                <span className="cp-gouv-nom">{g.nom}</span>
+                <span className="cp-gouv-periode cp-num">
+                  {periode(g.debut, g.fin, g.actif)} · {formatNumber(g.total)} textes suivis
+                </span>
               </div>
-              <div className="compare-rows">
-                {scopeCompare.map((row) => (
-                  <div className="compare-row" key={row.label}>
-                    <span className="compare-row-label">{row.label}</span>
-                    <div className="compare-bar-wrap">
-                      <span className="compare-bar-track">
-                        <span className="compare-bar-fill" style={{ width: `${row.textesPct}%`, background: '#14151A' }} />
-                      </span>
-                      <span className="compare-bar-count">{row.textesCount}</span>
-                    </div>
-                    <div className="compare-bar-wrap">
-                      <span className="compare-bar-track">
-                        <span className="compare-bar-fill" style={{ width: `${row.amendPct}%`, background: '#DFFF00' }} />
-                      </span>
-                      <span className="compare-bar-count">{row.amendCount}</span>
-                    </div>
-                  </div>
+              <p className="cp-gouv-fonction">
+                Sa fonction :{' '}
+                {g.fonctions.map((f, i) => (
+                  <span key={`${f.portefeuille}-${f.debut}`}>
+                    {i > 0 && ', puis '}
+                    {f.portefeuille}
+                  </span>
                 ))}
+              </p>
+              <Barre segments={segments} total={g.total} />
+              {g.total === 0 && (
+                <p className="cp-gouv-49">
+                  Aucun texte n’est rattaché à ce gouvernement dans le corpus. C’est un vide de
+                  collecte, pas un bilan : <em>rien ici ne dit qu’il n’en a porté aucun.</em>
+                </p>
+              )}
+              <p className="cp-gouv-49" hidden={g.total === 0}>
+                {g.adoptesSansVote > 0 ? (
+                  <>
+                    Dont <b className="cp-num">{g.adoptesSansVote}</b> texte
+                    {g.adoptesSansVote > 1 ? 's adoptés' : ' adopté'} sans vote, par l’article 49.3 —{' '}
+                    <em>un fait de procédure, jamais une position de vote</em>.
+                  </>
+                ) : (
+                  'Aucun texte adopté par l’article 49.3.'
+                )}
+              </p>
+              {g.textes && (
+                <ul className="cp-nommes">
+                  {g.textes.map((t) => (
+                    <li className="cp-nomme" key={`${t.titre}-${t.date}`}>
+                      <span className="cp-nomme-cle">{LIBELLE_STATUT_TEXTE[t.statut] || t.statut}</span>
+                      <span>{t.titre}</span>
+                      <span className="cp-nomme-date cp-num">{jour(t.date)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <p className="cp-note">
+        <b>Un bilan de gouvernement est collectif.</b> Ces textes ne sont pas ses propositions : ce
+        sont ceux que le gouvernement dont {voix.pronom} était membre a portés. <em>Un chef du gouvernement
+        les signe tous — lui en attribuer un personnellement ne voudrait rien dire, et c’est
+        pourquoi cette section montre des ensembles et non des actes individuels.</em> L’état des
+        textes est celui d’aujourd’hui, pas celui du jour où le gouvernement a pris fin. Il ne
+        s’additionne à aucun autre décompte de la page.
+      </p>
+    </>
+  );
+}
+
+/* ── § 3 — ce qu'il a proposé ────────────────────────────────────────────── */
+function Propositions({ amendements, textes, causeAmendements, causeTextes, voix }) {
+  return (
+    <>
+      {amendements.totalAuteur === 0 ? (
+        <div className="cp-carte">
+          <ListeVide cause={causeAmendements} source="Amendements déposés comme auteur principal" />
+        </div>
+      ) : (
+        <div className="cp-carte">
+          {amendements.legislatures.map((leg) => (
+            <div className="cp-ligne" key={leg.legislature}>
+              <div className="cp-ligne-cle">
+                Auteur d’amendements
+                <Position position={leg.position} />
+              </div>
+              <div className="cp-ligne-corps">
+                <p className="cp-ligne-titre">{leg.legislature}<sup>e</sup> législature</p>
+                <Barre
+                  segments={leg.sorts.map((s) => ({
+                    cle: s.cle,
+                    label: s.label,
+                    n: s.n,
+                    color: s.cle === SORT_NON_PUBLIE ? null : OUTCOME_COLOR[s.cle] || null,
+                  }))}
+                  total={leg.total}
+                />
+              </div>
+              <div className="cp-ligne-nombre cp-num">
+                {formatNumber(leg.total)}
+                <span>déposés</span>
               </div>
             </div>
+          ))}
+        </div>
+      )}
 
-            {candidate.textes.length === 0 ? (
-              <p className="donnees-text">Aucun texte porté publié pour ce mandat (rôle ou stade non retenus).</p>
-            ) : (
-              <>
-                <div className="theme-pills">
-                  {themePills.map((pill) => (
-                    <button
-                      key={pill.key}
-                      type="button"
-                      className={`theme-pill ${themeFilter === pill.key ? 'active' : ''}`}
-                      onClick={() => setThemeFilter(pill.key)}
-                    >
-                      {pill.label}
-                    </button>
-                  ))}
-                </div>
+      {amendements.irrecevabilites.length > 0 && (
+        <div className="cp-blocs">
+          {amendements.irrecevabilites.map((b) => (
+            <div className="cp-carte cp-bloc" key={b.base}>
+              <b className="cp-bloc-nombre cp-num">{formatNumber(b.n)}</b>
+              <p className="cp-bloc-cle">{b.titre}</p>
+              <p className="cp-bloc-texte">{b.explication}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
-                <div className="theme-shelves">
-                  {themeShelves.map((shelf) => (
-                    <div key={shelf.label}>
-                      <div className="shelf-header">
-                        <span className="shelf-dot" />
-                        <strong className="shelf-label">{shelf.label}</strong>
-                      </div>
-                      <div className="shelf-items">
-                        {shelf.items.map((item) => (
-                          <div className="shelf-item" key={item.titre}>
-                            <div className="shelf-item-title">{item.titre}</div>
-                            <div className="shelf-item-meta">{item.meta}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
+      {textes.total === 0 ? (
+        <div className="cp-carte">
+          <ListeVide cause={causeTextes} source="Textes portés comme auteur ou rapporteur" />
+        </div>
+      ) : (
+        <div className="cp-carte cp-textes">
+          <div className="cp-gouv-tete">
+            <span className="cp-gouv-nom">Où en sont les textes {voix.quil} a portés</span>
+            <span className="cp-gouv-periode cp-num">
+              {formatNumber(textes.publies.length)} publiés · {formatNumber(textes.promulgues)}{' '}
+              promulgué{textes.promulgues > 1 ? 's' : ''}
+            </span>
+          </div>
+          {textes.publies.length > 0 && (
+            <Barre
+              segments={textes.repartition.map((s) => ({
+                cle: s.cle,
+                label: s.label,
+                n: s.n,
+                color: s.cle === 'promulgue' ? '#14151A' : null,
+              }))}
+              total={textes.publies.length}
+            />
+          )}
+          {textes.ecartes.total > 0 && (
+            <p className="cp-note">
+              <b>
+                {textes.ecartes.total} de ses {textes.total} textes ne sont pas affiché
+                {textes.ecartes.total > 1 ? 's' : ''}
+              </b>{' '}
+              : {textes.ecartes.deposes > 0 &&
+                `${textes.ecartes.deposes} ${textes.ecartes.deposes > 1 ? 'ont' : 'a'} été déposé${textes.ecartes.deposes > 1 ? 's' : ''} sans jamais être examiné${textes.ecartes.deposes > 1 ? 's' : ''} en commission`}
+              {textes.ecartes.deposes > 0 && textes.ecartes.sansStade > 0 && ', '}
+              {textes.ecartes.sansStade > 0 &&
+                `${textes.ecartes.sansStade} ne porte${textes.ecartes.sansStade > 1 ? 'nt' : ''} pas de stade procédural`}
+              .{' '}
+              <em>
+                La règle éditoriale du dépôt ne publie par défaut que les textes ayant atteint
+                l’examen en commission.
+              </em>
+            </p>
+          )}
+          <ul className="cp-nommes">
+            {textes.publies.map((t) => (
+              <li className="cp-nomme" key={`${t.titre}-${t.dateMax}`}>
+                <span className="cp-nomme-cle">{t.role}</span>
+                <span>
+                  {t.titre}
+                  {t.projetDeLoi && <span className="cp-marque">projet de loi</span>}
+                </span>
+                <span className="cp-nomme-date cp-num">
+                  {t.stade} · {annee(t.dateMax)}
+                </span>
+              </li>
+            ))}
+          </ul>
+          {textes.projetsDeLoi > 0 && (
+            <p className="cp-note">
+              <b>
+                {textes.projetsDeLoi} de ses {textes.total} textes portés sont des projets de loi
+              </b>
+              , c’est-à-dire des textes du gouvernement signés comme ministre. Le corpus les range
+              sous le même rôle « auteur » qu’une proposition déposée comme parlementaire :{' '}
+              <em>la distinction se lit dans l’intitulé officiel, aucun champ ne la porte.</em>
+            </p>
+          )}
+        </div>
+      )}
+    </>
+  );
+}
+
+/* ── § 4 — ce qu'il a dit, et en quelle qualité ─────────────────────────────── */
+function Paroles({ interventions, cause, voix }) {
+  const { total, natures, qualite, questions } = interventions;
+
+  if (!total) {
+    return (
+      <div className="cp-carte">
+        <ListeVide cause={cause} source="Interventions en séance et en commission" />
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="cp-carte cp-bloc">
+        {qualite.regime === 'source' && (
+          <>
+            <span className="cp-etiquette cp-etiquette--pleine">qualité publiée par la source</span>
+            <p className="cp-section-critere">
+              Le compte rendu publie la qualité de l’orateur sur la totalité de ses{' '}
+              <b>{formatNumber(total)}</b> interventions.
+            </p>
+          </>
+        )}
+        {qualite.regime === 'partiel' && (
+          <>
+            <span className="cp-etiquette cp-etiquette--pleine">qualité publiée sur une partie</span>
+            <p className="cp-section-critere">
+              Le compte rendu publie la qualité de l’orateur sur{' '}
+              <b>{formatNumber(qualite.sourcees)}</b> de ses {formatNumber(total)} interventions.
+              Les {formatNumber(total - qualite.sourcees)} restantes n’en portent aucune : la source
+              ne le dit pas, nous non plus. Ces deux régimes ne se confondent pas, et rien ici ne
+              comble le second avec le premier.
+            </p>
+          </>
+        )}
+        {qualite.regime === 'derive' && (
+          <>
+            <span className="cp-etiquette">qualité dérivée des mandats</span>
+            <p className="cp-section-critere">
+              La source ne publie la qualité de l’orateur que pour une fonction{' '}
+              <b>particulière</b> — ministre, rapporteur. Elle est absente des{' '}
+              <b>{formatNumber(total)}</b> interventions de ce profil. Lire ce silence comme « {voix.pronom}
+              parlait comme {voix.depute} » est une <b>inférence de notre part</b>, licite parce que
+              ses mandats disent qu’{voix.pronom === 'il' ? 'il' : voix.pronom} n’exerçait aucune autre fonction à ces dates.{' '}
+              <em>Aucune source ne l’affirme.</em>
+            </p>
           </>
         )}
 
-        {tab === 'donnees' && (
-          <div className="donnees-card">
-            <span className="donnees-icon">i</span>
-            <p className="donnees-text">
-              Empreinte politique ne publie aucun taux individuel d&apos;assiduité, de présence ou d&apos;absence — un
-              scrutin manqué ne décrit ni le travail parlementaire ni ses motifs.
-            </p>
+        <ul className="cp-mesures">
+          {natures.map((n) => (
+            <li className="cp-mesure" key={n.label}>
+              <span>{n.label}</span>
+              <b className="cp-num">{formatNumber(n.n)}</b>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {qualite.sourcee && (
+        <div className="cp-carte cp-bloc">
+          <p className="cp-section-critere">
+            La qualité telle que le compte rendu l’écrit, sans regroupement de notre part.
+          </p>
+          <ul className="cp-mesures">
+            {qualite.fonctions.map((f) => (
+              <li className="cp-mesure" key={f.label}>
+                <span>{f.label}</span>
+                <b className="cp-num">{formatNumber(f.n)}</b>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {questions && (
+        <div className="cp-carte cp-bloc">
+          <p className="cp-section-critere">
+            {questions.sens === 'recues' ? (
+              <>
+                <b>Ce sur quoi {voix.pronom} a été interpellé{voix.accorde}.</b>{' '}
+                {formatNumber(questions.ministerielles)}{' '}
+                de ses {formatNumber(questions.total)} questions au gouvernement portent une
+                qualité ministérielle publiée par la source, à une date où {voix.pronom} était membre
+                d’un gouvernement : {voix.pronom} y a répondu, {voix.pronom} ne les a pas posées.
+                Sans cette distinction, ce bloc serait exactement inversé.
+              </>
+            ) : (
+              <>
+                <b>Ce sur quoi {voix.pronom} a interpellé le gouvernement.</b> Ses{' '}
+                {formatNumber(questions.total)} questions au gouvernement ne portent{' '}
+                <b>aucune qualité ministérielle</b> : {voix.pronom} les a posées.
+              </>
+            )}
+          </p>
+          <div className="cp-puces">
+            {questions.sujets.map((s) => (
+              <span className="cp-puce" key={s.label}>
+                {s.label}
+                <b className="cp-num">{s.n}</b>
+              </span>
+            ))}
           </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+/* ── § 5 — ce qu'il a voté ─────────────────────────────────────────────────── */
+function Votes({ votes, cause, voix }) {
+  if (!votes.total) {
+    return (
+      <div className="cp-carte">
+        <ListeVide cause={cause} source="Positions de vote publiées" />
+      </div>
+    );
+  }
+
+  const max = Math.max(...votes.parAnnee.map((a) => a.n), 1);
+
+  return (
+    <>
+      <div className="cp-carte cp-bloc">
+        <p className="cp-section-critere">
+          Ses positions par année, sur un axe continu. Une année sans barre n’est jamais
+          publiée comme un chiffre nu : elle dit sa situation.
+        </p>
+        <div className="cp-annees">
+          {votes.parAnnee.map((a) => (
+            <div className={`cp-annee cp-annee--${a.situation}`} key={a.annee}>
+              <em className="cp-num">{a.n > 0 ? formatNumber(a.n) : ''}</em>
+              <i style={{ height: `${Math.max(4, (a.n / max) * 100).toFixed(0)}%` }} />
+              <b className="cp-num">{a.annee}</b>
+            </div>
+          ))}
+        </div>
+        <div className="cp-cles">
+          <span className="cp-cle">
+            <i style={{ background: '#14151A' }} />
+            année de mandat parlementaire
+          </span>
+          {votes.parAnnee.some((a) => a.situation === 'gouvernement') && (
+            <span className="cp-cle">
+              <i className="cp-cle-pastille--gouvernement" />
+              fonction gouvernementale — voter était impossible
+            </span>
+          )}
+          {votes.parAnnee.some((a) => a.situation === 'hors_mandat') && (
+            <span className="cp-cle">
+              <i className="cp-cle-pastille--hors-mandat" />
+              aucun mandat parlementaire cette année-là — {voix.pronom} n’avait rien à voter
+            </span>
+          )}
+        </div>
+      </div>
+
+      {votes.aExerceAuGouvernement && (
+        <p className="cp-note">
+          <b>Un membre du gouvernement ne vote pas.</b> Sur ses {formatNumber(votes.total)}{' '}
+          positions, <b>{formatNumber(votes.pendantGouvernement)}</b>{' '}
+          {votes.pendantGouvernement > 1 ? 'ont été émises' : 'a été émise'} pendant l’une de ses
+          fonctions gouvernementales. Ce n’est pas une lacune de collecte, c’est un fait
+          établi sur la personne — sans cette phrase, ces années se liraient comme une absence.
+        </p>
+      )}
+
+      {votes.surEnsemble === 0 ? (
+        <div className="cp-carte">
+          <ListeVide
+            cause="couvert"
+            motif="Aucune de ses positions ne porte sur l’ensemble d’un texte au sens de la règle publiée ci-dessous. Ses autres positions — sur un article, sur un amendement — restent comptées dans le total."
+          />
+        </div>
+      ) : (
+        <div className="cp-carte cp-bloc">
+          <div className="cp-votes-barre">
+            {votes.positions.map((p) => (
+              <div className="cp-votes-seg" key={p.position} style={{ flex: p.n }}>
+                <PositionVote position={p.position} />
+                <b className="cp-num">{formatNumber(p.n)}</b>
+              </div>
+            ))}
+          </div>
+          <div className="cp-regles">
+            <span className="cp-regle">
+              {formatNumber(votes.surEnsemble)} votes sur l’ensemble d’un texte, parmi{' '}
+              {formatNumber(votes.total)} positions
+            </span>
+            <span className="cp-regle">absences jamais publiées</span>
+            <span className="cp-regle">un plancher, pas un relevé exhaustif</span>
+          </div>
+        </div>
+      )}
+
+      <p className="cp-note">
+        <b>{WHOLE_TEXT_VOTE_BOUND.phrase}</b> {WHOLE_TEXT_VOTE_BOUND.pourquoi}
+      </p>
+    </>
+  );
+}
+
+/* ── § 6 — où il s'est écarté des siens ─────────────────────────────────────
+ *
+ * Scrutin par scrutin, JAMAIS totalisé : « a voté contre son groupe N fois »
+ * serait une note, pas un fait. Deux positions sourcées posées côte à côte ; la
+ * lecture appartient au lecteur.
+ */
+function Ecarts({ ecarts, voix }) {
+  if (!ecarts.comparable) {
+    return (
+      <div className="cp-carte">
+        <ListeVide
+          cause="hors_couverture"
+          motif={
+            ecarts.fiches.length
+              ? 'Aucune fiche de groupe publiée ne recouvre ses périodes de mandat de façon exploitable : aucun scrutin n’est commun à ses votes et aux fiches disponibles.'
+              : 'Aucune fiche de groupe n’est publiée pour les groupes où cette personne a siégé. Il n’y a donc rien à comparer — ce n’est pas l’absence d’écart.'
+          }
+        />
+      </div>
+    );
+  }
+
+  if (!ecarts.ecarts.length) {
+    return (
+      <div className="cp-carte">
+        <ListeVide
+          cause="couvert"
+          motif={
+            ecarts.communs > 1
+              ? `Sur les ${formatNumber(ecarts.communs)} scrutins communs à ses votes et aux fiches de groupe publiées, aucun vote sur l’ensemble d’un texte ne diverge de la position majoritaire de son groupe.`
+              : 'Un seul scrutin est commun à ses votes et aux fiches de groupe publiées, et il ne diverge pas. Un scrutin ne dit rien : ce vide mesure la comparaison possible, pas son comportement.'
+          }
+        />
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <p className="cp-section-critere">
+        Relevé sur les {formatNumber(ecarts.communs)} scrutins communs à ses votes et aux fiches
+        de groupe publiées, et restreint aux votes sur l’ensemble d’un texte.
+      </p>
+      <div className="cp-carte">
+        {ecarts.ecarts.map((e) => (
+          <div className="cp-ecart" key={e.scrutinId}>
+            <div>
+              <p className="cp-ligne-titre">{e.texte}</p>
+              <p className="cp-ecart-meta cp-num">
+                {jour(e.date)} · groupe {e.groupe} · {e.legislature}
+                <sup>e</sup> législature
+              </p>
+              <BadgeSource url={e.sourceUrl} />
+            </div>
+            <div className="cp-ecart-positions">
+              <span className="cp-ecart-ligne">
+                <span>{voix.pronom}</span>
+                <PositionVote position={e.position} />
+              </span>
+              <span className="cp-ecart-ligne">
+                <span>son groupe</span>
+                <PositionVote position={e.positionGroupe} />
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+/* ── § 7 — ce qu'on n'a pas pu lire ─────────────────────────────────────────── */
+const LIBELLE_ETAT = {
+  couvert: 'couvert',
+  hors_couverture: 'hors couverture',
+  non_collecte: 'non collecté',
+  fait_etabli: 'fait établi',
+};
+
+function Couverture({ couverture, limites }) {
+  return (
+    <>
+      <div className="cp-carte">
+        {couverture.map((c) => (
+          <div className="cp-ligne cp-ligne--couverture" key={c.cle}>
+            <span className="cp-ligne-cle">{c.titre}</span>
+            <span className="cp-ligne-corps">
+              {c.etats.map((e) => (
+                <span className="cp-etat" key={`${e.etat}-${e.debut}-${e.fin}`}>
+                  <b>{LIBELLE_ETAT[e.etat] || e.etat}</b>
+                  {e.debut && ` depuis le ${jour(e.debut)}`}
+                  {!e.debut && e.fin && ` jusqu’au ${jour(e.fin)}`}
+                  {e.preuve && <em>{e.preuve}</em>}
+                </span>
+              ))}
+            </span>
+            <span className="cp-ligne-nombre cp-num">
+              {formatNumber(c.decompte)}
+              <span>entrées</span>
+            </span>
+          </div>
+        ))}
+      </div>
+      {limites.map((l) => (
+        <p className="cp-note" key={l.cle}>
+          {l.texte}
+        </p>
+      ))}
+      <Interdits />
+    </>
+  );
+}
+
+export default function CandidateProfile({ candidate }) {
+  const c = candidate;
+
+  return (
+    <main className="cp-main">
+      <div className="cp-breadcrumb">
+        Candidats / <strong>{c.nom}</strong>
+      </div>
+
+      <header className="cp-entete">
+        <p className="cp-sourcil">Candidat déclaré · élection présidentielle 2027</p>
+        <h1>{c.nom}</h1>
+        <p className="cp-qui">
+          {[c.profession, c.groupe && `Groupe ${c.groupe}`, c.parti].filter(Boolean).join(' · ')}
+          {c.naissance && `. ${c.voix.ne} le ${jour(c.naissance.date)}${c.naissance.lieu ? ` à ${c.naissance.lieu}` : ''}.`}
+        </p>
+        <BadgeSource url={c.sourceUrl} />
+      </header>
+
+      {/* Coup d'œil — le faisceau. Des traces indépendantes, chacune mesurée
+          séparément : aucun rapprochement thématique, aucune synthèse. C'est le
+          lecteur qui lit la convergence, et chaque ligne se vérifie à sa
+          source (AGENTS.md §2 règle 8). */}
+      {c.faisceau.length > 0 && (
+        <section className="cp-faisceau">
+          <p className="cp-faisceau-label">Coup d’œil · ce qui revient</p>
+          <h2>{c.faisceau.length} traces indépendantes, une même matière</h2>
+          <p className="cp-faisceau-note">
+            Un vote est une réaction à l’ordre du jour d’autrui. Un amendement déposé, une
+            commission rejointe, une question posée : des gestes que personne n’impose. Voici ce
+            que ces gestes ont en commun, chacun mesuré séparément.
+          </p>
+          <div className="cp-traces">
+            {c.faisceau.map((t) => (
+              <div className="cp-trace" key={t.cle}>
+                <span className="cp-trace-nombre cp-num">
+                  {formatNumber(t.valeur)}
+                  <small>/ {formatNumber(t.sur)}</small>
+                </span>
+                <span className="cp-trace-texte">
+                  {t.texte}
+                  {t.precision && <em> — {t.precision}</em>}
+                </span>
+              </div>
+            ))}
+          </div>
+          <p className="cp-faisceau-pied">
+            Ces mesures sont <b>indépendantes</b> : autant de jeux de données distincts, aucun
+            rapprochement par thème. Empreinte politique ne classe pas les textes par sujet —{' '}
+            <b>c’est le lecteur qui lit la convergence</b>, et chaque ligne se vérifie à sa source.
+          </p>
+        </section>
+      )}
+
+      <Section
+        numero="1"
+        titre="Le parcours"
+        critere="Une seule frise, où chaque situation se distingue par un motif et non par une hiérarchie de position. L’ordre est chronologique, jamais hiérarchique : c’est la date qui range, pour tout le monde. Sous la bande, le détail de chaque rôle, puis les fonctions qu’on choisit d’exercer."
+      >
+        {c.parcours.roles.length === 0 ? (
+          <div className="cp-carte">
+            <ListeVide cause={c.causes.mandats} source="Mandats et fonctions" />
+          </div>
+        ) : (
+          <>
+            <Frise parcours={c.parcours} />
+            <Fonctions fonctions={c.fonctions} />
+          </>
         )}
+      </Section>
+
+      <Section
+        numero="2"
+        titre={c.voix.titres.gouvernements}
+        critere="Ce que ces gouvernements ont porté, en ensembles. Cette section précède ses actes personnels parce qu’elle en donne le contexte, non parce qu’elle vaudrait davantage."
+      >
+        <Gouvernements cause="fait_etabli" gouvernements={c.gouvernements} voix={c.voix} />
+      </Section>
+
+      <Section
+        numero="3"
+        titre={c.voix.titres.propose}
+        critere="Une seule liste, quel que soit le banc. La position déclarée du groupe accompagne le chiffre qu’elle explique — un amendement d’opposition et un amendement de majorité ne sont pas le même acte. Rien n’est additionné."
+      >
+        <Propositions
+          amendements={c.amendements}
+          textes={c.textes}
+          causeAmendements={c.causes.amendements}
+          causeTextes={c.causes.textes_portes}
+          voix={c.voix}
+        />
+      </Section>
+
+      <Section
+        numero="4"
+        titre={c.voix.titres.dit}
+        critere="La qualité en tête — celle que la source publie, ou celle que ses mandats permettent de dériver. Les deux régimes ne se confondent pas."
+      >
+        <Paroles cause={c.causes.interventions} interventions={c.interventions} voix={c.voix} />
+      </Section>
+
+      <Section
+        numero="5"
+        titre={c.voix.titres.vote}
+        critere="Les positions exprimées sur l’ensemble d’un texte. Quand une période rendait le vote impossible, la page le dit au lieu de laisser un vide. Aucun taux de participation n’est publié : ce serait un taux d’assiduité individuel."
+      >
+        <Votes cause={c.causes.votes} votes={c.votes} voix={c.voix} />
+      </Section>
+
+      <Section
+        numero="6"
+        titre={c.voix.titres.ecarts}
+        critere="Sa position à côté de la position majoritaire de son groupe, scrutin par scrutin. Jamais totalisé : « a voté contre son groupe N fois » serait une note, pas un fait."
+      >
+        <Ecarts ecarts={c.ecarts} voix={c.voix} />
+      </Section>
+
+      <Section
+        numero="7"
+        titre="Ce qu’on n’a pas pu lire"
+        critere="Chaque liste porte son état et ses bornes, et chaque limite se déclare."
+      >
+        <Couverture couverture={c.couverture} limites={c.limites} />
+      </Section>
+
+      <footer className="cp-pied">
+        <span>{c.licence}</span>
+        <span>Aucun score, aucun classement, aucun taux de présence individuel.</span>
+      </footer>
     </main>
   );
 }

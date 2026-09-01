@@ -137,6 +137,11 @@ for (const file of gouvernementFiles) {
     debut: gouvernement.periode?.debut ?? null,
     fin: gouvernement.periode?.fin ?? null,
     actif: gouvernement.periode?.actif ?? false,
+    // #328 : la fiche de profil doit savoir de QUELS gouvernements la personne
+    // a été membre avant d'en télécharger un seul (les dix pèsent 580 Ko).
+    // L'appariement se fait ici, une fois, sur `membre_id` — le même champ que
+    // pour les groupes, quelques lignes plus haut.
+    membreIds: [...new Set((gouvernement.membres || []).map((m) => m.membre_id).filter(Boolean))],
   });
 }
 manifestGouvernements.sort((a, b) => (b.debut || '').localeCompare(a.debut || ''));

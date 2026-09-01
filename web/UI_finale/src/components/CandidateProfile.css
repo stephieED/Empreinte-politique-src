@@ -1,466 +1,1044 @@
-.main {
+/*
+ * Fiche candidat — lot 2 de la refonte #324 (issue #328).
+ *
+ * Charte : web/UI_finale/DESIGN_SYSTEM.md. Manrope seule, encre #14151A, blanc
+ * cassé #F7F6F4, jaune signal #DFFF00 JAMAIS en texte sur fond clair (contraste
+ * 1,05:1, échec AA) — il ne sert ici que d'aplat non textuel et de liseré.
+ * Rayons : 14-16px pour un item, 18px pour une carte, pilulier pour ce qui se
+ * choisit ou s'étiquette.
+ *
+ * Le site est en thème clair déclaré (`index.css` : `color-scheme: light`) : il
+ * n'y a pas de jeton de thème sombre à tenir en trois états, contrairement à la
+ * maquette, qui vivait dans un lecteur d'artifact bi-thème.
+ */
+
+.cp-main {
   flex: 1;
   min-width: 0;
   width: 100%;
+  max-width: 1100px;
   padding: 32px 40px 64px;
-  max-width: 1600px;
 }
 
-.breadcrumb {
+@media (max-width: 720px) {
+  .cp-main {
+    padding: 24px 18px 48px;
+  }
+}
+
+.cp-num {
+  font-variant-numeric: tabular-nums;
+}
+
+.cp-breadcrumb {
   font-size: 13px;
   color: var(--muted);
   margin-bottom: 20px;
 }
 
-.breadcrumb strong {
+.cp-breadcrumb strong {
   color: var(--ink);
   font-weight: 600;
 }
 
-.banner {
-  background: var(--dark);
-  box-shadow: 0 2px 16px rgba(20, 15, 40, 0.07);
-  padding: 28px;
-  margin-bottom: 20px;
-  clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 28px, 100% 100%, 0 100%);
+/* ── En-tête ─────────────────────────────────────────────────────────────── */
+.cp-entete {
+  padding-bottom: 8px;
 }
 
-.banner-tag {
-  display: inline-block;
-  border-radius: 2px;
-  padding: 5px 14px;
-  font-size: 12px;
+.cp-sourcil {
+  font-size: 11px;
   font-weight: 700;
-  border: 1.5px solid #ffffff;
-  color: #ffffff;
-  margin-bottom: 14px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
-.banner h1 {
+.cp-entete h1 {
   font-size: 34px;
   font-weight: 800;
   letter-spacing: -0.01em;
-  color: #ffffff;
-  margin-bottom: 8px;
+  margin: 8px 0 0;
+  line-height: 1.06;
 }
 
-.banner p {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
+.cp-qui {
+  margin: 9px 0 12px;
+  font-size: 15px;
+  color: #6e6a78;
+  max-width: 72ch;
 }
 
-.kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 14px;
-  margin-bottom: 28px;
-}
-
-.kpi-card {
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-  border-radius: 18px;
-  background: var(--card);
-  box-shadow: 0 2px 12px rgba(20, 15, 40, 0.06);
-  padding: 18px;
-  transition: box-shadow 0.15s;
-  border: 0;
-  text-align: left;
-  width: 100%;
-}
-
-.kpi-card:hover {
-  box-shadow: 0 6px 20px rgba(20, 15, 40, 0.14);
-}
-
-.kpi-card:focus {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-.kpi-value {
-  font-size: 26px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-  max-width: 100%;
-  overflow-wrap: break-word;
-}
-
-.kpi-label {
-  margin-top: 6px;
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.3;
-}
-
-.kpi-caveat {
-  position: absolute;
-  inset: 0;
+/* ── Coup d'œil : le faisceau ────────────────────────────────────────────── */
+.cp-faisceau {
+  margin-top: 26px;
   background: var(--dark);
-  color: #ffffff;
-  padding: 16px;
-  display: flex;
-  align-items: center;
-  font-size: 12px;
-  line-height: 1.4;
-  opacity: 0;
-  transition: opacity 0.15s;
-  pointer-events: none;
-}
-
-.kpi-card:hover .kpi-caveat {
-  opacity: 1;
-}
-
-.flyout {
+  color: #f7f6f4;
   border-radius: 18px;
-  background: var(--card);
-  box-shadow: 0 2px 12px rgba(20, 15, 40, 0.06);
-  padding: 20px;
-  margin-bottom: 28px;
-  max-width: 480px;
+  padding: 28px 32px 24px;
 }
 
-.flyout-title {
-  margin-bottom: 12px;
-  font-size: 13px;
+.cp-faisceau-label {
+  font-size: 11px;
   font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9c98a6;
 }
 
-.flyout-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.cp-faisceau h2 {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  margin-top: 9px;
+  max-width: 30ch;
 }
 
-.flyout-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 8px;
+.cp-faisceau-note,
+.cp-faisceau-pied {
   font-size: 13px;
+  color: #9c98a6;
+  line-height: 1.55;
+  max-width: 70ch;
 }
 
-.flyout-row .period {
-  color: var(--muted);
-  font-size: 12px;
+.cp-faisceau-note {
+  margin-top: 10px;
+}
+
+.cp-faisceau-pied {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #2c2f38;
+}
+
+.cp-faisceau-pied b,
+.cp-faisceau-note b {
+  color: #f7f6f4;
+  font-weight: 700;
+}
+
+.cp-traces {
+  margin-top: 22px;
+}
+
+.cp-trace {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 20px;
+  align-items: baseline;
+  padding: 13px 0;
+  border-top: 1px solid #2c2f38;
+}
+
+.cp-trace:first-child {
+  border-top: 0;
+}
+
+.cp-trace-nombre {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   white-space: nowrap;
 }
 
-.flyout-note {
-  margin-top: 12px;
+.cp-trace-nombre small {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9c98a6;
+  margin-left: 4px;
+  letter-spacing: 0;
+}
+
+.cp-trace-texte {
+  font-size: 13.5px;
+  line-height: 1.5;
+  max-width: 66ch;
+}
+
+.cp-trace-texte em {
+  font-style: normal;
+  color: #9c98a6;
+}
+
+/* ── Sections ────────────────────────────────────────────────────────────── */
+.cp-section {
+  margin-top: 44px;
+}
+
+.cp-section-bande {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+
+.cp-section-numero {
   font-size: 11px;
-  color: var(--muted);
-  font-style: italic;
-}
-
-.tabs {
-  display: inline-flex;
-  gap: 4px;
-  background: #efedea;
-  border-radius: 999px;
-  padding: 4px;
-  margin-bottom: 20px;
-}
-
-.tab-btn {
-  border: 0;
-  border-radius: 999px;
-  padding: 9px 22px;
-  font: 600 13px 'Manrope', sans-serif;
-  cursor: pointer;
-  background: transparent;
+  font-weight: 800;
+  letter-spacing: 0.1em;
   color: var(--muted);
 }
 
-.tab-btn.active {
-  background: var(--accent);
-  color: var(--dark);
+.cp-section-trait {
+  flex: 1;
+  height: 1px;
+  background: var(--border-strong);
 }
 
-.tab-btn:focus {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+.cp-section-titre {
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.018em;
 }
 
-.votes-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+.cp-section-critere {
+  font-size: 13px;
+  color: #6e6a78;
+  max-width: 78ch;
+  margin-top: 8px;
+  line-height: 1.55;
+}
+
+.cp-section-corps {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
   gap: 12px;
 }
 
-.vote-card {
-  border-radius: 18px;
+.cp-carte {
   background: var(--card);
-  box-shadow: 0 2px 12px rgba(20, 15, 40, 0.06);
-  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 1px 10px rgba(20, 15, 40, 0.05);
 }
 
-.vote-position {
+.cp-bloc {
+  padding: 22px 26px;
+}
+
+.cp-note {
+  padding: 16px 20px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 14px;
+  background: #fbfaf8;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink);
+  max-width: 82ch;
+}
+
+.cp-note em {
+  font-style: normal;
+  color: #6e6a78;
+}
+
+/* ── § 1 — la frise ──────────────────────────────────────────────────────── */
+.cp-frise {
+  padding: 24px 26px 20px;
+}
+
+.cp-reperes {
+  position: relative;
+  margin-bottom: 2px;
+}
+
+.cp-repere {
+  position: absolute;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cp-repere b {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 9px;
-}
-
-.vote-dot {
-  width: 8px;
-  height: 8px;
+  justify-content: center;
+  width: 19px;
+  height: 19px;
   border-radius: 50%;
-  display: inline-block;
+  background: var(--card);
+  border: 1.5px solid var(--ink);
+  color: var(--ink);
+  font-size: 10.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
 }
 
-.vote-position .vote-position-label {
-  font-size: 12px;
-  font-weight: 700;
+.cp-repere i {
+  display: block;
+  width: 1px;
+  flex: 1;
+  background: var(--border-strong);
 }
 
-.vote-title {
-  margin-bottom: 12px;
-  font-size: 14px;
-  line-height: 1.4;
-  min-height: 40px;
+.cp-bande {
+  position: relative;
+  height: 46px;
+  background: var(--border);
+  border-radius: 6px;
+  overflow: hidden;
 }
 
-.vote-footer {
+/*
+ * Un segment de bande. La TEINTE porte l'institution, le MOTIF porte la
+ * position. Le motif est un `::after` en `inset: 0` — c'est sans risque ici
+ * parce que la bande ne porte AUCUN texte : un libellé peint par-dessous
+ * deviendrait illisible, et c'est précisément le défaut corrigé sur la maquette.
+ */
+.cp-fs {
+  position: absolute;
+  border-radius: 3px;
+  min-width: 5px;
+  overflow: hidden;
+}
+
+.cp-fs--parlement {
+  background: #3f5166;
+}
+
+.cp-fs--gouvernement {
+  background: #8a6b4c;
+}
+
+.cp-fs--chef {
+  background: var(--accent);
+}
+
+.cp-fs--mission {
+  background: var(--card);
+  border: 1.5px dashed #8a6b4c;
+}
+
+.cp-fs--motif-diagonales::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(45deg, transparent 0 5px, rgba(247, 246, 244, 0.3) 5px 10px);
+}
+
+.cp-fs--motif-points::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(rgba(247, 246, 244, 0.3) 1.6px, transparent 1.7px);
+  background-size: 8px 8px;
+}
+
+.cp-fs--motif-fines-rayures::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, transparent 0 6px, rgba(247, 246, 244, 0.3) 6px 8px);
+}
+
+.cp-fs--motif-rayures::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, transparent 0 7px, rgba(247, 246, 244, 0.28) 7px 9px);
+}
+
+.cp-axe {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding-top: 10px;
+  margin-top: 7px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.cp-legende {
+  margin-top: 18px;
+  padding-top: 16px;
   border-top: 1px solid var(--border);
 }
 
-.vote-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
+.cp-legende-titre {
   font-size: 11px;
-  font-weight: 700;
-  color: var(--dark);
-  background: var(--accent);
-  padding: 3px 9px;
-  border-radius: 999px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
-.vote-meta {
-  font-size: 11px;
+.cp-legende-grille {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 9px 18px;
+  margin-top: 11px;
+}
+
+.cp-legende-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #6e6a78;
+}
+
+.cp-legende-pave {
+  position: relative;
+  width: 34px;
+  height: 17px;
+  border-radius: 3px;
+  flex: 0 0 auto;
+  overflow: hidden;
+}
+
+.cp-legende-note {
+  margin-top: 14px;
+  font-size: 12.5px;
+  color: #6e6a78;
+  line-height: 1.55;
+  max-width: 82ch;
+}
+
+.cp-legende-note b {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.cp-roles {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 14px 0 0;
+  border-top: 1px solid var(--border);
+}
+
+.cp-role {
+  display: grid;
+  grid-template-columns: 19px 190px 1fr;
+  gap: 14px;
+  align-items: baseline;
+  padding: 8px 0;
+  font-size: 13px;
+}
+
+.cp-role-numero {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #f7f6f4;
+  font-size: 10.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.cp-role-dates {
+  font-size: 12px;
+  font-weight: 700;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
 
-.textes-card {
-  border-radius: 18px;
-  background: var(--card);
-  box-shadow: 0 2px 12px rgba(20, 15, 40, 0.06);
-  padding: 24px;
-  margin-bottom: 20px;
-}
-
-.textes-caption {
-  margin-bottom: 14px;
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.outcome-bar {
-  display: flex;
-  height: 12px;
-  border-radius: 6px;
-  overflow: hidden;
-  margin-bottom: 12px;
-}
-
-.outcome-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-.outcome-legend-item {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.outcome-legend-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 2px;
-  display: inline-block;
-}
-
-.compare-header {
-  display: grid;
-  grid-template-columns: 110px 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 6px;
-}
-
-.compare-header span {
-  font-size: 11px;
-  text-transform: uppercase;
-  color: var(--muted);
+.cp-role-intitule b {
   font-weight: 700;
 }
 
-.compare-rows {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.compare-row {
-  display: grid;
-  grid-template-columns: 110px 1fr 1fr;
-  gap: 12px;
-  align-items: center;
-}
-
-.compare-row-label {
-  font-size: 12px;
+.cp-role-detail {
   color: var(--muted);
 }
 
-.compare-bar-wrap {
+/*
+ * La position déclarée : une pilule dont la BORDURE reprend le motif de la
+ * frise, pour que les deux se lisent ensemble sans jamais employer de teinte
+ * politique.
+ */
+.cp-position {
+  display: inline-flex;
+  margin-left: 8px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border: 1px solid var(--border-strong);
+  color: #6e6a78;
+  vertical-align: middle;
+}
+
+.cp-position--plein {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.cp-position--diagonales {
+  border-style: dashed;
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.cp-position--points {
+  border-style: dotted;
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.cp-position--rayures {
+  border-color: #8a6b4c;
+  color: #8a6b4c;
+}
+
+.cp-position--fines-rayures {
+  border-style: dotted;
+  color: var(--muted);
+}
+
+/* ── § 1 — les fonctions exercées ────────────────────────────────────────── */
+.cp-fonctions-bloc {
+  padding: 20px 26px;
+  border-top: 1px solid var(--border);
+}
+
+.cp-fonctions-bloc:first-child {
+  border-top: 0;
+}
+
+.cp-fonctions-titre {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.cp-puces {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
 }
 
-.compare-bar-track {
-  height: 8px;
-  border-radius: 4px;
-  background: var(--border);
-  display: block;
-  flex: 1;
+.cp-puce {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: #fbfaf8;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.cp-puce b {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+/* ── Barres empilées ─────────────────────────────────────────────────────── */
+.cp-barre {
+  display: flex;
+  height: 22px;
+  border-radius: 5px;
   overflow: hidden;
+  margin-top: 10px;
+  background: var(--border);
 }
 
-.compare-bar-fill {
+.cp-barre-seg {
   display: block;
   height: 100%;
 }
 
-.compare-bar-count {
-  font-size: 12px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  min-width: 1.5ch;
+/*
+ * Un segment sans teinte : « sort non publié », « adopté sans vote (49.3) ».
+ * Il ne reçoit JAMAIS une couleur d'issue par défaut — un 49.3 n'est pas une
+ * position de vote (§2 règle 4) et un sort absent n'est pas un sort (§2 règle 5).
+ */
+.cp-barre-seg--sans-teinte {
+  background: repeating-linear-gradient(135deg, #dcd9d3 0 3px, transparent 3px 7px);
+  border: 1px solid var(--border-strong);
 }
 
-.theme-pills {
+.cp-cles {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 9px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6e6a78;
+}
+
+.cp-cle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cp-cle i {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  display: block;
+}
+
+.cp-cle-pastille--sans-teinte {
+  background: repeating-linear-gradient(135deg, #dcd9d3 0 2px, transparent 2px 4px);
+  border: 1px solid var(--border-strong);
+}
+
+.cp-cle b {
+  font-weight: 800;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Lignes génériques ───────────────────────────────────────────────────── */
+.cp-ligne {
+  display: grid;
+  grid-template-columns: 200px 1fr auto;
+  gap: 18px;
+  align-items: baseline;
+  padding: 16px 26px;
+  border-top: 1px solid var(--border);
+}
+
+.cp-ligne:first-child {
+  border-top: 0;
+}
+
+.cp-ligne-cle {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.cp-ligne-cle .cp-position {
+  margin-left: 0;
+  display: flex;
+  width: fit-content;
+  margin-top: 6px;
+}
+
+.cp-ligne-titre {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.cp-ligne-nombre {
+  font-size: 15px;
+  font-weight: 800;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.cp-ligne-nombre span {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.cp-ligne--couverture .cp-ligne-corps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cp-etat {
+  font-size: 12.5px;
+  color: #6e6a78;
+  line-height: 1.5;
+}
+
+.cp-etat b {
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.cp-etat em {
+  display: block;
+  font-style: normal;
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+/* ── § 3 — les blocs d'irrecevabilité ────────────────────────────────────── */
+.cp-blocs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 720px) {
+  .cp-blocs {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cp-bloc-nombre {
+  display: block;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.cp-bloc-cle {
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+.cp-bloc-texte {
+  margin-top: 9px;
+  font-size: 12.5px;
+  color: #6e6a78;
+  line-height: 1.55;
+}
+
+/* ── Listes nommées ─────────────────────────────────────────────────────── */
+.cp-nommes {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--border);
+}
+
+.cp-nomme {
+  display: grid;
+  grid-template-columns: 160px 1fr auto;
+  gap: 16px;
+  align-items: baseline;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+  font-size: 13.5px;
+}
+
+.cp-nomme:first-child {
+  border-top: 0;
+}
+
+.cp-nomme-cle {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.cp-nomme-date {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.cp-marque {
+  display: inline-flex;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8a6b4c;
+}
+
+.cp-textes {
+  padding: 22px 26px;
+}
+
+/* ── § 2 — les gouvernements ─────────────────────────────────────────────── */
+.cp-gouv {
+  padding: 20px 26px;
+  border-top: 1px solid var(--border);
+}
+
+.cp-gouv:first-child {
+  border-top: 0;
+}
+
+/* Le jaune signal en liseré, jamais en texte : contraste 1,05:1 sur fond clair. */
+.cp-gouv--chef {
+  border-left: 4px solid var(--accent);
+  background: #fbfaf8;
+}
+
+.cp-gouv-tete {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 18px;
+  align-items: baseline;
+}
+
+.cp-gouv-nom {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.cp-gouv-periode {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.cp-gouv-fonction {
+  font-size: 13px;
+  color: #6e6a78;
+  margin: 5px 0 0;
+  line-height: 1.45;
+}
+
+.cp-gouv-49 {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--muted);
+  margin-top: 11px;
+}
+
+.cp-gouv-49 em {
+  font-style: normal;
+  font-weight: 600;
+  color: #6e6a78;
+}
+
+/* ── § 4 — les mesures ───────────────────────────────────────────────────── */
+.cp-mesures {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+}
+
+.cp-mesure {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: baseline;
+  padding: 9px 0;
+  border-top: 1px solid var(--border);
+  font-size: 13.5px;
+}
+
+.cp-mesure:first-child {
+  border-top: 0;
+}
+
+.cp-mesure b {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.cp-etiquette {
+  display: inline-flex;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid var(--border-strong);
+  color: #6e6a78;
+  margin-bottom: 9px;
+}
+
+.cp-etiquette--pleine {
+  border-color: var(--ink);
+  border-width: 2px;
+  border-radius: 6px;
+  color: var(--ink);
+}
+
+/* ── § 5 — les votes ─────────────────────────────────────────────────────── */
+.cp-annees {
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  margin-top: 16px;
+  height: 96px;
+}
+
+.cp-annee {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.cp-annee i {
+  display: block;
+  width: 100%;
+  background: var(--ink);
+  border-radius: 3px 3px 0 0;
+}
+
+.cp-annee b,
+.cp-annee em {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  font-style: normal;
+}
+
+.cp-annee em {
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.cp-votes-barre {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.cp-votes-seg {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 120px;
+  padding: 14px 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+}
+
+.cp-votes-seg b {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.cp-regles {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin-bottom: 20px;
+  margin-top: 12px;
 }
 
-.theme-pill {
-  border: 1.5px solid var(--dark);
+.cp-regle {
+  display: inline-flex;
+  padding: 4px 11px;
   border-radius: 999px;
-  padding: 6px 14px;
-  font: 600 12px 'Manrope', sans-serif;
-  cursor: pointer;
-  background: transparent;
-  color: var(--dark);
+  border: 1px dashed var(--border-strong);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #6e6a78;
 }
 
-.theme-pill.active {
-  background: var(--dark);
-  color: #ffffff;
+/* ── § 6 — les écarts ────────────────────────────────────────────────────── */
+.cp-ecart {
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: 18px;
+  align-items: center;
+  padding: 18px 26px;
+  border-top: 1px solid var(--border);
 }
 
-.theme-pill:focus {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+.cp-ecart:first-child {
+  border-top: 0;
 }
 
-.theme-shelves {
+.cp-ecart-meta {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  margin: 6px 0 8px;
+}
+
+.cp-ecart-positions {
   display: flex;
   flex-direction: column;
-  gap: 22px;
-}
-
-.shelf-header {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  border-bottom: 1px solid var(--border-strong);
-  padding-bottom: 6px;
-  margin-bottom: 10px;
-}
-
-.shelf-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--dark);
-  display: inline-block;
-}
-
-.shelf-label {
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-}
-
-.shelf-items {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 8px;
 }
 
-.shelf-item {
-  border-radius: 14px;
-  background: var(--card);
-  box-shadow: 0 1px 8px rgba(20, 15, 40, 0.05);
-  padding: 14px;
-}
-
-.shelf-item-title {
-  font-weight: 700;
-  font-size: 14px;
-  margin-bottom: 4px;
-}
-
-.shelf-item-meta {
-  font-size: 11px;
-  color: var(--muted);
-  text-transform: uppercase;
-}
-
-.donnees-card {
-  border-radius: 18px;
-  background: var(--card);
-  box-shadow: 0 2px 12px rgba(20, 15, 40, 0.06);
-  padding: 22px;
-  display: flex;
-  gap: 14px;
-  max-width: 640px;
-}
-
-.donnees-icon {
-  flex: 0 0 auto;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: 1.5px solid var(--dark);
-  color: var(--dark);
-  font-weight: 800;
-  font-size: 13px;
+.cp-ecart-ligne {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 700;
 }
 
-.donnees-text {
-  font-size: 14px;
+.cp-ecart-ligne > span:first-child {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--muted);
-  line-height: 1.5;
+}
+
+@media (max-width: 760px) {
+  .cp-ligne,
+  .cp-nomme,
+  .cp-ecart,
+  .cp-role {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .cp-ligne-nombre {
+    text-align: left;
+  }
+}
+
+/* ── Pied ────────────────────────────────────────────────────────────────── */
+.cp-pied {
+  margin-top: 44px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-strong);
+  font-size: 12.5px;
+  color: var(--muted);
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/*
+ * Les trois situations d'une année, distinguées par la FORME et non par une
+ * teinte : une année de gouvernement et une année hors mandat ne sont pas deux
+ * degrés d'une même échelle, et un dégradé les rangerait (§2 règle 1).
+ */
+.cp-annee--gouvernement i {
+  background: repeating-linear-gradient(135deg, transparent 0 4px, var(--border-strong) 4px 5px);
+  border: 1px dashed var(--border-strong);
+}
+
+.cp-annee--hors-mandat i {
+  background: transparent;
+  border-bottom: 2px dotted var(--border-strong);
+}
+
+.cp-cle-pastille--gouvernement {
+  background: repeating-linear-gradient(135deg, transparent 0 2px, var(--border-strong) 2px 3px);
+  border: 1px dashed var(--border-strong);
+}
+
+.cp-cle-pastille--hors-mandat {
+  background: transparent;
+  border-bottom: 2px dotted var(--border-strong);
 }

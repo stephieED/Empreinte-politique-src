@@ -167,14 +167,15 @@ SITES_UI: dict[tuple[str, str], str] = {
     ("src/utils/profilCandidat.js", "m"): MANDAT,
     ("src/utils/profilCandidat.js", "existant"): MANDAT,
     ("src/utils/profilCandidat.js", "siege"): MANDAT,
-    # Le seul consommateur du champ profil qui reste, et il n'est pas dans le
-    # recensement de #486/#494 : celui-ci ne couvrait que `src/*.py`.
-    # `chambreLabel(pivot.chambre, actif)` fabrique le libellé de profession de
-    # repli — « Député », « Ancien(ne) sénateur ». Sur un profil bicaméral il
-    # n'en montre qu'une, ce qui est exactement la question éditoriale posée par
-    # l'épic. Sa migration appartient à #495 (F), hors périmètre ici.
-    ("src/data/pivotAdapter.js", "pivot"): CONSOMMATEUR_PROFIL,
 }
+
+# Le dernier consommateur du champ profil de l'interface — `chambreLabel(
+# pivot.chambre, actif)`, qui fabriquait le libellé de profession de repli
+# (« Député », « Ancien(ne) sénateur ») — a disparu avec la refonte de la fiche
+# candidat (#328) : elle ne publie plus une chambre de profil mais le rôle de
+# CHAQUE siège, tiré de `mandats[].chambre`. Sur un profil bicaméral, les deux
+# chambres apparaissent donc, chacune à sa place et à sa date, ce qui était
+# exactement la question éditoriale posée par l'épic.
 
 
 # --- Scanners ---------------------------------------------------------------
@@ -361,30 +362,36 @@ def test_condition_1_de_retrait_pipeline_python():
 
 
 def test_condition_1_de_retrait_etat_global():
-    """L'état de la condition 1, interface comprise — et pourquoi elle attend.
+    """**Condition 1 remplie** : plus aucun consommateur du champ profil.
 
-    Ce test **échouera** quand #495 aura migré `pivotAdapter.chambreLabel`, et
-    ce sera le signal : plus aucun consommateur, condition 1 remplie. Il faudra
-    alors le retourner en assertion positive, vérifier la condition 2 sur un run
-    réel (warning `chambres du profil non corroborée` absent du corpus), et
-    retirer le scalaire.
+    Le test disait, jusqu'au 01/09/2026, l'inverse — il attendait exactement un
+    consommateur, `pivotAdapter.chambreLabel`, et sa docstring annonçait qu'il
+    échouerait le jour où celui-ci disparaîtrait. Il a échoué, et c'était le
+    signal prévu : la refonte de la fiche candidat (#328) a supprimé le libellé
+    de profession de repli, seule chose qui lisait encore `pivot.chambre`.
 
     Un test qui échoue pour dire « c'est fini » plutôt qu'une note dans un
     journal : c'est la différence entre un transitoire qui se termine et les
     replis de #431/#432, qui ne se sont jamais terminés.
+
+    **Ce qui reste avant de retirer le scalaire** — hors périmètre de #328,
+    parce qu'aucune de ces deux étapes ne se vérifie côté interface : la
+    condition 2 se lit sur un run réel (l'avertissement « chambres du profil non
+    corroborée » absent du corpus), puis le champ et la branche de repli de
+    `lire_chambres()` partent ensemble.
     """
     restants = sorted(
         cle for cle, categorie in {**SITES_PYTHON, **SITES_UI}.items()
         if categorie == CONSOMMATEUR_PROFIL
     )
 
-    assert restants == [("src/data/pivotAdapter.js", "pivot")], (
-        "L'inventaire des consommateurs du champ profil a changé :\n"
+    assert restants == [], (
+        "Un consommateur du champ profil est réapparu :\n"
         + "\n".join(f"  - {a} :: {b}" for a, b in restants)
-        + "\n\nS'il est vide, la condition 1 de retrait de `chambre` est remplie "
-        "(docs/decisions/chambres-profil-derivees.md) : reste à vérifier "
-        "la condition 2 sur le corpus, puis à retirer le scalaire et la branche de "
-        "repli de `lire_chambres()`."
+        + "\n\nLa condition 1 de retrait de `chambre` était remplie "
+        "(docs/decisions/chambres-profil-derivees.md) ; lis la chambre sur "
+        "`mandats[].chambre` (#492) ou via `schema_pivot.lire_chambres()`, "
+        "jamais sur le scalaire du profil."
     )
 
 
