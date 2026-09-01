@@ -43,6 +43,12 @@ import json
 from pathlib import Path
 from typing import Any, Optional
 
+from schema_groupe import (
+    POSITIONS_POLITIQUES_GROUPE,
+    resumer_position_politique,
+)
+from schema_pivot import POSITION_POLITIQUE_AN_VERS_PIVOT
+
 #: Clé portant la suspension dans une entrée de `groupes_reels.json`.
 #: Nommée `extraction_suspendue` et non `suspendu` : c'est l'**extraction**
 #: qui s'arrête, pas le groupe parlementaire — et `suspendu` est déjà pris,
@@ -195,3 +201,266 @@ def resume_suspension(groupe: dict[str, Any]) -> str:
         f"{libelle_groupe(groupe)} : extraction suspendue depuis "
         f"{bloc.get('depuis') or '?'} — {bloc.get('motif') or '?'}{suffixe}"
     )
+
+
+# ── La table de correspondance des sigles, committée (#526, portée ici #686) ──
+#: Clé portant la table dans `raw_data/groupes_reels.json`. Un sigle publié et
+#: sa correspondance AN sont deux faces du même choix éditorial : les séparer
+#: en deux fichiers garantirait qu'un jour l'un bouge sans l'autre.
+CLE_CORRESPONDANCE_SIGLES = "correspondance_sigles_an"
+
+#: Clé portant, dans une entrée de cette table, la qualification que
+#: l'Assemblée nationale donne elle-même au groupe (#686).
+CLE_POSITION_POLITIQUE = "position_politique_an"
+
+
+class CorrespondanceSiglesInvalide(ValueError):
+    """La table sigle publié → sigle(s) AN est absente ou viole un invariant."""
+
+
+def _valider_position_politique_an(
+    entree: dict[str, Any],
+    libelle: str,
+) -> dict[str, Any]:
+    """Valide `position_politique_an` d'une entrée, et la rend.
+
+    Le champ est **obligatoire** (#686), contrairement au champ publié qui,
+    lui, reste optionnel sur une fiche non régénérée. La dissymétrie est
+    voulue : une fiche déjà publiée ne se réécrit pas rétroactivement, mais une
+    entrée de table sans qualification relue laisserait le générateur choisir
+    tout seul ce qu'il publie — et c'est précisément ce que la table existe
+    pour lui interdire.
+
+    Trois invariants, en plus du vocabulaire :
+
+    1. chaque organe cité est un organe **de la table** (`organes_an`) : la
+       preuve et le fil-piège décrivent le même groupe, ou l'un des deux est
+       périmé ;
+    2. `valeur_source` est présente sur chaque organe — c'est la chaîne du
+       référentiel, verbatim, et sans elle la traduction n'est plus vérifiable ;
+    3. `position` est **exactement** le résumé des déclarations
+       (`resumer_position_politique`), jamais un choix.
+    """
+    bloc = entree.get(CLE_POSITION_POLITIQUE)
+    if not isinstance(bloc, dict):
+        raise CorrespondanceSiglesInvalide(
+            f"{libelle} : '{CLE_POSITION_POLITIQUE}' absent ou non-objet. "
+            "L'Assemblée qualifie elle-même ses groupes "
+            "(organe.positionPolitique) : cette qualification se recopie, "
+            "relue et datée, elle ne se devine pas au moment de publier (#686). "
+            "python3 src/an_roster.py --positions la remesure sur l'archive."
+        )
+    position = bloc.get("position")
+    if position not in POSITIONS_POLITIQUES_GROUPE:
+        raise CorrespondanceSiglesInvalide(
+            f"{libelle} : position politique {position!r} hors vocabulaire "
+            f"{list(POSITIONS_POLITIQUES_GROUPE)}."
+        )
+    if not bloc.get("verifie_le"):
+        raise CorrespondanceSiglesInvalide(
+            f"{libelle} : '{CLE_POSITION_POLITIQUE}.verifie_le' absent — une "
+            "qualification non datée n'est pas relisible (#526)."
+        )
+    organes = bloc.get("organes")
+    if not isinstance(organes, list) or not organes:
+        raise CorrespondanceSiglesInvalide(
+            f"{libelle} : '{CLE_POSITION_POLITIQUE}.organes' doit lister les "
+            "organes MESURÉS et ce que chacun déclare — c'est la preuve."
+        )
+    connus = list(entree.get("organes_an") or ())
+    for organe in organes:
+        if not isinstance(organe, dict):
+            raise CorrespondanceSiglesInvalide(f"{libelle} : organe non-objet.")
+        organe_an = organe.get("organe_an")
+        if organe_an not in connus:
+            raise CorrespondanceSiglesInvalide(
+                f"{libelle} : l'organe {organe_an!r} déclare une position mais "
+                f"n'est pas dans 'organes_an' ({connus}). La preuve et le "
+                "fil-piège doivent décrire le même groupe (#526)."
+            )
+        if "valeur_source" not in organe:
+            raise CorrespondanceSiglesInvalide(
+                f"{libelle} : organe {organe_an} sans 'valeur_source' — la "
+                "chaîne du référentiel, verbatim, est ce qui rend la "
+                "traduction vérifiable."
+            )
+        attendu = POSITION_POLITIQUE_AN_VERS_PIVOT.get(organe.get("valeur_source"))
+        if organe.get("position") != attendu:
+            raise CorrespondanceSiglesInvalide(
+                f"{libelle} : organe {organe_an} — "
+                f"{organe.get('valeur_source')!r} ne se traduit pas en "
+                f"{organe.get('position')!r} (POSITION_POLITIQUE_AN_VERS_PIVOT)."
+            )
+    resume = resumer_position_politique(organes)
+    if position != resume:
+        raise CorrespondanceSiglesInvalide(
+            f"{libelle} : position {position!r} alors que les organes déclarent "
+            f"{resume!r}. Le résumé se dérive des déclarations, il ne se "
+            "choisit pas — deux organes successifs qui divergent se publient "
+            "'divergente', jamais repliés sur l'un des deux (#686)."
+        )
+    return bloc
+
+
+def charger_correspondance_sigles(
+    chemin: Optional[Path] = None,
+) -> list[dict[str, Any]]:
+    """Charge et valide la table `correspondance_sigles_an`.
+
+    Chaque entrée doit porter `groupe_sigle` (le sigle **publié**),
+    `legislature`, `sigles_an` (liste non vide), `organes_an` (liste des
+    organes **mesurés** au moment de la relecture), `verifie_le` et
+    `position_politique_an` (#686).
+
+    `organes_an` n'est pas ce qui sert à construire le roster — c'est un
+    **fil-piège** : si l'union des organes portant `sigles_an` cesse de
+    coïncider avec cette liste, l'AN a ouvert ou fermé un organe et la table
+    doit être relue. Le roster, lui, se construit par sigle, pour qu'un organe
+    successif nouvellement ouvert entre quand même dans l'union plutôt que
+    d'être perdu en silence.
+    """
+    chemin = Path(chemin) if chemin is not None else CHEMIN_CONFIG_GROUPES
+    try:
+        document = json.loads(chemin.read_text(encoding="utf-8"))
+    except OSError as exc:
+        raise CorrespondanceSiglesInvalide(
+            f"Configuration des groupes illisible ({chemin}) : {exc}"
+        ) from exc
+    except ValueError as exc:
+        raise CorrespondanceSiglesInvalide(f"{chemin} : JSON invalide — {exc}") from exc
+
+    bloc = document.get(CLE_CORRESPONDANCE_SIGLES)
+    if not isinstance(bloc, dict):
+        raise CorrespondanceSiglesInvalide(
+            f"{chemin} : clé '{CLE_CORRESPONDANCE_SIGLES}' absente ou non-objet. "
+            "La correspondance des sigles est un artefact committé, pas une "
+            "heuristique (#526)."
+        )
+    entrees = bloc.get("groupes")
+    if not isinstance(entrees, list) or not entrees:
+        raise CorrespondanceSiglesInvalide(
+            f"{chemin} : '{CLE_CORRESPONDANCE_SIGLES}.groupes' absent ou vide."
+        )
+
+    vues: set[tuple[str, str]] = set()
+    valides: list[dict[str, Any]] = []
+    for entree in entrees:
+        if not isinstance(entree, dict):
+            raise CorrespondanceSiglesInvalide(f"{chemin} : entrée non-objet.")
+        sigle = entree.get("groupe_sigle")
+        legislature = entree.get("legislature")
+        sigles_an = entree.get("sigles_an")
+        organes_an = entree.get("organes_an")
+        if not isinstance(sigle, str) or not sigle:
+            raise CorrespondanceSiglesInvalide(f"{chemin} : 'groupe_sigle' absent.")
+        if not isinstance(legislature, str) or not legislature:
+            raise CorrespondanceSiglesInvalide(f"{sigle} : 'legislature' absente.")
+        if not isinstance(sigles_an, list) or not sigles_an or not all(
+            isinstance(s, str) and s for s in sigles_an
+        ):
+            raise CorrespondanceSiglesInvalide(
+                f"{sigle}-{legislature} : 'sigles_an' doit être une liste non "
+                "vide de sigles AN (organe.libelleAbrev)."
+            )
+        if not isinstance(organes_an, list) or not organes_an or not all(
+            isinstance(o, str) and o.startswith("PO") for o in organes_an
+        ):
+            raise CorrespondanceSiglesInvalide(
+                f"{sigle}-{legislature} : 'organes_an' doit lister les organes "
+                "mesurés (PO######) — c'est le fil-piège de la table."
+            )
+        if not entree.get("verifie_le"):
+            raise CorrespondanceSiglesInvalide(
+                f"{sigle}-{legislature} : 'verifie_le' absent — une "
+                "correspondance non datée n'est pas relisible."
+            )
+        _valider_position_politique_an(entree, f"{sigle}-{legislature}")
+        cle = (sigle, legislature)
+        if cle in vues:
+            raise CorrespondanceSiglesInvalide(
+                f"{sigle}-{legislature} : deux entrées pour le même "
+                "(groupe_sigle, législature)."
+            )
+        vues.add(cle)
+        valides.append(entree)
+    return valides
+
+
+def entree_correspondance(
+    groupe_sigle: str,
+    legislature: str,
+    chemin: Optional[Path] = None,
+) -> dict[str, Any]:
+    """Entrée de la table pour ce `(sigle publié, législature)`.
+
+    Raises:
+        CorrespondanceSiglesInvalide: aucune entrée. Le message **nomme** le
+            couple : deviner le sigle AN est précisément ce que ce lot refuse.
+    """
+    for entree in charger_correspondance_sigles(chemin):
+        if entree["groupe_sigle"] == groupe_sigle and entree["legislature"] == str(legislature):
+            return entree
+    raise CorrespondanceSiglesInvalide(
+        f"Aucune correspondance de sigle AN pour ({groupe_sigle!r}, "
+        f"législature {legislature!r}) dans {chemin or CHEMIN_CONFIG_GROUPES}. "
+        "Ajouter l'entrée avec ses organes et son effectif mesurés (#526)."
+    )
+
+
+def url_source_correspondance(chemin: Optional[Path] = None) -> str:
+    """`correspondance_sigles_an.source` — l'archive AMO30 dont tout sort.
+
+    Une seule fois dans le fichier, et non recopiée dans les dix entrées : une
+    URL répétée dix fois se corrige neuf fois. C'est elle qui devient le
+    `source_url` publié de chaque fiche.
+    """
+    chemin = Path(chemin) if chemin is not None else CHEMIN_CONFIG_GROUPES
+    try:
+        document = json.loads(chemin.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise CorrespondanceSiglesInvalide(
+            f"Configuration des groupes illisible ({chemin}) : {exc}"
+        ) from exc
+    source = ((document.get(CLE_CORRESPONDANCE_SIGLES) or {}).get("source"))
+    if not (isinstance(source, str) and source.strip()):
+        raise CorrespondanceSiglesInvalide(
+            f"{chemin} : '{CLE_CORRESPONDANCE_SIGLES}.source' absente. C'est "
+            "l'URL du référentiel qui porte la qualification : sans elle, la "
+            "fiche publierait une posture sans source (AGENTS.md §2 règle 2)."
+        )
+    return source
+
+
+def position_politique_publiee(
+    groupe_sigle: str,
+    legislature: Optional[str],
+    chemin: Optional[Path] = None,
+) -> dict[str, Any]:
+    """Le bloc `position_politique` à publier sur une fiche de groupe (#686).
+
+    Composé de la table committée — jamais mesuré ici : ce module ne lit pas
+    l'archive AMO30, et une fiche de groupe se génère dans un job qui n'a
+    aucune raison de la télécharger. La mesure vit dans
+    `an_roster.positions_politiques_mesurees`, et sert à **écrire** la table et
+    à la relire (`--positions`), pas à publier.
+
+    Raises:
+        CorrespondanceSiglesInvalide: pas d'entrée pour ce couple, ou table
+            invalide. Jamais un repli silencieux : un groupe publié sans
+            qualification relue est exactement ce que le §4b du portail de
+            qualité refuse.
+    """
+    if not legislature:
+        raise CorrespondanceSiglesInvalide(
+            f"{groupe_sigle} : la position politique déclarée se lit PAR "
+            "législature (l'AN qualifie ses groupes législature par "
+            "législature) ; aucune ne peut être publiée sans elle."
+        )
+    entree = entree_correspondance(groupe_sigle, legislature, chemin)
+    bloc = entree[CLE_POSITION_POLITIQUE]
+    return {
+        "position": bloc["position"],
+        "source_url": url_source_correspondance(chemin),
+        "verifie_le": bloc["verifie_le"],
+        "organes": [dict(organe) for organe in bloc["organes"]],
+    }
