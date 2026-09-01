@@ -148,6 +148,16 @@ garantie est donc satisfaite, et la phrase d'annonce dit qu'il y avait 7 points
 possibles. Les textes non retenus ne sont pas cachés : ils sont dans la section
 « ce qu'il a proposé ».
 
+**Arbitrage rendu le 01/09/2026, et à ne pas rouvrir.** L'ordre inverse a été
+proposé et écarté : taire 30 projets de loi dont 15 promulgués effacerait le cœur
+de l'action publique d'un ancien Premier ministre, là où les 3 textes déposés
+comme député restent lisibles une section plus bas. Ce qui rend l'arbitrage
+tenable, ce n'est pas l'ordre lui-même mais les trois choses qui l'entourent : la
+garantie par rôle, qui empêche le rôle parlementaire de disparaître ; la phrase
+d'annonce, qui dit combien de points existaient ; et la section « ce qu'il a
+proposé », qui publie ce que le résumé ne retient pas. Changer l'ordre sans elles
+recréerait le défaut d'origine, dans un sens ou dans l'autre.
+
 ## 4. Le point « amendements » : un couple, et une commission sourcée
 
 ### Ce qui est écarté, et pourquoi
