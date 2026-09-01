@@ -137,6 +137,7 @@ from amendements_index import (
 )
 from scrutins_index import DEFAULT_SCRUTINS_PATH, ScrutinsIndex, charger as charger_scrutins, rafraichir as rafraichir_scrutins
 from textes_dossiers_an import charger_table as charger_table_textes
+from textes_vises_figes import lire_textes_vises
 from scrutins_legislature import LegislatureIrresoluble
 from text_utils import slugify
 
@@ -1395,6 +1396,12 @@ def _rafraichir_index_amendements(args: argparse.Namespace, out_dir: Path) -> No
     par `merge-and-pivot`) ; `--skip-dossiers-legislatifs` s'en abstient, parce
     qu'un run qui refuse d'ouvrir ces archives n'a pas à les télécharger par la
     bande. Sans table, rien n'est ajouté et **rien n'est retiré**.
+
+    C'est ici, et nulle part ailleurs, que le report de #696 s'applique aussi :
+    la CI ne passe jamais par `build_amendements_index_pivot.py`, et un report
+    câblé dans le seul script en ligne de commande n'aurait jamais atteint
+    l'index publié. `tests/test_texte_vise_libelle_696.py` verrouille les
+    **deux** chemins d'appel.
     """
     if args.skip_amendements_index:
         print("Index des amendements : reconstruction sautée (--skip-amendements-index).")
@@ -1419,6 +1426,10 @@ def _rafraichir_index_amendements(args: argparse.Namespace, out_dir: Path) -> No
         fusionner=not args.no_merge,
         genere_le=time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         table_textes=table_textes,
+        # Report #696 : les entrées dont le `texte_vise` est un intitulé et non
+        # l'uid du document AN relisent la valeur sourcée dans les archives
+        # figées. Aucune archive ouverte s'il n'y a rien à réparer.
+        lire_textes_vises=lire_textes_vises,
         comptes=comptes,
     )
     detail = ", ".join(
@@ -1426,7 +1437,15 @@ def _rafraichir_index_amendements(args: argparse.Namespace, out_dir: Path) -> No
         for legislature in index.legislatures()
     )
     print(f"Index des amendements : {len(index)} amendement(s) → {dossier} ({detail})")
-    if comptes:
+    if comptes.get("entrees_a_reparer"):
+        # Idem pour le report #696 : ce qu'il n'a pas pu réparer est nommé.
+        print(f"  texte visé : {comptes['entrees_a_reparer']} entrée(s) sans uid de document, "
+              f"dont {comptes['entrees_sans_texte_vise']} sans texte visé du tout ; "
+              f"{comptes['entrees_corrigees']} corrigée(s) depuis les archives figées, "
+              f"{comptes['entrees_sans_source']} sans valeur sourcée "
+              f"({comptes['legislatures_lues']} législature(s) relue(s), "
+              f"{comptes['legislatures_sans_source']} sans archive figée exploitable)")
+    if "amendements_rattaches" in comptes:
         # Le compte est publié plutôt que tu : un amendement sans dossier est un
         # fait, pas un silence (AGENTS.md §2 règle 5).
         print(f"  dossiers législatifs : {comptes['amendements_rattaches']} amendement(s) "

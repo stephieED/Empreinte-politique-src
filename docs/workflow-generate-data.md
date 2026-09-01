@@ -306,10 +306,21 @@ y joint chaque `texte_vise` à son dossier législatif, et depuis #328 la table
 chaque dossier. Archives absentes → aucun rattachement ajouté, aucun retiré,
 aucune commission ajoutée, et le job le dit dans son log ; le `git add` de la
 table est conditionné à son existence, pour qu'un run sans archive ne coûte pas
-le commit des profils. **Produit** le commit de données sur `main`, poussé sous
-`secrets.DATA_PUSH_SSH_KEY` — secret qui **n'existe pas** aujourd'hui, si bien
-que le push repart sous le `GITHUB_TOKEN` et qu'aucun workflow ne voit le commit
-(#685, §6). C'est le seul job à porter
+le commit des profils. Il lit aussi `raw_data/amendements_an_figes/` (committé,
+pas caché) : depuis #696, la même construction **relit** dans l'archive figée le
+`texte_vise` des entrées qui portent un intitulé au lieu de l'uid du document AN
+— 2 500 des 484 132 amendements publiés au 01/09/2026, que la fusion additive ne
+pouvait pas corriger seule. Aucune archive n'est ouverte pour une législature
+sans entrée fautive, et ce que le report ne répare pas est compté dans le log
+([report `texte_vise`](decisions/report-texte-vise-source-696.md)). **Produit** le commit de données sur `main`, poussé sous
+`secrets.DATA_PUSH_SSH_KEY` — **renseigné depuis le 01/09/2026**, avec sa clé de
+déploiement `data-push (#508)` en écriture et son entrée `DeployKey` dans les
+`bypass_actors` du ruleset. Le push émet donc bien un événement `push` :
+`f635cb60` a déclenché `tests.yml`, qui a réussi. Le check requis
+`Suite complète` est posé sur `main` (#693) — il ne bloque pas ce commit, qui
+contourne par la clé, mais il rend le refus bruyant `GH013` déclenchable le jour
+où la clé casse, ce qui est précisément le silence qui avait laissé passer quinze
+commits (#685, §6). C'est le seul job à porter
 `permissions: contents: write`.
 
 **Pourquoi comme ça** : les quatre contrôles sont **cloisonnés**, aucune

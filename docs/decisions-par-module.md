@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 202 décisions
+gouverne sans avoir à fouiller les 203 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -54,16 +54,18 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 | `src/licences.py` | 1 |
 | `src/purge_mandats_dupliques.py` | 1 |
 | `src/scrutins_legislature.py` | 1 |
+| `src/textes_vises_figes.py` | 1 |
 
 ---
 
 ## `src/amendements_index.py`
 
-1 décision(s) le gouvernent ; le module en cite 1.
+2 décision(s) le gouvernent ; le module en cite 1.
 
 | Décision | Nomme |
 | --- | --- |
 | [Un amendement retrouve son dossier, et la clé qu'on lui avait retirée (#639, rang 3)](decisions/dossier-des-amendements-639.md) | `AmendementsIndex`, `resoudre_textes` |
+| [Le `texte_vise` fautif se reprend depuis l'archive figée, pas par une fusion plus permissive (#696, 01/09/2026)](decisions/report-texte-vise-source-696.md) | `backfill_texte_vise`, `merge_amendements_index`, `resoudre_textes` |
 
 Le mentionnent sans le gouverner : [`lectures-pipeline-par-projection-635`](decisions/lectures-pipeline-par-projection-635.md), [`normalisation-amendements`](decisions/normalisation-amendements.md), [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`point-de-sauvegarde-dans-les-profils-518`](decisions/point-de-sauvegarde-dans-les-profils-518.md).
 
@@ -218,7 +220,7 @@ Le mentionnent sans le gouverner : [`amendements-cle-uid`](decisions/amendements
 
 ## `src/build_amendements_index_pivot.py`
 
-Le mentionnent sans le gouverner : [`dossier-des-amendements-639`](decisions/dossier-des-amendements-639.md), [`fenetre-historique-donnees`](decisions/fenetre-historique-donnees.md), [`integrite-referentielle-pivot`](decisions/integrite-referentielle-pivot.md).
+Le mentionnent sans le gouverner : [`dossier-des-amendements-639`](decisions/dossier-des-amendements-639.md), [`fenetre-historique-donnees`](decisions/fenetre-historique-donnees.md), [`integrite-referentielle-pivot`](decisions/integrite-referentielle-pivot.md), [`report-texte-vise-source-696`](decisions/report-texte-vise-source-696.md).
 
 ## `src/build_commissions_dossiers.py`
 
@@ -246,7 +248,7 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 
 ## `src/candidate_profile.py`
 
-71 décision(s) le gouvernent ; le module en cite 12.
+72 décision(s) le gouvernent ; le module en cite 12.
 
 | Décision | Nomme |
 | --- | --- |
@@ -305,6 +307,7 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 | [Un code de nomenclature n'est pas une profession, et « sans activité professionnelle » n'en est pas une (#641) (2026-08-31)](decisions/profession-code-nomenclature-641.md) | `_profession_an` |
 | [La qualification d'un scrutin et la clé de son dossier étaient lues puis jetées (#639, rangs 1 et 2)](decisions/qualification-scrutins-et-cle-dossier-639.md) | `_load_frozen_scrutins_index`, `_parse_scrutins_zip`, `_scrutins_store_qualifie` |
 | [Un projet de loi porté au nom du Gouvernement n'est pas une production personnelle (#689) (2026-09-01)](decisions/qualification-textes-portes-689.md) | `_build_acteur_textes_portes_index` |
+| [Le `texte_vise` fautif se reprend depuis l'archive figée, pas par une fusion plus permissive (#696, 01/09/2026)](decisions/report-texte-vise-source-696.md) | `fetch_amendements_officiels` |
 | [Résilience de `generate-data.yml` face aux `shutdown signal` runner : continue-on-error généralisé, watchdog réseau, retry générique sur `_get_payload`, retry `retry-generate-data.yml` non-régressif, et appels NosDéputés morts pour les députés (dossiers, votes) (2026-08-16)](decisions/resilience-generate-data-shutdown-signal.md) | `WARNING_PREFIX_VOTES_INTROUVABLES`, `build_profile`, `fetch_textes_portes_officiels`, `fetch_votes_officiels` |
 | [Bug de résolution AN pour les prénoms composés, et gel runner déplacé sur l'étape 0 (run #47) (2026-08-17)](decisions/resolution-an-prenom-compose-et-gel-runner-etape0.md) | `_build_acteur_nom_index`, `_ensure_acteurs_historique_zip_downloaded`, `_normalize_search_query`, `fetch_identite_officielle_par_slug` |
 | [Retrait de `fetch_activity_synthesis` (#356) (2026-08-16)](decisions/retrait-fetch-activity-synthesis.md) | `build_profile` |
@@ -415,7 +418,7 @@ Le mentionnent sans le gouverner : [`collecte-interventions-reduite-au-theme-657
 
 ## `src/generate_all_profiles.py`
 
-20 décision(s) le gouvernent ; le module en cite 3.
+21 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
@@ -434,6 +437,7 @@ Le mentionnent sans le gouverner : [`collecte-interventions-reduite-au-theme-657
 | [`--limit` + `--skip-existing` sur `extract-roster-groupes` : sélection progressive + rafraîchissement (2026-08-12)](decisions/limit-skip-existing-roster-groupes.md) | `_select_candidats`, `_select_candidats_couverture`, `process_candidat` |
 | [`extract-an` en matrix strategy par candidat, pour isoler la perte en cas de shutdown signal runner (#344) (2026-08-16)](decisions/matrix-extract-an-par-candidat.md) | `process_candidat` |
 | [Un fichier de progression dans un répertoire de données (#518, troisième incident) (2026-08-24)](decisions/point-de-sauvegarde-dans-les-profils-518.md) | `DEFAULT_CHECKPOINT_PATH`, `_save_checkpoint` |
+| [Le `texte_vise` fautif se reprend depuis l'archive figée, pas par une fusion plus permissive (#696, 01/09/2026)](decisions/report-texte-vise-source-696.md) | `_rafraichir_index_amendements` |
 | [Retrait de `fetch_activity_synthesis` (#356) (2026-08-16)](decisions/retrait-fetch-activity-synthesis.md) | `build_minimal_profile` |
 | [NosDéputés sort du pipeline (#529, lot 5 de l'épic « une seule source AN ») (2026-08-27)](decisions/retrait-nosdeputes-529.md) | `process_candidat` |
 | [Le Sénat sort du périmètre, et le job qui concluait vert sans rien produire est retiré (#528, lot 3 de l'épic « une seule source AN ») (2026-08-26)](decisions/retrait-senat-528.md) | `SOURCE_VALUES` |
@@ -621,7 +625,7 @@ Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambr
 
 ## `src/merge_profile.py`
 
-48 décision(s) le gouvernent ; le module en cite 5.
+49 décision(s) le gouvernent ; le module en cite 5.
 
 | Décision | Nomme |
 | --- | --- |
@@ -663,6 +667,7 @@ Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambr
 | [Un artifact = la contribution d'un job : ce qu'on publie décide de ce qu'on peut corriger (#450) (2026-08-19)](decisions/publication-scopee-artifacts.md) | `merge_raw_dirs` |
 | [La qualification d'un scrutin se perdait entre la collecte et le profil brut (#639, rang 1) (2026-08-31)](decisions/qualification-perdue-a-la-fusion-639.md) | `CHAMPS_QUALIFICATION_VOTE`, `_pivot_vote_key`, `_vote_key`, `backfill_mandat_chambre`, `backfill_vote_qualification`, `merge_lists_by_key`, `merge_raw_profile` |
 | [Un projet de loi porté au nom du Gouvernement n'est pas une production personnelle (#689) (2026-09-01)](decisions/qualification-textes-portes-689.md) | `_dossier_key`, `backfill_dossier_nature`, `backfill_mandat_chambre`, `backfill_vote_qualification`, `merge_raw_profile` |
+| [Le `texte_vise` fautif se reprend depuis l'archive figée, pas par une fusion plus permissive (#696, 01/09/2026)](decisions/report-texte-vise-source-696.md) | `backfill_dossier_nature` |
 | [Résilience de `generate-data.yml` face aux `shutdown signal` runner : continue-on-error généralisé, watchdog réseau, retry générique sur `_get_payload`, retry `retry-generate-data.yml` non-régressif, et appels NosDéputés morts pour les députés (dossiers, votes) (2026-08-16)](decisions/resilience-generate-data-shutdown-signal.md) | `merge_raw_dirs` |
 | [Retrait de `fetch_activity_synthesis` (#356) (2026-08-16)](decisions/retrait-fetch-activity-synthesis.md) | `merge_raw_profile` |
 | [NosDéputés sort du pipeline (#529, lot 5 de l'épic « une seule source AN ») (2026-08-27)](decisions/retrait-nosdeputes-529.md) | `merge_lists_by_key` |
@@ -870,6 +875,14 @@ Le mentionnent sans le gouverner : [`plafond-roster-et-commit-518`](decisions/pl
 ## `src/textes_dossiers_an.py`
 
 Le mentionnent sans le gouverner : [`dossier-des-amendements-639`](decisions/dossier-des-amendements-639.md).
+
+## `src/textes_vises_figes.py`
+
+1 décision(s) le gouvernent ; le module en cite 0.
+
+| Décision | Nomme |
+| --- | --- |
+| [Le `texte_vise` fautif se reprend depuis l'archive figée, pas par une fusion plus permissive (#696, 01/09/2026)](decisions/report-texte-vise-source-696.md) | `est_uid_texte`, `lire_textes_vises` |
 
 ## `src/verifier_archivage_swh.py`
 

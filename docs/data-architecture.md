@@ -257,6 +257,17 @@ parce que 484 132 amendements ne visent que 2 248 textes distincts : +0,10 Mio
 mesuré sur les quatre index, contre +5,7 Mio pour un `dossier_id` par entrée.
 → `docs/decisions/dossier-des-amendements-639.md`
 
+**Un `texte_vise` qui n'est pas un uid se reprend depuis l'archive figée** (#696).
+La fusion additive de l'index laisse gagner « la nouvelle valeur si elle est
+renseignée », et un **intitulé** l'est : 2 500 des 484 132 amendements publiés au
+01/09/2026 portaient encore le titre du dossier que la collecte d'avant #639 y
+écrivait, tous en XVe. `amendements_index.backfill_texte_vise` relit la valeur
+sourcée dans `raw_data/amendements_an_figes/<legislature>/`, entre la fusion et
+la résolution des dossiers — jamais reconstruite depuis le titre, jamais
+appariée par libellé. Ce qu'il ne peut pas réparer (législature sans archive
+figée, amendement absent de l'archive) est **compté**, jamais comblé.
+→ `docs/decisions/report-texte-vise-source-696.md`
+
 Législatures 14/15/16 : dossiers clos, index AN bruts committés sous
 `raw_data/amendements_an_figes/` et jamais re-téléchargés
 (`docs/decisions/amendements-legislatures-figees.md`) ; même principe pour
