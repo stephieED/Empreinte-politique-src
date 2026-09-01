@@ -477,14 +477,43 @@ export const BASES_IRRECEVABILITE = {
   },
 };
 
-/* ── Règle : la concentration se déclare avec son seuil ──────────────────────
+/* ── Règle : un dossier se nomme, ou il ne se compte pas au lecteur ──────────
  *
- * « 6 dossiers concentrent 2 206 de ses 2 429 amendements » n'est vérifiable
- * que si le lecteur sait ce qui a fixé 6. La règle est ici : le plus petit
- * nombre de dossiers atteignant le seuil. Sans elle, le chiffre serait un choix
- * d'auteur présenté comme une mesure.
+ * « 6 dossiers sur 34 concentrent 2 206 de ses 2 429 amendements » décrivait la
+ * FORME d'une distribution, pas ce sur quoi la personne a travaillé. Un ratio
+ * de concentration ne se convertit en rien de lisible : la substance est dans
+ * la liste des dossiers, pas dans leur nombre. La mesure est donc remplacée par
+ * les dossiers eux-mêmes, nommés, avec leur compte.
+ *
+ * Un dossier n'est nommable que si la source le nomme. Deux chemins, et un
+ * troisième qui n'en est pas un :
+ *  - `textes[texte_vise].titre` de l'index par législature — le cas normal ;
+ *  - le `texte_vise` lui-même quand ce n'en est PAS une référence de source :
+ *    l'index publie parfois l'intitulé en clair à cette place (2 458 des 2 831
+ *    dépôts de Jean-Luc Mélenchon sont visés par « Système universel de
+ *    retraite », qui n'est la clé d'aucune entrée `textes`) ;
+ *  - jamais la référence brute — « PRJLANR5L14B1395 » n'est pas un nom, et
+ *    l'afficher donnerait au lecteur un identifiant à la place d'un texte.
+ *
+ * Le critère de distinction est structurel : une référence de source ne contient
+ * pas d'espace, un intitulé en contient toujours.
+ *
+ * Ce que ça laisse à découvert est mesuré, et la page le dit plutôt que de le
+ * combler : la XIVe législature n'a qu'UNE entrée `textes` dans l'index, donc
+ * aucun des 12 dossiers de Xavier Bertrand ni aucun des 3 d'Édouard Philippe
+ * n'est nommable (mesuré au SHA e40d0d3, 01/09/2026).
  */
-export const SEUIL_CONCENTRATION = 0.9;
+const REFERENCE_DE_SOURCE = /^\S+$/;
+
+export function nomDeDossier(dossierTitre, texteVise) {
+  if (dossierTitre) return dossierTitre;
+  if (texteVise && !REFERENCE_DE_SOURCE.test(texteVise)) return texteVise;
+  return null;
+}
+
+/** Combien de dossiers nommés le coup d'œil montre — les suivants ne sont pas
+ * cachés, ils sont ailleurs sur la page, dans « ce qu'il a proposé ». */
+export const NB_DOSSIERS_NOMMES = 3;
 
 /*
  * UNE SEULE PASSE sur les amendements, et jamais de forme plate rematérialisée.
@@ -498,7 +527,7 @@ export const SEUIL_CONCENTRATION = 0.9;
  * `positionALaDate` rend la position déclarée du groupe à une date : c'est elle
  * qui accompagne le chiffre, jamais une moyenne de législature.
  */
-export function agregerAmendements(amendementsJoints, positionALaDate, seuil = SEUIL_CONCENTRATION) {
+export function agregerAmendements(amendementsJoints, positionALaDate) {
   const parLeg = new Map();
   const parBase = new Map();
   const parDossier = new Map();
@@ -523,7 +552,9 @@ export function agregerAmendements(amendementsJoints, positionALaDate, seuil = S
 
     const cle = a.dossier_id || a.texte_vise;
     if (cle) {
-      if (!parDossier.has(cle)) parDossier.set(cle, { cle, titre: a.dossier_titre ?? null, n: 0 });
+      if (!parDossier.has(cle)) {
+        parDossier.set(cle, { cle, nom: nomDeDossier(a.dossier_titre, a.texte_vise), n: 0 });
+      }
       parDossier.get(cle).n += 1;
     }
   }
@@ -549,20 +580,21 @@ export function agregerAmendements(amendementsJoints, positionALaDate, seuil = S
     .map(([base, n]) => ({ base, n, ...BASES_IRRECEVABILITE[base] }))
     .sort((a, b) => b.n - a.n);
 
-  let concentration = null;
-  const classes = [...parDossier.values()].sort((a, b) => b.n - a.n);
-  const totalDossiers = classes.reduce((s, c) => s + c.n, 0);
-  if (totalDossiers > 0) {
-    let cumul = 0;
-    let k = 0;
-    while (k < classes.length && cumul / totalDossiers < seuil) {
-      cumul += classes[k].n;
-      k += 1;
-    }
-    concentration = { k, cumul, total: totalDossiers, dossiers: classes.length, seuil, tete: classes.slice(0, k) };
-  }
+  // Les dossiers, nommés quand la source les nomme — et le compte de ce qu'elle
+  // ne nomme pas, qui reste visible au lieu d'être absorbé dans le total.
+  const classes = [...parDossier.values()].sort((a, b) => b.n - a.n || a.cle.localeCompare(b.cle));
+  const nommes = classes.filter((d) => d.nom);
+  const dossiers = classes.length
+    ? {
+        rattaches: classes.reduce((s, d) => s + d.n, 0),
+        distincts: classes.length,
+        nommes: nommes.slice(0, NB_DOSSIERS_NOMMES),
+        distinctsNommes: nommes.length,
+        depotsNommes: nommes.reduce((s, d) => s + d.n, 0),
+      }
+    : null;
 
-  return { totalAuteur, legislatures, irrecevabilites, concentration };
+  return { totalAuteur, legislatures, irrecevabilites, dossiers };
 }
 
 /* ── Règle : un texte porté n'est publié qu'à partir de l'examen en commission
@@ -772,13 +804,22 @@ export function directionQuestionsGouvernement(interventions, appartenances) {
     parSujet.set(i.sujet, (parSujet.get(i.sujet) || 0) + 1);
   }
 
+  // `sujets` est TRONQUÉ à douze pour l'affichage : `avecSujet` et
+  // `sujetsDistincts` se comptent donc sur l'ensemble, jamais sur la tranche.
+  // Les sommer après la coupe donnerait un dénominateur faux dès le treizième
+  // sujet — et c'est le dénominateur qui porte la couverture du point.
+  let avecSujet = 0;
+  for (const n of parSujet.values()) avecSujet += n;
+
   return {
     total: qag.length,
     ministerielles,
+    avecSujet,
+    sujetsDistincts: parSujet.size,
     sens: ministerielles > qag.length / 2 ? 'recues' : 'posees',
     sujets: [...parSujet.entries()]
       .map(([label, n]) => ({ label, n }))
-      .sort((a, b) => b.n - a.n)
+      .sort((a, b) => b.n - a.n || a.label.localeCompare(b.label, 'fr'))
       .slice(0, 12),
   };
 }
@@ -929,112 +970,253 @@ export function ecartsAvecLeGroupe(votesJoints, fichesGroupe) {
   };
 }
 
-/* ── Livrable : le faisceau ──────────────────────────────────────────────────
+/* ── Livrable : le coup d'œil ────────────────────────────────────────────────
  *
- * Des traces INDÉPENDANTES : autant de jeux de données distincts, aucun
- * rapprochement thématique, aucune synthèse. Empreinte politique ne classe pas
- * les textes par sujet — c'est le lecteur qui lit la convergence, et chaque
- * ligne se vérifie à sa source (§2 règle 8).
+ * Cinq points, tirés de cinq jeux de données distincts. Aucun rapprochement
+ * thématique, aucune synthèse : Empreinte politique ne classe pas les textes
+ * par sujet (§2 règle 8), et chaque point est DÉRIVÉ par comptage d'un champ de
+ * la source, jamais d'une table de mots-clés écrite à la main.
  *
- * Chaque trace est DÉRIVÉE par comptage d'un champ de la source, jamais d'une
- * table de mots-clés écrite à la main : la maquette agrégeait « sécurité
- * sociale, grand âge ou fin de vie » sous un thème que rien dans le corpus ne
- * porte, ce qui aurait fabriqué une catégorie éditoriale (§2 règle 8).
+ * ── Ce que chaque point doit porter ────────────────────────────────────────
  *
- * L'ordre est fixe pour les treize ; ne sont rendues que les traces dont la
- * donnée existe, cinq au plus. Une trace absente n'est pas remplacée : c'est
- * la trame qui uniformise les emplacements, pas leur remplissage.
+ * 1. UNE CHOSE NOMMÉE, pas la forme d'une distribution. « 6 dossiers sur 34
+ *    concentrent 2 206 de ses 2 429 amendements » est vrai et ne se convertit
+ *    en rien : le lecteur ne sait pas quoi en faire. Le dossier nommé, lui, dit
+ *    sur quoi la personne a travaillé.
+ *
+ * 2. SA PROPRE COUVERTURE. Un point qui compte sur une sous-population dit
+ *    laquelle et combien elle pèse. C'est ce qui empêche d'écrire « sujets très
+ *    ciblés » là où l'on décrirait notre collecte en croyant décrire son
+ *    travail (§2 règle 5). Le numérateur et le dénominateur sont TOUJOURS de la
+ *    même population : le point « questions » divisait le compte du premier
+ *    sujet par TOUTES les questions, y compris celles dont aucun sujet n'est
+ *    publié — un dénominateur faux dès que la couverture n'est pas totale.
+ *
+ * 3. LE MOINS DE NOTES POSSIBLE. Une note qui met en garde contre un contresens
+ *    est une information et se garde (`garde`) : « questions reçues depuis le
+ *    banc du gouvernement, pas des questions posées » évite de lire à l'envers
+ *    les 743 questions de Gabriel Attal. Une note qui justifie notre méthode ne
+ *    sert qu'à nous et se retire : « le plus petit nombre de dossiers
+ *    atteignant 90 % de ses dépôts » a disparu avec la mesure qu'elle défendait.
+ *
+ * ── Le cadre parlementaire ne vaut pas pour un ministre ────────────────────
+ *
+ * « Ce qu'on fait quand on choisit » est parlementaire par construction : un
+ * ministre ne réagit pas à l'ordre du jour, il le fixe, et une question au
+ * gouvernement lui est POSÉE. La trame ne se dédouble pas pour autant — les
+ * points restent les mêmes, dans le même ordre, tirés des mêmes champs. Ce qui
+ * s'adapte est la seule phrase d'introduction, et le déclencheur est un fait
+ * collecté, pas une catégorie éditoriale : avoir été MEMBRE d'un gouvernement
+ * (`appartenancesGouvernementales`, 6 des 13 candidats déclarés au SHA e40d0d3,
+ * 01/09/2026 — un parlementaire en mission n'en est pas un).
+ *
+ * L'ordre est fixe pour les treize ; ne sont rendus que les points dont la
+ * donnée existe, cinq au plus. Un point absent n'est pas remplacé : c'est la
+ * trame qui uniformise les emplacements, pas leur remplissage.
  */
-export const NB_TRACES_FAISCEAU = 5;
+export const NB_POINTS_COUP_OEIL = 5;
 
-export function faisceau({
+/** « puis « X » (12) et « Y » (7) » — les suivants, nommés, jamais résumés. */
+function suiteNommee(items, format) {
+  const suivants = items.slice(1, 3);
+  if (!suivants.length) return null;
+  return `puis ${suivants.map(format).join(' et ')}`;
+}
+
+/** L'accord se fait sur le nombre, pas sur un « (s) » : la page est lue, pas
+ * remplie. Un seul point d'accord suffit — le reste de la phrase est écrit deux
+ * fois plutôt que rendu approximatif. */
+function pluriel(n, singulier, pluriels) {
+  return n > 1 ? pluriels : singulier;
+}
+
+const entreGuillemets = ({ label, n }) => `« ${label} » (${formatNumber(n)})`;
+const sansGuillemets = ({ label, n }) => `${label} (${formatNumber(n)})`;
+
+export function coupOeil({
   interventions,
-  concentration,
+  dossiers,
   fonctions,
   questions,
   qualite,
   textes,
+  appartenances,
 }) {
-  const traces = [];
+  const points = [];
 
-  const situees = (interventions || []).filter((i) => i.sujet);
+  // 1. Les points de l'ordre du jour où la parole a le plus porté. La
+  //    couverture est le nerf : une intervention dont le compte rendu ne donne
+  //    pas le point de l'ordre du jour n'est pas classable, et l'inclure au
+  //    dénominateur ferait passer un trou de collecte pour de la dispersion.
+  const liste = interventions || [];
+  const situees = liste.filter((i) => i.sujet);
   if (situees.length) {
     const parSujet = new Map();
     for (const i of situees) parSujet.set(i.sujet, (parSujet.get(i.sujet) || 0) + 1);
-    const classes = [...parSujet.entries()].sort((a, b) => b[1] - a[1]);
-    traces.push({
+    const classes = [...parSujet.entries()]
+      .map(([label, n]) => ({ label, n }))
+      .sort((a, b) => b.n - a.n || a.label.localeCompare(b.label, 'fr'));
+    const muettes = liste.length - situees.length;
+    points.push({
       cle: 'interventions',
-      valeur: classes[0][1],
+      valeur: classes[0].n,
       sur: situees.length,
-      texte: `interventions portent sur « ${classes[0][0]} »`,
-      precision:
-        classes.length > 1
-          ? `le point suivant de l'ordre du jour en compte ${classes[1][1]} — dénombré sur les interventions dont le compte rendu indique le point de l'ordre du jour`
-          : "dénombré sur les interventions dont le compte rendu indique le point de l'ordre du jour",
+      texte: `${pluriel(classes[0].n, 'intervention porte', 'interventions portent')} sur « ${classes[0].label} »`,
+      suite: suiteNommee(classes, entreGuillemets),
+      socle:
+        `${formatNumber(classes.length)} ${pluriel(classes.length, 'point', 'points')} de l’ordre du jour en tout` +
+        (muettes > 0
+          ? `, et ${formatNumber(muettes)} ${pluriel(muettes, 'intervention dont le compte rendu n’indique', 'interventions dont le compte rendu n’indique')} aucun point`
+          : ''),
+      garde: null,
     });
   }
 
-  if (concentration && concentration.k > 0) {
-    traces.push({
+  // 2. Les dossiers où les dépôts se sont portés — nommés. Ce que la source ne
+  //    nomme pas reste compté à part : c'est une lacune d'index, pas une
+  //    dispersion du travail (§2 règle 5).
+  if (dossiers) {
+    const nomme = dossiers.nommes[0] || null;
+    const anonymes = dossiers.distincts - dossiers.distinctsNommes;
+    const depotsAnonymes = dossiers.rattaches - dossiers.depotsNommes;
+    // Le dénominateur suit le numérateur : quand un dossier est nommé, les deux
+    // se comptent sur les dépôts DONT LE DOSSIER EST NOMMÉ. Le reste ne
+    // disparaît pas, il est chiffré à côté.
+    points.push({
       cle: 'amendements',
-      valeur: concentration.k,
-      sur: concentration.dossiers,
-      texte: `dossiers concentrent ${formatNumber(concentration.cumul)} de ses ${formatNumber(concentration.total)} amendements déposés comme auteur principal`,
-      precision: `« ${concentration.k} » est le plus petit nombre de dossiers atteignant ${Math.round(concentration.seuil * 100)} % de ses dépôts`,
+      valeur: nomme ? nomme.n : dossiers.rattaches,
+      sur: nomme ? dossiers.depotsNommes : dossiers.rattaches,
+      texte: nomme
+        ? `amendements déposés comme auteur principal portent sur « ${nomme.nom} »`
+        : 'amendements déposés comme auteur principal',
+      suite: nomme
+        ? suiteNommee(
+            dossiers.nommes.map((d) => ({ label: d.nom, n: d.n })),
+            entreGuillemets,
+          )
+        : null,
+      socle: anonymes === dossiers.distincts
+        ? `${formatNumber(dossiers.distincts)} ${pluriel(dossiers.distincts, 'dossier législatif', 'dossiers législatifs')}, qu’aucune entrée d’index ne nomme`
+        : `${formatNumber(dossiers.distincts)} ${pluriel(dossiers.distincts, 'dossier législatif', 'dossiers législatifs')} en tout` +
+          (anonymes > 0
+            ? ` ; ${formatNumber(depotsAnonymes)} ${pluriel(depotsAnonymes, 'dépôt porte', 'dépôts portent')} sur ${formatNumber(anonymes)} ${pluriel(anonymes, 'dossier que la source ne nomme pas', 'dossiers que la source ne nomme pas')}`
+            : ''),
+      garde: null,
     });
   }
 
+  // 3. Les commissions. Déjà nommées, rien à réparer — la suite l'est aussi.
   const commissions = (fonctions || []).find((f) => f.cle === 'commission');
   if (commissions?.items.length) {
-    traces.push({
+    points.push({
       cle: 'commissions',
       valeur: commissions.items[0].n,
       sur: commissions.total,
-      texte: `de ses mandats en commission sont à la ${commissions.items[0].label}`,
-      precision:
-        commissions.items.length > 1
-          ? `la suivante en compte ${commissions.items[1].n}`
+      texte: `${pluriel(commissions.items[0].n, 'mandat en commission est', 'mandats en commission sont')} à la ${commissions.items[0].label}`,
+      suite: suiteNommee(commissions.items, sansGuillemets),
+      socle: null,
+      garde: null,
+    });
+  }
+
+  // 4. Les questions au gouvernement. Le dénominateur est le nombre de
+  //    questions PORTANT UN SUJET PUBLIÉ, jamais le total : diviser par le
+  //    total quand la couverture est partielle publie un ratio faux. Et quand
+  //    aucun sujet n'est publié, le point ne nomme rien et dit pourquoi —
+  //    écrire « sujets très divers » décrirait notre collecte.
+  if (questions?.total) {
+    const { avecSujet } = questions;
+    const garde =
+      questions.sens === 'recues'
+        ? 'questions reçues depuis le banc du gouvernement, pas des questions posées'
+        : null;
+    if (avecSujet > 0) {
+      points.push({
+        cle: 'questions',
+        valeur: questions.sujets[0].n,
+        sur: avecSujet,
+        texte: `${pluriel(questions.sujets[0].n, 'question au gouvernement porte', 'questions au gouvernement portent')} sur « ${questions.sujets[0].label} »`,
+        suite: suiteNommee(questions.sujets, entreGuillemets),
+        socle:
+          `${formatNumber(questions.sujetsDistincts)} ${pluriel(questions.sujetsDistincts, 'sujet distinct', 'sujets distincts')}` +
+          (avecSujet < questions.total
+            ? `, et ${formatNumber(questions.total - avecSujet)} ${pluriel(questions.total - avecSujet, 'question dont aucun sujet n’est publié', 'questions dont aucun sujet n’est publié')}`
+            : ''),
+        garde,
+      });
+    } else {
+      points.push({
+        cle: 'questions',
+        valeur: questions.total,
+        sur: questions.total,
+        texte: `${pluriel(questions.total, 'question au gouvernement, qui ne porte', 'questions au gouvernement, dont aucune ne porte')} de sujet publié`,
+        suite: null,
+        socle: 'la source ne dit pas sur quoi elles portaient, et la page ne le devine pas',
+        garde,
+      });
+    }
+  }
+
+  // 5. Les textes portés. Ce qui « ressort » d'un texte, c'est son sort : le
+  //    nommer sans dire où il s'est arrêté ne se lit pas. Seuls les textes
+  //    ayant atteint l'examen en commission sont publiés (§6), et ceux qui sont
+  //    restés au dépôt sont comptés plutôt que tus.
+  if (textes && textes.publies.length) {
+    const promulgues = textes.publies.filter((t) => t.stadeCle === 'promulgue');
+    // `publies` est déjà trié du plus récent au plus ancien : nommer les trois
+    // premiers est un ORDRE, pas un choix, et la phrase le dit. Sans elle, le
+    // lecteur croirait à une sélection éditoriale.
+    const nommables = (promulgues.length ? promulgues : textes.publies).slice(0, 3);
+    const { total: ecartes, deposes, sansStade } = textes.ecartes;
+    points.push({
+      cle: 'textes',
+      valeur: promulgues.length || textes.publies.length,
+      sur: promulgues.length ? textes.publies.length : textes.total,
+      texte: promulgues.length
+        ? `${pluriel(promulgues.length, 'texte porté a été promulgué', 'textes portés ont été promulgués')}`
+        : `${pluriel(textes.publies.length, 'texte porté a atteint', 'textes portés ont atteint')} l’examen en commission`,
+      suite: `${pluriel(nommables.length, 'le plus récent', 'les plus récents')} : ${nommables.map((t) => `« ${t.titre} »`).join(', ')}`,
+      socle:
+        ecartes === 0
+          ? null
+          : sansStade === 0
+            ? `${formatNumber(ecartes)} ${pluriel(ecartes, 'autre texte en est resté', 'autres textes en sont restés')} au dépôt`
+            : `${formatNumber(ecartes)} ${pluriel(ecartes, 'autre texte', 'autres textes')} : ${formatNumber(deposes)} au dépôt, ${formatNumber(sansStade)} dont la source ne publie pas le stade`,
+      // Un projet de loi engage le gouvernement, pas la personne qui le signe
+      // comme ministre : le compter comme une initiative personnelle serait un
+      // contresens, et la source range les deux sous le même `role: auteur`.
+      garde:
+        textes.projetsDeLoi > 0
+          ? `dont ${formatNumber(textes.projetsDeLoi)} ${pluriel(textes.projetsDeLoi, 'projet de loi', 'projets de loi')} — des textes du gouvernement signés comme ministre, pas des propositions déposées comme parlementaire`
           : null,
     });
   }
 
-  if (questions?.sujets.length) {
-    traces.push({
-      cle: 'questions',
-      valeur: questions.sujets[0].n,
-      sur: questions.total,
-      texte: `de ses questions au gouvernement portent sur « ${questions.sujets[0].label} »`,
-      precision:
-        questions.sens === 'recues'
-          ? "questions auxquelles il a répondu depuis le banc du gouvernement, pas des questions posées"
-          : null,
-    });
-  }
-
-  if (qualite?.sourcee && qualite.fonctions.length) {
-    traces.push({
+  // 6. La qualité d'orateur. Le dénominateur est le nombre d'interventions dont
+  //    la source PUBLIE la qualité : 35 des 3 933 de Jean-Luc Mélenchon. Diviser
+  //    par le total ferait lire 1 % là où la mesure porte sur 100 % de ce
+  //    qu'on sait.
+  if (qualite?.sourcees > 0 && qualite.fonctions.length) {
+    points.push({
       cle: 'qualite',
       valeur: qualite.fonctions[0].n,
-      sur: qualite.total,
-      texte: `de ses interventions ont été prononcées comme « ${qualite.fonctions[0].label} »`,
-      precision: 'qualité publiée par la source, pas dérivée de ses mandats',
+      sur: qualite.sourcees,
+      texte: `${pluriel(qualite.fonctions[0].n, 'intervention a été prononcée', 'interventions ont été prononcées')} comme « ${qualite.fonctions[0].label} »`,
+      suite: suiteNommee(qualite.fonctions, entreGuillemets),
+      socle:
+        qualite.sourcees < qualite.total
+          ? `${formatNumber(qualite.sourcees)} des ${formatNumber(qualite.total)} interventions portent une qualité publiée par la source`
+          : 'qualité publiée par la source sur chacune',
+      garde: null,
     });
   }
 
-  if (textes && textes.total > 0) {
-    traces.push({
-      cle: 'textes',
-      valeur: textes.projetsDeLoi,
-      sur: textes.total,
-      texte:
-        textes.projetsDeLoi > 0
-          ? 'de ses textes portés sont des projets de loi — des textes du gouvernement, signés comme ministre'
-          : "de ses textes portés sont des projets de loi : tous sont des propositions déposées comme parlementaire",
-      precision: 'la distinction se lit dans l’intitulé officiel, aucun champ ne la porte',
-    });
-  }
-
-  return traces.slice(0, NB_TRACES_FAISCEAU);
+  return {
+    points: points.slice(0, NB_POINTS_COUP_OEIL),
+    // Le cadre initiative/réaction ne tient pas au banc du gouvernement. Un
+    // seul fait le déclenche, et il est collecté.
+    aSiegeAuGouvernement: (appartenances || []).length > 0,
+  };
 }
 
 /* ── Livrable : ce qu'on n'a pas pu lire ─────────────────────────────────────
