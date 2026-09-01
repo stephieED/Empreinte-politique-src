@@ -86,20 +86,21 @@ C'est la justification chiffrée de la règle « accent jamais en texte sur fond
 
 ## 3. Typographie
 
-**Manrope porte toute la hiérarchie — aucune deuxième famille.** C'est le poids et la taille qui font le travail, pas un contraste de style. Poids chargés : 400, 500, 600, 700, 800 (`index.html`, Google Fonts). Les nombres restent alignés en tabulaire (`font-variant-numeric: tabular-nums`) partout où ils se comparent — *vérifié* sur `.kpi-value`.
+**Manrope porte toute la hiérarchie — aucune deuxième famille.** C'est le poids et la taille qui font le travail, pas un contraste de style. Poids chargés : 400, 500, 600, 700, 800 (`index.html`, Google Fonts). Les nombres restent alignés en tabulaire (`font-variant-numeric: tabular-nums`) partout où ils se comparent — *vérifié* sur `.gp-kpi-value` et `.cp-num`.
 
 ### Échelle d'usage
 
 | Usage | Exemple | Spécification | Statut |
 |---|---|---|---|
 | Titre profil (bannière h1) | « Jean-Luc Mélenchon » | 34px · 800 · -0.01em | Vérifié (`.banner h1`) |
-| Valeur KPI | « 1 042 » | 26px · 800 · tabular-nums | Vérifié (`.kpi-value`) |
+| Valeur KPI | « 1 042 » | 26px · 800 · tabular-nums | Vérifié (`.gp-kpi-value`) |
+| Grand nombre de fiche candidat | « 2 429 » | 22–28px · 800 · tabular-nums | Vérifié (`.cp-trace-nombre`, `.cp-bloc-nombre`, #328) |
 | Titre de section | « Cohésion de vote » | 16px · 800 | Vérifié (`.gp-section-title`) |
-| Titre de carte (vote/texte) | « L'ensemble du projet de loi » | 14px · 700 | **Cible** — `.vote-title`/`.gp-vote-texte` sont à 14px mais sans `font-weight` explicite (400 hérité) ; seul `.shelf-item-title` respecte 14px/700. Voir §8. |
-| Libellé de chip/onglet | « Socialistes et apparentés » | 13px · 600 | Vérifié (`.cb-chip`, `.tab-btn`) |
+| Titre de carte (vote/texte) | « L'ensemble du projet de loi » | 14px · 700 | **Partiel** — `.cp-ligne-titre` (14px/600, #328) et `.gp-vote-texte` (14px, poids hérité). Voir §8. |
+| Libellé de chip/onglet | « Socialistes et apparentés » | 13px · 600 | Vérifié (`.cb-chip`, `.tab-btn`, `.cp-puce`) |
 | Badge/pill | « Source vérifiée » | 11–12px · 700 | Vérifié (`.vote-badge`, `.gp-verified-badge`) |
 | Libellé de bande (majuscules) | « GROUPES » | 11px · 700 · +0.04em | Vérifié (`.cb-bar-label`, `.gb-bar-label`) |
-| Métadonnée/caveat | « Mesure la durée, pas l'implication. » | 12px · 400 | Vérifié (`.kpi-label`, `.kpi-caveat`) |
+| Métadonnée/caveat | « Mesure la durée, pas l'implication. » | 12–13px · 400–600 | Vérifié (`.gp-kpi-caveat`, `.cp-section-critere`) |
 
 ---
 
@@ -142,12 +143,12 @@ Vocabulaire vérifié dans `src/components/*.css` et `*.jsx` :
 
 | Composant | Règle |
 |---|---|
-| **Carte KPI** | Survol → la mise en garde (« caveat ») recouvre la carte en overlay. Chaque métrique explique elle-même sa limite (`.kpi-caveat`) — aucune n'est présentée comme un score. |
+| **Carte KPI** | Survol → la mise en garde (« caveat ») recouvre la carte en overlay. Chaque métrique explique elle-même sa limite (`.gp-kpi-caveat`) — aucune n'est présentée comme un score. **Retirée de la fiche candidat depuis #328** : quatre KPI en tête de page classent avant qu'on ait lu un chiffre ; le critère de chaque section (`.cp-section-critere`) porte désormais la mise en garde, en permanence et non au survol. |
 | **Carte de vote** | Point + libellé colorés selon la position (`VOTE_STYLE`). Le badge « Source vérifiée » réutilise systématiquement le jaune signal — jamais une autre couleur pour ce badge précis. |
 | **Onglets** | Fond plein jaune signal pour un onglet exclusif (`.tab-btn.active`). |
-| **Pills de filtre** | Contour encre inversé pour un filtre multi-état (`.theme-pill.active` : fond `--dark`, texte blanc). Deux formes du même principe visuel, jamais confondues. |
+| **Pills de filtre** | Contour encre inversé pour un filtre multi-état (`.gb-chip.active` : fond `--dark`, texte blanc). Deux formes du même principe visuel, jamais confondues. |
 | **Chip de sélection (groupe/candidat)** | Avatar à initiales + libellé. À l'état actif, l'avatar seul bascule au jaune signal — le fond de la chip passe à l'encre (`GroupsBar`) ou reste blanc à bordure encre (`CandidatesBar` — asymétrie assumée entre les deux barres, voir composants respectifs). |
-| **Barre de répartition/comparaison** | Segments proportionnels au décompte réel, jamais normalisés à effet visuel — un groupe avec peu d'amendements produit une barre visiblement courte (`.outcome-bar`, `.compare-bar-fill`). **Jamais pour une cohésion de vote** : `.gp-coherence-track`/`.gp-coherence-fill` sont retirées depuis #329, parce qu'une barre place des catégories sur une échelle du pire au meilleur (`AGENTS.md` §2 règle 1). |
+| **Barre de répartition/comparaison** | Segments proportionnels au décompte réel, jamais normalisés à effet visuel — un groupe avec peu d'amendements produit une barre visiblement courte (`.cp-barre` et ses segments, #328).  Un segment **sans teinte** (motif hachuré, `.cp-barre-seg--sans-teinte`) est réservé à ce qui n'est pas une issue : un sort d'amendement non publié (§2 règle 5) et un texte adopté sans vote par l'article 49.3 (§2 règle 4). **Jamais pour une cohésion de vote** : `.gp-coherence-track`/`.gp-coherence-fill` sont retirées depuis #329, parce qu'une barre place des catégories sur une échelle du pire au meilleur (`AGENTS.md` §2 règle 1). |
 | **Décomptes de cohésion (fiche de groupe)** | Six nombres, jamais une barre (`.gp-decomptes`, #329). Les positions exprimées gardent leur teinte ; `Non-votant`, `Sans trace de vote` et `Excusés` se distinguent par la **forme** (contour tireté, aucune teinte), comme `non_votant` depuis #326. La somme des six retrouve exactement `membres_eligibles` — vérifié sur 19 832 / 19 832 entrées des 5 fiches AN. |
 | **Donut de couverture** | Affirme sans détour la part de données réellement disponible (ex. « 14/66 membres ») — jamais maquillé en score de qualité (`.gp-coverage-donut`). |
 | **Statut membre (actif/ancien/non renseigné)** | Pilule 999px, fond plein `--dark` si membre à la date de référence ; contour `#c9c4be` + texte muted si parti avant ; **contour tireté** si l'appartenance n'est pas renseignée (`.gp-member-status-inconnu`, #329) — `null` n'est pas `false`, et un départ ne se publie pas sur une donnée absente (§2 règle 5). Jamais de rouge/vert de statut. |
@@ -158,7 +159,7 @@ Vocabulaire vérifié dans `src/components/*.css` et `*.jsx` :
 
 *Empreinte documente, elle ne classe pas.* Cette règle se lit autant dans le vocabulaire que dans la couleur — section absente de ma première version de ce document, réintégrée depuis la DA préliminaire car elle formalise un lien direct avec [[ligne-editoriale-empreinte-politique]] :
 
-- **Chaque métrique porte sa propre limite** : aucun chiffre n'est affiché seul. Une phrase de mise en garde accompagne systématiquement la valeur, visible au survol — jamais reléguée à une note de bas de page. *Vérifié* : `.kpi-caveat`.
+- **Chaque métrique porte sa propre limite** : aucun chiffre n'est affiché seul. Une phrase de mise en garde accompagne systématiquement la valeur — au survol sur la fiche de groupe (`.gp-kpi-caveat`), **en permanence** sur la fiche candidat depuis #328 (`.cp-section-critere`, `.cp-note`), parce qu'une limite qu'il faut survoler n'est pas lue.
 - **Précision plutôt qu'emphase** : « Lecture la plus avancée retenue pour chaque texte », pas « votes comptés ». Le vocabulaire nomme exactement ce qui est mesuré, jamais ce qu'on aimerait suggérer.
 - **Aucun vocabulaire de classement** : pas de « score », « note », « rang » ou « performance » nulle part dans l'interface — jusque dans le texte d'aide du panneau latéral. Découle directement de la règle éditoriale 1 (`AGENTS.md §2`).
 - **La couverture partielle s'assume** : « 14 / 66 membres » s'affiche tel quel, sans arrondi flatteur ni habillage en pourcentage seul — cohérent avec la règle éditoriale 7 (ratios toujours num/dénom).
@@ -184,7 +185,7 @@ Le premier (pied de navigation) est *vérifié* : `ExplorerLayout.jsx` `.explore
 
 À corriger ou à assumer explicitement lors d'un prochain passage sur `web/UI_finale` :
 
-1. **Titres de carte vote/texte pas en 700** : `.vote-title` et `.gp-vote-texte` sont à 14px mais héritent du poids par défaut (400), alors que la cible et `.shelf-item-title` (14px/700) suggèrent un 700 systématique. À harmoniser dans un sens ou dans l'autre.
+1. **Titres de carte vote/texte pas en 700** : `.vote-title` a disparu avec la refonte de la fiche candidat (#328), remplacée par `.cp-ligne-titre` en 14px/600 ; `.gp-vote-texte` est toujours à 14px sans `font-weight` explicite. Reste à harmoniser entre 600 et 700, sur une seule valeur.
 2. **Échelle d'espacement plus dense que la cible** : la cible propose 8 valeurs (`4·8·12·16·20·28·40·64`), le code en utilise 19 (`2,3,4,5,6,8,9,10,12,14,16,18,20,22,24,28,32,40,64`). Pas nécessairement un bug — beaucoup de ces valeurs sont des ajustements fins légitimes (ex. `9px` padding tab) — mais si l'intention est de converger vers l'échelle à 8 valeurs, c'est un chantier de refactor CSS, pas une correction ponctuelle.
 3. ~~**Couleurs de vote dupliquées sans partage de source**~~ — **corrigé par #326** : `VOTE_STYLE`/`OUTCOME_COLOR` vivent dans `src/utils/lecture.js`, avec les cinq autres primitives de lecture, et les deux composants les importent. Les règles propres à la fiche de groupe sont dans `src/utils/groupe.js` (#329), qui importe le premier.
 4. **Chip active — asymétrie Candidats/Groupes** : `CandidatesBar` (`.cb-chip.active`) passe en fond blanc à bordure encre, `GroupsBar` (`.gb-chip.active`) passe en fond encre plein — la DA préliminaire ne documente qu'un seul comportement (« le fond de la chip passe à l'encre »). À vérifier si l'asymétrie est un choix voulu (différencier visuellement candidat vs groupe) ou une divergence non intentionnelle.
@@ -198,6 +199,7 @@ Le premier (pied de navigation) est *vérifié* : `ExplorerLayout.jsx` `.explore
 - Couleurs/typo racine : `web/UI_finale/src/index.css`
 - Couleurs de vote/issue et les six règles de lecture communes : `web/UI_finale/src/utils/lecture.js` (`VOTE_STYLE`/`OUTCOME_COLOR`, #326), rendues par `src/components/Lecture.jsx`
 - Règles de lecture propres à la fiche de groupe : `web/UI_finale/src/utils/groupe.js` (#329)
+- Règles de lecture propres à la fiche candidat : `web/UI_finale/src/utils/profilCandidat.js` (#328), rendues par `src/components/CandidateProfile.jsx` — la trame en sept emplacements, la colormap de la frise (teinte = institution, motif = position) et les trois situations d'une année de vote
 - Motif de fond, layout : `web/UI_finale/src/styles/shell.css`, `ExplorerLayout.css`
 - Composants : `web/UI_finale/src/components/*.css`
 - Cotes exactes du logo : `web/old/logo-propositions/exports/empreinte-lockup-2lignes-specs.md`

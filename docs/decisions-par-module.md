@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 194 décisions
+gouverne sans avoir à fouiller les 195 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -316,7 +316,7 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 | [L'union des avertissements peut ressusciter un démenti, et deux familles Syceron s'éteignent (#600) (2026-08-30)](decisions/union-warnings-extinction-600.md) | `WARNING_PREFIX_QUESTIONS_INDISPONIBLES` |
 | [Votes : agrégation des législatures 14 à 17, index dédupliqué, 14/15/16 figées (#403) (2026-08-18)](decisions/votes-multi-legislature.md) | `AN_SCRUTINS_LEGISLATURES`, `AN_SCRUTINS_LEGISLATURES_FIGEES`, `AN_SCRUTIN_UID_PREFIXE`, `fetch_votes_officiels` |
 
-Le mentionnent sans le gouverner : [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`dossiers-multi-archives-origine-document`](decisions/dossiers-multi-archives-origine-document.md), [`gouvernement-roster-desambiguisation`](decisions/gouvernement-roster-desambiguisation.md), [`licences`](decisions/licences.md), [`mandats-agreges-famille-1`](decisions/mandats-agreges-famille-1.md), [`parlementaire-en-mission-nest-pas-ministre`](decisions/parlementaire-en-mission-nest-pas-ministre.md), [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`perimetre-controle-perte`](decisions/perimetre-controle-perte.md), [`plafond-roster-et-commit-518`](decisions/plafond-roster-et-commit-518.md), [`pythonunbuffered-generate-data`](decisions/pythonunbuffered-generate-data.md), [`qualification-perdue-a-la-fusion-639`](decisions/qualification-perdue-a-la-fusion-639.md), [`roster-unique-par-run-518`](decisions/roster-unique-par-run-518.md).
+Le mentionnent sans le gouverner : [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`dossiers-multi-archives-origine-document`](decisions/dossiers-multi-archives-origine-document.md), [`gouvernement-roster-desambiguisation`](decisions/gouvernement-roster-desambiguisation.md), [`licences`](decisions/licences.md), [`mandats-agreges-famille-1`](decisions/mandats-agreges-famille-1.md), [`parlementaire-en-mission-nest-pas-ministre`](decisions/parlementaire-en-mission-nest-pas-ministre.md), [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`perimetre-controle-perte`](decisions/perimetre-controle-perte.md), [`plafond-roster-et-commit-518`](decisions/plafond-roster-et-commit-518.md), [`pythonunbuffered-generate-data`](decisions/pythonunbuffered-generate-data.md), [`qualification-perdue-a-la-fusion-639`](decisions/qualification-perdue-a-la-fusion-639.md), [`roster-unique-par-run-518`](decisions/roster-unique-par-run-518.md), [`trame-profil-candidat-328`](decisions/trame-profil-candidat-328.md).
 
 ## `src/candidate_profile_ue.py`
 
@@ -778,7 +778,7 @@ Le mentionnent sans le gouverner : [`pivot-freshness-timestamps-stables`](decisi
 
 ## `src/schema_pivot.py`
 
-28 décision(s) le gouvernent ; le module en cite 5.
+29 décision(s) le gouvernent ; le module en cite 5.
 
 | Décision | Nomme |
 | --- | --- |
@@ -810,6 +810,7 @@ Le mentionnent sans le gouverner : [`pivot-freshness-timestamps-stables`](decisi
 | [NosDéputés sort du pipeline (#529, lot 5 de l'épic « une seule source AN ») (2026-08-27)](decisions/retrait-nosdeputes-529.md) | `KNOWN_SOURCE_TYPES`, `validate_profil` |
 | [Le Sénat sort du périmètre, et le job qui concluait vert sans rien produire est retiré (#528, lot 3 de l'épic « une seule source AN ») (2026-08-26)](decisions/retrait-senat-528.md) | `KNOWN_CHAMBRES`, `KNOWN_SOURCE_TYPES` |
 | [Taxonomie des mandats : exploitation des `typeOrgane` AN non mappés (#382, option « mixte ») (2026-08-17)](decisions/taxonomie-mandats-typeorgane-an.md) | `KNOWN_CATEGORIES`, `validate_profil` |
+| [La trame du profil candidat : l'institution est une colonne, jamais un chapitre (#328)](decisions/trame-profil-candidat-328.md) | `KNOWN_POSITIONS_HEMICYCLE`, `lire_chambres` |
 
 Le mentionnent sans le gouverner : [`gouvernement-premier-ministre-portefeuille`](decisions/gouvernement-premier-ministre-portefeuille.md), [`retrait-fetch-activity-synthesis`](decisions/retrait-fetch-activity-synthesis.md), [`synchro-sources-derniere-recuperation-600`](decisions/synchro-sources-derniere-recuperation-600.md), [`verification-bout-en-bout-legislatures-figees`](decisions/verification-bout-en-bout-legislatures-figees.md).
 
