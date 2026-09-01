@@ -33,7 +33,9 @@
  *
  * Chiffres cités : mesurés au commit `e40d0d32` le 01/09/2026, sur les 7 fiches
  * publiées — 5 pour l'Assemblée nationale (XVIe législature) et 2 pour le Sénat,
- * gelées et jamais régénérées depuis #528/#516.
+ * gelées et jamais régénérées depuis #528/#516. Seule exception, remesurée sur
+ * le commit de données `693b076d` du 01/09/2026 : la posture des groupes, qui
+ * n'existait sur aucune fiche à l'écriture du module et en couvre 5 depuis.
  */
 
 import { formatNumber, isWholeTextVote, normalizeLabel, ratio } from './lecture';
@@ -173,10 +175,14 @@ export const POSITIONS_EXPRIMEES = ['pour', 'contre', 'abstention'];
  * pas « d'opposition » parce qu'il vote contre, il l'est parce que l'Assemblée
  * l'écrit (§2 règle 1).
  *
- * ELLE EST ABSENTE DES 7 FICHES PUBLIÉES au moment où ce module est écrit : le
- * champ vient d'être ajouté au schéma et n'atteindra les fichiers qu'au
- * prochain run. `postureDuGroupe` rend donc `declaree: false` sur les 7, et le
- * rendu l'écrit — il ne la simule pas, il ne la dérive pas.
+ * Elle a atterri le 01/09/2026, au commit de données `693b076d` : **5 des 7
+ * fiches la portent** — `AN:REN` en `majorite`, `AN:LFI`/`AN:LR`/`AN:RN`/`AN:SOC`
+ * en `opposition`, toutes sourcées sur l'archive AMO30 avec leur `verifie_le`.
+ * `AN:SOC` réunit ses deux organes successifs (`SOC` puis `SOC-A`), qui portent
+ * la même valeur. Les 2 fiches du Sénat restent sans posture : elles sont gelées
+ * depuis #516 et ne seront pas régénérées — `postureDuGroupe` y rend
+ * `declaree: false`, et le rendu l'écrit. Il ne la simule pas, il ne la dérive
+ * pas, et cette absence-là est définitive, pas transitoire.
  *
  * Le vocabulaire est fermé (`POSITIONS_POLITIQUES_GROUPE`, schema_groupe.py) et
  * `non_declaree` en fait partie : c'est une VALEUR PUBLIÉE, distincte d'un champ
@@ -757,9 +763,14 @@ export function convergences(comparaison, sigleDuGroupe) {
  * amendements, les quatre autres fiches 21 558 à elles toutes, alors qu'elles en
  * déposent 386 810 contre 142 143.
  *
- * Tant que `position_politique` n'est publiée sur aucune fiche, tous les groupes
- * tombent dans une seule case — « posture non publiée » — et la page l'écrit.
- * C'est un état transitoire déclaré, pas un repli silencieux.
+ * Depuis le commit de données `693b076d`, la XVIe législature se sépare en deux
+ * blocs réels : `majorite` ne contient que `AN:REN`, `opposition` réunit
+ * `AN:SOC`, `AN:RN`, `AN:LFI` et `AN:LR`. `minoritaire` reste une posture que le
+ * vocabulaire connaît et qu'aucune fiche de cette législature ne porte — elle
+ * est nommée plutôt que tue (§2 règle 5).
+ *
+ * Le cas « posture non publiée » n'est donc plus l'état par défaut, mais il
+ * survit et doit survivre : les 2 fiches du Sénat sont gelées depuis #516.
  */
 export function comparaisonParPosture(comparaison, sigleDuGroupe) {
   const groupes = ordonnerGroupesPourComparaison(comparaison, sigleDuGroupe);

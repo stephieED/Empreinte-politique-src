@@ -35,9 +35,10 @@ de rendu :
   5. **Déposer comme rapporteur et comme député sont deux actes** : `AGENTS.md`
      §5 interdit d'en faire un taux commun. Deux lignes séparées, jamais
      additionnées.
-  6. **La posture est recopiée, jamais déduite** (#686). Absente des 7 fiches
-     publiées au moment du lot, elle se DÉCLARE absente — elle ne se dérive
-     d'aucun comportement de vote (§2 règle 1).
+  6. **La posture est recopiée, jamais déduite** (#686). Portée par 5 des 7
+     fiches depuis le commit de données `693b076d` ; les 2 fiches du Sénat,
+     gelées depuis #516, la DÉCLARENT absente. Dans les deux cas elle ne se
+     dérive d'aucun comportement de vote (§2 règle 1).
   7. **La comparaison est réunie par posture, jamais alignée** sur une échelle
      unique, et son ordre est celui du nombre de scrutins comparables — pas celui
      de l'accord.
@@ -354,8 +355,9 @@ def test_une_posture_absente_se_declare_et_ne_se_replie_sur_rien(regles):
     assert bloc, "`postureDuGroupe` a disparu"
     corps = bloc.group(1)
     assert "declaree: false" in corps, (
-        "`position_politique` est absente des 7 fiches publiées au moment du lot : la "
-        "fonction doit rendre `declaree: false` plutôt que se replier sur une valeur"
+        "5 des 7 fiches portent `position_politique` depuis le commit de données "
+        "`693b076d` ; les 2 fiches du Sénat, gelées depuis #516, ne l'auront jamais. "
+        "La fonction doit rendre `declaree: false` plutôt que se replier sur une valeur"
     )
     assert "position_politique" in corps, (
         "la posture se lit dans le champ recopié du référentiel (#686)"

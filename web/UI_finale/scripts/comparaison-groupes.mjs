@@ -46,8 +46,12 @@ export function projeterGroupe(groupe, id) {
     groupeId: groupe.groupe_id ?? null,
     sigle: groupe.groupe_sigle ?? null,
     nom: groupe.groupe_nom ?? null,
-    // #686 : absente des 7 fiches publiées au moment de l'écriture. `null` est
+    // #686 : portée par 5 des 7 fiches depuis le commit de données `693b076d`
+    // (01/09/2026). Les 2 fiches du Sénat, gelées depuis #516, restent à `null`,
     // publié tel quel — la fiche déclare l'absence, elle ne la comble pas.
+    //
+    // La projection DOIT la transporter : c'est elle, et non la fiche voisine,
+    // que `comparaisonParPosture` lit pour séparer majorité et opposition.
     positionPolitique: groupe.position_politique ?? null,
     effectif: groupe.effectif?.a_la_date_de_reference ?? groupe.effectif?.actuel ?? null,
     membresPublies: (groupe.membres || []).length,

@@ -50,7 +50,7 @@ Une seule focale à la fois — l'interne d'abord, la comparaison à la fin :
 | 2 | Sur quoi ils choisissent de travailler | **oui**, sur les fonctions exercées |
 | 3 | Ce qu'ils proposent, et ce qu'il en reste | **oui, décisif** |
 | 4 | Comment ils votent | **oui, décisif** |
-| 5 | Comment ils se situent | **oui** — la comparaison est réunie par posture |
+| 5 | Comment ils se situent | **oui** — la comparaison est réunie par posture (majorité : `AN:REN` ; opposition : les 4 autres) |
 | 6 | Ce que cette fiche ne dit pas | — |
 
 La posture apparaît **là où elle change le sens d'un chiffre, nulle part
@@ -188,19 +188,39 @@ mention de lecture — une carte qui annonce « 4 lectures » ne peut pas s'inti
 « (première lecture) ». Ils sont déclarés dans la page, l'intitulé complet reste
 en infobulle, et chaque lecture porte son lien vers le scrutin.
 
-## 7. La posture : recopiée, jamais déduite, et absente aujourd'hui
+## 7. La posture : recopiée, jamais déduite, et arrivée en cours de lot
 
-`position_politique` (#686) vient d'être ajoutée au schéma de groupe. **Aucune
-des 7 fiches publiées ne la porte** : le champ n'y arrivera qu'après le prochain
-run.
+`position_politique` (#686) a été ajoutée au schéma de groupe pendant l'écriture
+de ce lot. **Le composant a d'abord été écrit et mesuré sans elle** — aucune des
+7 fiches ne la portait — puis le commit de données `693b076d` (01/09/2026) l'a
+fait atterrir. Remesuré sur les fiches publiées :
 
-Le composant fonctionne donc sans elle **et la déclare absente** :
-`postureDuGroupe` rend `declaree: false`, la carte de section 1 explique les trois
-valeurs pour dire ce qui manque, la section 3 remplace « c'est ici que la posture
-change le sens des chiffres » par la phrase qui dit que la clé manque, et la
-section 5 réunit les cinq groupes sous « posture non publiée ». Elle n'est
-**jamais** dérivée d'un comportement de vote (§2 règle 1) — un test le vérifie
-sur le corps de la fonction.
+| Fiche | Posture | Source |
+| --- | --- | --- |
+| `AN:REN` | `majorite` | AMO30, `verifie_le: 2026-09-01`, organe `PO800538` / sigle AN `RE` |
+| `AN:LFI`, `AN:LR`, `AN:RN`, `AN:SOC` | `opposition` | idem ; `AN:SOC` réunit ses deux organes successifs (`SOC`, `SOC-A`) |
+| `groupe-Senat-LR`, `groupe-Senat-SER` | **absente** | fiches gelées depuis #516, jamais régénérées |
+
+**Le composant n'a pas eu à changer, et c'est le contrôle qui vaut quelque
+chose** : il lisait déjà le champ au lieu de coder son absence en dur. La
+section 5, qui réunissait les cinq groupes sous « posture non publiée », les
+sépare désormais en deux blocs réels — `majorite` : `AN:REN` seul ;
+`opposition` : `AN:SOC`, `AN:RN`, `AN:LFI`, `AN:LR`. `minoritaire` reste une
+posture que le vocabulaire connaît et qu'aucune fiche de cette législature ne
+porte : elle est **nommée**, pas tue (§2 règle 5).
+
+Ce que le cas « absente » garde de nécessaire : il n'est plus l'état par défaut,
+mais il ne disparaît pas. Les 2 fiches du Sénat ne seront pas régénérées, et sur
+elles la carte dit autre chose encore (voir plus bas). `postureDuGroupe` y rend
+`declaree: false`, et la page l'écrit. Elle n'est **jamais** dérivée d'un
+comportement de vote (§2 règle 1) — un test le vérifie sur le corps de la
+fonction.
+
+**La leçon, et elle est générale** : un constat chiffré écrit dans un
+commentaire vieillit plus vite que le code qu'il décrit. Ici trois commentaires,
+une docstring de test et un message d'assertion affirmaient « absente des 7
+fiches » alors que le code, lui, était déjà correct. Ils ont été corrigés le
+jour même — mais rien ne les surveillait.
 
 `non_declaree` reste distincte d'un champ absent : « l'Assemblée ne l'a pas
 déclaré » n'est pas « notre fiche ne porte pas le champ ».
