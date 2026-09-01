@@ -78,8 +78,38 @@ Format d'un profil de groupe v1 :
                                         # encore députés le JOUR DU CALCUL — une propriété de
                                         # leur carrière, pas du groupe : 85 des 193 membres de
                                         # `AN:REN-16`, quand 169 y siégeaient à la clôture.
-        "min_historique": null,         # min. sur la période (null si non calculé)
-        "max_historique": null          # max. sur la période (null si non calculé)
+        "min_historique": {"valeur": 167, "date": "2024-03-09"},
+        "max_historique": {"valeur": 175, "date": "2023-01-30"},
+                                        # AMPLITUDE D'EFFECTIF SUR LA PÉRIODE (#702).
+                                        # Un groupe n'a pas un effectif, il en a une
+                                        # trajectoire : `a_la_date_de_reference` est un
+                                        # instantané présenté pour décrire deux ans.
+                                        # `{valeur, date}` et jamais un entier nu — un
+                                        # minimum sans sa date est un nombre sans fait
+                                        # (§2 règle 2), et deux champs voisins se
+                                        # recopient l'un sans l'autre.
+                                        # FENÊTRE : `periode.debut` → `periode.fin`,
+                                        # jamais au-delà ; `date_reference.date` prend le
+                                        # relais de la borne haute tant que la période est
+                                        # ouverte, de sorte que le lecteur reconstitue la
+                                        # fenêtre depuis la fiche seule.
+                                        # DATE : la PREMIÈRE à laquelle la borne est
+                                        # atteinte. L'effectif est réévalué à chaque
+                                        # `debut_dans_groupe` et au LENDEMAIN de chaque
+                                        # `fin_dans_groupe` (borne de fin inclusive, cf.
+                                        # `_appartenance_couvre`).
+                                        # `null` SUR LES DEUX dès qu'une entrée de
+                                        # `membres[]` n'a pas de `debut_dans_groupe`
+                                        # (seuil 0) : ce membre n'est comptable à aucune
+                                        # date, et les bornes obtenues sans lui sont des
+                                        # bornes inférieures. `null` est une réponse, un
+                                        # chiffre faux n'en est pas une (§2 règle 5).
+                                        # Le motif est publié en clair dans
+                                        # `meta.warnings`.
+                                        # FORME HÉRITÉE : les 2 fiches `groupe-Senat-*`
+                                        # gelées (#516) portent `null`, et un entier nu
+                                        # reste accepté en lecture — aucun lecteur ne doit
+                                        # exiger la forme objet.
     },
 
     "position_politique": {             # QUALIFICATION DÉCLARÉE PAR L'ASSEMBLÉE (#686).
@@ -284,7 +314,7 @@ Usage :
 """
 
 import time
-from typing import Any
+from typing import Any, Optional
 
 from schema_pivot import (
     KNOWN_CHAMBRES,
@@ -650,6 +680,74 @@ def _valider_position_politique(bloc: dict[str, Any]) -> list[str]:
     return errors
 
 
+def _valider_borne_effectif(champ: str, borne: Any) -> list[str]:
+    """Valide `effectif.min_historique` / `max_historique` (#702).
+
+    Trois formes acceptées, et une seule refusée :
+
+    - `null` — non publiée, motif dans `meta.warnings` ;
+    - un **entier nu** — forme héritée, jamais produite depuis #702 mais lue
+      sans erreur : exiger la forme objet ferait échouer le portail de qualité
+      sur du publié qui ne sera pas régénéré, comme `date_reference` (#653) et
+      `position_politique` (#686) l'ont déjà réglé ;
+    - `{"valeur": int, "date": "YYYY-MM-DD"}` — la forme du lot.
+
+    Refusé : un objet dont la valeur ou la date manque. Un minimum sans sa date
+    est un nombre sans fait, et le publier reviendrait à dater un compteur par
+    l'absence (AGENTS.md §2 règle 2).
+    """
+    if borne is None or (isinstance(borne, int) and not isinstance(borne, bool)):
+        return []
+    if not isinstance(borne, dict):
+        return [
+            f"'effectif.{champ}' doit être un dict, un entier ou null, "
+            f"reçu : {type(borne).__name__}."
+        ]
+    errors: list[str] = []
+    valeur = borne.get("valeur")
+    if not isinstance(valeur, int) or isinstance(valeur, bool):
+        errors.append(f"'effectif.{champ}.valeur' doit être un entier, reçu : {valeur!r}.")
+    if not borne.get("date"):
+        errors.append(f"'effectif.{champ}.date' est vide ou absente.")
+    return errors
+
+
+def valeur_borne_effectif(borne: Any) -> Optional[int]:
+    """L'entier porté par une borne d'effectif, quelle que soit sa forme (#702).
+
+    Objet `{valeur, date}` du lot, entier nu hérité, `null`. Un lecteur qui
+    n'accepterait que la forme objet cesserait de lire les 2 fiches
+    `groupe-Senat-*` gelées (#516) — c'est l'arbitrage déjà rendu pour
+    `effectif.actuel` / `a_la_date_de_reference` (#653).
+    """
+    if isinstance(borne, bool):
+        return None
+    if isinstance(borne, int):
+        return borne
+    if isinstance(borne, dict):
+        valeur = borne.get("valeur")
+        if isinstance(valeur, int) and not isinstance(valeur, bool):
+            return valeur
+    return None
+
+
+def _valider_ordre_bornes_effectif(effectif: dict[str, Any]) -> list[str]:
+    """Un maximum inférieur à son minimum n'est pas une amplitude (#702).
+
+    Les deux bornes sortent du même balayage, sur la même série : les voir se
+    croiser signifierait que l'une des deux n'en vient pas. Vérifié ici parce
+    que c'est le seul endroit qui les voit ensemble.
+    """
+    mini = valeur_borne_effectif(effectif.get("min_historique"))
+    maxi = valeur_borne_effectif(effectif.get("max_historique"))
+    if mini is not None and maxi is not None and mini > maxi:
+        return [
+            f"'effectif.min_historique' ({mini}) est supérieur à "
+            f"'effectif.max_historique' ({maxi})."
+        ]
+    return []
+
+
 def validate_profil_groupe(profil: dict[str, Any]) -> list[str]:
     """Vérifie les invariants de base du schéma de groupe v1.
 
@@ -733,6 +831,17 @@ def validate_profil_groupe(profil: dict[str, Any]) -> list[str]:
                 )
             if not date_reference.get("date"):
                 errors.append("'date_reference.date' est vide ou absente.")
+
+    # `effectif.min_historique` / `max_historique` (#702) : l'amplitude sur la
+    # période. Chaque borne porte sa date ; leur absence est une réponse, jamais
+    # une erreur de schéma.
+    effectif = profil.get("effectif")
+    if effectif is not None and not isinstance(effectif, dict):
+        errors.append("'effectif' doit être un dict.")
+    elif isinstance(effectif, dict):
+        for champ in ("min_historique", "max_historique"):
+            errors.extend(_valider_borne_effectif(champ, effectif.get(champ)))
+        errors.extend(_valider_ordre_bornes_effectif(effectif))
 
     amendements_agreges = profil.get("amendements_agreges")
     if amendements_agreges is not None and not isinstance(amendements_agreges, dict):

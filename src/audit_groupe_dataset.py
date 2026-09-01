@@ -52,7 +52,11 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from schema_groupe import AMENDEMENTS_TYPES_DEPOSANT, validate_profil_groupe
+from schema_groupe import (
+    AMENDEMENTS_TYPES_DEPOSANT,
+    valeur_borne_effectif,
+    validate_profil_groupe,
+)
 
 # Sous-champs de `effectif` dont on mesure la distribution.
 # `a_la_date_de_reference` remplace `actuel` (#653). Les deux sont lus : les 2
@@ -149,10 +153,15 @@ def compute_effectifs(groupes: list[dict[str, Any]]) -> dict[str, Any]:
     """Distribution de `effectif.a_la_date_de_reference`/`actuel`/`min_historique`/`max_historique`.
 
     Pour chaque sous-champ, min/max/médiane/moyenne sur les groupes où la
-    valeur est un entier renseigné. `min_historique`/`max_historique` sont
-    souvent `null` (historique non calculé, voir `schema_groupe.py`) : un
-    `null` est exclu du calcul, jamais compté comme `0`
-    (AGENTS.md §2.5).
+    valeur est un entier renseigné. Un `null` est exclu du calcul, jamais
+    compté comme `0` (AGENTS.md §2.5) : `min_historique`/`max_historique`
+    restent `null` sur toute fiche dont une entrée `membres[]` n'a pas de date
+    d'appartenance (#702).
+
+    Ces deux champs se lisent sous **deux formes** : l'objet `{valeur, date}`
+    du lot #702, et l'entier nu hérité. `valeur_borne_effectif` rend l'entier
+    des deux — un audit qui n'aurait suivi que la nouvelle forme publierait
+    « 0 groupe renseigné » là où la donnée existe, sans que rien ne le dise.
 
     Returns:
         `{champ: {"nombre_groupes_renseignes": int, "min":..., "max":...,
@@ -167,8 +176,8 @@ def compute_effectifs(groupes: list[dict[str, Any]]) -> dict[str, Any]:
             effectif = groupe.get("effectif")
             if not isinstance(effectif, dict):
                 continue
-            valeur = effectif.get(champ)
-            if isinstance(valeur, int) and not isinstance(valeur, bool):
+            valeur = valeur_borne_effectif(effectif.get(champ))
+            if valeur is not None:
                 valeurs.append(valeur)
 
         resultat[champ] = {
