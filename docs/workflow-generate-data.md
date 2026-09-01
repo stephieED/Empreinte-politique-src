@@ -300,7 +300,14 @@ base : il checkoute le dépôt, et la fusion ne réécrit que les slugs présent
 dans les artifacts. Il lit aussi `.cache/dossiers_an` (restauré par son propre
 `actions/cache`, §5) : depuis #639, la construction de `pivot_data/amendements/`
 y joint chaque `texte_vise` à son dossier législatif. Archives absentes → aucun
-rattachement ajouté, aucun retiré, et le job le dit dans son log. **Produit** le commit de données sur `main`, poussé sous
+rattachement ajouté, aucun retiré, et le job le dit dans son log. Il lit aussi
+`raw_data/amendements_an_figes/` (committé, pas caché) : depuis #696, la même
+construction **relit** dans l'archive figée le `texte_vise` des entrées qui
+portent un intitulé au lieu de l'uid du document AN — 2 500 des 484 132
+amendements publiés au 01/09/2026, que la fusion additive ne pouvait pas
+corriger seule. Aucune archive n'est ouverte pour une législature sans entrée
+fautive, et ce que le report ne répare pas est compté dans le log
+([report `texte_vise`](decisions/report-texte-vise-source-696.md)). **Produit** le commit de données sur `main`, poussé sous
 `secrets.DATA_PUSH_SSH_KEY` — secret qui **n'existe pas** aujourd'hui, si bien
 que le push repart sous le `GITHUB_TOKEN` et qu'aucun workflow ne voit le commit
 (#685, §6). C'est le seul job à porter
