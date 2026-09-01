@@ -70,10 +70,10 @@ function loadAmendementsLegislature(legislature) {
       fetch(`/data/amendements/${legislature}.json`)
         .then((r) => (r.ok ? r.json() : null))
         // `textes` est conservé depuis #328 : il porte, par `texte_vise`, le
-        // `dossier_id` et le titre du dossier législatif. Sans lui, la
-        // concentration des dépôts se compterait sur les textes visés — 47 là
-        // où il y a 34 dossiers chez Jérôme Guedj — et aucun dossier ne
-        // pourrait être nommé au lecteur.
+        // `dossier_id` et le titre du dossier législatif. Sans lui, les dépôts
+        // se compteraient sur les textes visés — 47 là où il y a 34 dossiers
+        // chez Jérôme Guedj — et aucun dossier ne pourrait être NOMMÉ au
+        // lecteur, ce qui est tout ce que le coup d'œil publie désormais.
         .then((d) => ({ amendements: d?.amendements || {}, textes: d?.textes || {} }))
         .catch(() => ({ amendements: {}, textes: {} })),
     );

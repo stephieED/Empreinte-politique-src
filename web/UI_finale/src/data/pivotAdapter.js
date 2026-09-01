@@ -21,7 +21,7 @@ import {
   couvertureDesListes,
   directionQuestionsGouvernement,
   ecartsAvecLeGroupe,
-  faisceau,
+  coupOeil,
   fonctionsExercees,
   interventionsParNature,
   limitesDeclarees,
@@ -244,7 +244,7 @@ function resolveAmendement(amendementsIndex, amendementId) {
  * Titre et clé de dossier du texte visé par un amendement.
  *
  * L'index par législature porte un bloc `textes` : `texte_vise` → `{ dossier_id,
- * titre }`. La concentration se compte sur le DOSSIER, pas sur le `texte_vise` :
+ * titre }`. Les dépôts se comptent sur le DOSSIER, pas sur le `texte_vise` :
  * un même dossier législatif porte plusieurs textes visés successifs (le projet
  * déposé, le texte de commission…), et compter ces derniers séparément
  * éclaterait en trois dossiers ce que le lecteur voit comme une seule bataille.
@@ -441,13 +441,14 @@ export function buildCandidateView(
     sourceUrl: pivot.identite?.source_url ?? null,
     licence: pivot.meta?.licence_donnees ?? null,
 
-    faisceau: faisceau({
+    coupOeil: coupOeil({
       interventions,
-      concentration: amendements.concentration,
+      dossiers: amendements.dossiers,
       fonctions,
       questions,
       qualite,
       textes,
+      appartenances,
     }),
 
     parcours: { roles, nbLignes, bornes },
