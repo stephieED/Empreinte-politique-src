@@ -63,6 +63,7 @@ from schema_pivot import (
     ROLE_INITIATEUR_PAR_NATURE,
     SCHEMA_VERSION,
     appliquer_chambres,
+    deriver_tags_thematiques,
     make_empty_profil,
     poser_identifiant,
 )
@@ -741,29 +742,12 @@ def normalize_profil(
     profil["chambre"] = chambre_collecte     # repli, consommé par appliquer_chambres
     derivation_chambres = appliquer_chambres(profil)
 
-    # --- Tags thématiques bruts : thème officiel Syceron (via `theme_officiel`)
-    # quand l'intervention en porte un, `mots_cles` sinon.
-    #
-    # Le repli sur `mots_cles` est CONSERVÉ par #529, alors que plus rien ne les
-    # collecte : ils viennent du scraping NosDéputés, et ils sont dans les
-    # profils bruts déjà collectés, que la fusion additive garde. Les retirer
-    # ici ferait tomber les **647 `tags_thematiques` publiés** dérivés d'eux —
-    # une liste surveillée bloquante (#460/#470). On ne collecte plus cette
-    # matière ; on continue de savoir la lire (AGENTS.md §2 règle 5).
-    # `theme_officiel` reste préféré : il vient du compte rendu officiel de l'AN.
-    tags: set[str] = set()
-    for i in profil.get("interventions") or []:
-        theme = i.get("theme_officiel")
-        if theme and isinstance(theme, str):
-            cleaned = theme.strip().lower()
-            if cleaned:
-                tags.add(cleaned)
-        else:
-            for kw in (i.get("mots_cles") or []):
-                cleaned = kw.strip().lower()
-                if cleaned:
-                    tags.add(cleaned)
-    profil["tags_thematiques"] = sorted(tags)
+    # --- Tags thématiques : DÉRIVÉS des interventions, par la fabrique unique
+    # `schema_pivot.deriver_tags_thematiques` (#710). Le raisonnement — pourquoi
+    # `theme_officiel` prime et pourquoi le repli `mots_cles` survit à #529 — vit
+    # dans sa docstring, avec `merge_pivot_profile` qui la rappelle après la
+    # fusion : un champ dérivé se recalcule, il ne se fusionne pas.
+    profil["tags_thematiques"] = deriver_tags_thematiques(profil.get("interventions"))
 
     # --- Métadonnées ---
     # `licence_donnees` est DÉRIVÉ de `sources[]`, plus propagé depuis le profil

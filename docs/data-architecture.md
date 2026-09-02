@@ -150,6 +150,13 @@ agrégat ne les consomme ») était faux.
 → [`docs/decisions/collecte-interventions-reduite-au-theme-657.md`](./decisions/collecte-interventions-reduite-au-theme-657.md)
 → [`extract-roster-groupes.md`](./extract-roster-groupes.md)
 
+`tags_thematiques` est un champ **dérivé** depuis #710, par la fabrique unique
+`schema_pivot.deriver_tags_thematiques` : il se recalcule après la fusion pivot
+comme `chambres` après la fusion des mandats, au lieu d'unir l'ancienne liste et
+la neuve — l'union rendait tout tag immortel, et aucune correction de
+`theme_officiel` ne pouvait l'en déloger.
+→ [`docs/decisions/creneau-de-seance-nest-pas-un-sujet-710.md`](./decisions/creneau-de-seance-nest-pas-un-sujet-710.md)
+
 ## Le profil brut n'est plus un fichier (#580)
 
 `amendements` pesait **96,7 % du plus gros profil brut** (54,15 des 56,00 Mo,
@@ -194,7 +201,7 @@ reprend :
 | `mandats` | **tous** les mandats électifs (#640 : une entrée par siège, regroupée sur `(legislature, dateDebut)` d'AMO30 — plus le seul mandat courant) **et** les responsabilités réelles, avec rôle, dates et drapeau `actif` |
 | `votes` | positions de vote et leur source (`votes_source`, qui liste **toutes** les législatures couvertes). Chaque vote porte sa `legislature` et son `url_source` — la page du scrutin AN — puisqu'un profil couvre désormais plusieurs législatures |
 | `dossiers_legislatifs` | les dossiers législatifs de la chambre. Renommé `textes_portes` dans le pivot ; son `id` (`DLR5L15N37607`, 472 / 472) y devient `dossier_id` depuis #639 — même nom que `gouvernements/*.json` → `textes[].dossier_id`. Chaque entrée porte depuis #689 sa `nature_texte` (`projet_de_loi` / `proposition_de_loi` / `proposition_de_resolution` / `null`), lue par `gouvernement_textes.nature_texte_depose` dans la même archive que les fiches de gouvernement — le préfixe de l'uid du document déposé, jamais le libellé |
-| `interventions` | prises de parole : date, sujet, texte, rôle du moment, format estimé sur la longueur. Source depuis #510 : les comptes rendus Syceron de l'AN **uniquement**, plus les questions officielles QE/QG/QOSD — le repli par recherche NosDéputés a été retiré, donc une collecte vide **reste vide** et se déclare dans `meta.warnings[]`. Une entrée portant `collecte: "theme_seul"` (#657) a été collectée **sans son verbatim** : ses champs lourds sont absents, jamais publiés à `null`, et `meta.collecte_reduite` porte la déclaration du run |
+| `interventions` | prises de parole : date, sujet, texte, rôle du moment, format estimé sur la longueur. Source depuis #510 : les comptes rendus Syceron de l'AN **uniquement**, plus les questions officielles QE/QG/QOSD — le repli par recherche NosDéputés a été retiré, donc une collecte vide **reste vide** et se déclare dans `meta.warnings[]`. Une entrée portant `collecte: "theme_seul"` (#657) a été collectée **sans son verbatim** : ses champs lourds sont absents, jamais publiés à `null`, et `meta.collecte_reduite` porte la déclaration du run. `sujet_code_grammaire` (#710) accompagne `sujet` **au brut seulement** : c'est le `code_grammaire` du point d'ordre du jour qui l'a fourni, le fait sourcé derrière le sujet, et le critère que lit `merge_profile.backfill_sujet_seance` |
 | `amendements_partitionnes` | le manifeste des tranches, à la place exacte qu'occupait `amendements` (#580) |
 | `mandat_europeen` | présent seulement si le candidat a des enregistrements au Parlement européen |
 | `meta.warnings` | la transparence sur les collectes manquantes ou incomplètes |

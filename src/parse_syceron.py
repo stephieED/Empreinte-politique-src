@@ -84,10 +84,58 @@ _TYPE_DETAIL_MAP: list[tuple[re.Pattern, str]] = [
 # que supposait #510 : mesuré sur la 17e, l'`<intitule>` du sommaire est
 # rigoureusement le `<point><texte>` du point qu'il référence sur **12 035 des
 # 12 038** jointures par `id_syceron`. Il n'est donc pas lu.
+#
+# **Mais `TITRE_TEXTE_DISCUSSION` n'est pas homogène (#710).** C'est le titre du
+# POINT D'ORDRE DU JOUR, et l'ordre du jour inscrit tantôt un texte — « Droit à
+# l'aide à mourir » —, tantôt un CRÉNEAU de séance : « Questions au
+# gouvernement », « Questions orales sans débat », « Questions au Premier
+# ministre ». Le créneau n'est pas un sujet, et le publier dans `sujet` fabrique
+# un faux thème (§2 règle 8) — mesuré sur les 481 profils publiés le 02/09/2026 :
+# 69 d'entre eux portaient le tag « questions au premier ministre ».
+#
+# Le discriminant reste STRUCTUREL : un point d'ordre du jour sous lequel la
+# source range des points de la grammaire des questions
+# (`_CODE_GRAMMAIRE_QUESTION`) est un créneau — c'est la source elle-même qui
+# dit que le sujet vit un cran plus bas. Voir `_creneaux_de_questions`.
+#
+# **Aucune liste de libellés**, et ce n'est pas une précaution de style : la
+# source publie « Questions au gouvernement », « Questions au Gouvernement »,
+# « Questions au premier ministre » et « Questions au Gouvernement (suite) » —
+# quatre variantes du même créneau sur les seules législatures 16 et 17. Un
+# filtre lexical en manquerait trois ; le critère structurel les prend toutes,
+# sans en connaître aucune. C'est le défaut de #672 (sélection par sous-chaîne)
+# et celui de #639 (clé tirée d'un libellé, qui rouille en silence).
+#
+# **Ce que ce critère NE tranche pas, et il faut le dire** : un point d'ordre du
+# jour qui est un moment de séance SANS grammaire plus fine en dessous. « Motion
+# de censure » (32 points, 11 665 paragraphes sur les législatures 16-17) et
+# « Déclaration du Gouvernement et débat » en sont ; la source ne porte, pour
+# eux, aucune marque structurelle — ni `@valeur` (1 335 des 2 138 points titrés
+# la remplissent, textes et créneaux confondus), ni `<sommaire><sousIntitule>`
+# (« 0 » sur les 2 138). Ils restent publiés, et c'est un trou déclaré, pas un
+# trou comblé par un libellé (§2 règle 5).
+#
+# **Et un code absent ou inconnu ne devient jamais procédural par défaut** : le
+# critère est POSITIF des deux côtés — un point ne porte un sujet que si son code
+# est dans `_CODE_GRAMMAIRE_SUJET`, et n'est écarté que si la source range sous
+# lui des points de question. Un code qu'on ne connaît pas ne fait donc ni l'un
+# ni l'autre.
 _CODE_GRAMMAIRE_SUJET = frozenset({
     "TITRE_TEXTE_DISCUSSION",   # texte inscrit à l'ordre du jour
     "QG_1_1",                   # question au Gouvernement
     "QOSD_1_1",                 # question orale sans débat
+    "QPM_1_1",                  # question au Premier ministre (#710)
+})
+
+# Grammaire des QUESTIONS : ces points portent le sujet d'UNE question, et la
+# source les range sous un point d'ordre du jour qui, lui, nomme le créneau
+# (#710). `QPM_1_1` manquait au jeu ci-dessus : 35 points sur les législatures
+# 16 et 17, 629 paragraphes qui héritaient donc de « Questions au Premier
+# ministre » au lieu de « Parcoursup ».
+_CODE_GRAMMAIRE_QUESTION = frozenset({
+    "QG_1_1",
+    "QOSD_1_1",
+    "QPM_1_1",
 })
 
 # `type_detail` déduit du `code_grammaire` plutôt que d'une regex sur le titre :
@@ -95,6 +143,7 @@ _CODE_GRAMMAIRE_SUJET = frozenset({
 _TYPE_DETAIL_PAR_CODE_GRAMMAIRE: dict[str, str] = {
     "QG_1_1": "question_gouvernement",
     "QOSD_1_1": "question_orale",
+    "QPM_1_1": "question_gouvernement",
 }
 
 # Sous-arbres dans lesquels le parcours ne descend pas : `<ouvertureSeance>` et
@@ -188,30 +237,95 @@ def _niveau_point(point: ET.Element) -> Optional[int]:
         return None
 
 
-def _sujet_depuis_chaine(chaine: tuple[tuple[Optional[int], Optional[str], str], ...]) -> Optional[str]:
-    """Titre du point titré le plus profond qui porte un sujet, ou `None`.
+def _creneaux_de_questions(element: ET.Element) -> frozenset[str]:
+    """`id_syceron` des points d'ordre du jour que la source déclare créneau de
+    questions (#710).
+
+    Un `TITRE_TEXTE_DISCUSSION` sous lequel la source range des points de
+    `_CODE_GRAMMAIRE_QUESTION` nomme le CRÉNEAU, pas le sujet : c'est la source
+    elle-même qui publie le sujet un cran plus bas, un par question. Son titre ne
+    doit donc jamais devenir un `sujet` — il reste lisible dans
+    `point_ordre_du_jour`, qui est du contexte, pas un thème.
+
+    La passe est séparée de `_iter_paragraphes` parce qu'elle doit AVOIR LIEU
+    AVANT lui : les points de question sont des FRÈRES XML du point d'ordre du
+    jour (`nivpoint` 2 contre 1), donc ils viennent APRÈS lui en ordre de
+    document — un parcours en une passe aurait déjà émis les paragraphes du
+    créneau quand il les découvre. Elle applique exactement la même discipline de
+    pile que `_iter_paragraphes`, pour que « sous » veuille dire la même chose des
+    deux côtés.
+
+    Mesuré sur les archives 16 et 17 : 279 points d'ordre du jour sur 2 138
+    titrés, portant quatre variantes typographiques du même créneau — le critère
+    n'en connaît aucune.
+
+    Son coût est mesuré, pas supposé : **+3,3 %** du parcours complet sur
+    60 comptes rendus de la XVIIe (0,120 s ajoutées à 3,66 s). Elle ne descend ni
+    dans les `<paragraphe>` ni dans les `<texte>`, qui portent tout le volume.
+    """
+    creneaux: set[str] = set()
+
+    def _descendre(courant: list[tuple[Optional[int], Optional[str], Optional[str]]], noeud: ET.Element) -> None:
+        pile = list(courant)
+        for enfant in noeud:
+            if enfant.tag in _TAGS_IGNORES or enfant.tag == _tag("paragraphe"):
+                continue
+            if enfant.tag == _tag("point"):
+                if _titre_point(enfant):
+                    niveau = _niveau_point(enfant)
+                    if niveau is not None:
+                        while pile and pile[-1][0] is not None and pile[-1][0] >= niveau:
+                            pile.pop()
+                    pile.append((niveau, enfant.get("code_grammaire"), enfant.get("id_syceron")))
+                    if enfant.get("code_grammaire") in _CODE_GRAMMAIRE_QUESTION:
+                        for _niv, code, id_syceron in reversed(pile[:-1]):
+                            if code == "TITRE_TEXTE_DISCUSSION" and id_syceron:
+                                creneaux.add(id_syceron)
+                                break
+            _descendre(pile, enfant)
+
+    _descendre([], element)
+    return frozenset(creneaux)
+
+
+def _point_porteur_du_sujet(
+    chaine: tuple[tuple[Optional[int], Optional[str], str, Optional[str]], ...],
+    creneaux: frozenset[str],
+) -> tuple[Optional[str], Optional[str]]:
+    """`(sujet, code_grammaire du point qui le porte)`, ou `(None, None)`.
 
     `None` est un résultat, pas un défaut : un paragraphe prononcé sous « article
     1er » n'a pas de sujet publié par la source, et lui en inventer un depuis
     l'intitulé de procédure alimenterait `tags_thematiques` de faux thèmes
-    (§2 règle 5 et règle 8)."""
-    for _niveau, code_grammaire, titre in reversed(chaine):
-        if code_grammaire in _CODE_GRAMMAIRE_SUJET:
-            return titre
-    return None
+    (§2 règle 5 et règle 8). Depuis #710, un point d'ordre du jour déclaré
+    créneau de questions est sauté pour la même raison : il nomme un moment de
+    séance.
+
+    Le code est rendu à côté du titre parce que c'est LUI le fait sourcé — le
+    vocabulaire contrôlé de l'Assemblée. Il voyage jusqu'au profil brut, où
+    `merge_profile.backfill_sujet_seance` en fait le critère du report sur les
+    entrées déjà collectées.
+    """
+    for _niveau, code_grammaire, titre, id_syceron in reversed(chaine):
+        if code_grammaire not in _CODE_GRAMMAIRE_SUJET:
+            continue
+        if code_grammaire == "TITRE_TEXTE_DISCUSSION" and id_syceron in creneaux:
+            continue
+        return titre, code_grammaire
+    return None, None
 
 
-def _infer_type_detail(chaine: tuple[tuple[Optional[int], Optional[str], str], ...]) -> str:
+def _infer_type_detail(chaine: tuple[tuple[Optional[int], Optional[str], str, Optional[str]], ...]) -> str:
     """Infère le `type_detail` depuis la chaîne des points englobants.
 
     Le `code_grammaire` prime — vocabulaire contrôlé de la source — et la regex
     sur les titres ne sert que de repli, du point le plus profond au plus haut.
     """
-    for _niveau, code_grammaire, _titre in reversed(chaine):
+    for _niveau, code_grammaire, _titre, _id in reversed(chaine):
         type_detail = _TYPE_DETAIL_PAR_CODE_GRAMMAIRE.get(code_grammaire or "")
         if type_detail:
             return type_detail
-    for _niveau, _code_grammaire, titre in reversed(chaine):
+    for _niveau, _code_grammaire, titre, _id in reversed(chaine):
         for pattern, type_detail in _TYPE_DETAIL_MAP:
             if pattern.search(titre):
                 return type_detail
@@ -285,13 +399,17 @@ def _parse_orateur(paragraphe: ET.Element) -> tuple[Optional[str], Optional[str]
 
 def _iter_paragraphes(
     element: ET.Element,
-    chaine: tuple[tuple[Optional[int], Optional[str], str], ...],
+    chaine: tuple[tuple[Optional[int], Optional[str], str, Optional[str]], ...],
     dans_point: bool = False,
 ):
     """Parcourt les `<paragraphe>` sous les `<point>`, à TOUTE profondeur (#510).
 
     Rend `(paragraphe, chaine)`, où `chaine` est la suite des points englobants
-    du plus haut au plus profond, sous forme `(nivpoint, code_grammaire, titre)`.
+    du plus haut au plus profond, sous forme
+    `(nivpoint, code_grammaire, titre, id_syceron)`. L'`id_syceron` est le seul
+    ajout de #710 : c'est ce qui permet à `_point_porteur_du_sujet` de
+    reconnaître un point d'ordre du jour que `_creneaux_de_questions` a déclaré
+    créneau, sans jamais regarder son libellé.
 
     Le parcours d'origine était `contenu.findall("point")` puis
     `point.findall("paragraphe")` — deux niveaux, en enfants directs. Mesuré sur
@@ -328,7 +446,7 @@ def _iter_paragraphes(
                 if niveau is not None:
                     while courant and courant[-1][0] is not None and courant[-1][0] >= niveau:
                         courant.pop()
-                courant.append((niveau, enfant.get("code_grammaire"), titre))
+                courant.append((niveau, enfant.get("code_grammaire"), titre, enfant.get("id_syceron")))
             yield from _iter_paragraphes(enfant, tuple(courant), True)
         elif enfant.tag == _tag("paragraphe"):
             if dans_point:
@@ -375,6 +493,10 @@ def _parse_interventions(
 
     interventions: list[dict[str, Any]] = []
 
+    # #710 — passe préalable : quels points d'ordre du jour la source déclare-t-elle
+    # créneaux de questions ? Elle doit précéder le parcours des paragraphes.
+    creneaux = _creneaux_de_questions(contenu)
+
     for paragraphe, chaine in _iter_paragraphes(contenu, ()):
         texte = _extract_texte(paragraphe) if avec_texte else None
         oid, nom_orateur, qualite = _parse_orateur(paragraphe)
@@ -385,12 +507,18 @@ def _parse_interventions(
         if not oid and not nom_orateur and not a_du_texte:
             continue
 
-        chemin = " > ".join(titre for _niveau, _code, titre in chaine) or None
+        chemin = " > ".join(titre for _niveau, _code, titre, _id in chaine) or None
+        sujet, sujet_code_grammaire = _point_porteur_du_sujet(chaine, creneaux)
         interventions.append({
             # Champs compatibles avec le format pivot interventions[]
             "date": date_seance,
             "type_detail": _infer_type_detail(chaine),
-            "sujet": _sujet_depuis_chaine(chaine),
+            "sujet": sujet,
+            # #710 — le code du point qui a fourni le sujet, ou `None`. C'est le
+            # fait sourcé derrière `sujet`, et le critère que lit le report
+            # `merge_profile.backfill_sujet_seance` : sa PRÉSENCE, fût-elle à
+            # `None`, prouve que l'entrée est sortie du parseur corrigé.
+            "sujet_code_grammaire": sujet_code_grammaire,
             "texte": texte,
             "fonction": qualite,
             "format": _infer_format(texte) if avec_texte else None,
@@ -447,6 +575,7 @@ def parse_syceron_xml(
                     "date": str | None,
                     "type_detail": str,
                     "sujet": str | None,
+                    "sujet_code_grammaire": str | None,
                     "texte": str | None,     # None si avec_texte=False (#657)
                     "fonction": str | None,
                     "format": str | None,    # "reaction_courte" | "prise_de_parole_developpee"

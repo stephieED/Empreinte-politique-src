@@ -4798,7 +4798,10 @@ def _reduire_au_theme(record: dict[str, Any]) -> dict[str, Any]:
       collectées se republient à 17 ;
     - `date`, `type_detail` — les deux faits que la fiche affiche ;
     - `sujet` + `session_ref` — `normalize_profil` en dérive `theme_officiel`,
-      qui est TOUT l'objet du mode ;
+      qui est TOUT l'objet du mode ; `sujet_code_grammaire` les suit (#710),
+      parce que c'est le critère du report `backfill_sujet_seance` : sans lui,
+      une entrée réduite ne pourrait jamais corriger un créneau de séance déjà
+      publié, et le mode « thème seul » serait le seul à ne pas guérir ;
     - `url` + `legislature` — la traçabilité (AGENTS.md §2 règle 2). L'entrée
       complète porte l'URL de l'archive TROIS fois (`source`, `source_url`,
       `url`) parce que trois chemins de normalisation historiques la lisent sous
@@ -4816,6 +4819,7 @@ def _reduire_au_theme(record: dict[str, Any]) -> dict[str, Any]:
         "date": record.get("date"),
         "type_detail": record.get("type_detail"),
         "sujet": record.get("sujet"),
+        "sujet_code_grammaire": record.get("sujet_code_grammaire"),
         "session_ref": record.get("session_ref"),
         "url": record.get("url"),
         "legislature": record.get("legislature"),
@@ -4859,6 +4863,10 @@ def _parse_syceron_intervention_entry(
         "date": intervention.get("date"),
         "type_detail": intervention.get("type_detail"),
         "sujet": intervention.get("sujet"),
+        # #710 — le code du point d'ordre du jour qui a fourni le sujet. Sa
+        # PRÉSENCE prouve que l'entrée sort du parseur corrigé ; c'est le critère
+        # que lit `merge_profile.backfill_sujet_seance`.
+        "sujet_code_grammaire": intervention.get("sujet_code_grammaire"),
         "texte": intervention.get("texte"),
         "fonction": intervention.get("fonction"),
         "format": intervention.get("format"),

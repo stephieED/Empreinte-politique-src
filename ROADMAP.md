@@ -137,6 +137,16 @@ Convention d'écriture : `AGENTS.md` §8.
 
 ## Known bugs
 
+- **Un moment de séance sans grammaire plus fine sous lui reste publié comme un
+  sujet (#710).** Le critère structurel de #710 écarte les créneaux de questions
+  parce que la source range dessous des points `QG_1_1`/`QOSD_1_1`/`QPM_1_1` ;
+  « Motion de censure » (243 profils tagués), « Motions de censure » (192) et
+  « Déclaration du Gouvernement et débat » (125) n'ont aucune marque structurelle
+  équivalente — ni `@valeur`, ni `sousIntitule`, ni code de point plus profond.
+  Les fermer demande une source de plus, l'ordre du jour publié par l'AN
+  (`vp/reunions/`), et donc un lot à part. Trou déclaré, pas comblé par un
+  libellé (§2 règle 5).
+
 - **Les tranches d'amendements du roster recopient 4,58 Gio déjà versionnés en
   38 Mo, et le chantier est ajourné (#691).** Mesuré le 01/09/2026 : sur les
   7,70 Gio de `raw_data/profiles/`, **4,58 Gio** sont les tranches 14/15/16 des
