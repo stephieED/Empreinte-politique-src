@@ -20,7 +20,12 @@
  * Chiffres cités : mesurés sur le dépôt au commit `9c702c4b`, 01/09/2026.
  */
 
-import { formatNumber, isWholeTextVote, normalizeLabel } from './lecture';
+import {
+  formatNumber,
+  isWholeTextVote,
+  normalizeLabel,
+  selectDerniereLectureVotes,
+} from './lecture';
 
 /* ── Règle : la position dans l'hémicycle est DÉCLARÉE, jamais déduite ───────
  *
@@ -957,6 +962,29 @@ export function directionQuestionsGouvernement(interventions, appartenances) {
  * PLANCHER, jamais un relevé exhaustif, et `WHOLE_TEXT_VOTE_BOUND` porte cette
  * phrase sur la page.
  *
+ * Le décompte porte sur des TEXTES, pas sur des votes (#711) : un texte revenu
+ * plusieurs fois devant l'Assemblée ne compte qu'une fois, à sa DERNIÈRE
+ * LECTURE — la règle qu'`AGENTS.md` §6 publie depuis toujours et que rien
+ * n'appliquait. `selectDerniereLectureVotes` (lot 1) la porte, elle non plus
+ * n'est pas réécrite ici, et `LAST_READING_RULE` la publie sur la page.
+ *
+ * La dernière lecture d'un texte se lit sur le CORPUS des scrutins, jamais sur
+ * les seuls votes de la personne. Mesuré sur `gabriel-attal` : ses 150 votes
+ * sur l'ensemble d'un texte donnent 120 textes si l'on ordonne ses propres
+ * lectures, mais 111 si l'on ordonne celles du corpus. Les 9 d'écart sont des
+ * textes dont il a voté une lecture ANTÉRIEURE et pas la dernière — dont le
+ * projet de loi de simplification de la vie économique, qu'il avait déposé
+ * comme Premier ministre, voté contre en première lecture le 17/06/2025, adopté
+ * sur le texte de la commission mixte paritaire le 14/04/2026, scrutin où
+ * aucune position de lui n'est enregistrée. Afficher ce « contre » comme sa
+ * position sur cette loi aurait été faux, et dire pourquoi il manque au scrutin
+ * final publierait une absence individuelle (§2 règle 3).
+ *
+ * Sans le corpus, la dernière lecture n'est pas déterminable : la fonction le
+ * DÉCLARE (`derniereLectureDisponible`) au lieu de retomber sur les seuls votes
+ * de la personne. Une règle de repli qui remplace silencieusement la règle
+ * publiée est ce qui a rendu #510 invisible.
+ *
  * « Un membre du gouvernement ne vote pas » est un FAIT ÉTABLI sur la personne,
  * pas une lacune de collecte — sans cette phrase, Attal paraît absent de 2018 à
  * 2024. Il n'est pas non plus une raison de masquer ses autres votes : la
@@ -965,11 +993,27 @@ export function directionQuestionsGouvernement(interventions, appartenances) {
  * AUCUN ratio de participation : un dénominateur « scrutins où la personne
  * aurait pu voter » est un taux d'assiduité individuel (§2 règle 3).
  */
-export function votesDuProfil(votesJoints, appartenances, rolesParlementaires) {
+export function votesDuProfil(
+  votesJoints,
+  appartenances,
+  rolesParlementaires,
+  scrutinsCorpus = null,
+) {
   const liste = votesJoints || [];
   const surEnsemble = liste.filter((v) => isWholeTextVote(v.scrutin));
+
+  // `null` — et non un tableau vide — quand le corpus des scrutins n'a pas pu
+  // être lu : « je ne sais pas quelle est la dernière lecture » n'est pas
+  // « aucun texte » (§2 règle 5).
+  const dernieresLectures = scrutinsCorpus
+    ? new Set(selectDerniereLectureVotes(scrutinsCorpus).map((s) => s.id))
+    : null;
+  const retenus = dernieresLectures
+    ? surEnsemble.filter((v) => dernieresLectures.has(v.scrutin_id))
+    : [];
+
   const positions = new Map();
-  for (const v of surEnsemble) positions.set(v.position, (positions.get(v.position) || 0) + 1);
+  for (const v of retenus) positions.set(v.position, (positions.get(v.position) || 0) + 1);
 
   const periodes = appartenances || [];
   const sieges = rolesParlementaires || [];
@@ -1022,6 +1066,12 @@ export function votesDuProfil(votesJoints, appartenances, rolesParlementaires) {
   return {
     total: liste.length,
     surEnsemble: surEnsemble.length,
+    derniereLectureDisponible: dernieresLectures !== null,
+    textes: retenus.length,
+    // Ce que le repli a retiré, nommé plutôt que laissé à la soustraction. Il
+    // ne dit RIEN d'une absence : il compte des positions bien réelles de la
+    // personne, sur des lectures qu'un scrutin plus tardif a suivies.
+    lecturesDepassees: surEnsemble.length - retenus.length,
     positions: ['pour', 'contre', 'abstention', 'non_votant']
       .filter((p) => positions.has(p))
       .map((p) => ({ position: p, n: positions.get(p) })),
