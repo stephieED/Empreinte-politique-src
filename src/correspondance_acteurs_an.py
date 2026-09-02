@@ -66,8 +66,30 @@ Ce qui échoue bruyamment, c'est le **contrôle de couverture** sur le corpus
 `check_quality_gate.py`) : un profil publié sans entrée nomme son slug et
 bloque le commit.
 
+## Deux régimes d'entrée, et ce n'est pas une tolérance (#715)
+
+`origine` sépare ce que la table fait pour deux populations qui n'ont rien en
+commun :
+
+- **`relue`** — les 481 slugs hérités de NosDéputés. Le slug venait d'ailleurs,
+  l'acteur AN était à *découvrir* dans AMO30, et la découverte se prouve. C'est
+  tout ce qui précède.
+- **`derivee`** — un membre de roster dont le slug a été **fabriqué depuis
+  l'acteur** (`slugify(état civil AMO30)`, #708). Il n'y a aucun rapprochement
+  à prouver : le slug ne pouvait pas désigner quelqu'un d'autre, il est sorti
+  de cet acteur-là. L'entrée n'enregistre pas une preuve, elle **gèle**
+  l'identifiant — c'est le seul service que la table rend encore à cette
+  population, et il est réel : sans entrée, un changement de nom d'usage
+  déplacerait le slug au run suivant (#487, #668).
+
+Ce que ça n'assouplit pas : #525 §6 interdit de **combler** une entrée relue
+depuis `identite.source_url`, et ce refus tient entier. Un slug publié qui
+n'est pas déclaré fabriqué par le roster du run ne reçoit rien, et la §5b du
+portail bloque toujours son commit.
+
 Rationale complet et condition de retrait :
-`docs/decisions/correspondance-acteurs-an-525.md`.
+`docs/decisions/correspondance-acteurs-an-525.md`,
+`docs/decisions/entree-derivee-correspondance-715.md`.
 """
 
 from __future__ import annotations
@@ -116,6 +138,27 @@ ECARTS_CONNUS = frozenset({
     "homonymie",         # plusieurs acteurs AN portent ce nom
     "hors_an",           # la personne n'a jamais eu d'acteur AN
 })
+
+#: Comment l'entrée est arrivée dans la table. Fermé, comme `ECARTS_CONNUS`.
+#:
+#: - `relue` — le rapprochement entre un slug **préexistant** et un acteur AN a
+#:   été arbitré : c'est le régime de #525, celui des 476 slugs hérités de
+#:   NosDéputés, qu'il fallait *découvrir* dans AMO30.
+#: - `derivee` — le slug a été **fabriqué depuis** l'acteur
+#:   (`slugify(état civil AMO30)`, #708), donc il n'y a aucun rapprochement à
+#:   prouver : l'entrée ne fait qu'enregistrer une dérivation déjà faite. Ce
+#:   qu'elle apporte n'est pas une preuve, c'est le **gel** de l'identifiant —
+#:   sans elle, un changement de nom d'usage déplacerait le slug au run suivant
+#:   et publierait la même personne deux fois (#487, #668).
+ORIGINES_CORRESPONDANCE = frozenset({"relue", "derivee"})
+
+#: Origine d'une entrée qui n'en déclare pas. Ce n'est pas un défaut choisi par
+#: commodité : une entrée écrite **avant** ce lot ne peut venir que de la passe
+#: relue de #525 — la porte de fabrication n'existait pas. La clé reste donc
+#: facultative en lecture, et le constructeur l'écrit sur toutes les entrées
+#: qu'il produit. Condition de retrait du défaut : le jour où plus aucune entrée
+#: committée n'est dépourvue de la clé, l'exiger devient gratuit.
+ORIGINE_PAR_DEFAUT = "relue"
 
 _ACTEUR_REF = re.compile(r"^PA\d+$")
 #: Même alphabet que `slugify()` : `[a-z0-9-]`, jamais un point en tête
@@ -258,6 +301,22 @@ def _valider_entree(slug: str, entree: Any) -> dict[str, Any]:
         f"{slug} : un écart '{ecart}' exige un motif écrit",
     )
 
+    origine = entree.get("origine", ORIGINE_PAR_DEFAUT)
+    _exiger(
+        origine in ORIGINES_CORRESPONDANCE,
+        f"{slug} : origine inconnue {origine!r} "
+        f"(attendues : {sorted(ORIGINES_CORRESPONDANCE)})",
+    )
+    # Un écart est le résultat d'un arbitrage : personne ne l'a écrit en
+    # dérivant un slug depuis l'acteur qui le porte. Les deux ensemble
+    # décriraient une entrée qui prétend n'avoir pas été relue tout en portant
+    # le produit d'une relecture.
+    _exiger(
+        origine != "derivee" or ecart is None,
+        f"{slug} : une entrée dérivée ne porte pas d'écart "
+        f"(ecart={ecart!r}) — un écart s'arbitre, il ne se dérive pas",
+    )
+
     preuve = entree.get("preuve")
     _exiger(
         isinstance(preuve, str) and preuve.startswith("http"),
@@ -287,6 +346,7 @@ def _valider_entree(slug: str, entree: Any) -> dict[str, Any]:
         "motif": motif,
         "preuve": preuve,
         "verifie_le": verifie_le,
+        "origine": origine,
     }
 
 

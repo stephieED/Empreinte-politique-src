@@ -99,9 +99,11 @@ via `src/population_profils.py`.
   goes through `build_amendements_index_pivot.py`.
   → `docs/decisions/dossier-des-amendements-639.md`,
   `docs/decisions/report-texte-vise-source-696.md`
-- **Both shared indexes must be in the workflow's `git add`.** They are the only
+- **Both shared indexes must be in the workflow's `git add`** — and since #715 so must
+  `raw_data/correspondance_acteurs_an.json`, which the run now extends. They are the only
   cross-file dependencies inside `pivot_data/`; an uncommitted index leaves every mapping
-  pointing at nothing, silently.
+  pointing at nothing, silently, and an uncommitted correspondence table rewrites its
+  derived entries every run, so the slug freeze it exists for never happens.
 - **Individual profiles are written compact, everything else `indent=2`** (`src/json_io.py`).
   Never read a profile line by line — the format carries no meaning.
   → `docs/decisions/profils-json-compact.md`
@@ -342,6 +344,34 @@ tolerance is **partitioned** — no input disarms another's check.
   groups. **This does not relax #525**: fabricating is not filling a reviewed entry, gate
   §5b still hard-fails on publication, and #525 §7's retirement condition is unchanged.
   → `docs/decisions/slug-fabrique-membre-de-roster-708.md`
+- **A fabricated slug still needs a table entry before publication — and that entry
+  records a derivation, not a proof (#715).** #708's first real run collected **160 new
+  profiles and committed nothing**: gate §5b blocks, and its printed remedy is **inert**
+  — `build_correspondance_acteurs_an.py` starts from **published** profiles, which the
+  blocked commit prevents from existing. The circularity was lifted at collection, not at
+  the table, and the run is **not replayable** (`actions/checkout` pins the SHA on a
+  `workflow_dispatch`). The table did two jobs and one is gone: a slug inherited from
+  NosDéputés had its AN actor **discovered**, and a discovery is proved; a slug
+  **derived from** the actor proves nothing — measured **160/160** fabricated slugs
+  collected from `.../fiche/OMC_PA######` carrying *exactly* their `acteur_ref`, against
+  **477 of 481** committed entries whose `preuve` is that same URL, **476** on one date.
+  What the entry still buys is the **freeze**: the table comes before fabrication (#708
+  §3), so without it a changed *nom d'usage* moves the slug next run. Hence a closed
+  `origine` key (`relue` | `derivee`) — **optional on read**, its default a dated fact,
+  and never carried by `ecart`, since a derived entry has **none** (the validator refuses
+  both together). `--completer-derivees` is **additive** (reconducts the **raw** document,
+  and does not rewrite the file when there is nothing to add), **offline** (a second AMO30
+  download before the commit would make a source outage cost a valid run, #524), and
+  **disjoint** from `construire()`. Three filters keep it from being a rubber stamp: the
+  table first, the profile must be **published**, and its `identifiants.an` must equal the
+  roster's declared `acteur_ref` **exactly** — a disagreement writes nothing and exits 1.
+  The authority on "who is fabricated" is `slug_origine`, never anything else, which
+  leaves #525 §6's refusal intact. Wired into `merge-and-pivot` **after** the pivots and
+  **before** the gate — and `raw_data/correspondance_acteurs_an.json` **enters the
+  workflow's `git add`**, where it was not: without that the freeze is an illusion, the
+  very failure §3a already names for the shared indexes. §5b now publishes the count of
+  `derivee` entries: the review queue, a counter and not a threshold.
+  → `docs/decisions/entree-derivee-correspondance-715.md`
 - **The AN group roster comes from AMO30, and `AN_ROSTER_ACTIF` is a kill switch (#527)** —
   lowered → `RosterAnInactif`, never an empty roster. `ERREURS_ROSTER` unites both sources'
   failures so an absent archive stays a named « roster indisponible » (`exit 2`, committed
