@@ -172,6 +172,47 @@ Le premier (pied de navigation) est *vérifié* : `ExplorerLayout.jsx` `.explore
 
 ---
 
+## 6 bis. Ce qu'une vue doit au lecteur — sept règles de forme
+
+La section 6 dit le **ton**. Celle-ci dit ce qu'une vue doit **au lecteur**, et
+c'est ce qui manquait : ni ce document ni `AGENTS.md` §2 ne disqualifiait une
+mesure **vraie, disponible et conforme** dont personne ne peut rien tirer.
+
+Les sept règles ont été arbitrées en maquette les 01 et 02/09/2026 sur la fiche
+candidat. **Elles valent pour toute vue** — la fiche de groupe et celle de
+gouvernement ne les ont pas encore appliquées. Chacune est ici en une ligne ; ce
+qui l'a tranchée, avec ses mesures et ce qui a été essayé puis écarté, est dans
+[`regles-de-forme-des-vues-326`](../../docs/decisions/regles-de-forme-des-vues-326.md)
+— **une règle sans son coût se rediscute**, donc on la lit là-bas avant de la
+contester.
+
+1. **Un chiffre dont le lecteur ne peut rien tirer ne se publie pas.** La seule
+   règle sans équivalent dans §2, qui dit ce qui est interdit et jamais ce qui est
+   inutile. Elle disqualifie une mesure dont on ne peut **rien conclure**, jamais
+   une dont on n'aimerait pas la conclusion : le premier cas se démontre, le
+   second se déclare.
+2. **Le texte explicatif est un aveu d'échec.** Si une phrase doit expliquer un
+   chiffre, c'est la forme qui a échoué. Vaut aussi pour les **noms** : un titre
+   qui promet ce que le bloc ne délivre pas est la même faute. Ne dispense pas de
+   la limite permanente exigée en §6 — une limite tient en deux mots, une
+   explication en paragraphe.
+3. **Un nombre sans son objet ne dit rien, et seuls les nombres sont en gros.**
+   L'objet reste à l'échelle des libellés ; une différence de taille entre deux
+   nombres appariés est une hiérarchie de valeur.
+4. **Chaque mesure compte contre son propre total.** Deux natures ne partagent
+   jamais un dénominateur, et un total commun ne s'affiche pas.
+5. **Aucun seuil arbitraire ne décide qu'il y a un fait.** Une mise en évidence
+   qui ne peut pas se taire ne dit rien quand elle parle.
+6. **Quand le volume ne distingue pas deux intentions, c'est la date qui range.**
+7. **Deux absences ne se confondent jamais** — un fait sur le métier, une valeur
+   déclarée par la source, un trou chez nous : trois rendus distincts (§2 règle 5).
+
+Ces règles **s'ajoutent** à `AGENTS.md` §2, elles ne l'amendent pas : §2 est
+éditorial et non négociable, celles-ci sont de forme et s'affinent. Une vue peut
+satisfaire les sept et violer §2 — c'est §2 qui tranche.
+
+---
+
 ## 7. Grille & réponse
 
 - **Une seule vraie rupture, sur la marque** : sous 480px, le lockup complet cède la place au symbole seul — la largeur ne suffit plus à garder « POLITIQUE » lisible. *Vérifié* : `Brand.css` `@media (max-width: 480px)`.
