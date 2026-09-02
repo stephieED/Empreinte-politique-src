@@ -861,7 +861,10 @@ When something does need deciding, five parts, in this order:
   the file says so. Locked by `tests/test_commandes_documentees.py`.
 - `docs/data-architecture.md`: what the data becomes — the seven outputs of
   `pivot_data/` (profiles, groupes, gouvernements, partis, scrutins, amendements,
-  commissions_dossiers).
+  commissions_dossiers). **`commissions_dossiers.json` n'a jamais été produit** :
+  son constructeur existe (`src/build_commissions_dossiers.py`), sa sortie n'est ni
+  versionnée ni générée par un run, et l'empreinte thématique de la fiche candidat
+  qui en dépend est donc inerte (#328). Six outputs sur disque, sept nommés.
 - `docs/workflow-generate-data.md`: what a run does — the eight jobs one by one, the
   form, caches, artifacts, budgets, push, automatic retry. **Start here for "what was
   that job again, and why like that".**

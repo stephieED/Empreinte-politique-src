@@ -43,6 +43,14 @@ RACINE = Path(__file__).resolve().parent.parent
 UI = RACINE / "web" / "UI_finale" / "src"
 
 MODULE_REGLES = UI / "utils" / "profilCandidat.js"
+# NOTE (#328) : « L'essentiel » a été remplacé par « Les grands chiffres », et
+# les CINQ tests qui décrivaient sa vue — le titre de la section, l'accent
+# typographique sur « réaction » / « initiative », et les trois règles CSS de la
+# thèse et de la barre — sont retirés avec elle. Ce
+# qui reste ici teste le VIVIER, qui n'est pas retiré : la décision prévoit
+# qu'un vrai résumé prenne la place que le bloc libère. Le bloc lui-même est
+# verrouillé par `tests/test_grands_chiffres_328.py`.
+
 COMPOSANT = UI / "components" / "CandidateProfile.jsx"
 FEUILLE = UI / "components" / "CandidateProfile.css"
 
@@ -90,13 +98,6 @@ def _bloc_css(feuille: str, selecteur: str) -> str:
 # ---------------------------------------------------------------------------
 
 
-def test_la_section_s_appelle_l_essentiel(composant):
-    """« Coup d'œil » promettait de la rapidité, pas du contenu."""
-    assert "L’essentiel" in composant, (
-        "le libellé publié de la section doit être « L’essentiel »"
-    )
-
-
 def test_coup_d_oeil_ne_survit_nulle_part_dans_la_fiche(regles, composant, feuille):
     """Un libellé retiré de l'écran mais gardé en classe CSS ou en nom de champ
     revient au premier copier-coller."""
@@ -110,40 +111,6 @@ def test_coup_d_oeil_ne_survit_nulle_part_dans_la_fiche(regles, composant, feuil
 
 # ---------------------------------------------------------------------------
 # 2. Les deux moitiés de la thèse
-# ---------------------------------------------------------------------------
-
-
-def test_les_deux_moities_de_la_these_partagent_une_seule_regle_css(feuille):
-    """MÊME TAILLE, MÊME GRAISSE. Deux règles distinctes — 17px/500 contre
-    22px/800 — faisaient lire la réaction comme la légende de l'initiative,
-    alors que ce sont les deux termes d'une opposition."""
-    assert ".cp-these-ligne {" in feuille, (
-        "les deux moitiés doivent partager une seule classe `.cp-these-ligne` : "
-        "deux classes divergent au premier ajustement"
-    )
-    for retiree in (".cp-these-reaction", ".cp-these-initiative"):
-        assert retiree not in feuille, (
-            f"`{retiree}` accordait une taille et une graisse propres à une moitié "
-            "de l'opposition — la décision du 01/09/2026 les retire"
-        )
-
-
-def test_l_accent_porte_sur_les_deux_mots_opposes(composant):
-    """« réaction » et « initiative », jamais une ligne entière."""
-    assert "<b>réaction</b>" in composant
-    assert "<b>initiative</b>" in composant
-
-
-def test_l_accent_de_la_these_n_est_pas_le_jaune_signal(feuille):
-    """DESIGN_SYSTEM §3 : le jaune signal marque la sélection, l'action et la
-    source vérifiée. L'employer pour un accent typographique lui ferait dire
-    « regardez ça », c'est-à-dire un jugement (§2 règle 1)."""
-    bloc = _bloc_css(feuille, ".cp-these-ligne b")
-    assert "#DFFF00" not in bloc.upper(), "le jaune signal n'accentue jamais un mot de la thèse"
-
-
-# ---------------------------------------------------------------------------
-# 3. Le vivier et la garantie de rôle
 # ---------------------------------------------------------------------------
 
 
@@ -322,18 +289,6 @@ def test_trois_rendus_declares_et_fermes(regles):
         assert rendu in corps, f"`{rendu}` doit figurer dans le vocabulaire fermé des rendus"
 
 
-def test_les_segments_de_la_barre_partagent_un_seul_ton(feuille):
-    """Deux commissions à égalité produisent deux segments IDENTIQUES. Les
-    teinter par rang les placerait sur une échelle du plus au moins — ce que
-    #329 a précisément retiré de la fiche de groupe (§2 règle 1). Laurent
-    Wauquiez a 4 et 4 en tête : c'est la DONNÉE qui ne produit pas de tendance."""
-    assert re.search(r"\.cp-barre-seg--uni\s*\{", feuille), (
-        "un seul ton pour les segments de la répartition par commission"
-    )
-    couleurs = set(re.findall(r"#[0-9A-Fa-f]{3,8}", _bloc_css(feuille, ".cp-barre-seg--uni")))
-    assert len(couleurs) <= 1, f"un seul ton attendu, trouvé {sorted(couleurs)}"
-
-
 def test_aucun_seuil_arbitraire_ne_decide_qu_il_y_a_une_tendance(regles):
     """La contrainte « une tendance quand elle existe, rien quand elle n'existe
     pas » se règle SANS seuil : la barre montre la répartition et laisse la
@@ -348,10 +303,10 @@ def test_aucun_seuil_arbitraire_ne_decide_qu_il_y_a_une_tendance(regles):
 
 def test_le_jaune_signal_ne_sert_ni_de_filet_ni_de_decor(feuille):
     """DESIGN_SYSTEM §3 : jaune signal = sélection, action, source vérifiée."""
-    debut = feuille.index(".cp-essentiel {")
+    debut = feuille.index(".cp-gc {")
     fin = feuille.index(".cp-section {")
     assert "#DFFF00" not in feuille[debut:fin].upper(), (
-        "le jaune signal n'apparaît nulle part dans « L’essentiel » : ni filet, "
+        "le jaune signal n'apparaît nulle part dans « Les grands chiffres » : ni filet, "
         "ni segment, ni décor"
     )
 

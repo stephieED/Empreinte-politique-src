@@ -1684,6 +1684,382 @@ export function essentiel({
   };
 }
 
+/* ── Livrable : « Les grands chiffres » ──────────────────────────────────────
+ *
+ * Le bloc de tête de la fiche, arbitré en maquette (#328). Ce n'est pas un
+ * résumé — c'est un tableau de bord, et il est nommé pour ce qu'il est.
+ *
+ * DEUX RÈGLES le gouvernent, et tout le reste en découle.
+ *
+ * 1. **La frise commande les colonnes.** Le parcours n'est pas une section à
+ *    part : c'est l'ossature. Une piste par rôle, une colonne par rôle, et la
+ *    COULEUR fait le lien. Le constat qui l'a imposé : chez un ancien ministre,
+ *    cinq catégories décrivant le métier de député se remplissent de ce que son
+ *    ministère a produit, et son travail parlementaire disparaît.
+ *
+ * 2. **Les lignes sont appariées.** Des objets de même nature se font face et
+ *    se traitent pareil, et CHAQUE COLONNE COMPTE CONTRE SON PROPRE TOTAL. Le
+ *    total du profil n'apparaît nulle part : « 580 / 618 » d'un côté et
+ *    « 2 759 / 3 345 » de l'autre sont deux mesures, pas deux parts d'une
+ *    troisième.
+ *
+ * Ce qui est INTERDIT ici et le restera : additionner les deux colonnes, les
+ * comparer, ou en tirer un ratio. Ce sont deux métiers, pas deux notes.
+ */
+
+export const COLONNE_PARLEMENT = INSTITUTION_PARLEMENT;
+export const COLONNE_GOUVERNEMENT = INSTITUTION_GOUVERNEMENT;
+
+/* Les trois cas de la maquette. Le gabarit est UNIQUE — ce sont les lignes et
+ * les colonnes qui apparaissent ou non selon ce que la donnée porte. Deux
+ * gabarits rendraient deux fiches incomparables, ce que la garantie par rôle
+ * cherche précisément à éviter. */
+export const CAS_DEUX_ROLES = 'deux_roles';
+export const CAS_PARLEMENT_SEUL = 'parlement_seul';
+export const CAS_GOUVERNEMENT_SEUL = 'gouvernement_seul';
+export const CAS_RIEN_A_MONTRER = 'rien_a_montrer';
+
+/* Écart minimal, en % de l'axe, entre deux étiquettes de piste avant de replier
+ * la seconde sur un deuxième niveau. Même patron que les repères de la frise
+ * détaillée : une étiquette illisible ne dit rien de plus qu'une absente. */
+const ECART_MINIMAL_ETIQUETTES = 11;
+
+/* ── Les pistes de la frise ──────────────────────────────────────────────────
+ *
+ * Une piste par institution, dans l'ordre où on les lit : le Parlement d'abord
+ * parce que c'est le métier que les cinq lignes décrivent, le gouvernement
+ * ensuite, la mission en dernier.
+ *
+ * **Un parlementaire en mission n'est pas un membre du gouvernement.** Ce sont
+ * des missions auprès d'un ministère, pas des appartenances : piste distincte,
+ * en gris neutre, et AUCUNE colonne — une mission ne dépose pas de texte.
+ *
+ * La POSTURE est portée par un motif, pas par une couleur, parce que la couleur
+ * code déjà le rôle. Et deux absences ne se confondent pas : `non_declaree` est
+ * une valeur publiée par l'Assemblée, `null` est un trou chez nous (§2 règle 5).
+ */
+export const ORDRE_PISTES = [INSTITUTION_PARLEMENT, INSTITUTION_GOUVERNEMENT, INSTITUTION_MISSION];
+
+export const LIBELLE_PISTE = {
+  [INSTITUTION_PARLEMENT]: "À l'Assemblée",
+  [INSTITUTION_GOUVERNEMENT]: 'Au gouvernement',
+  [INSTITUTION_MISSION]: 'Parlementaire en mission',
+};
+
+export function pistesDuParcours(roles, bornes) {
+  if (!roles?.length || !bornes) return [];
+  const pistes = [];
+  for (const institution of ORDRE_PISTES) {
+    const duRole = roles.filter((r) => r.institution === institution);
+    if (!duRole.length) continue;
+    const niveaux = [-Infinity, -Infinity];
+    const segments = duRole
+      .slice()
+      .sort((a, b) => a.debut.localeCompare(b.debut))
+      .map((r) => {
+        const gauche = positionSurAxe(r.debut, bornes);
+        const largeur = Math.max(0.6, positionSurAxe(r.fin, bornes) - gauche);
+        const centre = gauche + largeur / 2;
+        // L'étiquette se replie plutôt que de se chevaucher — jamais elle ne
+        // disparaît : une période non nommée est une période qu'on ne peut pas
+        // dater, et la frise ne sert plus à rien.
+        let niveau = 0;
+        if (centre - niveaux[0] < ECART_MINIMAL_ETIQUETTES) {
+          niveau = centre - niveaux[1] < ECART_MINIMAL_ETIQUETTES ? 0 : 1;
+        }
+        niveaux[niveau] = centre;
+        return {
+          gauche,
+          largeur,
+          centre,
+          niveau,
+          // `position` reste la clé brute — `null` compris, qu'aucun libellé ne
+          // doit transformer en valeur.
+          position: r.position ?? null,
+          motif: motifPosition(r.position),
+          role: r.role,
+          detail: r.detail ?? null,
+          debut: r.debut,
+          fin: r.fin,
+          actif: r.actif,
+        };
+      });
+    pistes.push({
+      institution,
+      libelle: LIBELLE_PISTE[institution],
+      segments,
+      deuxNiveaux: segments.some((s) => s.niveau === 1),
+      // La légende ne liste que les postures RÉELLEMENT présentes : une légende
+      // exhaustive fait chercher au lecteur une nuance que la frise ne porte pas.
+      postures:
+        institution === INSTITUTION_PARLEMENT
+          ? [...new Set(segments.map((s) => s.position))]
+          : [],
+    });
+  }
+  return pistes;
+}
+
+/* ── Une cellule ─────────────────────────────────────────────────────────────
+ *
+ * **Un nombre sans son objet ne dit rien.** « 24 / 67 » — et quoi ? Chaque
+ * cellule nomme donc ce sur quoi elle porte, et SEULS LES NOMBRES sont en gros :
+ * mettre l'objet à la même échelle que le chiffre était le défaut de la
+ * première maquette.
+ *
+ * `absent` n'est pas un vide : c'est un FAIT sur le métier — « un ministre ne
+ * dépose pas d'amendement » — et il se distingue d'une liste vide, qui est un
+ * fait sur la collecte.
+ */
+function cellule({ nombre, objet, sur = null, objetSur = null, quantifieur = null, detail = null, barre = null }) {
+  return { nombre, objet, sur, objetSur, quantifieur, detail, barre };
+}
+
+function celluleAbsente(motif) {
+  return { absent: motif };
+}
+
+/* La barre des stades : une part par stade publié, dans l'ordre de la
+ * procédure. Elle ne porte AUCUN taux — elle montre une forme, et chaque
+ * segment publie son compte (§2 règle 7). */
+function barreDesStades(textes) {
+  const parStade = new Map();
+  for (const t of textes) parStade.set(t.stadeCle, (parStade.get(t.stadeCle) || 0) + 1);
+  const total = textes.length;
+  if (!total) return null;
+  const segments = STADES_PUBLIES.filter((cle) => parStade.has(cle)).map((cle) => ({
+    cle,
+    libelle: LIBELLE_STADE[cle],
+    nombre: parStade.get(cle),
+    part: (parStade.get(cle) / total) * 100,
+  }));
+  return segments.length ? { segments, total } : null;
+}
+
+/* ── Le bloc ─────────────────────────────────────────────────────────────────
+ *
+ * Les cinq lignes sont ordonnées par DEGRÉ D'ENGAGEMENT sur la nature des
+ * actes — porter un texte, l'amender, siéger là où il s'examine, interroger,
+ * parler — jamais sur les personnes.
+ */
+export const RANGS_GRANDS_CHIFFRES = [
+  { cle: 'textes', titre: 'Textes portés' },
+  { cle: 'amendements', titre: 'Amendements' },
+  { cle: 'commissions', titre: 'Mandats en commission' },
+  { cle: 'questions', titre: 'Questions au gouvernement' },
+  { cle: 'interventions', titre: 'Interventions' },
+];
+
+export function grandsChiffres({
+  roles = [],
+  bornes = null,
+  mandats = [],
+  amendements = null,
+  textes = null,
+  interventions = [],
+  appartenances = [],
+}) {
+  const aParlement = roles.some((r) => r.institution === INSTITUTION_PARLEMENT);
+  const aGouvernement = roles.some((r) => r.institution === INSTITUTION_GOUVERNEMENT);
+
+  let cas = CAS_RIEN_A_MONTRER;
+  if (aParlement && aGouvernement) cas = CAS_DEUX_ROLES;
+  else if (aParlement) cas = CAS_PARLEMENT_SEUL;
+  else if (aGouvernement) cas = CAS_GOUVERNEMENT_SEUL;
+
+  const colonnes = [];
+  if (aParlement) colonnes.push(COLONNE_PARLEMENT);
+  if (aGouvernement) colonnes.push(COLONNE_GOUVERNEMENT);
+
+  const pistes = pistesDuParcours(roles, bornes);
+
+  if (cas === CAS_RIEN_A_MONTRER) {
+    // Quatre des treize candidats déclarés n'ont ni mandat parlementaire ni
+    // appartenance gouvernementale — un mandat européen, une mairie. Le bloc
+    // n'a rien à montrer, et il le DIT plutôt que d'afficher cinq tirets :
+    // l'arbitrage sur ces deux formes d'activité est ouvert, pas rendu.
+    return { cas, colonnes, pistes, bornes, lignes: [] };
+  }
+
+  /* Le partage des interventions est DATÉ, jamais global. `depuisLeBancDuGouvernement`
+   * rend une qualité pour tout le profil ; ici il faut savoir, pour chaque prise
+   * de parole, de quel banc elle vient — c'est la date d'appartenance qui le dit,
+   * et rien d'autre. Une intervention sans date n'est attribuée à aucun banc. */
+  const auBanc = (date) =>
+    Boolean(date) && appartenances.some((a) => a.debut <= date && date <= (a.fin || '9999-12-31'));
+
+  const cotes = {
+    [COLONNE_PARLEMENT]: interventions.filter((i) => !auBanc(i.date)),
+    [COLONNE_GOUVERNEMENT]: interventions.filter((i) => auBanc(i.date)),
+  };
+
+  const lignes = [];
+
+  // 1. Textes portés — le RÔLE publié range le texte (#689), jamais son intitulé :
+  //    313 des 414 entrées publiées par les 13 candidats déclarés sont des projets
+  //    de loi portés au nom du gouvernement, qui ne sont pas un acte personnel.
+  //
+  //    Les rôles sont nommés un par un plutôt que repliés sur l'institution :
+  //    être RAPPORTEUR d'une proposition n'est pas en être l'auteur, et « 3
+  //    propositions de loi » pour 2 propositions et 1 rapport serait faux.
+  const publies = textes?.publies ?? [];
+  const ROLES_PROPOSITION = ['auteur_proposition_de_loi', 'auteur_proposition_de_resolution'];
+  const propositions = publies.filter((t) => ROLES_PROPOSITION.includes(t.roleCle));
+  const projets = publies.filter((t) => t.roleCle === 'initiateur_projet_de_loi');
+  const autresRoles = publies.filter(
+    (t) => !ROLES_PROPOSITION.includes(t.roleCle) && t.roleCle !== 'initiateur_projet_de_loi',
+  );
+  // Ce que le seuil de publication écarte SE DIT. AGENTS.md §6 ne publie par
+  // défaut qu'un texte parvenu au moins en commission ; taire les autres ferait
+  // lire « 2 » comme « il n'en a déposé que 2 » (§2 règle 5).
+  const ecartes = textes?.ecartes?.total ?? 0;
+  const detailTextes = [
+    autresRoles.length
+      ? `${formatNumber(autresRoles.length)} ${pluriel(autresRoles.length, 'texte porté à un autre titre', 'textes portés à un autre titre')} (${[...new Set(autresRoles.map((t) => t.role))].join(', ')})`
+      : null,
+    ecartes
+      ? `${formatNumber(ecartes)} ${pluriel(ecartes, 'texte déposé n’est pas compté', 'textes déposés ne sont pas comptés')} : la fiche ne publie que ce qui est parvenu au moins en commission`
+      : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+  const celluleTextes = (lot, objet, detail) =>
+    lot.length
+      ? cellule({ nombre: lot.length, objet, barre: barreDesStades(lot), detail: detail || null })
+      : null;
+  lignes.push({
+    cle: 'textes',
+    titre: 'Textes portés',
+    cellules: {
+      [COLONNE_PARLEMENT]: celluleTextes(propositions, 'propositions de loi', detailTextes),
+      [COLONNE_GOUVERNEMENT]: celluleTextes(projets, 'projets de loi', null),
+    },
+  });
+
+  // 2. Amendements. Le COUPLE dépôts / dossiers, jamais le compte seul : deux
+  //    nombres qui varient en sens inverse appellent une lecture, un nombre seul
+  //    appelle un classement (§2 règle 1).
+  const d = amendements?.dossiers ?? null;
+  const totalAuteur = amendements?.totalAuteur ?? 0;
+  let celluleAmendements = null;
+  if (totalAuteur > 0) {
+    // La CONCENTRATION ne s'affirme que là où elle se prouve : ce dossier doit
+    // porter plus que tous les autres réunis. Aucune constante arbitraire —
+    // c'est un fait, pas un seuil. Un percentile a été essayé et écarté : il
+    // sélectionne toujours 10 % des dossiers, donc il ne peut JAMAIS se taire.
+    const tete = (d?.nommes ?? []).slice().sort((a, b) => (b.depots ?? 0) - (a.depots ?? 0))[0] ?? null;
+    const concentre = tete && tete.depots * 2 > totalAuteur ? tete : null;
+    celluleAmendements = cellule({
+      nombre: totalAuteur,
+      objet: 'amendements sur',
+      sur: d?.distincts ?? null,
+      objetSur: 'dossiers législatifs',
+      quantifieur: concentre
+        ? { nombre: concentre.depots, texte: `d’entre eux sur « ${concentre.titre} »` }
+        : null,
+      // Les dossiers se listent PAR DATE, jamais par volume : déposer beaucoup
+      // sur un texte peut être un travail de fond comme une stratégie de
+      // blocage, et le nombre ne les distingue pas.
+      detail: null,
+      barre: null,
+    });
+  }
+  lignes.push({
+    cle: 'amendements',
+    titre: 'Amendements',
+    cellules: {
+      [COLONNE_PARLEMENT]: celluleAmendements,
+      [COLONNE_GOUVERNEMENT]: celluleAbsente('un ministre ne dépose pas d’amendement'),
+    },
+  });
+
+  // 3. Mandats en commission. Le NOMBRE DE MANDATS et le nombre de commissions
+  //    DISTINCTES ne disent pas la même chose : 67 mandats sur 14 commissions,
+  //    c'est une réélection, pas une dispersion.
+  const commissions = mandats.filter((m) => m.categorie === 'commission' && m.label);
+  const parCommission = new Map();
+  for (const m of commissions) parCommission.set(m.label, (parCommission.get(m.label) || 0) + 1);
+  const classees = [...parCommission.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'fr'));
+  lignes.push({
+    cle: 'commissions',
+    titre: 'Mandats en commission',
+    cellules: {
+      [COLONNE_PARLEMENT]: classees.length
+        ? cellule({
+            nombre: classees[0][1],
+            objet: 'mandats sur',
+            sur: commissions.length,
+            objetSur: `à la ${classees[0][0]}`,
+            quantifieur: { nombre: parCommission.size, texte: pluriel(parCommission.size, 'commission distincte', 'commissions distinctes') },
+          })
+        : null,
+      [COLONNE_GOUVERNEMENT]: celluleAbsente('un ministre ne siège pas en commission'),
+    },
+  });
+
+  // 4. Questions au gouvernement. LE MÊME OBJET DE CHAQUE CÔTÉ, et deux actes
+  //    opposés : on la pose depuis les bancs, on y répond depuis le banc. Les
+  //    deux ne s'additionnent pas et ne se comparent pas.
+  const qg = (cote) => cotes[cote].filter((i) => i.type_detail === 'question_gouvernement');
+  const celluleQuestions = (cote, objet) => {
+    const lot = qg(cote);
+    if (!lot.length) return null;
+    const sujets = new Set(lot.map((i) => i.sujet).filter(Boolean));
+    return cellule({
+      nombre: lot.length,
+      objet,
+      quantifieur: sujets.size
+        ? { nombre: sujets.size, texte: pluriel(sujets.size, 'sujet distinct', 'sujets distincts') }
+        : null,
+    });
+  };
+  lignes.push({
+    cle: 'questions',
+    titre: 'Questions au gouvernement',
+    cellules: {
+      [COLONNE_PARLEMENT]: celluleQuestions(COLONNE_PARLEMENT, 'posées'),
+      [COLONNE_GOUVERNEMENT]: celluleQuestions(COLONNE_GOUVERNEMENT, 'prises de parole depuis le banc'),
+    },
+  });
+
+  // 5. Interventions. « SITUÉES » porte la limite sans phrase : le chiffre se
+  //    rapporte aux interventions dont le compte rendu donne un point de l'ordre
+  //    du jour, pas à toutes. Chaque colonne compte contre SON propre total.
+  const celluleInterventions = (cote) => {
+    const lot = cotes[cote];
+    if (!lot.length) return null;
+    const situees = lot.filter((i) => i.sujet);
+    if (!situees.length) return null;
+    const parSujet = new Map();
+    for (const i of situees) parSujet.set(i.sujet, (parSujet.get(i.sujet) || 0) + 1);
+    const classes = [...parSujet.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'fr'));
+    return cellule({
+      nombre: classes[0][1],
+      objet: 'sur',
+      sur: situees.length,
+      objetSur: `situées, dont « ${classes[0][0]} »`,
+      quantifieur: {
+        nombre: parSujet.size,
+        texte: `${pluriel(parSujet.size, 'sujet distinct', 'sujets distincts')} sur ${formatNumber(lot.length)} interventions`,
+      },
+    });
+  };
+  lignes.push({
+    cle: 'interventions',
+    titre: 'Interventions',
+    cellules: {
+      [COLONNE_PARLEMENT]: celluleInterventions(COLONNE_PARLEMENT),
+      [COLONNE_GOUVERNEMENT]: celluleInterventions(COLONNE_GOUVERNEMENT),
+    },
+  });
+
+  // Une ligne dont AUCUNE colonne ne porte de chiffre ne s'affiche pas : cinq
+  // rangs vides ne décrivent pas une personne, ils décrivent le gabarit.
+  const retenues = lignes.filter((l) => colonnes.some((c) => l.cellules[c] && !l.cellules[c].absent));
+
+  return { cas, colonnes, pistes, bornes, lignes: retenues };
+}
+
 /* ── Livrable : ce qu'on n'a pas pu lire ─────────────────────────────────────
  *
  * `couverture` porte la cause sur 481 / 481 profils. Les états ne disent pas la
