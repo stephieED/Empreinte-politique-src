@@ -508,7 +508,13 @@ def test_un_membre_sans_slug_est_declare_jamais_absent(actif):
 
     La chaîne aval (`build_roster_candidats_detaille`) ignore un membre sans
     slug : le rendre ici, nommé et daté, est ce qui empêche la perte
-    silencieuse — et c'est exactement ce qui explique les 4 écarts de la 16e.
+    silencieuse.
+
+    Depuis #708 la porte d'entrée existe, donc ce que le rapport doit garantir
+    n'est plus « la liste est non vide » mais **la partition** : tout membre est
+    dans exactement une des deux listes ou porte un slug relu. Une fabrication
+    qui viderait `membres_sans_slug` par construction supprimerait le compteur
+    de #527 au lieu de le satisfaire — c'est ce que ce test refuse.
     """
     membres, rapport = _roster("LR", "16")
     sans_slug_mesure = [m for m in membres if not m["slug"]]
@@ -518,17 +524,36 @@ def test_un_membre_sans_slug_est_declare_jamais_absent(actif):
     }
     for entree in rapport["membres_sans_slug"]:
         assert entree["nom"], "un membre non résolu est nommé, jamais un simple identifiant"
-        assert set(entree) >= {"acteur_ref", "nom", "mandat_debut", "mandat_fin", "organes_an"}
+        assert set(entree) >= {
+            "acteur_ref", "nom", "mandat_debut", "mandat_fin", "organes_an", "motif",
+        }
+        assert entree["motif"] in an_roster.MOTIFS_SLUG_NON_ATTRIBUE
+
+    # La partition, sur le roster entier : personne ne sort par une porte que
+    # le rapport ne nomme pas.
+    nommes = {m["acteur_ref"] for m in rapport["membres_sans_slug"]}
+    nommes |= {m["acteur_ref"] for m in rapport["membres_slug_fabrique"]}
+    nommes |= {m["acteur_ref"] for m in membres if m.get("slug_origine") == "table"}
+    assert nommes == {m["acteur_ref"] for m in membres}
 
 
 def test_le_slug_du_lot_2_est_lu_a_lenvers(actif):
-    """La table `acteur_ref → slug` est celle de #525, sans arbitrage."""
+    """La table `acteur_ref → slug` est celle de #525, sans arbitrage.
+
+    Elle passe **devant** la fabrication de #708 : là où elle a une entrée,
+    c'est elle qui décide, et `slug_origine` le dit.
+    """
     table = json.loads(CORRESPONDANCE.read_text(encoding="utf-8"))["correspondances"]
     attendu = {e["acteur_ref"]: s for s, e in table.items() if e.get("acteur_ref")}
     membres, _ = _roster("LR", "16")
+    relus = [m for m in membres if m["acteur_ref"] in attendu]
+    assert relus, "la fixture couvre au moins un membre LR"
+    for membre in relus:
+        assert membre["slug"] == attendu[membre["acteur_ref"]]
+        assert membre["slug_origine"] == "table"
     for membre in membres:
-        assert membre["slug"] == attendu.get(membre["acteur_ref"])
-    assert any(m["slug"] for m in membres), "la fixture couvre au moins un membre LR"
+        if membre["acteur_ref"] not in attendu:
+            assert membre["slug_origine"] in (None, "fabrique")
 
 
 # --------------------------------------------------------------------------

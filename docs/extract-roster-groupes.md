@@ -81,14 +81,19 @@ membres), pas seulement les candidats déclarés/pressentis. Voir
 
 **Depuis #700 la configuration porte deux législatures AN** (5 groupes XVIe +
 5 groupes XVIIe), donc **deux clés de fetch** — `("deputes", "16")` et
-`("deputes", "17")` — lues dans la même archive AMO30. Un membre **sans slug**
-dans `raw_data/correspondance_acteurs_an.json` reste hors du roster de
-candidats : `build_roster_candidats_detaille` le laisse tomber, `ROSTER_SANS_SLUG`
-le nomme, et rien n'en invente un (#525). Les 5 groupes de la XVIIe comptent
-**156 membres sans slug sur 461** ; les 304 slugs distincts restants ont tous
-déjà un profil, ce qui rend l'ajout **neutre en collecte** et fait passer le
-roster de 452 à 453 candidats.
-→ `docs/decisions/fiches-groupe-17e-legislature-700.md`
+`("deputes", "17")` — lues dans la même archive AMO30. **Depuis #708 ce n'est plus vrai** : les 5 groupes de la XVIIe comptaient
+**156 entrées écartées sur 461** faute d'entrée dans
+`raw_data/correspondance_acteurs_an.json`, et c'était une **circularité** — la
+table est bâtie sur les profils publiés. `an_roster.resoudre_slugs` fabrique
+désormais le slug d'un acteur qu'aucune entrée ne couvre
+(`text_utils.slugify` de l'état civil AMO30), **la table passant toujours
+devant** : les 156 entrent, l'annotation `ROSTER_SLUG_FABRIQUE` les compte, et
+`ROSTER_SANS_SLUG` ne compte plus que les **collisions** non tranchées (0
+mesurée le 02/09/2026). L'ajout n'est donc plus neutre en collecte : ~1,07 à
+1,44 Gio de profils bruts, mesurés par tranche de législature (#580) et non
+extrapolés.
+→ `docs/decisions/slug-fabrique-membre-de-roster-708.md`,
+`docs/decisions/fiches-groupe-17e-legislature-700.md`
 
 ---
 
@@ -280,14 +285,19 @@ flowchart TD
    d'entrée que `raw_data/candidats.json` (`{"candidats": [...]}`) —
    `statut: "roster_groupe"`, `notes` référençant le groupe d'origine.
    Un membre **sans slug** ne peut alimenter aucun profil (`<slug>.pivot.json`
-   *est* le nom du fichier, #487) : il est donc écarté, mais **nommé** depuis
-   #527 — groupe, état civil, dates de mandat, sur `stderr` et en annotation
-   `::warning::` (`ROSTER_SANS_SLUG`). Le cas n'existait pas avec NosDéputés,
-   dont le slug est l'identifiant ; AMO30 publie un `PA######`, et le slug
-   vient de la table committée du lot 2 (#525). Non bloquant : les 4 de la 16e
-   sont une catégorie fermée, datée et déclarée dans `groupes_reels.json`
-   (`correspondance_sigles_an[].ecart_membres`). Ce qui doit être bruyant,
-   c'est leur nombre s'il bouge.
+   *est* le nom du fichier, #487). Le slug vient de la table committée du lot 2
+   (#525) ; **depuis #708**, un acteur qu'elle ne couvre pas en reçoit un
+   fabriqué — `text_utils.slugify` de l'état civil AMO30, la table gardant la
+   priorité absolue pour que le slug d'une personne déjà collectée ne bouge pas
+   avec son nom d'usage. Deux annotations, et elles ne disent pas la même
+   chose : `ROSTER_SLUG_FABRIQUE` (`::notice::`) nomme **qui entre par une
+   porte que personne n'a relue**, `ROSTER_SANS_SLUG` (`::warning::`, posée par
+   #527) nomme **qui reste dehors** — désormais les seules **collisions** :
+   slug déjà porté par quelqu'un d'autre, homonymie AMO30, état civil
+   inslugifiable. Aucune des deux ne bloque : une collision se tranche à la
+   main dans la table, et la §5b du portail refuse de toute façon de publier un
+   profil dont l'entrée n'est pas relue. Ce qui doit être bruyant, c'est leur
+   nombre s'il bouge.
 5. **Rien n'est écrit si la collecte est incomplète (#511)** : un fetch en
    échec, un groupe configuré rendant 0 membre, ou un roster total vide font
    sortir le script en 1 sans toucher au fichier. Un `Read timed out` avait

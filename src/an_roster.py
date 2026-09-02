@@ -88,14 +88,57 @@ et la période est celle de la **législature demandée**, pas de la carrière.
 Une modification de `_fusionner_periodes` ou du filtre de transit change
 désormais une date publiée, pas seulement une liste de membres.
 
-## Le slug vient du lot 2, et son absence est déclarée
+## Le slug : la table d'abord, la fabrication ensuite (#708)
 
 AMO30 ne publie aucun identifiant externe : le slug — qui **est** l'`id` du
-profil (#487) — vient de `raw_data/correspondance_acteurs_an.json` (#525),
-lue à l'envers (`acteur_ref → slug`). Un acteur sans entrée sort avec
-`slug: None` **et** dans `membres_sans_slug` du rapport : jamais absent, jamais
-inventé (AGENTS §2 règle 5). C'est ce qui explique, entrée par entrée, les
-écarts de la 16e — voir `rapport_divergence()`.
+profil (#487) — vient d'abord de `raw_data/correspondance_acteurs_an.json`
+(#525), lue à l'envers (`acteur_ref → slug`). C'est elle qui explique, entrée
+par entrée, les écarts de la 16e — voir `rapport_divergence()`.
+
+Jusqu'à #708, un acteur **sans** entrée sortait avec `slug: None` et rien ne
+pouvait lui en donner un : la table est construite depuis les profils
+**publiés** (`build_correspondance_acteurs_an._slugs_publies`), donc il fallait
+un profil pour avoir un slug et un slug pour avoir un profil. Personne ne
+pouvait entrer. Inoffensif tant que NosDéputés servait le roster **avec** ses
+slugs ; muet depuis que #527 a basculé la source sur AMO30. Mesuré le
+02/09/2026 sur les 5 rosters de la 17e : **156 des 461** entrées écartées,
+33,8 %, `SOC-17` le plus touché avec **41 écartées sur 70** (29 seulement y
+avaient une entrée de table).
+
+`resoudre_slugs()` ouvre la porte d'entrée, et une seule : un acteur sans
+entrée de table reçoit `slugify(état civil AMO30)`, **la fonction qui fabrique
+déjà tous les autres slugs du dépôt** (`text_utils.slugify`) — il n'y a pas
+deux façons d'en fabriquer un. Ce n'est pas « combler la table » : #525 refuse
+de réécrire une correspondance **relue**, et ce refus tient. Fabriquer
+l'identifiant d'un membre que personne n'a jamais collecté est l'opération
+inverse — il n'y a pas de relecture à contredire, il n'y a rien du tout.
+
+Trois cas ne reçoivent **jamais** de slug fabriqué, et sortent nommés dans
+`membres_sans_slug` avec leur `motif` (`MOTIFS_SLUG_NON_ATTRIBUE`) :
+
+- `nom_absent` — l'état civil AMO30 ne donne rien à slugifier ;
+- `slug_deja_publie` — le slug visé appartient déjà à **quelqu'un d'autre**
+  dans la table (`acteur_ref` différent, ou `hors_an` déclaré) ;
+- `homonymie_amo30` — deux acteurs AMO30 sans entrée visent le même slug.
+
+Attribuer l'un de ces trois en silence, c'est écrire les votes d'une personne
+dans le profil d'une autre : le défaut de clé collante de #540, sur le seul
+identifiant que le dépôt possède. Ils se tranchent à la main, dans la table,
+comme les 10 résidus de #525.
+
+**Le slug d'une personne ne bouge pas quand son nom bouge.** La table passe
+**devant** la fabrication, sans exception : dès qu'un acteur y a une entrée,
+son slug en vient, quoi que dise l'état civil du jour — et #525 mesure que 4
+des 10 écarts sont des noms d'usage. Ce qui rend la garantie effective plutôt
+que verbale, c'est la §5b de `check_quality_gate.py` : un profil publié sans
+entrée de table **bloque le commit**, seuil 0. Un profil ne peut donc pas être
+publié avant que son slug soit gelé dans la table, et la fenêtre où la
+fabrication décide est celle d'un run non commité.
+
+La résolution porte sur **tous** les acteurs de l'index GP, jamais sur les
+seuls membres du groupe demandé : un identifiant qui dépendrait des groupes
+présents dans la config changerait de valeur le jour où la config change
+(#487, #668).
 
 ## Patron #493 : dérivé + divergence déclarée + condition de retrait
 
@@ -128,6 +171,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import correspondance_acteurs_an  # noqa: E402
 from schema_groupe import resumer_position_politique  # noqa: E402
 from schema_pivot import POSITION_POLITIQUE_AN_VERS_PIVOT  # noqa: E402
+from text_utils import slugify  # noqa: E402
 
 
 # ── Le drapeau (patron #510) ─────────────────────────────────────────────────
@@ -236,6 +280,26 @@ TYPE_ORGANE_GP = "GP"
 #: jour où les groupes se constituent. `date_constitution_groupes()` l'exclut
 #: pour cette raison, jamais pour ce qu'il représente politiquement.
 SIGLE_NON_INSCRIT = "NI"
+
+#: D'où vient le slug d'un membre de roster (#708). Vocabulaire **fermé**, au
+#: patron des `KNOWN_*` du schéma pivot : on étend le frozenset, on ne le
+#: contourne pas.
+#:
+#: - `table` — `raw_data/correspondance_acteurs_an.json`, relue et prouvée
+#:   (#525). Elle passe toujours devant : un slug déjà relu ne se refabrique
+#:   pas, même si l'état civil AMO30 a changé depuis.
+#: - `fabrique` — `slugify(état civil AMO30)`, la porte d'entrée d'un membre
+#:   que personne n'a jamais collecté. Provisoire par nature : la §5b du
+#:   contrôle qualité exige l'entrée de table avant toute publication.
+ORIGINES_SLUG = frozenset({"table", "fabrique"})
+
+#: Pourquoi un acteur ne reçoit **aucun** slug — les trois seuls cas, chacun
+#: nommé et compté dans `membres_sans_slug` (#708, AGENTS §2 règle 5).
+MOTIFS_SLUG_NON_ATTRIBUE = frozenset({
+    "nom_absent",        # AMO30 ne rend pas d'état civil à slugifier
+    "slug_deja_publie",  # le slug visé appartient à un AUTRE acteur dans la table
+    "homonymie_amo30",   # deux acteurs sans entrée de table visent le même slug
+})
 
 # Mémo intra-process indexé par CHEMIN de l'archive, jamais par nom logique :
 # les tests règlent leur propre archive par cas et un mémo global ferait fuiter
@@ -688,12 +752,114 @@ def _index_slug_par_acteur(chemin_correspondance: Optional[Path] = None) -> dict
     }
 
 
+def _slugs_pris(chemin_correspondance: Optional[Path] = None) -> dict[str, Optional[str]]:
+    """`slug → acteur_ref` — la table du lot 2 lue **à l'endroit** (#708).
+
+    Sert au seul contrôle de collision, et porte donc aussi les entrées dont
+    l'`acteur_ref` est `null` : `jordan-bardella` est déclaré `hors_an`, donc
+    ce slug appartient à quelqu'un qui n'est **pas** un acteur AMO30. Un acteur
+    AMO30 qui viserait ce slug est soit une autre personne, soit une
+    déclaration périmée — dans les deux cas, ça se relit, ça ne s'attribue pas.
+
+    L'ensemble des slugs de la table **est** l'ensemble des slugs publiés : la
+    §5b de `check_quality_gate.py` bloque le commit, seuil 0, sur tout profil
+    publié sans entrée. C'est ce qui autorise ce module à contrôler la
+    collision sans jamais lire `pivot_data/` (AGENTS §3b).
+    """
+    table = correspondance_acteurs_an.charger_correspondance(chemin_correspondance)
+    return {slug: entree.get("acteur_ref") for slug, entree in table.items()}
+
+
+def resoudre_slugs(
+    index: dict[str, Any],
+    chemin_correspondance: Optional[Path] = None,
+) -> tuple[dict[str, str], dict[str, str], list[dict[str, Any]]]:
+    """`acteur_ref → slug` pour **tous** les acteurs de l'index GP (#708).
+
+    Returns:
+        `(slugs, origines, non_attribues)` — `slugs` et `origines` ont les
+        mêmes clés (`origines[ref]` ∈ `ORIGINES_SLUG`) ; `non_attribues` liste,
+        nommés, les acteurs à qui aucun slug n'a été donné, chacun avec son
+        `motif` (`MOTIFS_SLUG_NON_ATTRIBUE`) et ce qui bloque.
+
+    La table passe **devant**, sans exception : c'est ce qui fait qu'un
+    changement de nom d'usage ne déplace pas l'identifiant d'une personne déjà
+    collectée. La fabrication ne s'applique qu'à un acteur dont personne n'a
+    jamais relu la correspondance — un membre **nouveau**, pas une entrée à
+    réécrire (#525 §5, dont le refus de combler reste entier).
+
+    L'univers de collision est l'index **entier**, pas les membres du groupe
+    demandé : un identifiant dont la valeur dépendrait de la config changerait
+    le jour où la config change, ce qui est le défaut de #487 et de #668.
+
+    Fonction pure vis-à-vis du réseau : un index déjà chargé, un fichier
+    committé, rien d'autre.
+    """
+    slugs = dict(_index_slug_par_acteur(chemin_correspondance))
+    origines = {ref: "table" for ref in slugs}
+    pris = _slugs_pris(chemin_correspondance)
+    non_attribues: list[dict[str, Any]] = []
+
+    #: `slug visé → [acteur_ref]`, pour voir l'homonymie avant de l'attribuer.
+    vises: dict[str, list[str]] = {}
+    for acteur_ref in sorted(index.get("acteurs") or {}):
+        if acteur_ref in slugs:
+            continue
+        nom = index["acteurs"].get(acteur_ref)
+        slug = slugify(nom or "")
+        if not slug:
+            non_attribues.append({
+                "acteur_ref": acteur_ref,
+                "nom": nom,
+                "slug_vise": None,
+                "motif": "nom_absent",
+                "detail": "AMO30 ne rend aucun état civil slugifiable pour cet acteur.",
+            })
+            continue
+        vises.setdefault(slug, []).append(acteur_ref)
+
+    for slug, refs in sorted(vises.items()):
+        if slug in pris:
+            for acteur_ref in refs:
+                non_attribues.append({
+                    "acteur_ref": acteur_ref,
+                    "nom": index["acteurs"].get(acteur_ref),
+                    "slug_vise": slug,
+                    "motif": "slug_deja_publie",
+                    "detail": (
+                        f"{slug} appartient déjà à {pris[slug] or 'un slug déclaré hors AN'} "
+                        "dans raw_data/correspondance_acteurs_an.json."
+                    ),
+                })
+            continue
+        if len(refs) > 1:
+            for acteur_ref in refs:
+                autres = [r for r in refs if r != acteur_ref]
+                non_attribues.append({
+                    "acteur_ref": acteur_ref,
+                    "nom": index["acteurs"].get(acteur_ref),
+                    "slug_vise": slug,
+                    "motif": "homonymie_amo30",
+                    "detail": (
+                        f"{len(refs)} acteurs AMO30 visent {slug} : "
+                        + ", ".join(autres)
+                        + "."
+                    ),
+                })
+            continue
+        slugs[refs[0]] = slug
+        origines[refs[0]] = "fabrique"
+
+    return slugs, origines, non_attribues
+
+
 def deriver_membres_organes(
     index: dict[str, Any],
     organe_refs: Iterable[str],
     legislature: str,
     slug_par_acteur: dict[str, str],
     groupe_sigle_publie: str,
+    origine_par_acteur: Optional[dict[str, str]] = None,
 ) -> list[dict[str, Any]]:
     """Membres de l'**union** de ces organes, filtrés par dates, dédupliqués.
 
@@ -702,7 +868,13 @@ def deriver_membres_organes(
     ce qui permet de relire l'entrée (`acteur_ref`, `sigles_an`, `organes_an`,
     `legislature`). Trié par `acteur_ref` : la sortie d'un run doit être
     comparable à celle du précédent sans passer par un tri d'appelant.
+
+    `origine_par_acteur` (#708) estampille `slug_origine` — `table` ou
+    `fabrique`, `ORIGINES_SLUG`. `None` quand l'appelant ne l'a pas résolu :
+    l'absence de la clé dit « personne ne l'a déclaré », jamais « table »
+    (AGENTS §2 règle 5, le même arbitrage que `destinataire` en #642).
     """
+    origine_par_acteur = origine_par_acteur or {}
     constitution = date_constitution_groupes(index, legislature)
     par_acteur: dict[str, dict[str, Any]] = {}
 
@@ -718,6 +890,7 @@ def deriver_membres_organes(
                 {
                     "acteur_ref": acteur_ref,
                     "slug": slug_par_acteur.get(acteur_ref),
+                    "slug_origine": origine_par_acteur.get(acteur_ref),
                     "nom": index["acteurs"].get(acteur_ref),
                     "groupe_sigle": groupe_sigle_publie,
                     "legislature": str(legislature),
@@ -757,13 +930,21 @@ def deriver_roster_groupe(
 
     Returns:
         `(membres, rapport)`. `rapport` porte `membres_sans_slug` (nommés, avec
-        leurs dates de mandat), `organes_attendus` / `organes_trouves` (le
-        fil-piège de la table) et `effectif_attendu` / `effectif_mesure`.
+        leurs dates de mandat et leur `motif`), `membres_slug_fabrique` (#708),
+        `organes_attendus` / `organes_trouves` (le fil-piège de la table) et
+        `effectif_attendu` / `effectif_mesure`.
 
     Le rapport n'est pas décoratif : un membre sans slug est un membre que la
     chaîne aval laisserait tomber sans un mot (`build_roster_candidats_detaille`
     ignore un membre sans slug). Le rendre ici est ce qui empêche le trou muet
     de #510 de se rouvrir ailleurs.
+
+    Depuis #708 les deux listes sont à lire ensemble, et aucune n'est
+    redondante : `membres_slug_fabrique` dit **qui entre par une porte que
+    personne n'a relue**, `membres_sans_slug` dit **qui reste dehors et
+    pourquoi**. Ramener la seconde à zéro par construction — ce que ferait une
+    fabrication sans contrôle de collision — reviendrait à supprimer le
+    compteur que #527 avait posé, pas à le satisfaire.
 
     Raises:
         RosterAnInactif: drapeau baissé.
@@ -773,11 +954,19 @@ def deriver_roster_groupe(
     _exiger_actif()
     entree = entree_correspondance(groupe_sigle, legislature, chemin_config)
     index = charger_index_gp(zip_path)
-    slug_par_acteur = _index_slug_par_acteur(chemin_correspondance)
+    slug_par_acteur, origine_par_acteur, non_attribues = resoudre_slugs(
+        index, chemin_correspondance
+    )
+    motif_par_acteur = {n["acteur_ref"]: n for n in non_attribues}
 
     organes_trouves = organes_du_groupe(index, legislature, entree["sigles_an"])
     membres = deriver_membres_organes(
-        index, organes_trouves, legislature, slug_par_acteur, groupe_sigle
+        index,
+        organes_trouves,
+        legislature,
+        slug_par_acteur,
+        groupe_sigle,
+        origine_par_acteur,
     )
 
     sans_slug = [
@@ -787,9 +976,26 @@ def deriver_roster_groupe(
             "mandat_debut": m["mandat_debut"],
             "mandat_fin": m["mandat_fin"],
             "organes_an": m["organes_an"],
+            # Le motif vient de `resoudre_slugs`, jamais d'une reconstitution
+            # ici : deux endroits qui décident du même verdict finissent par ne
+            # plus dire la même chose.
+            "motif": (motif_par_acteur.get(m["acteur_ref"]) or {}).get("motif"),
+            "slug_vise": (motif_par_acteur.get(m["acteur_ref"]) or {}).get("slug_vise"),
+            "detail": (motif_par_acteur.get(m["acteur_ref"]) or {}).get("detail"),
         }
         for m in membres
         if not m["slug"]
+    ]
+    fabriques = [
+        {
+            "acteur_ref": m["acteur_ref"],
+            "nom": m["nom"],
+            "slug": m["slug"],
+            "mandat_debut": m["mandat_debut"],
+            "mandat_fin": m["mandat_fin"],
+        }
+        for m in membres
+        if m["slug"] and m.get("slug_origine") == "fabrique"
     ]
     rapport = {
         "groupe_sigle": groupe_sigle,
@@ -801,6 +1007,7 @@ def deriver_roster_groupe(
         "effectif_attendu": entree.get("effectif_amo30"),
         "effectif_mesure": len(membres),
         "membres_sans_slug": sans_slug,
+        "membres_slug_fabrique": fabriques,
     }
     return membres, rapport
 
@@ -977,10 +1184,21 @@ def _afficher_rapport_divergence(rapport: dict[str, Any]) -> None:
             )
         for slug in divergence["publie_seulement"]:
             print(f"   - publié seul : {slug}")
-        for m in divergence["sans_slug"]:
+        if r["membres_slug_fabrique"]:
             print(
-                f"   ? sans slug : {m['acteur_ref']} ({m['nom']}) "
-                f"{m['mandat_debut']} → {m['mandat_fin']}"
+                f"   ~ slug fabriqué (#708) : {len(r['membres_slug_fabrique'])} "
+                "membre(s) entrent par slugify(état civil AMO30) — leur entrée "
+                "de correspondance reste à relire avant publication (gate §5b)."
+            )
+        # `divergence["sans_slug"]` et `r["membres_sans_slug"]` sont la MÊME
+        # population (`not m["slug"]`) : une seule ligne par personne, celle qui
+        # porte le motif. Deux lignes pour un refus, c'est un opérateur qui
+        # cherche laquelle des deux fait foi.
+        for m in r["membres_sans_slug"]:
+            print(
+                f"   ✗ slug non attribué : {m['acteur_ref']} ({m['nom']}) "
+                f"{m['mandat_debut']} → {m['mandat_fin']} "
+                f"— {m['motif']} : {m['detail']}"
             )
     if rapport["non_publies"]:
         print(f"→ non publiés (périmètre) : {', '.join(rapport['non_publies'])}")
@@ -1119,6 +1337,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     print(
         f"→ {rapport['effectif_mesure']} membre(s) pour {args.sigle} "
         f"(législature {args.legislature}), "
+        f"{len(rapport['membres_slug_fabrique'])} slug(s) fabriqué(s) (#708), "
         f"{len(rapport['membres_sans_slug'])} sans slug.",
         file=sys.stderr,
     )
