@@ -16,15 +16,14 @@ import '../styles/shell.css';
 import './CandidateProfile.css';
 import { BadgeSource, Interdits, ListeVide, PositionVote } from './Lecture';
 import { OUTCOME_COLOR, WHOLE_TEXT_VOTE_BOUND, formatNumber } from '../utils/lecture';
+import { Fragment } from 'react';
 import {
+  CAS_RIEN_A_MONTRER,
   INSTITUTION_GOUVERNEMENT,
   INSTITUTION_MISSION,
   INSTITUTION_PARLEMENT,
-  LIBELLE_ROLE_ABSENT,
-  LIBELLE_ROLE_POINT,
+  LIBELLE_PISTE,
   POSITION_NON_DECLAREE,
-  RENDU_COUPLE,
-  RENDU_PODIUM,
   SORT_NON_PUBLIE,
   libellePosition,
   motifPosition,
@@ -827,121 +826,189 @@ function Couverture({ couverture, limites }) {
   );
 }
 
-/* ── § L'essentiel — un point, rendu selon son cas ───────────────────────────
+/* ── § Les grands chiffres — la frise commande les colonnes ──────────────────
  *
- * « Ne pas se mettre de contrainte à utiliser la même solution pour chacun des
- * points » : la forme suit le cas. Trois rendus, et le choix est justifié point
- * par point dans `utils/profilCandidat.js`.
+ * Le bloc de tête (#328). La FRISE est l'ossature : une piste par rôle, une
+ * colonne par rôle, et la couleur fait le lien — une piste et sa colonne portent
+ * la même. Bleu contre bronze : c'est le seul couple qui survive au daltonisme
+ * rouge-vert, et ni l'un ni l'autre ne se lit comme positif ou négatif. Ce sont
+ * deux métiers, pas deux notes.
  *
- * Aucun jaune signal nulle part ici : DESIGN_SYSTEM §3 le réserve à la
- * sélection, à l'action et à la source vérifiée. Un filet jaune sous une
- * répartition lui ferait dire « regardez ça », c'est-à-dire un jugement.
+ * La POSTURE est en motifs, pas en couleur, parce que la couleur code déjà le
+ * rôle. Le vert et le rouge sont pris par les positions de vote, le jaune signal
+ * par la sélection et la source vérifiée (`DESIGN_SYSTEM` §2).
  */
-
-/* Répartition en barre — les trois premières commissions saisies au fond.
- *
- * UN SEUL TON pour les trois segments, séparés par un filet : deux commissions
- * à égalité doivent produire deux segments IDENTIQUES. Les teinter par rang
- * placerait les commissions sur une échelle, ce que la fiche de groupe a
- * précisément retiré en #329 (§2 règle 1).
- *
- * Les segments sont proportionnels au décompte réel sur le TOTAL des dossiers,
- * jamais normalisés à 100 % : ce qui reste — autres commissions, dossiers sans
- * commission publiée — reste visible comme du vide, et la légende le chiffre.
- */
-function Repartition({ repartition }) {
-  const { titre, segments, total, reste, sansCommission } = repartition;
+function PisteFrise({ piste }) {
+  const hauteur = piste.deuxNiveaux ? 40 : 22;
   return (
-    <span className="cp-point-repartition">
-      <span className="cp-point-repartition-titre">{titre}</span>
-      <span className="cp-barre cp-barre--sombre">
-        {segments.map((s) => (
+    <div className={`cp-gc-piste cp-gc-piste--${piste.institution}`}>
+      <span className="cp-gc-piste-nom">
+        <i />
+        {piste.libelle}
+      </span>
+      <div className="cp-gc-rail">
+        {piste.segments.map((s) => (
           <span
-            className="cp-barre-seg cp-barre-seg--uni"
-            key={s.sigle}
-            style={{ width: `${(s.n / total) * 100}%` }}
+            key={`${s.debut}-${s.role}`}
+            className={`cp-gc-seg cp-gc-seg--${s.motif}`}
+            style={{ left: `${s.gauche.toFixed(2)}%`, width: `${s.largeur.toFixed(2)}%` }}
+            title={`${s.role}${s.detail ? ` — ${s.detail}` : ''} · ${periode(s.debut, s.fin, s.actif)}${
+              piste.institution === INSTITUTION_PARLEMENT ? ` · ${libellePosition(s.position)}` : ''
+            }`}
           />
         ))}
-      </span>
-      <span className="cp-cles cp-cles--sombre">
-        {segments.map((s) => (
-          <span className="cp-cle" key={s.sigle}>
-            <i className="cp-pastille" />
-            {s.sigle} <b>{formatNumber(s.n)}</b>
+      </div>
+      <div className="cp-gc-etiqs" style={{ height: hauteur }}>
+        {piste.segments.map((s) => (
+          <span
+            key={`e-${s.debut}-${s.role}`}
+            className="cp-gc-etiq"
+            style={{ left: `${s.centre.toFixed(2)}%`, top: s.niveau === 0 ? 0 : 18 }}
+          >
+            {periode(s.debut, s.fin, s.actif)}
           </span>
         ))}
-      </span>
-      {(reste > 0 || sansCommission > 0) && (
-        <span className="cp-point-socle">
-          {[
-            reste > 0
-              ? `${formatNumber(reste)} ${reste > 1 ? 'autres commissions' : 'autre commission'}`
-              : null,
-            sansCommission > 0
-              ? `${formatNumber(sansCommission)} ${sansCommission > 1 ? 'dossiers' : 'dossier'} dont la source ne publie pas la commission saisie au fond`
-              : null,
-          ]
-            .filter(Boolean)
-            .join(' ; ')}
-        </span>
-      )}
-    </span>
-  );
-}
-
-/* Podium — trois colonnes de hauteur proportionnelle. « 27 sur 60 » se compare
- * mal en prose ; trois hauteurs se comparent d'un regard. C'est un décompte de
- * mandats, pas une note : rien n'y est bon ou mauvais, et deux colonnes égales
- * se voient égales. */
-function Podium({ rangs }) {
-  const haut = Math.max(...rangs.map((r) => r.n));
-  return (
-    <span className="cp-podium">
-      {rangs.map((r) => (
-        <span className="cp-podium-col" key={r.label}>
-          <b className="cp-num">{formatNumber(r.n)}</b>
-          <i style={{ height: `${Math.max(6, (r.n / haut) * 46)}px` }} />
-          <span>{r.label}</span>
-        </span>
-      ))}
-    </span>
-  );
-}
-
-function Point({ point: p, montrerLeRole }) {
-  const couple = p.rendu === RENDU_COUPLE;
-  return (
-    <div className={`cp-point${couple ? ' cp-point--couple' : ''}`}>
-      <span className="cp-point-nombre cp-num">
-        {couple ? (
-          p.couple.map((n) => (
-            <span className="cp-point-couple" key={n.label}>
-              {formatNumber(n.n)}
-              <small>{n.label}</small>
-            </span>
-          ))
-        ) : (
-          <>
-            {formatNumber(p.valeur)}
-            <small>/ {formatNumber(p.sur)}</small>
-          </>
-        )}
-      </span>
-      <span className="cp-point-texte">
-        {/* Le rôle ne s'affiche que s'il distingue : voir `montrerLesRoles`. */}
-        {montrerLeRole && p.role && (
-          <span className="cp-point-role">{LIBELLE_ROLE_POINT[p.role]}</span>
-        )}
-        {p.texte && <span className="cp-point-tete">{p.texte}</span>}
-        {p.suite && <span className="cp-point-suite">{p.suite}</span>}
-        {p.rendu === RENDU_PODIUM && p.rangs?.length > 1 && <Podium rangs={p.rangs} />}
-        {p.repartition && <Repartition repartition={p.repartition} />}
-        {p.socle && <span className="cp-point-socle">{p.socle}</span>}
-        {p.garde && <span className="cp-point-garde">{p.garde}</span>}
-      </span>
+      </div>
     </div>
   );
 }
+
+/* La légende ne liste que les postures RÉELLEMENT présentes sur la frise. Et
+ * elle distingue deux absences que rien ne doit confondre : « non déclarée par
+ * l'Assemblée » est une valeur publiée — c'est le cas des cinq groupes de la
+ * XVIIe législature — quand l'absence chez nous est un trou de collecte
+ * (§2 règle 5). */
+function LegendePostures({ postures }) {
+  const vues = postures.filter((p) => p !== undefined);
+  if (vues.length < 2) return null;
+  return (
+    <div className="cp-gc-legende">
+      <span className="cp-gc-legende-titre">
+        Sa position dans l’hémicycle, telle que l’Assemblée la déclare
+      </span>
+      {vues.map((p) => (
+        <span key={p ?? 'aucune'}>
+          <u className={`cp-gc-seg--${motifPosition(p)}`} />
+          {p ? libellePosition(p) : 'non renseignée chez nous'}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/* Une cellule. **Seuls les nombres sont en gros** : mettre l'objet à la même
+ * échelle que le chiffre faisait lire « Orientation et réussite des étudiants »
+ * comme la mesure, alors que la mesure est 211. */
+function CelluleChiffre({ cellule: c }) {
+  if (!c) return <div className="cp-gc-cell cp-gc-cell--vide" />;
+  if (c.absent) {
+    return (
+      <div className="cp-gc-cell">
+        <p className="cp-gc-absent">
+          <span aria-hidden="true">—</span> {c.absent}
+        </p>
+      </div>
+    );
+  }
+  return (
+    <div className="cp-gc-cell">
+      <p className="cp-gc-n">
+        <b className="cp-num">{formatNumber(c.nombre)}</b> <small>{c.objet}</small>
+        {c.sur != null && (
+          <>
+            {' '}
+            <b className="cp-num">{formatNumber(c.sur)}</b> <small>{c.objetSur}</small>
+          </>
+        )}
+      </p>
+      {c.quantifieur && (
+        <p className="cp-gc-q">
+          <span className="cp-num">{formatNumber(c.quantifieur.nombre)}</span>{' '}
+          {c.quantifieur.texte}
+        </p>
+      )}
+      {c.barre && (
+        <>
+          <span className="cp-gc-barre">
+            {c.barre.segments.map((s) => (
+              <span key={s.cle} className={`cp-gc-part cp-gc-part--${s.cle}`} style={{ width: `${s.part.toFixed(2)}%` }} />
+            ))}
+          </span>
+          <span className="cp-gc-barre-leg">
+            {c.barre.segments.map((s) => (
+              <em key={s.cle} className={`cp-gc-part--${s.cle}`}>
+                <b>{formatNumber(s.nombre)}</b>&nbsp;{s.libelle}
+              </em>
+            ))}
+          </span>
+        </>
+      )}
+      {c.detail && <p className="cp-gc-d">{c.detail}</p>}
+    </div>
+  );
+}
+
+function GrandsChiffres({ chiffres }) {
+  if (!chiffres || chiffres.cas === CAS_RIEN_A_MONTRER) return null;
+  const { colonnes, pistes, lignes } = chiffres;
+  const parlementaire = pistes.find((p) => p.institution === INSTITUTION_PARLEMENT);
+  return (
+    <details className="cp-gc" open>
+      <summary className="cp-gc-tete">
+        <span className="cp-gc-label">Les grands chiffres</span>
+        {/* La ligne d'introduction a été réduite trois fois. Ce qui reste tient
+            en cinq mots, et c'est la règle du bloc : le texte explicatif est un
+            aveu d'échec — si une phrase doit expliquer un chiffre, c'est la
+            forme qui n'a pas fait son travail. */}
+        <span className="cp-gc-these">Ce que cette personne a engagé.</span>
+      </summary>
+
+      <div className="cp-carte cp-gc-carte">
+        <div className="cp-gc-frise">
+          {pistes.map((p) => (
+            <PisteFrise key={p.institution} piste={p} />
+          ))}
+          {parlementaire && <LegendePostures postures={parlementaire.postures} />}
+        </div>
+
+        <div
+          className={`cp-gc-duo ${colonnes.length > 1 ? 'cp-gc-duo--deux' : ''}`}
+          style={{ gridTemplateColumns: colonnes.map(() => '1fr').join(' ') }}
+        >
+          {colonnes.map((c) => (
+            <div className={`cp-gc-tete-col cp-gc-tete-col--${c}`} key={`t-${c}`}>
+              <span className="cp-gc-bandeau" />
+              <span className="cp-gc-col-nom">
+                <i />
+                {LIBELLE_PISTE[c]}
+              </span>
+            </div>
+          ))}
+          {lignes.map((l) => (
+            <Fragment key={l.cle}>
+              {colonnes.map((c) => (
+                <p className="cp-gc-rang" key={`r-${l.cle}-${c}`}>
+                  {l.titre}
+                </p>
+              ))}
+              {colonnes.map((c) => (
+                <CelluleChiffre cellule={l.cellules[c]} key={`c-${l.cle}-${c}`} />
+              ))}
+            </Fragment>
+          ))}
+        </div>
+      </div>
+    </details>
+  );
+}
+
+/* « L'essentiel » a été remplacé par « Les grands chiffres » (#328) : sa vue —
+ * la fonction `Point` et ses trois rendus — est retirée. Le VIVIER, lui, reste
+ * calculé dans `profilCandidat.js` et testé : la décision prévoit explicitement
+ * qu'un vrai résumé prenne la place que ce bloc libère, et supprimer le calcul
+ * avant de savoir ce qui le remplace détruirait ce que
+ * `tests/test_essentiel_328.py` documente.
+ */
 
 export default function CandidateProfile({ candidate }) {
   const c = candidate;
@@ -962,65 +1029,15 @@ export default function CandidateProfile({ candidate }) {
         <BadgeSource url={c.sourceUrl} />
       </header>
 
-      {/* L'essentiel. Cinq points au plus, tirés d'un vivier de sept, chacun
-          issu d'un jeu de données distinct — aucun rapprochement thématique,
-          aucune synthèse (AGENTS.md §2 règle 8). Le contraste réaction /
-          initiative se porte par la TYPOGRAPHIE : pas d'emoji, la charte n'en
-          emploie nulle part et il introduirait un ton. Les deux lignes ont même
-          taille et même graisse — ce sont deux moitiés d'une opposition, et
-          n'accentuer que la seconde faisait lire la première comme une légende.
-          L'accent porte sur les DEUX MOTS opposés, jamais sur une ligne. */}
-      {c.essentiel.points.length > 0 && (
-        <section className="cp-essentiel">
-          <p className="cp-essentiel-label">L’essentiel</p>
-          <h2 className="cp-these">
-            <span className="cp-these-ligne">
-              Un vote : une <b>réaction</b> à l’ordre du jour d’autrui.
-            </span>
-            <span className="cp-these-ligne">
-              Un amendement déposé, une commission rejointe, une question posée : à l’
-              <b>initiative</b> de la personne.
-            </span>
-          </h2>
-          {/* Le cadre initiative / réaction est parlementaire par construction :
-              au banc du gouvernement l'ordre du jour se fixe au lieu de se
-              subir. Seule cette phrase s'adapte — les points, eux, restent les
-              mêmes pour les treize. */}
-          {c.essentiel.aSiegeAuGouvernement && (
-            <p className="cp-these-gouvernement">
-              Au gouvernement, ce partage ne tient plus : l’ordre du jour s’y fixe au lieu de s’y
-              subir, et une question au gouvernement s’y reçoit au lieu de s’y poser.
-            </p>
-          )}
-          <p className="cp-essentiel-voici">
-            {c.essentiel.points.length === 1
-              ? 'Voici le point qui en ressort'
-              : `Voici ${c.essentiel.points.length} points qui en ressortent`}
-            {c.essentiel.vivier > c.essentiel.points.length
-              ? `, sur les ${c.essentiel.vivier} que la donnée permet`
-              : ''}
-            {c.essentiel.rolesRepresentes.length > 1
-              ? ` — au moins un pour chacun des rôles ${c.voix.quil} a exercés.`
-              : '.'}
-          </p>
-          {/* Un rôle tenu que le vivier ne documente pas se DIT : sans cette
-              phrase, un⋅e ancien⋅ne ministre dont le corpus ne publie ni
-              intervention ni texte porté paraîtrait n'avoir rien fait au
-              gouvernement (§2 règle 5). */}
-          {c.essentiel.rolesSansPoint.length > 0 && (
-            <p className="cp-essentiel-manque">
-              Aucun de ces points ne documente{' '}
-              {c.essentiel.rolesSansPoint.map((r) => LIBELLE_ROLE_ABSENT[r]).join(' ni ')} : les
-              listes que cette section compte y sont vides.
-            </p>
-          )}
-          <div className="cp-points">
-            {c.essentiel.points.map((p) => (
-              <Point key={p.cle} point={p} montrerLeRole={c.essentiel.montrerLesRoles} />
-            ))}
-          </div>
-        </section>
-      )}
+      {/* « Les grands chiffres » remplace « L'essentiel » (#328). Deux noms ont
+          été essayés et écartés : « Coup d'œil » promettait de la rapidité, pas
+          du contenu ; « L'essentiel » promettait une synthèse que le bloc ne
+          délivre pas. Ce qu'on a construit est un TABLEAU DE BORD, et le nommer
+          honnêtement libère la place pour un vrai résumé ailleurs.
+
+          Il est dense — c'est assumé — donc repliable : il ne doit pas s'imposer
+          avant que le lecteur ait choisi de le lire. */}
+      <GrandsChiffres chiffres={c.grandsChiffres} />
 
       <Section
         numero="1"

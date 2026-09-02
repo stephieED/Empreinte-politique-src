@@ -22,6 +22,7 @@ import {
   directionQuestionsGouvernement,
   ecartsAvecLeGroupe,
   essentiel,
+  grandsChiffres,
   fonctionsExercees,
   interventionsParNature,
   limitesDeclarees,
@@ -448,6 +449,19 @@ export function buildCandidateView(
       : null,
     sourceUrl: pivot.identite?.source_url ?? null,
     licence: pivot.meta?.licence_donnees ?? null,
+
+    // « Les grands chiffres » (#328) : la frise et les cinq lignes appariées.
+    // Il reçoit les mêmes objets déjà calculés plus haut — aucune mesure n'est
+    // refaite ici, sinon la fiche porterait deux comptes du même fait.
+    grandsChiffres: grandsChiffres({
+      roles,
+      bornes,
+      mandats,
+      amendements,
+      textes,
+      interventions,
+      appartenances,
+    }),
 
     essentiel: essentiel({
       interventions,
