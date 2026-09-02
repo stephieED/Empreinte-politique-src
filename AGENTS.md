@@ -476,6 +476,26 @@ tolerance is **partitioned** — no input disarms another's check.
   absent or unknown `code_grammaire` never becomes procedural by default: the criterion is
   positive on both sides.
   → `docs/decisions/creneau-de-seance-nest-pas-un-sujet-710.md`
+- **A cached Syceron index is a cached PARSE, and existence is not conformity (#719).**
+  `.cache/syceron_an/<leg>/index_par_acteur` is the output of `parse_syceron`, not an
+  archive set aside; its cache key says when, in which mode and over which archives it
+  was written (#550), **never with which parser**. So a field added to the parser never
+  reaches a restored index: run `33652389393`, launched with `collect_interventions=true`
+  precisely to apply #710, **succeeded and corrected none** of the 2 041 créneau subjects
+  — 0 of `gabriel-attal`'s 3 963 raw entries carried `sujet_code_grammaire`, and
+  `backfill_sujet_seance`, whose **proof** that key is, applied to nothing. Neither
+  existing guard covered it (#505/#510 refuse an index built on an absent archive or
+  resolving no actor; #550 refuses one written during an outage). `_syceron_index_qualifie`
+  now reads an unqualified directory **as absent**: the test is on the **key**, never its
+  value (`sujet_code_grammaire` is legitimately `None`); **one shard is read, the smallest**
+  (one entry settles it, and #628 forbids loading a multi-MiB shard for that); the refusal
+  is a `continue`, so a stale full index never masks a conforming reduced one (#657); and
+  the verdict is memoised **by absolute path** (#377) and **forgotten on publication** —
+  without that, the index just written would be refused and every actor would re-walk the
+  archive (12,5 s, 3,8 GiB peak each, #510). Retirement condition: the day the cache key
+  carries a fingerprint of the **code**. Until then every new parser field must join
+  `SYCERON_CHAMP_QUALIFICATION` or go unnoticed.
+  → `docs/decisions/conformite-index-syceron-719.md`
 - **An index that resolves zero actors is never cached nor returned silently.** #505's
   guard only covered "no readable file", and that gap is how #510 survived (§2.5).
   Unresolved ids are **counted, not warned** per entry; the tripwires are

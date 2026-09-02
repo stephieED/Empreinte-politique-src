@@ -4933,6 +4933,76 @@ def _syceron_shard_path_acteur(
     )
 
 
+# Champ dont la présence atteste qu'un index Syceron par acteur a été produit
+# APRÈS #710. Le parseur corrigé l'écrit sur CHAQUE entrée (`parse_syceron.py`,
+# `_reduire_au_theme` le reconduit) : un index où aucune entrée ne porte la clé
+# est donc périmé, jamais « une législature dont la source ne qualifie rien ».
+SYCERON_CHAMP_QUALIFICATION = "sujet_code_grammaire"
+
+#: Mémo du verdict de conformité, indexé par CHEMIN absolu du répertoire
+#: d'index — jamais par un nom logique : les tests règlent leur propre cache par
+#: cas, et un mémo global ferait fuiter le verdict d'un test dans le suivant
+#: (le piège qui a fait revenir #377, AGENTS.md §5).
+_SYCERON_INDEX_QUALIFIE: dict[str, bool] = {}
+
+
+def vider_memo_qualification_syceron() -> None:
+    """Oublie les verdicts de conformité déjà rendus. Usage test."""
+    _SYCERON_INDEX_QUALIFIE.clear()
+
+
+def _syceron_index_qualifie(index_dir: Path) -> bool:
+    """True si les tranches d'un index Syceron portent la qualification de #710.
+
+    « Un répertoire qui existe n'est pas la preuve de ce qu'il contient »
+    (AGENTS.md §5, leçon du cache d'amendements ; #639 l'a appliquée au cache de
+    scrutins). Ici l'index N'EST PAS une archive brute mise de côté : **c'est le
+    produit de `parse_syceron`**, donc un index en cache est un *parsage* en
+    cache. Sa clé — `public-data-cache-an-<semaine>-interv-<empreinte>` — dit
+    quand, dans quel mode et sur quelles archives il a été écrit (#550), jamais
+    avec quel parseur. Mesuré le 02/09/2026 sur le run `33652389393` : lancé
+    avec `collect_interventions=true` pour appliquer #710, il a restauré un index
+    d'avant le correctif et publié **0** entrée portant la clé sur les 3 963 de
+    `gabriel-attal` — les 2 041 sujets de créneau sont restés intacts, et
+    `backfill_sujet_seance`, dont c'est la **preuve**, ne s'est appliqué à rien.
+
+    Le test porte sur la **clé**, pas sur sa valeur : `sujet_code_grammaire` vaut
+    légitimement `None` sur un point dont la grammaire ne porte pas de sujet, et
+    exiger une valeur refuserait un index correct. Même règle que
+    `_scrutins_store_qualifie` (#639).
+
+    **Une seule tranche est lue, et c'est la plus petite.** Toute entrée produite
+    par le parseur corrigé porte la clé et aucune de l'ancien ne la porte : un
+    échantillon d'une entrée tranche. La plus petite est le témoin le moins cher
+    — une tranche d'acteur bavard pèse plusieurs Mio, et #628 interdit de charger
+    ce qu'on n'a pas besoin de garder. Un répertoire vide est déclaré non
+    qualifié : il n'y a rien à en tirer et le reconstruire ne coûte rien.
+    """
+    cle = str(index_dir.resolve())
+    memoise = _SYCERON_INDEX_QUALIFIE.get(cle)
+    if memoise is not None:
+        return memoise
+
+    verdict = False
+    try:
+        tranches = [p for p in index_dir.glob("PA*.json") if p.is_file()]
+    except OSError:
+        tranches = []
+    if tranches:
+        try:
+            with open(min(tranches, key=lambda p: p.stat().st_size), encoding="utf-8") as f:
+                entrees = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            entrees = None
+        if isinstance(entrees, list):
+            verdict = any(
+                isinstance(e, dict) and SYCERON_CHAMP_QUALIFICATION in e for e in entrees
+            )
+
+    _SYCERON_INDEX_QUALIFIE[cle] = verdict
+    return verdict
+
+
 def _read_cached_interventions_syceron_acteur(
     legislature: str, acteur_ref: str, *, theme_seul: bool = False
 ) -> Optional[list[dict[str, Any]]]:
@@ -4959,6 +5029,18 @@ def _read_cached_interventions_syceron_acteur(
     for forme_theme in formes:
         index_dir = SYCERON_CACHE_DIR / legislature / _syceron_index_dirname(forme_theme)
         if not index_dir.is_dir():
+            continue
+        # #719 — l'existence n'est pas la conformité. Un index d'avant #710 est
+        # traité comme ABSENT : l'appelant reconstruit, et le parseur corrigé
+        # écrit enfin `sujet_code_grammaire`. Le `continue` plutôt qu'un `return
+        # None` laisse un run réduit se rabattre sur l'autre forme, qui peut,
+        # elle, être conforme.
+        if not _syceron_index_qualifie(index_dir):
+            print(
+                f"  [i] Index des débats Syceron (législature {legislature}"
+                f"{', réduit au thème' if forme_theme else ''}) antérieur à #710 "
+                "(aucune qualification `sujet_code_grammaire`) : reconstruit."
+            )
             continue
         shard_path = _syceron_shard_path_acteur(
             legislature, acteur_ref, theme_seul=forme_theme
@@ -5008,6 +5090,11 @@ def _write_syceron_index_par_acteur(
             json.dump(entrees, f, ensure_ascii=False)
     shutil.rmtree(index_dir, ignore_errors=True)
     os.replace(tmp_dir, index_dir)
+    # #719 — le verdict de conformité porte sur un CONTENU, pas sur un chemin :
+    # le garder après réécriture ferait refuser l'index qu'on vient de produire,
+    # et chaque acteur suivant reparcourrait l'archive (12,5 s et 3,8 Gio de pic
+    # mesurés en #510). L'oubli est ici, dans la seule fonction qui publie.
+    _SYCERON_INDEX_QUALIFIE.pop(str(index_dir.resolve()), None)
     if theme_seul:
         # Les index plats hérités appartiennent à la forme COMPLÈTE : les
         # supprimer depuis un run réduit ferait payer à l'autre forme une

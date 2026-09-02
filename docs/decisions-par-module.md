@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 212 décisions
+gouverne sans avoir à fouiller les 213 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -261,7 +261,7 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 
 ## `src/candidate_profile.py`
 
-73 décision(s) le gouvernent ; le module en cite 12.
+74 décision(s) le gouvernent ; le module en cite 12.
 
 | Décision | Nomme |
 | --- | --- |
@@ -292,6 +292,7 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 | [La clé de cache AN porte le MODE, et le job roster ne l'écrit plus (#505) (2026-08-20)](decisions/cache-mode-interventions-505.md) | `_build_acteur_interventions_syceron_index`, `_build_acteur_questions_index`, `_parse_syceron_intervention_entry`, `fetch_questions_officielles` |
 | [La chambre est un fait du mandat, pas du profil : `mandats[].chambre` estampillée à la collecte (#492) (2026-08-20)](decisions/chambre-par-mandat-electif.md) | `build_profile` |
 | [La civilité et la nomenclature PCS de l'INSEE traversaient le pipeline sans y laisser de trace (#659) (2026-08-31)](decisions/civilite-et-pcs-insee-659.md) | `NOM_INDEX_IDENTITE`, `_build_acteur_identite_index`, `_champ_identite_an`, `_profession_an`, `_socproc_insee_an` |
+| [Un index Syceron en cache est un parsage en cache, et l'existence n'y est pas la conformité (#719) (2026-09-02)](decisions/conformite-index-syceron-719.md) | `SYCERON_CHAMP_QUALIFICATION`, `_reduire_au_theme`, `_scrutins_store_qualifie`, `_syceron_index_qualifie`, `_write_syceron_index_par_acteur` |
 | [La correspondance slug ↔ acteur AN devient un artefact committé (#525, lot 2 de l'épic « une seule source AN ») (2026-08-26)](decisions/correspondance-acteurs-an-525.md) | `_resolve_acteur_ref_par_slug` |
 | [Ce qu'une liste vide veut dire : les quatre états de couverture (#539) (2026-08-28)](decisions/couverture-listes-539.md) | `AN_AMENDEMENTS_PATH`, `AN_SCRUTINS_LEGISLATURES`, `WARNING_PREFIX_VOTES_INTROUVABLES`, `_resolve_acteur_ref_par_slug` |
 | [`debut_dans_groupe` se lit sur le mandat de groupe, plus sur le premier mandat électif (#653) (2026-08-31)](decisions/dates-appartenance-groupe-653.md) | `fetch_positions_hemicycle_officielles` |
@@ -644,7 +645,7 @@ Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambr
 
 ## `src/merge_profile.py`
 
-50 décision(s) le gouvernent ; le module en cite 5.
+51 décision(s) le gouvernent ; le module en cite 5.
 
 | Décision | Nomme |
 | --- | --- |
@@ -656,6 +657,7 @@ Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambr
 | [Une clé de fusion en `a or b` change d'identité quand `a` se remplit (#668) (2026-08-31)](decisions/cle-fusion-textes-portes-668.md) | `_dossier_key`, `_intervention_key`, `_pivot_amendement_key`, `_pivot_intervention_key`, `_pivot_texte_key`, `_pivot_vote_key`, `_repli_texte_key`, `clean_stale_interventions`, `clean_stale_textes_portes`, `merge_dossier_records`, `merge_pivot_profile` |
 | [La collecte d'interventions des membres de roster est réduite au thème (#657) (2026-08-31)](decisions/collecte-interventions-reduite-au-theme-657.md) | `merge_pivot_profile` |
 | [Ce que la normalisation a le droit de faire : la table de relations collecté → publié (#545) (2026-08-28)](decisions/collecte-vs-publie-545.md) | `_pivot_vote_key` |
+| [Un index Syceron en cache est un parsage en cache, et l'existence n'y est pas la conformité (#719) (2026-09-02)](decisions/conformite-index-syceron-719.md) | `backfill_sujet_seance` |
 | [Les consommateurs de `chambre` migrés vers `chambres`, et le garde-fou qui datera son retrait (#494) (2026-08-20)](decisions/consommateurs-chambres-migres.md) | `_prefer_non_empty`, `merge_pivot_profile`, `merge_raw_profile` |
 | [La corroboration porte sur les chambres publiées, pas sur la complétude des mandats — et la condition de retrait de `chambre` devient atteignable (#486) (2026-08-30)](decisions/corroboration-chambres-publiees-486.md) | `FAMILLES_WARNINGS`, `_prefer_non_empty`, `backfill_mandat_chambre`, `merge_pivot_profile` |
 | [Ce qu'une liste vide veut dire : les quatre états de couverture (#539) (2026-08-28)](decisions/couverture-listes-539.md) | `_prefer_non_empty` |
@@ -748,7 +750,7 @@ Le mentionnent sans le gouverner : [`investigation-sources-ue`](decisions/invest
 | [Syceron publie l'identifiant d'orateur NU, et n'a donc jamais rien indexé (#510) (2026-08-20)](decisions/syceron-acteur-ref-nu-510.md) | `_parse_interventions`, `_parse_orateur` |
 | [Suite du 26/08/2026 : les trois archives vérifiées, les deux défauts de parseur corrigés](decisions/syceron-archives-verifiees-parseur-510.md) | `_parse_orateur` |
 
-Le mentionnent sans le gouverner : [`cle-fusion-interventions-540`](decisions/cle-fusion-interventions-540.md), [`syceron`](decisions/syceron.md).
+Le mentionnent sans le gouverner : [`cle-fusion-interventions-540`](decisions/cle-fusion-interventions-540.md), [`conformite-index-syceron-719`](decisions/conformite-index-syceron-719.md), [`syceron`](decisions/syceron.md).
 
 ## `src/parti_profile.py`
 
