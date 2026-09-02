@@ -265,6 +265,11 @@ def test_le_mode_reduit_lit_l_index_complet_et_le_reduit(tmp_path, monkeypatch):
     entrees = cp._read_cached_interventions_syceron_acteur("17", "PA1", theme_seul=True)
     assert entrees == [{
         "id": "a", "date": "2025-01-01", "type_detail": None, "sujet": "Un sujet",
+        # #710 — le code du point qui a fourni le sujet suit le sujet jusque dans
+        # l'entrée réduite : sans lui, `backfill_sujet_seance` ne pourrait jamais
+        # corriger un créneau de séance déjà publié sur un membre de roster, et le
+        # mode « thème seul » serait le seul à ne pas guérir.
+        "sujet_code_grammaire": None,
         "session_ref": "S", "url": "https://x", "legislature": "17",
         "collecte": COLLECTE_THEME_SEUL,
     }]

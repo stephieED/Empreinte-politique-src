@@ -140,9 +140,14 @@ via `src/population_profils.py`.
   reports are strictly monotone — they fill only what is absent, they name their fields,
   and **they never touch the merge key**: widening it to carry the new field is #668's
   defect (468 duplicates on 940 entries). Each of the three passed the whole suite: the
-  test that was missing covered the **transition**, not the steps.
+  test that was missing covered the **transition**, not the steps. **#696 and #710 are
+  the fourth and fifth**, and #710 breaks one property of the family: it **removes** a
+  value instead of filling one (282 of the 765 published interventions it corrects), so
+  the loss is declared with `allow_declared_losses` — it still names its fields and still
+  never touches the merge key.
   → `docs/decisions/qualification-perdue-a-la-fusion-639.md`,
-  `docs/decisions/filtre-publication-apres-fusion-641.md`
+  `docs/decisions/filtre-publication-apres-fusion-641.md`,
+  `docs/decisions/creneau-de-seance-nest-pas-un-sujet-710.md`
 - **A merge key written `a or b` changes identity the day `a` fills in (#668).** #540 was
   a *sticky* key absorbing distinct entries; this is its mirror — the same dossier keyed
   on the fallback before the run and on `source_url` after, published twice (940 entries
@@ -426,6 +431,21 @@ tolerance is **partitioned** — no input disarms another's check.
   point's `code_grammaire`); `sujet` is `None` otherwise (§2 rule 5), never a procedural
   title, which would then feed `tags_thematiques` (§2 rule 8).
   → `docs/decisions/syceron-archives-verifiees-parseur-510.md`
+- **`TITRE_TEXTE_DISCUSSION` is not homogeneous, and a séance slot is not a subject
+  (#710).** It titles the ORDER-OF-BUSINESS item, and the Assembly inscribes there a text
+  (« Droit à l'aide à mourir ») as well as a recurring **slot** (« Questions au
+  gouvernement »). The discriminant stays structural: an item under which the source files
+  points of the **question grammar** (`QG_1_1`/`QOSD_1_1`/`QPM_1_1`) is a slot — the source
+  itself publishes the subject one level down (`_creneaux_de_questions`, a pass that must
+  run **before** the paragraph walk: those points are XML siblings coming after it).
+  **Never a label list**: the source publishes four typographic variants of the same slot
+  on legislatures 16-17 alone, and a lexical filter would miss three (#672, #639). What the
+  criterion does NOT settle is counted, not guessed: an item that is a séance moment with
+  no finer grammar under it — « Motion de censure », « Déclaration du Gouvernement et
+  débat » — keeps its subject, because the source carries no structural mark for it. An
+  absent or unknown `code_grammaire` never becomes procedural by default: the criterion is
+  positive on both sides.
+  → `docs/decisions/creneau-de-seance-nest-pas-un-sujet-710.md`
 - **An index that resolves zero actors is never cached nor returned silently.** #505's
   guard only covered "no readable file", and that gap is how #510 survived (§2.5).
   Unresolved ids are **counted, not warned** per entry; the tripwires are
@@ -499,7 +519,7 @@ tolerance is **partitioned** — no input disarms another's check.
 | `textes_portes[]` | Author/reporter/co-reporter + procedural stage. `dossier_id` (#639) is the AN legislative-dossier key (`DLR5L15N37607`), copied verbatim from the raw `dossiers_legislatifs[].id` (472/472) — **same name as a government sheet's `textes[].dossier_id`**, deliberately: two names for one identifier send every cross-reference back to the label. Never rebuilt from a title. See `docs/decisions/qualification-scrutins-et-cle-dossier-639.md`. **`nature_texte` (#689) is the sourced fact and `role` derives from it** — `projet_de_loi` / `proposition_de_loi` / `proposition_de_resolution` / `null`, read from the uid prefix of the deposited document (`PRJL`/`PION`/`PNRE`) by `gouvernement_textes.nature_texte_depose`, the same function the government sheets read (#435/#400). **Never from a libellé**: the XVth-legislature dossiers are titled « Bioéthique », « CETA », « Coopération avec le Luxembourg », and a starts-with-*Projet de loi* filter misses 283 of 304. `auteur` was **split** — a projet de loi carried on behalf of the government is not a personal act (316 of 472 published entries, 282 of `edouard-philippe`'s 283) — into `initiateur_projet_de_loi` / `auteur_proposition_de_loi` / `auteur_proposition_de_resolution`; `auteur` survives, narrowed to the 5 initiator entries whose nature the source does not establish. `validate_profil()` **refuses any contradiction** between the two, exactly as `chambre` cannot contradict `chambres[0]`. The role is derived, never merged; the nature crosses the additive merge through `backfill_dossier_nature` — without it the old raw entry wins and the field never lands (#639, #492, same hole). Gate §5c counts what is still unqualified. See `docs/decisions/qualification-textes-portes-689.md` |
 | `amendements[]` | **Mapping only** (`#431`): `{amendement_id, role_signataire}`. Outcome, inadmissibility, date, `co_signataires`… live once in `pivot_data/amendements/<legislature>.json`, not once per signatory — 1 342,4 → 73,8 Mo of mapping + 130,1 Mo of shared index, −84,8 %. `role_signataire` is the only member-specific field |
 | `interventions[]` | Speeches, questions (`type_detail`). An entry carrying `collecte: "theme_seul"` (#657) was collected **without its verbatim**: its heavy fields are **absent, never `null`** — a `"texte": null` would read as a fact about the person, where the fact is about the run (§2 rule 5). `collecte` is a closed value (`KNOWN_COLLECTES_INTERVENTION`); its **absence** is the full form. See `docs/decisions/collecte-interventions-reduite-au-theme-657.md` |
-| `tags_thematiques[]` | 8 stable categories (`STABLE_THEMES`), via `classify_keywords()`. |
+| `tags_thematiques[]` | **Derived**, never merged (#710) — `schema_pivot.deriver_tags_thematiques`, recomputed after the pivot merge like `chambres` and `licence_donnees`; the old union made every published tag immortal. Its values are the lowercased `interventions[].theme_officiel`, `mots_cles` as fallback (#529): **5 669 distinct labels on the 481 published profiles**, not a closed vocabulary — `STABLE_THEMES` and `classify_keywords()` this row used to name **do not exist in the repo**. §2 rule 8 still governs what they are: reading aids, never declared positions. |
 | `meta` | `schema_version`, `genere_le`, `licence_donnees`, `warnings[]`, `avertissements[]` (#642), `provenance` (`candidat_declare`\|`roster_groupe`, see `docs/decisions/provenance-pivot.md`), `provenance_champs` (#603). **`provenance` says why the profile exists; `provenance_champs` says which source filled which field of `identite`, and when** — optional (absent from the 481 profiles published before the lot), `identite`-only, and an unknown origin is published `{"source": null, "synchro_le": null}`, never omitted. Derived after the merge like `chambres` and `licence_donnees`, never merged. Not to be confused with `couverture` either: that one says *why a business list is empty*, per list, not per field. See `docs/decisions/provenance-par-champ-603.md`. **`meta.avertissements[]` (#642) is the typed twin of `warnings[]`** — one `{message, destinataire}` entry per warning, same order, same strings, enforced by `valider_avertissements()`. `destinataire` is a closed two-value vocabulary (`lecteur`, `interne`, `DESTINATAIRES_AVERTISSEMENT`): the key is **mandatory**, `null` says « nobody declared it », the omission says nothing. There is no third « mixed » value — a warning addressing both is **written twice**. It is declared **at the site that writes it**, via `avertissements.avertissement(message, destinataire)`, never by a table keyed on the message prefix: `votes introuvables` covers a constat *and* a panne (#484 verbatim). Derived like `chambres` and `licence_donnees`, never merged; optional on the 481 profiles published before the lot, with a written retirement condition. See `docs/decisions/destinataire-avertissements-642.md` |
 
 Conventions: French `snake_case`; missing = `null` (never `""` or `0`); closed values in
