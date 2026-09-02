@@ -124,31 +124,82 @@
   --rail: #1f2027;
 }
 
-.cp-gc-tete {
-  cursor: pointer;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: 16px;
-}
-
-.cp-gc-tete::-webkit-details-marker {
-  display: none;
-}
-
 .cp-gc-label {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--muted);
+  margin: 0 0 12px;
+}
+
+/* La thèse sert de poignée : c'est elle qui replie les colonnes, pas le bloc
+ * entier — la frise reste visible parce qu'elle explique le reste. Le « + »
+ * porte l'affordance sans une phrase (relecture d'écran du 02/09/2026). */
+.cp-gc-plis {
+  border-top: 1px solid var(--border-strong);
+  margin-top: 24px;
 }
 
 .cp-gc-these {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   font-size: 20px;
   font-weight: 600;
   letter-spacing: -0.01em;
+  padding: 20px 0 4px;
+}
+
+.cp-gc-these::-webkit-details-marker {
+  display: none;
+}
+
+.cp-gc-these:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Le « + » est dessiné, pas écrit : une barre verticale qui disparaît à
+ * l'ouverture, donc « − ». Deux glyphes différents changeraient de chasse et
+ * feraient sauter la ligne. */
+.cp-gc-plus {
+  position: relative;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 6px;
+}
+
+.cp-gc-plus::before,
+.cp-gc-plus::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 9px;
+  height: 1.5px;
+  background: var(--muted);
+  transform: translate(-50%, -50%);
+}
+
+.cp-gc-plus::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+  transition: opacity 0.12s ease;
+}
+
+.cp-gc-plis[open] .cp-gc-plus::after {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cp-gc-plus::after {
+    transition: none;
+  }
 }
 
 .cp-gc-carte {
@@ -298,9 +349,7 @@
   display: grid;
   grid-template-columns: 1fr;
   column-gap: 44px;
-  margin-top: 24px;
-  border-top: 1px solid var(--border-strong);
-  padding-top: 4px;
+  margin-top: 4px;
 }
 
 .cp-gc-tete-col {

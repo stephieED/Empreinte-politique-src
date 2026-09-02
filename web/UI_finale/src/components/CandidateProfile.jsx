@@ -41,6 +41,11 @@ const MOIS = [
   'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre',
 ];
 
+const MOIS_COURT = [
+  'janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin',
+  'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.',
+];
+
 function jour(iso) {
   if (!iso) return null;
   const [a, m, j] = iso.split('-');
@@ -51,6 +56,24 @@ function jour(iso) {
 
 function annee(iso) {
   return iso ? iso.slice(0, 4) : null;
+}
+
+/* La période, en forme COMPACTE — l'étiquette d'un segment de frise dispose
+ * d'une ligne, parfois large de 5 % de l'axe. « 18 juin 2017 → 16 novembre 2018 »
+ * y est illisible et se chevauche avec la voisine.
+ *
+ * Rien n'est calculé : ni durée, ni arrondi. Les deux bornes sont rendues telles
+ * qu'elles sont, à la granularité qui suffit à les distinguer — l'année seule
+ * quand elles diffèrent, le mois quand la période tient dans une année.
+ */
+function periodeCompacte(debut, fin, actif) {
+  const a1 = annee(debut);
+  if (actif) return `depuis ${MOIS_COURT[Number(debut.slice(5, 7)) - 1]} ${a1}`;
+  const a2 = annee(fin);
+  if (a1 !== a2) return `${a1} – ${a2}`;
+  const m1 = MOIS_COURT[Number(debut.slice(5, 7)) - 1];
+  const m2 = MOIS_COURT[Number(fin.slice(5, 7)) - 1];
+  return m1 === m2 ? `${m1} ${a1}` : `${m1} – ${m2} ${a1}`;
 }
 
 function periode(debut, fin, actif) {
@@ -865,6 +888,16 @@ function Couverture({ couverture, limites }) {
  * rôle. Le vert et le rouge sont pris par les positions de vote, le jaune signal
  * par la sélection et la source vérifiée (`DESIGN_SYSTEM` §2).
  */
+/* Une piste étiquette ce que son NOM ne dit pas déjà — `ETIQUETTE_PISTE` porte
+ * la clé, cette fonction la rend. Un `detail` absent retombe sur le rôle plutôt
+ * que de laisser un segment muet : une période non nommée est une période que le
+ * lecteur ne peut pas situer. */
+function etiquetteDuSegment(cle, s) {
+  if (cle === 'role') return s.role;
+  if (cle === 'detail') return s.detail || s.role;
+  return periodeCompacte(s.debut, s.fin, s.actif);
+}
+
 function PisteFrise({ piste }) {
   const hauteur = piste.deuxNiveaux ? 40 : 22;
   return (
@@ -892,7 +925,7 @@ function PisteFrise({ piste }) {
             className="cp-gc-etiq"
             style={{ left: `${s.centre.toFixed(2)}%`, top: s.niveau === 0 ? 0 : 18 }}
           >
-            {periode(s.debut, s.fin, s.actif)}
+            {etiquetteDuSegment(piste.etiquette, s)}
           </span>
         ))}
       </div>
@@ -980,17 +1013,13 @@ function GrandsChiffres({ chiffres }) {
   const { colonnes, pistes, lignes } = chiffres;
   const parlementaire = pistes.find((p) => p.institution === INSTITUTION_PARLEMENT);
   return (
-    <details className="cp-gc" open>
-      <summary className="cp-gc-tete">
-        <span className="cp-gc-label">Les grands chiffres</span>
-        {/* La ligne d'introduction a été réduite trois fois. Ce qui reste tient
-            en cinq mots, et c'est la règle du bloc : le texte explicatif est un
-            aveu d'échec — si une phrase doit expliquer un chiffre, c'est la
-            forme qui n'a pas fait son travail. */}
-        <span className="cp-gc-these">Ce que cette personne a engagé.</span>
-      </summary>
+    <section className="cp-gc">
+      <p className="cp-gc-label">Les grands chiffres</p>
 
       <div className="cp-carte cp-gc-carte">
+        {/* La FRISE reste toujours dépliée : c'est l'ossature, et elle donne aux
+            colonnes leur couleur et leur raison d'être. Replier le bloc entier
+            cachait ce qui explique le reste. */}
         <div className="cp-gc-frise">
           {pistes.map((p) => (
             <PisteFrise key={p.institution} piste={p} />
@@ -998,34 +1027,49 @@ function GrandsChiffres({ chiffres }) {
           {parlementaire && <LegendePostures postures={parlementaire.postures} />}
         </div>
 
-        <div
-          className={`cp-gc-duo ${colonnes.length > 1 ? 'cp-gc-duo--deux' : ''}`}
-          style={{ gridTemplateColumns: colonnes.map(() => '1fr').join(' ') }}
-        >
-          {colonnes.map((c) => (
-            <div className={`cp-gc-tete-col cp-gc-tete-col--${c}`} key={`t-${c}`}>
-              <span className="cp-gc-bandeau" />
-              <span className="cp-gc-col-nom">
-                <i />
-                {LIBELLE_PISTE[c]}
-              </span>
-            </div>
-          ))}
-          {lignes.map((l) => (
-            <Fragment key={l.cle}>
-              {colonnes.map((c) => (
-                <p className="cp-gc-rang" key={`r-${l.cle}-${c}`}>
-                  {l.titre}
-                </p>
-              ))}
-              {colonnes.map((c) => (
-                <CelluleChiffre cellule={l.cellules[c]} key={`c-${l.cle}-${c}`} />
-              ))}
-            </Fragment>
-          ))}
-        </div>
+        {/* La thèse introduit LES COLONNES, pas le parcours : elle se lit juste
+            avant « À l'Assemblée », et elle sert de poignée à ce qui la suit. La
+            partie dense — cinq rangs sur deux colonnes — est ce qui se replie,
+            et le « + » le dit sans une phrase.
+
+            La ligne elle-même a été réduite trois fois : le texte explicatif est
+            un aveu d'échec, et si une phrase doit expliquer un chiffre, c'est la
+            forme qui n'a pas fait son travail. */}
+        <details className="cp-gc-plis" open>
+          <summary className="cp-gc-these">
+            <i className="cp-gc-plus" aria-hidden="true" />
+            Ce que cette personne a engagé.
+          </summary>
+
+          <div
+            className={`cp-gc-duo ${colonnes.length > 1 ? 'cp-gc-duo--deux' : ''}`}
+            style={{ gridTemplateColumns: colonnes.map(() => '1fr').join(' ') }}
+          >
+            {colonnes.map((c) => (
+              <div className={`cp-gc-tete-col cp-gc-tete-col--${c}`} key={`t-${c}`}>
+                <span className="cp-gc-bandeau" />
+                <span className="cp-gc-col-nom">
+                  <i />
+                  {LIBELLE_PISTE[c]}
+                </span>
+              </div>
+            ))}
+            {lignes.map((l) => (
+              <Fragment key={l.cle}>
+                {colonnes.map((c) => (
+                  <p className="cp-gc-rang" key={`r-${l.cle}-${c}`}>
+                    {l.titre}
+                  </p>
+                ))}
+                {colonnes.map((c) => (
+                  <CelluleChiffre cellule={l.cellules[c]} key={`c-${l.cle}-${c}`} />
+                ))}
+              </Fragment>
+            ))}
+          </div>
+        </details>
       </div>
-    </details>
+    </section>
   );
 }
 

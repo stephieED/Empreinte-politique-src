@@ -1740,6 +1740,33 @@ const ECART_MINIMAL_ETIQUETTES = 11;
  */
 export const ORDRE_PISTES = [INSTITUTION_PARLEMENT, INSTITUTION_GOUVERNEMENT, INSTITUTION_MISSION];
 
+/* ── Règle : une piste étiquette CE QUE SON NOM NE DIT PAS DÉJÀ ──────────────
+ *
+ * Trois pistes, trois clés, et le motif est le même à chaque fois : répéter sur
+ * l'étiquette une information que le lecteur a déjà sous les yeux gaspille la
+ * seule ligne dont le segment dispose.
+ *
+ * - **Parlement** : le rôle est « Député·e » partout et la posture est dans le
+ *   motif — ce qui varie, c'est la PÉRIODE.
+ * - **Gouvernement** : la date se lit sur l'axe juste en dessous ; ce qui varie
+ *   d'un segment à l'autre, c'est le POSTE. L'avoir étiqueté par sa période
+ *   remplaçait la seule information que cette piste portait par une redite de
+ *   l'axe (relevé en relecture d'écran le 02/09/2026).
+ * - **Mission** : le rôle EST le nom de la piste (« Parlementaire en mission »),
+ *   donc l'étiquette porte le MINISTÈRE auprès duquel elle s'exerce.
+ *
+ * Les libellés sont publiés **verbatim** (§2 règle 2) : aucune abréviation n'est
+ * fabriquée ici. La maquette en portait — « Sec. d'État, Éducation », « Éduc. » —
+ * écrites à la main, et rien dans la donnée ne les dérive ; deux « Secrétaire
+ * d'État » qui se suivent ne sont pas une ambiguïté, ce sont deux postes que
+ * l'axe date. L'intitulé complet reste en infobulle.
+ */
+export const ETIQUETTE_PISTE = {
+  [INSTITUTION_PARLEMENT]: 'periode',
+  [INSTITUTION_GOUVERNEMENT]: 'role',
+  [INSTITUTION_MISSION]: 'detail',
+};
+
 export const LIBELLE_PISTE = {
   [INSTITUTION_PARLEMENT]: "À l'Assemblée",
   [INSTITUTION_GOUVERNEMENT]: 'Au gouvernement',
@@ -1787,6 +1814,7 @@ export function pistesDuParcours(roles, bornes) {
     pistes.push({
       institution,
       libelle: LIBELLE_PISTE[institution],
+      etiquette: ETIQUETTE_PISTE[institution],
       segments,
       deuxNiveaux: segments.some((s) => s.niveau === 1),
       // La légende ne liste que les postures RÉELLEMENT présentes : une légende

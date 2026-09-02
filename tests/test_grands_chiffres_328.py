@@ -94,11 +94,78 @@ def test_la_these_tient_en_une_ligne(composant):
     )
 
 
-def test_le_bloc_est_repliable(composant):
-    """Il est dense — c'est assumé, c'est un tableau de bord — et il ne doit pas
-    s'imposer avant que le lecteur ait choisi de le lire."""
+def test_ce_qui_se_replie_est_la_partie_dense_pas_la_frise(composant):
+    """La frise est l'ossature : elle donne aux colonnes leur couleur et leur
+    raison d'être. Replier le bloc entier cachait ce qui explique le reste —
+    relevé en relecture d'écran le 02/09/2026. Le `<details>` n'enveloppe donc
+    que les colonnes, et la frise reste dehors."""
     bloc = _corps(composant, "function GrandsChiffres(", "export default function")
-    assert "<details" in bloc and "<summary" in bloc
+    assert bloc.index('className="cp-gc-frise"') < bloc.index("<details"), (
+        "la frise est AVANT le pli : elle ne se replie pas"
+    )
+    assert bloc.index("<details") < bloc.index('className={`cp-gc-duo'), (
+        "ce sont les colonnes que le pli enveloppe"
+    )
+
+
+def test_la_these_est_la_poignee_et_precede_les_colonnes(composant):
+    """« À déplacer avant À l'Assemblée » : la thèse introduit LES COLONNES, pas
+    le parcours. Elle sert de `<summary>`, donc de poignée à ce qu'elle
+    annonce."""
+    bloc = _corps(composant, "function GrandsChiffres(", "export default function")
+    assert '<summary className="cp-gc-these">' in bloc
+    assert bloc.index("cp-gc-these") < bloc.index("cp-gc-tete-col"), (
+        "la thèse se lit avant l'en-tête « À l'Assemblée »"
+    )
+
+
+def test_le_pli_porte_un_plus_visible(composant, feuille):
+    """Un `<details>` sans marqueur ne dit pas qu'il s'ouvre. Le « + » est
+    dessiné et non écrit — deux glyphes changeraient de chasse et feraient
+    sauter la ligne."""
+    bloc = _corps(composant, "function GrandsChiffres(", "export default function")
+    assert 'className="cp-gc-plus"' in bloc
+    assert ".cp-gc-plis[open] .cp-gc-plus::after" in feuille, (
+        "la barre verticale disparaît à l'ouverture : « + » devient « − »"
+    )
+    assert ".cp-gc-these::-webkit-details-marker" in feuille, (
+        "le triangle natif est retiré, sinon deux marqueurs cohabitent"
+    )
+
+
+def test_chaque_piste_etiquette_ce_que_son_nom_ne_dit_pas_deja(regles):
+    """Trois pistes, trois clés. Étiqueter la piste du gouvernement par sa
+    PÉRIODE remplaçait la seule information qu'elle portait — le poste — par une
+    redite de l'axe qui court juste en dessous."""
+    assert "[INSTITUTION_PARLEMENT]: 'periode'" in regles
+    assert "[INSTITUTION_GOUVERNEMENT]: 'role'" in regles
+    assert "[INSTITUTION_MISSION]: 'detail'" in regles
+    bloc = _corps(regles, "export function pistesDuParcours(", "\nexport ")
+    assert "etiquette: ETIQUETTE_PISTE[institution]" in bloc
+
+
+def test_aucune_abreviation_n_est_fabriquee(composant):
+    """La maquette portait « Sec. d'État, Éducation » et « Éduc. », écrites à la
+    main : rien dans la donnée ne les dérive, et un libellé que NOUS écrivons
+    n'est plus le libellé de la source (§2 règle 2). L'étiquette rend le champ
+    tel quel, l'intitulé complet reste en infobulle."""
+    bloc = _corps(composant, "function etiquetteDuSegment(", "\nfunction ")
+    assert "return s.role;" in bloc
+    for interdit in ("slice(0,", "substring(", "…", "...", "ABREG"):
+        assert interdit not in bloc, (
+            f"`{interdit}` tronquerait un libellé sourcé dans la vue"
+        )
+
+
+def test_la_periode_compacte_ne_calcule_rien(composant):
+    """Une étiquette de 5 % de large ne peut pas porter « 18 juin 2017 → 16
+    novembre 2018 ». La forme compacte rend les deux bornes telles qu'elles
+    sont, à la granularité qui suffit — jamais une durée, jamais un arrondi."""
+    bloc = _corps(composant, "function periodeCompacte(", "\nfunction ")
+    for interdit in ("Math.", "Date(", "durée", "duree"):
+        assert interdit not in bloc, (
+            f"`{interdit}` calculerait une durée là où deux bornes suffisent"
+        )
 
 
 # ── L'appariement des colonnes ──────────────────────────────────────────────
