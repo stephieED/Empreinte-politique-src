@@ -2566,6 +2566,41 @@ jobs:
           name: amendements-index-an
           path: .cache/amendements_an
 
+      # Entrées dérivées de la table de correspondance (#715), AVANT le portail
+      # et après que les pivots sont écrits — les deux conditions comptent.
+      #
+      # #708 a ouvert la porte d'entrée d'un membre de roster sans
+      # correspondance relue : son slug est FABRIQUÉ depuis l'état civil AMO30
+      # de son acteur. La §5b du portail, elle, exige une entrée de table pour
+      # tout profil publié — et le constructeur ne propose que ce que les
+      # profils DÉJÀ PUBLIÉS lui donnent. Résultat mesuré sur le run
+      # 33613535746 : 160 profils neufs collectés, 160 slugs sans entrée,
+      # commit bloqué, 57 min de collecte perdues, et un remède imprimé qui ne
+      # pouvait rien proposer. Cette étape écrit l'entrée dans le run même qui
+      # crée le profil, ce qui est aussi la seule façon de rendre le gel du
+      # slug effectif : la table passe devant la fabrication (#708 §3), donc
+      # elle doit exister avant la publication, pas après.
+      #
+      # `if: hashFiles(...)` sur le FICHIER, comme le step de normalisation
+      # roster ci-dessus (#524) : sans roster il n'y a aucun slug fabriqué, et
+      # la branche est sautée sans que rien n'échoue.
+      #
+      # HORS LIGNE, et c'est la raison du `--completer-derivees` plutôt que du
+      # constructeur complet : celui-ci télécharge AMO30, et une panne de
+      # source à cet endroit coûterait le commit d'un run dont la donnée est
+      # bonne — ce que #524 interdit.
+      #
+      # Code 1 = un refus nommé (le profil publié ne corrobore pas l'acteur que
+      # le roster déclare). On ne le rattrape pas : la §5b bloquerait de toute
+      # façon trois steps plus bas, et échouer ici nomme la cause.
+      - name: Correspondance — entrées dérivées des slugs fabriqués (#715)
+        if: ${{ hashFiles('raw_data/rosters_bruts.json') != '' }}
+        run: |
+          python3 src/build_correspondance_acteurs_an.py \
+            --completer-derivees \
+            --rosters-bruts raw_data/rosters_bruts.json \
+            --profiles-dir pivot_data/profiles
+
       # inputs.incomplete_read_threshold appliqué dans tous les modes (y compris cold_start=true).
       # §5 ParlTrack : --parltrack-status-file active la section de rapport
       #   enrichi ce run vs fallback (nb candidats dans chaque catégorie).
@@ -3033,7 +3068,12 @@ jobs:
           # les vues se vident sans erreur visible. `scrutins.json` manquait
           # ici depuis #432 — constaté et corrigé en même temps que l'ajout
           # d'`amendements/`, la panne aurait été la même.
-          git add raw_data/profiles pivot_data/profiles pivot_data/partis pivot_data/groupes pivot_data/gouvernements pivot_data/scrutins.json pivot_data/amendements
+          # `raw_data/correspondance_acteurs_an.json` (#715) : la table fait
+          # partie des données depuis que le step ci-dessus l'étend. Sans elle
+          # dans le `git add`, l'entrée dérivée serait réécrite à chaque run et
+          # le gel du slug qu'elle est censée produire n'existerait pas — même
+          # classe de panne que les index partagés absents du commit (AGENTS §3a).
+          git add raw_data/profiles raw_data/correspondance_acteurs_an.json pivot_data/profiles pivot_data/partis pivot_data/groupes pivot_data/gouvernements pivot_data/scrutins.json pivot_data/amendements
           # Table des commissions saisies au fond (#328), ajoutée seulement si
           # elle existe : `git add` sur un chemin absent échoue, et le step qui
           # la produit est non bloquant. Un run sans archive lisible ne doit pas

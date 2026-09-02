@@ -433,6 +433,15 @@ Convention d'écriture : `AGENTS.md` §8.
   C'est la clause 2 de #526 §9, et le seul geste qui manque pour que les fiches de la
   17e passent de 305/461 à leur couverture réelle. Coût mesuré d'un run : ~1,07 à
   1,44 Gio de profils bruts. Voir `docs/decisions/slug-fabrique-membre-de-roster-708.md`.
+- **#715 a débloqué la publication, pas la relecture.** Le premier run à profiter de #708
+  (`33613535746`, 02/09) a collecté 160 profils neufs et n'a **rien** committé : §5b, 160
+  slugs sans entrée. La passe `--completer-derivees` écrit désormais leur entrée dans le
+  run même qui les crée, estampillée `origine: "derivee"` — elle **gèle** l'identifiant,
+  elle ne le prouve pas. **Ce qui reste ouvert** : ces 160 entrées n'ont été relues par
+  personne, et la §5b publie leur compte à chaque run précisément pour que la file se
+  voie. Les relire, c'est renseigner `prenom`/`nom` depuis AMO30 et basculer `origine` à
+  `relue` — la clause 2 de #526 §9, inchangée. Voir
+  `docs/decisions/entree-derivee-correspondance-715.md`.
 - Le repli `fetch_full_roster_nosdeputes` est **retiré** (#529) ; `AN_ROSTER_ACTIF`
   reste, non plus comme aiguillage mais comme refus bruyant — un roster vide écrit
   sur disque est indiscernable d'un groupe dissous (#511/#524). La clause 3 de #526 §9

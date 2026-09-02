@@ -413,8 +413,22 @@ python3 src/build_correspondance_acteurs_an.py
 `raw_data/correspondance_acteurs_an.json` est complétée et réécrite. Les
 entrées existantes sont reconduites **verbatim** — c'est du travail relu — et un
 slug non résolu est **nommé sur stderr** plutôt qu'inventé. C'est le remède
-quand le quality gate §5b échoue en nommant un slug.
-→ `docs/decisions/correspondance-acteurs-an-525.md`.
+quand le quality gate §5b échoue en nommant un slug **hérité**.
+
+```bash
+python3 src/build_correspondance_acteurs_an.py \
+  --completer-derivees --rosters-bruts raw_data/rosters_bruts.json
+```
+
+Passe **additive et hors ligne** (#715), celle que `merge-and-pivot` lance avant
+le portail : elle ajoute une entrée `origine: "derivee"` pour les seuls slugs
+que `raw_data/rosters_bruts.json` déclare **fabriqués** (#708), c'est-à-dire
+dérivés de l'état civil de leur acteur — il n'y a là aucun rapprochement à
+prouver, seulement l'identifiant à **geler**. Elle ne lit ni AMO30 ni le réseau,
+ne réécrit aucune entrée relue, et refuse en nommant le slug si le profil publié
+ne porte pas exactement l'acteur que le roster déclare.
+→ `docs/decisions/correspondance-acteurs-an-525.md`,
+`docs/decisions/entree-derivee-correspondance-715.md`.
 
 ### Régénérer la table « ce module → ces décisions »
 

@@ -87,6 +87,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718910",
       "verifie_le": "2026-08-26"
     },
+    "elue-derivee": {
+      "identifiants": {
+        "an": "PA800001",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Élue Dérivée",
+        "date_naissance": null
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA800001",
+      "verifie_le": "2026-09-02",
+      "origine": "derivee"
+    },
     "emmanuel-tache-de-la-pagerie": {
       "acteur_ref": "PA793382",
       "etat_civil": {

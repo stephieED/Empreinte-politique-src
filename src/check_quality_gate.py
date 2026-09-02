@@ -2119,6 +2119,13 @@ def _report_correspondance_acteurs(
     couvert : il porte `acteur_ref: null`, `ecart: "hors_an"` et son motif. Un
     trou déclaré n'est pas un trou (AGENTS.md §2 règle 5).
 
+    Une entrée **dérivée** (`origine: "derivee"`, #715) couvre le commit comme
+    une autre : le slug a été fabriqué depuis l'acteur qu'il décrit, il n'y a
+    aucun rapprochement à prouver, et ce que l'entrée gèle — l'identifiant — est
+    gelé. Elle n'a pour autant été relue par personne, d'où le compte publié
+    juste à côté du total : c'est la file d'attente de relecture, et le seuil
+    n'est **pas** un seuil, c'est un compteur.
+
     Retourne (hard_errors, console_text, markdown_text).
 
     `provenances` (`{slug: meta.provenance}`) vient de la §3, qui a déjà lu le
@@ -2130,6 +2137,7 @@ def _report_correspondance_acteurs(
     publies: list[str] = []
     total_table = 0
     hors_an = 0
+    derivees = 0
     non_publies = 0
 
     try:
@@ -2141,6 +2149,12 @@ def _report_correspondance_acteurs(
     if table is not None:
         total_table = len(table)
         hors_an = sum(1 for e in table.values() if e["ecart"] == "hors_an")
+        # Ventilation `relue` / `derivee` (#715). Une entrée dérivée couvre le
+        # commit — le slug est gelé, ce qui est tout ce que la table doit à
+        # cette population — mais elle n'a été relue par personne. Publier le
+        # compte, c'est publier la file d'attente : #708 §8 la nommait sans
+        # la rendre visible, et une file qu'on ne voit pas ne se résorbe pas.
+        derivees = sum(1 for e in table.values() if e["origine"] == "derivee")
         # `Path.glob` renvoie les dotfiles, contrairement au module `glob` :
         # `.generation_checkpoint.json` a déjà été lu comme un profil et a
         # coûté un commit (#518).
@@ -2157,7 +2171,10 @@ def _report_correspondance_acteurs(
                 "Ajoute son entrée (acteur_ref, état civil, preuve, date de "
                 "vérification) dans raw_data/correspondance_acteurs_an.json — "
                 "python3 src/build_correspondance_acteurs_an.py la propose pour "
-                "les slugs que la correspondance par nom résout seule (#525)."
+                "les slugs que la correspondance par nom résout seule (#525) ; "
+                "un membre de roster entré avec un slug fabriqué relève de "
+                "--completer-derivees --rosters-bruts raw_data/rosters_bruts.json "
+                "(#715)."
             )
 
     if provenances is None:
@@ -2174,6 +2191,7 @@ def _report_correspondance_acteurs(
         "│  " + ventilation.ligne("Profils publiés"),
         f"│  Entrées : {total_table}   "
         f"Sans acteur AN (déclaré) : {hors_an}   Sans entrée : {len(manquants)}",
+        f"│  Dont dérivées d'un slug fabriqué, en attente de relecture : {derivees}",
     ]
     if non_publies:
         lignes.append(
@@ -2192,6 +2210,7 @@ def _report_correspondance_acteurs(
         "| --- | --- |",
         f"| Profils publiés | {ventilation.cellule_markdown()} |",
         f"| Entrées de la table | {total_table} |",
+        f"| Dont dérivées, en attente de relecture (#715) | {derivees} |",
         f"| Déclarés sans acteur AN | {hors_an} |",
         f"| Publiés sans entrée | {len(manquants)} |",
         f"| Entrées sans profil publié (non bloquant) | {non_publies} |",
