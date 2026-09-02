@@ -38,7 +38,13 @@
  * n'existait sur aucune fiche à l'écriture du module et en couvre 5 depuis.
  */
 
-import { formatNumber, isWholeTextVote, normalizeLabel, ratio } from './lecture';
+import {
+  MENTION_DE_LECTURE_PARTOUT,
+  formatNumber,
+  isWholeTextVote,
+  normalizeLabel,
+  ratio,
+} from './lecture';
 
 /* ── Règle : aucun compteur ne veut dire « aujourd'hui » ─────────────────────
  *
@@ -553,8 +559,14 @@ const DESIGNATIONS_TEXTE = [
  * quatre lectures du projet de loi de finances rectificative pour 2022
  * formeraient quatre textes distincts, et c'est précisément le mouvement d'une
  * lecture à l'autre que cette vue existe pour montrer.
+ *
+ * Le vocabulaire des mentions vient de `utils/lecture.js` et n'est PAS réécrit
+ * ici (#711) : il était dupliqué, et la copie de ce module ignorait les formes
+ * en chiffres — 60 des 17 748 scrutins publiés portaient « (1ère lecture) » ou
+ * « (2ème lecture) » et fabriquaient une désignation de plus. Ce qui reste
+ * propre à cette vue est l'ANCRAGE, pas la liste : la mention est cherchée
+ * partout dans l'intitulé, parce que 547 scrutins portent du texte après elle.
  */
-const MENTION_LECTURE = /\s*\((?:première|premiere|nouvelle|deuxième|seconde|texte|lecture|c\.m\.p)[^)]*\)\s*/g;
 
 /*
  * `null` quand l'intitulé ne nomme aucun texte. Jamais une désignation
@@ -582,7 +594,7 @@ export function designationDuTexte(intitule) {
 
   const reste = normalise
     .slice(debut)
-    .replace(MENTION_LECTURE, ' ')
+    .replace(MENTION_DE_LECTURE_PARTOUT, ' ')
     .replace(/\s+/g, ' ')
     .replace(/[.;,\s]+$/, '')
     .trim();

@@ -198,6 +198,7 @@ Le premier (pied de navigation) est *vérifié* : `ExplorerLayout.jsx` `.explore
 - DA préliminaire (structure, ton, table de contraste, couleurs de vote) : artifact Claude [d48b7554-0af3-45bd-904e-94367577ff4a](https://claude.ai/code/artifact/d48b7554-0af3-45bd-904e-94367577ff4a)
 - Couleurs/typo racine : `web/UI_finale/src/index.css`
 - Couleurs de vote/issue et les six règles de lecture communes : `web/UI_finale/src/utils/lecture.js` (`VOTE_STYLE`/`OUTCOME_COLOR`, #326), rendues par `src/components/Lecture.jsx`
+- Sélection des votes sur l'ensemble d'un texte (`isWholeTextVote`, #672) et **repli sur la dernière lecture** (`selectDerniereLectureVotes`, `LAST_READING_RULE`, #711) : même fichier, `web/UI_finale/src/utils/lecture.js`. La formule citée en §6 — « Lecture la plus avancée retenue pour chaque texte » — n'était appliquée par aucun code jusqu'à #711 ; c'est désormais la **date** qui choisit, sur le corpus entier des scrutins
 - Règles de lecture propres à la fiche de groupe : `web/UI_finale/src/utils/groupe.js` (#329)
 - Règles de lecture propres à la fiche candidat : `web/UI_finale/src/utils/profilCandidat.js` (#328), rendues par `src/components/CandidateProfile.jsx` — la trame en sept emplacements, la colormap de la frise (teinte = institution, motif = position) et les trois situations d'une année de vote
 - Motif de fond, layout : `web/UI_finale/src/styles/shell.css`, `ExplorerLayout.css`

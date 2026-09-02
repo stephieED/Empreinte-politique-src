@@ -427,10 +427,14 @@ export function buildCandidateView(
   const fonctions = fonctionsExercees(mandats);
   const qualite = regimeQualiteOrateur(interventions);
   const questions = directionQuestionsGouvernement(interventions, appartenances);
+  // `scrutinsIndex` — le CORPUS entier, pas les seuls votes du profil : la
+  // dernière lecture d'un texte se lit sur toutes ses lectures, y compris
+  // celles où la personne n'a pas de position enregistrée (#711).
   const lectureVotes = votesDuProfil(
     votes,
     appartenances,
     roles.filter((r) => r.institution === INSTITUTION_PARLEMENT),
+    scrutinsIndex,
   );
   const ecarts = ecartsAvecLeGroupe(votes, fichesGroupe);
 

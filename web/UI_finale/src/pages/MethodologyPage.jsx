@@ -1,5 +1,5 @@
 import StaticPage from '../components/StaticPage';
-import { WHOLE_TEXT_VOTE_BOUND } from '../utils/lecture';
+import { LAST_READING_RULE, WHOLE_TEXT_VOTE_BOUND } from '../utils/lecture';
 
 const SECTIONS = [
   {
@@ -39,7 +39,10 @@ const SECTIONS = [
           L'univers retenu comprend les scrutins publics disponibles, ordinaires et solennels, portant sur
           l'ensemble d'un texte. Les votes sur un article, sur une partie de texte ou sur un amendement en
           sont exclus, de même que les motions de censure, qui sont des faits de procédure. Pour un même
-          texte, seule la lecture la plus avancée connue est conservée dans la synthèse.
+          texte, une seule lecture est conservée dans la synthèse : la plus récente par sa date.
+        </p>
+        <p>
+          <strong>{LAST_READING_RULE.phrase}</strong> {LAST_READING_RULE.pourquoi}
         </p>
         <p>
           <strong>{WHOLE_TEXT_VOTE_BOUND.phrase}</strong> {WHOLE_TEXT_VOTE_BOUND.pourquoi}

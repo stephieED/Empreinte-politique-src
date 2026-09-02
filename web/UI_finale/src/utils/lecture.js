@@ -382,8 +382,66 @@ export function selectWholeTextVotes(scrutins) {
  * scrutin.
  */
 const OUVERTURE_VOTE_ENSEMBLE = /^(?:sur )?l['’]ensemble (?:du |de la |de l['’]|des )?/i;
-const MENTION_DE_LECTURE =
-  /\s*\((?:première|premiere|nouvelle|deuxième|seconde|texte|lecture|c\.m\.p)[^)]*\)\s*\.?\s*$/i;
+
+/* ── Règle : le VOCABULAIRE des mentions de lecture est écrit une seule fois ──
+ *
+ * Deux modules retiraient la mention de lecture d'un intitulé, chacun avec sa
+ * propre liste : `titreDuTexteVote` ici et `designationDuTexte` dans
+ * `utils/groupe.js` — et rien du tout ne regroupait les lectures, ce que #711
+ * ajoute. Le vocabulaire vit désormais ICI, et les deux ancrages s'en
+ * déduisent : la liste des mentions reconnues ne peut plus diverger d'un module
+ * à l'autre, seule la place où on les cherche varie.
+ *
+ * La liste est MESURÉE, pas devinée. Distribution des mentions finales sur les
+ * 925 scrutins « sur l'ensemble d'un texte » des 17 748 publiés, au commit de
+ * données `f635cb60` le 02/09/2026 :
+ *
+ *   première lecture                        546      2e lecture                 2
+ *   texte de la commission mixte paritaire  158      troisième lecture          2
+ *   lecture définitive                       54      1re lecture                1
+ *   (aucune parenthèse finale)               49      texte cmp                  1
+ *   deuxième lecture                         48      premiere lecture           1
+ *   nouvelle lecture                         46      + 4 coquilles de la source
+ *   texte de la commission paritaire          8      (commisison, commisson,
+ *   1ère lecture                              3       défintive, défnitive)
+ *
+ * Deux parenthèses finales ne sont PAS des mentions de lecture et ne doivent
+ * jamais être retirées : « (article 34-1 de la Constitution) » et
+ * « (art. 34-1 de la Constitution) », 1 scrutin chacune — une résolution de
+ * l'article 34-1 n'a pas de lecture. Deux autres formes, mesurées ailleurs dans
+ * le corpus, distinguent des textes et non des lectures : le « (2) » du projet
+ * de loi de finances rectificative pour 2020 (2), et le « (2ème vote) » du
+ * scrutin `an:14:1086` qui remplace le scrutin annulé `an:14:1085`.
+ *
+ * D'où la forme de la liste : les ordinaux en CHIFFRES exigent le mot
+ * « lecture » derrière eux — sans cette exigence, « (2ème vote) » serait pris
+ * pour une lecture et souderait un scrutin annulé à son remplaçant. Les
+ * ordinaux en LETTRES restent nus, comme avant ce lot : c'est ce qui retire
+ * « (seconde délibération) », et le changer déplacerait 547 désignations de
+ * fiche de groupe pour une raison étrangère à ce lot.
+ */
+const MENTIONS_DE_LECTURE =
+  /première|premiere|nouvelle|deuxième|seconde|texte|lecture|c\.m\.p|(?:1\s*(?:ère|re|ere)|2\s*(?:ème|eme|e)|3\s*(?:ème|eme|e)|troisième|troisieme|deuxieme)\s*lecture/;
+
+/*
+ * La mention EN FIN d'intitulé — celle qu'on retire pour nommer le texte et
+ * pour le regrouper.
+ */
+export const MENTION_DE_LECTURE = new RegExp(
+  `\\s*\\((?:${MENTIONS_DE_LECTURE.source})[^)]*\\)\\s*\\.?\\s*$`,
+  'i',
+);
+
+/*
+ * La même mention CHERCHÉE PARTOUT dans l'intitulé, forme dont
+ * `designationDuTexte` (`utils/groupe.js`) a besoin : 547 scrutins portent du
+ * texte APRÈS la parenthèse — « […] (première lecture). scrutin annulé -
+ * remplacé par le scrutin 1086 ». Deux ancrages, un seul vocabulaire.
+ */
+export const MENTION_DE_LECTURE_PARTOUT = new RegExp(
+  `\\s*\\((?:${MENTIONS_DE_LECTURE.source})[^)]*\\)\\s*`,
+  'gi',
+);
 
 export function titreDuTexteVote(intitule) {
   if (typeof intitule !== 'string' || !intitule.trim()) return null;
@@ -391,6 +449,177 @@ export function titreDuTexteVote(intitule) {
   if (!nu) return intitule;
   return nu.charAt(0).toUpperCase() + nu.slice(1);
 }
+
+/* ── Règle : un texte voté plusieurs fois n'est compté qu'une fois ───────────
+ *
+ * `AGENTS.md` §6 publie « `votes[]` vote sur le texte (`vote_texte`, DERNIÈRE
+ * LECTURE) », et le DESIGN_SYSTEM §6 cite la formule comme exemple de la voix
+ * de la maison. Aucun code ne l'appliquait (#711) : `isWholeTextVote` (#672)
+ * sélectionnait les votes sur l'ensemble d'un texte et s'arrêtait là.
+ *
+ * Mesuré au commit de données `f635cb60` le 02/09/2026, sur les 17 748
+ * scrutins publiés : 925 votes sur l'ensemble d'un texte, 697 textes distincts
+ * une fois les lectures repliées, 187 textes votés plusieurs fois — 228
+ * scrutins, soit 24,6 %, comptaient une lecture déjà comptée.
+ *
+ * ── Pourquoi le regroupement par libellé est permis ICI ────────────────────
+ *
+ * `docs/decisions/regrouper-nest-pas-joindre-639.md` autorise à regrouper des
+ * faits d'UNE MÊME SOURCE par leur propre libellé ; les 925 intitulés viennent
+ * tous des scrutins de l'Assemblée. Et le mode d'échec est SÛR : un intitulé
+ * mal replié ÉCHOUE À REGROUPER, il ne rapproche jamais à tort. Deux lectures
+ * restent alors comptées séparément — c'est-à-dire l'état d'avant ce lot.
+ * C'est l'inverse exact de `texte_vise` (#696), où un appariement par libellé
+ * aurait FUSIONNÉ des textes distincts.
+ *
+ * ── Pourquoi la DATE, et jamais le rang ────────────────────────────────────
+ *
+ * Le rang de lecture n'est pas un champ : notre projection de scrutin porte
+ * `date`, `legislature`, `numero_scrutin`, `sort`, `texte`, `type_scrutin`,
+ * `type_vote`, `demandeur` (#639). Le rang n'existe que DANS l'intitulé, où il
+ * manque 51 fois sur 925. Le repli sert à GROUPER ; la date ORDONNE.
+ *
+ * Et l'ordre par rang serait FAUX là où les deux divergent — 4 groupes mesurés,
+ * tous des textes budgétaires dont l'Assemblée réemploie le titre :
+ * « projet de loi de finances rectificative pour 2017 » porte deux premières
+ * lectures (06/11 et 12/12/2017) encadrant une lecture définitive (14/11). Un
+ * tri par rang y retiendrait la lecture définitive de novembre, alors que le
+ * dernier scrutin de décembre est le plus récent.
+ *
+ * ── Ce que le repli NE rattrape pas, et dans quel sens il se trompe ─────────
+ *
+ * La clé porte la LÉGISLATURE. Sans elle, 10 groupes soudent deux textes
+ * homonymes votés dans deux législatures différentes. Un texte réellement
+ * repris après une dissolution reste donc compté deux fois : c'est un manque,
+ * pas une affirmation.
+ *
+ * Il reste 9 groupes — 20 scrutins des 925, borne HAUTE — qui portent DEUX FOIS
+ * la même mention de lecture à des dates différentes dans une même
+ * législature : deux collectifs budgétaires d'une même année, deux lois
+ * spéciales, deux prorogations de l'état d'urgence. Certains sont légitimes (un
+ * intitulé qui omet sa mention deux fois de suite), les autres soudent deux
+ * textes distincts. Le sens de l'erreur reste le bon : le scrutin retenu est
+ * toujours un scrutin réel de la personne, jamais un vote inventé — ce qui se
+ * perd est un texte, jamais une position attribuée à tort.
+ */
+
+/*
+ * La clé de regroupement : (législature, titre débarrassé de sa mention de
+ * lecture). `null` quand l'intitulé ne donne rien à regrouper — jamais une clé
+ * inventée, jamais un repli sur l'intitulé entier, qui ferait un texte par
+ * scrutin (§2 règle 5).
+ *
+ * Le séparateur est un caractère nul : il ne peut pas apparaître dans un
+ * libellé, donc deux clés ne peuvent pas se confondre par concaténation.
+ */
+export function cleDuTexteVote(scrutin) {
+  const libelle = normalizeLabel(scrutin?.texte);
+  if (!libelle) return null;
+
+  const titre = libelle
+    .replace(OUVERTURE_VOTE_ENSEMBLE, '')
+    .replace(MENTION_DE_LECTURE, '')
+    .replace(/[.\s]+$/, '')
+    .trim();
+  if (!titre) return null;
+
+  return `${scrutin?.legislature ?? ''}\u0000${titre}`;
+}
+
+/*
+ * L'ordre des lectures d'un texte : par DATE, puis par numéro de scrutin.
+ *
+ * Le numéro ne départage qu'À L'INTÉRIEUR d'une législature — il repart à 1 à
+ * chaque législature (`AGENTS.md` §5) — et c'est précisément le cas ici, parce
+ * que la clé de regroupement porte la législature. Il ne sert que d'ex aequo :
+ * un seul groupe des 697 en a besoin, les scrutins `an:15:2769` et
+ * `an:15:2770` du 25/06/2020, deux votes du même jour sur la proposition de loi
+ * pour une éthique de l'urgence.
+ */
+function ordreDesLectures(a, b) {
+  const parDate = String(a?.date || '').localeCompare(String(b?.date || ''));
+  if (parDate !== 0) return parDate;
+  return Number(a?.numero_scrutin || 0) - Number(b?.numero_scrutin || 0);
+}
+
+/*
+ * Les votes sur l'ensemble d'un texte, regroupés par texte. Accepte la liste de
+ * `pivot_data/scrutins.json` ou l'index `{id: scrutin}` que `pivotAdapter`
+ * manipule, comme `selectWholeTextVotes` dont ce regroupement est le
+ * prolongement.
+ */
+export function grouperLecturesParTexte(scrutins) {
+  const groupes = new Map();
+
+  for (const scrutin of selectWholeTextVotes(scrutins)) {
+    const cle = cleDuTexteVote(scrutin);
+    if (!cle) continue;
+
+    const entree = groupes.get(cle) ?? {
+      cle,
+      legislature: scrutin.legislature ?? null,
+      titre: titreDuTexteVote(scrutin.texte),
+      lectures: [],
+    };
+    entree.lectures.push(scrutin);
+    groupes.set(cle, entree);
+  }
+
+  for (const entree of groupes.values()) entree.lectures.sort(ordreDesLectures);
+  return groupes;
+}
+
+/*
+ * La dernière lecture d'un texte, ou `null` quand elle n'est pas déterminable.
+ *
+ * Une lecture SANS DATE ne s'ordonne pas. Un groupe qui en porte une n'a donc
+ * pas de dernière lecture connue, et il vaut mieux ne rien publier que de
+ * choisir au hasard (§2 règle 5) — sauf si le groupe ne compte qu'une lecture :
+ * il n'y a alors rien à ordonner. Aucun des 925 scrutins mesurés n'est dans ce
+ * cas, et c'est bien pour cela que la garde est écrite plutôt que supposée.
+ */
+export function derniereLecture(lectures) {
+  const liste = Array.isArray(lectures) ? lectures : [];
+  if (!liste.length) return null;
+  if (liste.length === 1) return liste[0];
+  if (liste.some((scrutin) => !scrutin?.date)) return null;
+
+  const triees = liste.slice().sort(ordreDesLectures);
+  return triees[triees.length - 1];
+}
+
+/*
+ * Un scrutin par texte : celui de sa dernière lecture. C'est la sélection que
+ * les vues appellent pour compter des TEXTES plutôt que des votes.
+ */
+export function selectDerniereLectureVotes(scrutins) {
+  const retenus = [];
+  for (const entree of grouperLecturesParTexte(scrutins).values()) {
+    const derniere = derniereLecture(entree.lectures);
+    if (derniere) retenus.push(derniere);
+  }
+  return retenus.sort(ordreDesLectures);
+}
+
+/* ── Livrable : la règle, en texte publié ────────────────────────────────────
+ *
+ * Un compteur qui replie sans le dire ment par omission : le lecteur qui
+ * compare 111 à une liste de 150 votes ne peut pas savoir ce qui a été retiré,
+ * et le DESIGN_SYSTEM §6 exige que chaque métrique porte sa propre limite.
+ *
+ * Le libellé court accompagne le chiffre ; la phrase et le pourquoi vivent en
+ * note, à côté de `WHOLE_TEXT_VOTE_BOUND` dont cette règle est le second temps.
+ */
+export const LAST_READING_LABEL = 'dernière lecture retenue pour chaque texte';
+
+export const LAST_READING_RULE = {
+  id: 'derniere-lecture',
+  sujet: 'Dernière lecture',
+  phrase:
+    'Un texte voté plusieurs fois ne compte qu’une fois : la position retenue est celle de sa dernière lecture.',
+  pourquoi:
+    'Un même texte revient devant l’Assemblée — première lecture, nouvelle lecture, texte de la commission mixte paritaire, lecture définitive. Compter chacune séparément gonfle le décompte, et afficher une position de première lecture comme la position sur la loi serait faux dès qu’un vote plus tardif l’a suivie. Nous regroupons donc les lectures d’un même texte par leur intitulé, et nous retenons la plus récente par sa date : le rang de lecture n’est pas un champ de la source. Quand la personne n’a pas de position enregistrée sur cette dernière lecture, le texte n’est pas affiché — nous ne pouvons pas dire pourquoi elle y manque, et le dire serait publier une absence individuelle.',
+};
 
 /* ── Livrable : la borne, en texte publié ────────────────────────────────────
  *

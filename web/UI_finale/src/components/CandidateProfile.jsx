@@ -15,8 +15,14 @@
 import '../styles/shell.css';
 import './CandidateProfile.css';
 import { BadgeSource, Interdits, ListeVide, PositionVote } from './Lecture';
-import { OUTCOME_COLOR, WHOLE_TEXT_VOTE_BOUND, formatNumber } from '../utils/lecture';
 import { Fragment } from 'react';
+import {
+  LAST_READING_LABEL,
+  LAST_READING_RULE,
+  OUTCOME_COLOR,
+  WHOLE_TEXT_VOTE_BOUND,
+  formatNumber,
+} from '../utils/lecture';
 import {
   CAS_RIEN_A_MONTRER,
   INSTITUTION_GOUVERNEMENT,
@@ -678,11 +684,25 @@ function Votes({ votes, cause, voix }) {
         </p>
       )}
 
-      {votes.surEnsemble === 0 ? (
+      {!votes.derniereLectureDisponible ? (
+        <div className="cp-carte">
+          <ListeVide
+            cause="non_collecte"
+            motif="L’index des scrutins n’a pas pu être lu. Sans lui, la dernière lecture de chaque texte n’est pas déterminable, et un décompte non replié afficherait une position de première lecture comme sa position sur la loi."
+          />
+        </div>
+      ) : votes.surEnsemble === 0 ? (
         <div className="cp-carte">
           <ListeVide
             cause="couvert"
             motif="Aucune de ses positions ne porte sur l’ensemble d’un texte au sens de la règle publiée ci-dessous. Ses autres positions — sur un article, sur un amendement — restent comptées dans le total."
+          />
+        </div>
+      ) : votes.textes === 0 ? (
+        <div className="cp-carte">
+          <ListeVide
+            cause="couvert"
+            motif="Toutes ses positions sur l’ensemble d’un texte portent sur une lecture qu’un scrutin plus tardif a suivie, et il n’a pas de position enregistrée sur ces dernières lectures. Nous ne pouvons pas dire pourquoi, et le dire serait publier une absence individuelle."
           />
         </div>
       ) : (
@@ -697,7 +717,10 @@ function Votes({ votes, cause, voix }) {
           </div>
           <div className="cp-regles">
             <span className="cp-regle">
-              {formatNumber(votes.surEnsemble)} votes sur l’ensemble d’un texte, parmi{' '}
+              {formatNumber(votes.textes)} textes — {LAST_READING_LABEL}
+            </span>
+            <span className="cp-regle">
+              tirés de {formatNumber(votes.surEnsemble)} votes sur l’ensemble d’un texte, parmi{' '}
               {formatNumber(votes.total)} positions
             </span>
             <span className="cp-regle">absences jamais publiées</span>
@@ -705,6 +728,10 @@ function Votes({ votes, cause, voix }) {
           </div>
         </div>
       )}
+
+      <p className="cp-note">
+        <b>{LAST_READING_RULE.phrase}</b> {LAST_READING_RULE.pourquoi}
+      </p>
 
       <p className="cp-note">
         <b>{WHOLE_TEXT_VOTE_BOUND.phrase}</b> {WHOLE_TEXT_VOTE_BOUND.pourquoi}
@@ -1089,7 +1116,7 @@ export default function CandidateProfile({ candidate }) {
       <Section
         numero="5"
         titre={c.voix.titres.vote}
-        critere="Les positions exprimées sur l’ensemble d’un texte. Quand une période rendait le vote impossible, la page le dit au lieu de laisser un vide. Aucun taux de participation n’est publié : ce serait un taux d’assiduité individuel."
+        critere="Les positions exprimées sur l’ensemble d’un texte, une seule par texte : celle de sa dernière lecture. Quand une période rendait le vote impossible, la page le dit au lieu de laisser un vide. Aucun taux de participation n’est publié : ce serait un taux d’assiduité individuel."
       >
         <Votes cause={c.causes.votes} votes={c.votes} voix={c.voix} />
       </Section>
