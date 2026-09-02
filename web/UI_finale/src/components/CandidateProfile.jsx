@@ -899,7 +899,7 @@ function etiquetteDuSegment(cle, s) {
 }
 
 function PisteFrise({ piste }) {
-  const hauteur = piste.deuxNiveaux ? 40 : 22;
+
   return (
     <div className={`cp-gc-piste cp-gc-piste--${piste.institution}`}>
       <span className="cp-gc-piste-nom">
@@ -918,13 +918,20 @@ function PisteFrise({ piste }) {
           />
         ))}
       </div>
-      <div className="cp-gc-etiqs" style={{ height: hauteur }}>
+      {/* La hauteur est portée par une CLASSE et non par un style en ligne : sous
+          le seuil étroit, les étiquettes quittent le rail pour une liste, et une
+          hauteur en ligne ne se surcharge qu'à coups de `!important`. */}
+      <div className={`cp-gc-etiqs ${piste.deuxNiveaux ? 'cp-gc-etiqs--deux-niveaux' : ''}`}>
         {piste.segments.map((s) => (
           <span
             key={`e-${s.debut}-${s.role}`}
             className="cp-gc-etiq"
             style={{ left: `${s.centre.toFixed(2)}%`, top: s.niveau === 0 ? 0 : 18 }}
           >
+            {/* La pastille ne sert QUE dans la liste : sur le rail, l'étiquette
+                est déjà au-dessus de son segment. En liste, elle est le seul lien
+                qui reste entre un libellé et sa posture. */}
+            <i className={`cp-gc-pastille-seg cp-gc-seg--${s.motif}`} aria-hidden="true" />
             {etiquetteDuSegment(piste.etiquette, s)}
           </span>
         ))}
@@ -1041,10 +1048,11 @@ function GrandsChiffres({ chiffres }) {
             Ce que cette personne a engagé.
           </summary>
 
-          <div
-            className={`cp-gc-duo ${colonnes.length > 1 ? 'cp-gc-duo--deux' : ''}`}
-            style={{ gridTemplateColumns: colonnes.map(() => '1fr').join(' ') }}
-          >
+          {/* Le nombre de colonnes vient de la CLASSE, jamais d'un style en
+              ligne : sous 720 px le tableau défile latéralement, et une valeur en
+              ligne ne se surcharge qu'avec `!important` — que le prochain
+              ajustement oublierait. */}
+          <div className={`cp-gc-duo ${colonnes.length > 1 ? 'cp-gc-duo--deux' : ''}`}>
             {colonnes.map((c) => (
               <div className={`cp-gc-tete-col cp-gc-tete-col--${c}`} key={`t-${c}`}>
                 <span className="cp-gc-bandeau" />
