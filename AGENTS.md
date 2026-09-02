@@ -693,7 +693,7 @@ Edge-case history: the amendments and votes entries of `docs/technical_decisions
 | `amendements_agreges` on a group sheet | Public — **distinct amendments**, deduplicated on `amendement_id`. A co-signed amendment is **one** |
 | Signatures laid by a group's members | Public, under `amendements_agreges.signatures`, never under the word "amendments" |
 | Adoption rate over signatures | **Never** — numerator and denominator are inflated by different co-signatory counts, so the bias has no known direction (§2 rule 7) |
-| `votes[]` bill vote (`vote_texte`, latest reading) | Public |
+| `votes[]` bill vote (`vote_texte`, latest reading) | Public — **one text, one position**. The fold and the selection live ONLY in `web/UI_finale/src/utils/lecture.js`, beside `isWholeTextVote` (#711); the last reading is chosen by the **date**, over the **whole** scrutins corpus, never over the person's own votes — the rule was published for a year and implemented nowhere. See `docs/decisions/derniere-lecture-retenue-711.md` |
 | 49.3 / no-confidence motion | Public, labeled as procedural fact |
 | Individual attendance/presence | **Never public** (rule 3) |
 | Group `cohesion_votes[]` | Public, with numerator/denominator |
