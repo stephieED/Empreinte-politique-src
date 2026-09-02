@@ -242,8 +242,13 @@ def test_le_mode_complet_ne_lit_jamais_l_index_reduit(tmp_path, monkeypatch):
     rend moins, sans que rien ne le dise.
     """
     _cache(tmp_path, monkeypatch)
+    # La tranche porte `sujet_code_grammaire` : sans lui, #719 la refuserait
+    # comme périmée et ce test passerait pour la mauvaise raison.
     cp._write_syceron_index_par_acteur(
-        "17", {"PA1": [{"id": "a", "collecte": COLLECTE_THEME_SEUL}]}, theme_seul=True
+        "17",
+        {"PA1": [{"id": "a", "sujet_code_grammaire": None,
+                  "collecte": COLLECTE_THEME_SEUL}]},
+        theme_seul=True,
     )
     assert cp._read_cached_interventions_syceron_acteur("17", "PA1") is None
 
@@ -259,6 +264,7 @@ def test_le_mode_reduit_lit_l_index_complet_et_le_reduit(tmp_path, monkeypatch):
     cp._write_syceron_index_par_acteur(
         "17",
         {"PA1": [{"id": "a", "date": "2025-01-01", "sujet": "Un sujet",
+                  "sujet_code_grammaire": "DISC_ARTICLES_1_1",
                   "session_ref": "S", "url": "https://x", "legislature": "17",
                   "texte": "un très long verbatim"}]},
     )
@@ -268,8 +274,11 @@ def test_le_mode_reduit_lit_l_index_complet_et_le_reduit(tmp_path, monkeypatch):
         # #710 — le code du point qui a fourni le sujet suit le sujet jusque dans
         # l'entrée réduite : sans lui, `backfill_sujet_seance` ne pourrait jamais
         # corriger un créneau de séance déjà publié sur un membre de roster, et le
-        # mode « thème seul » serait le seul à ne pas guérir.
-        "sujet_code_grammaire": None,
+        # mode « thème seul » serait le seul à ne pas guérir. La VALEUR est
+        # vérifiée, pas seulement la clé : `_reduire_au_theme` la poserait à
+        # `None` même sur un index qui ne la porte pas, et c'est justement ce que
+        # #719 refuse en amont.
+        "sujet_code_grammaire": "DISC_ARTICLES_1_1",
         "session_ref": "S", "url": "https://x", "legislature": "17",
         "collecte": COLLECTE_THEME_SEUL,
     }]
