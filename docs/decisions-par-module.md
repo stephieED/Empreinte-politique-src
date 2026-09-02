@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 209 décisions
+gouverne sans avoir à fouiller les 210 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -228,7 +228,7 @@ Le mentionnent sans le gouverner : [`dossier-des-amendements-639`](decisions/dos
 
 ## `src/build_commissions_dossiers.py`
 
-Le mentionnent sans le gouverner : [`vivier-de-points-et-empreinte-de-commission-328`](decisions/vivier-de-points-et-empreinte-de-commission-328.md).
+Le mentionnent sans le gouverner : [`mise-en-oeuvre-des-grands-chiffres-328`](decisions/mise-en-oeuvre-des-grands-chiffres-328.md), [`vivier-de-points-et-empreinte-de-commission-328`](decisions/vivier-de-points-et-empreinte-de-commission-328.md).
 
 ## `src/build_correspondance_acteurs_an.py`
 

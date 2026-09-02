@@ -70,279 +70,390 @@
 }
 
 /* ── L'essentiel ─────────────────────────────────────────────────────────── */
-.cp-essentiel {
-  margin-top: 26px;
-  background: var(--dark);
-  color: #f7f6f4;
-  border-radius: 18px;
-  padding: 28px 32px 26px;
+/* ── « Les grands chiffres » (#328) ──────────────────────────────────────────
+ *
+ * Bleu contre bronze. C'est le seul couple qui survive au daltonisme
+ * rouge-vert, le plus répandu, et ni l'un ni l'autre ne se lit comme positif ou
+ * négatif : ce sont deux métiers, pas deux notes. Le vert et le rouge sont pris
+ * par les positions de vote (`DESIGN_SYSTEM` §2), le jaune signal est réservé à
+ * la sélection, à l'action et à la source vérifiée (§3) — il n'apparaît nulle
+ * part ici, ni filet ni décor.
+ */
+.cp-gc {
+  --parl: #2e4a7d;
+  --parl-wash: #e9eef6;
+  --parl-line: #c6d4e8;
+  --parl-pale: #dce5f2;
+  --gouv: #8a6512;
+  --gouv-wash: #f6f0e4;
+  --gouv-line: #e3d2ab;
+  --gouv-pale: #efe4cc;
+  --neutre: #9a958d;
+  --neutre-wash: #edebe7;
+  --rail: #efede9;
+  margin-bottom: 34px;
 }
 
-.cp-essentiel-label {
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .cp-gc {
+    --parl: #8fb3e8;
+    --parl-wash: #1b2331;
+    --parl-line: #2e3f5a;
+    --parl-pale: #243043;
+    --gouv: #d9b264;
+    --gouv-wash: #2a2314;
+    --gouv-line: #4a3a1c;
+    --gouv-pale: #3a2f18;
+    --neutre: #7c7772;
+    --neutre-wash: #26251f;
+    --rail: #1f2027;
+  }
+}
+
+:root[data-theme='dark'] .cp-gc {
+  --parl: #8fb3e8;
+  --parl-wash: #1b2331;
+  --parl-line: #2e3f5a;
+  --parl-pale: #243043;
+  --gouv: #d9b264;
+  --gouv-wash: #2a2314;
+  --gouv-line: #4a3a1c;
+  --gouv-pale: #3a2f18;
+  --neutre: #7c7772;
+  --neutre-wash: #26251f;
+  --rail: #1f2027;
+}
+
+.cp-gc-tete {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.cp-gc-tete::-webkit-details-marker {
+  display: none;
+}
+
+.cp-gc-label {
   font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #9c98a6;
-}
-
-/* La thèse : réaction d'un côté, initiative de l'autre. Les DEUX MOITIÉS ONT
-   MÊME TAILLE ET MÊME GRAISSE — ce sont les deux termes d'une opposition, et
-   n'accentuer que la seconde (22px/800 contre 17px/500) faisait lire la
-   première comme une légende de la seconde. L'accent porte sur les DEUX MOTS
-   opposés — « réaction », « initiative » — jamais sur une ligne entière.
-   Le contraste reste TYPOGRAPHIQUE : pas d'emoji, la charte n'en emploie nulle
-   part et il introduirait un ton. Pas de jaune signal non plus : DESIGN_SYSTEM
-   §3 le réserve à la sélection, à l'action et à la source vérifiée. */
-.cp-these {
-  margin-top: 12px;
-  max-width: 60ch;
-  letter-spacing: -0.015em;
-}
-
-.cp-these-ligne {
-  display: block;
-  font-size: 19px;
-  font-weight: 500;
-  color: #d8d5de;
-  line-height: 1.34;
-}
-
-.cp-these-ligne + .cp-these-ligne {
-  margin-top: 6px;
-}
-
-.cp-these-ligne b {
-  font-weight: 800;
-  color: #f7f6f4;
-}
-
-.cp-these-gouvernement,
-.cp-essentiel-voici,
-.cp-essentiel-manque {
-  font-size: 13px;
-  line-height: 1.55;
-  max-width: 70ch;
-}
-
-.cp-these-gouvernement {
-  margin-top: 12px;
-  color: #9c98a6;
-}
-
-.cp-essentiel-voici {
-  margin-top: 12px;
-  color: #f7f6f4;
   font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
-.cp-essentiel-manque {
-  margin-top: 8px;
-  color: #e4e2e8;
-  padding-left: 10px;
-  border-left: 2px solid #4a4d58;
-}
-
-.cp-points {
-  margin-top: 18px;
-}
-
-.cp-point {
-  display: grid;
-  grid-template-columns: 120px 1fr;
-  gap: 20px;
-  align-items: baseline;
-  padding: 14px 0;
-  border-top: 1px solid #2c2f38;
-}
-
-/* Le couple porte deux nombres empilés, chacun avec son propre libellé : la
-   colonne est plus large et les deux s'alignent en haut, pas sur la ligne de
-   base d'un nombre unique. */
-.cp-point--couple {
-  grid-template-columns: 176px 1fr;
-  align-items: start;
-}
-
-.cp-point:first-child {
-  border-top: 0;
-}
-
-.cp-point-nombre {
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  white-space: nowrap;
-}
-
-.cp-point-nombre small {
-  font-size: 12px;
+.cp-gc-these {
+  font-size: 20px;
   font-weight: 600;
-  color: #9c98a6;
-  margin-left: 4px;
-  letter-spacing: 0;
+  letter-spacing: -0.01em;
 }
 
-.cp-point-couple {
-  display: block;
-  white-space: normal;
+.cp-gc-carte {
+  padding: 26px 24px;
 }
 
-.cp-point-couple + .cp-point-couple {
-  margin-top: 8px;
+/* ── La frise : l'ossature du bloc ────────────────────────────────────────── */
+
+.cp-gc-piste {
+  margin-bottom: 20px;
 }
 
-.cp-point-couple small {
-  display: block;
-  margin-left: 0;
-  margin-top: 1px;
-  line-height: 1.3;
-}
-
-.cp-point-texte {
-  font-size: 13.5px;
-  line-height: 1.5;
-  max-width: 66ch;
-}
-
-.cp-point-texte > span {
-  display: block;
-}
-
-/* Le rôle : « comme parlementaire », « au banc du gouvernement ». Affiché
-   seulement quand le profil en tient plusieurs — cinq fois le même sur une
-   personne qui n'a jamais été ministre serait du bruit. */
-.cp-point-role {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #9c98a6;
-  margin-bottom: 3px;
-}
-
-.cp-point-suite,
-.cp-point-socle {
-  color: #9c98a6;
-  margin-top: 3px;
-}
-
-.cp-point-socle {
-  font-size: 12.5px;
-}
-
-/* Une garde n'est pas une note de méthode : elle prévient un contresens de
-   lecture — « questions reçues, pas posées », « ces dépôts ne figurent dans
-   aucune commission ci-dessus ». Elle est donc marquée, pas estompée comme la
-   couverture. Le filet est neutre et NON le jaune signal : DESIGN_SYSTEM §3 le
-   réserve à la sélection, à l'action et à la source vérifiée — l'employer ici
-   lui ferait dire « attention », c'est-à-dire un jugement. */
-.cp-point-garde {
-  margin-top: 7px;
-  padding-left: 10px;
-  border-left: 2px solid #4a4d58;
-  font-size: 12.5px;
-  color: #e4e2e8;
-}
-
-/* Répartition en barre (amendements → commissions saisies au fond). */
-.cp-point-repartition {
-  display: block;
-  margin-top: 10px;
-}
-
-.cp-point-repartition-titre {
-  display: block;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #9c98a6;
-}
-
-.cp-barre--sombre {
-  background: #2c2f38;
-  gap: 2px;
-  margin-top: 6px;
-  height: 14px;
-  border-radius: 4px;
-}
-
-/* UN SEUL TON : deux commissions à égalité produisent deux segments
-   identiques. Les teinter par rang les placerait sur une échelle du plus au
-   moins — exactement ce que #329 a retiré de la fiche de groupe. */
-.cp-barre-seg--uni {
-  background: #f7f6f4;
-}
-
-.cp-cles--sombre {
-  color: #c9c6d0;
-  margin-top: 7px;
-}
-
-.cp-cles--sombre b {
-  color: #f7f6f4;
+.cp-gc-piste-nom {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
   font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  padding: 3px 10px 3px 8px;
+  border-radius: 999px;
 }
 
-.cp-pastille {
+.cp-gc-piste-nom i {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+}
+
+.cp-gc-piste--parlement .cp-gc-piste-nom { color: var(--parl); background: var(--parl-wash); }
+.cp-gc-piste--parlement .cp-gc-piste-nom i { background: var(--parl); }
+.cp-gc-piste--gouvernement .cp-gc-piste-nom { color: var(--gouv); background: var(--gouv-wash); }
+.cp-gc-piste--gouvernement .cp-gc-piste-nom i { background: var(--gouv); }
+.cp-gc-piste--mission .cp-gc-piste-nom { color: var(--neutre); background: var(--neutre-wash); }
+.cp-gc-piste--mission .cp-gc-piste-nom i { background: var(--neutre); }
+
+.cp-gc-rail {
+  position: relative;
+  height: 22px;
+  background: var(--rail);
+  border-radius: 5px;
+}
+
+.cp-gc-piste--mission .cp-gc-rail { height: 12px; }
+
+.cp-gc-seg {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 5px;
+}
+
+.cp-gc-piste--gouvernement .cp-gc-seg { background: var(--gouv); }
+.cp-gc-piste--mission .cp-gc-seg { background: var(--neutre); }
+
+/* Cinq états de posture, en MOTIFS et non en couleur — la couleur code déjà le
+ * rôle. Et deux absences qui ne se confondent pas : `non-declaree` est une
+ * valeur publiée par l'Assemblée, le contour tireté dit qu'on ne l'a pas. */
+.cp-gc-piste--parlement .cp-gc-seg--plein { background: var(--parl); }
+.cp-gc-piste--parlement .cp-gc-seg--diagonales {
+  background: repeating-linear-gradient(135deg, var(--parl) 0 3px, var(--parl-pale) 3px 7px);
+}
+.cp-gc-piste--parlement .cp-gc-seg--points {
+  background: var(--parl-pale);
+  background-image: radial-gradient(var(--parl) 1.4px, transparent 1.5px);
+  background-size: 6px 6px;
+}
+.cp-gc-piste--parlement .cp-gc-seg--rayures {
+  background: var(--parl-pale);
+  box-shadow: inset 0 0 0 1.5px var(--parl);
+}
+.cp-gc-piste--parlement .cp-gc-seg--fines-rayures {
+  background: var(--parl-pale);
+  border: 1.5px dashed var(--parl);
+}
+
+.cp-gc-etiqs {
+  position: relative;
+  margin-top: 7px;
+}
+
+.cp-gc-etiq {
+  position: absolute;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.cp-gc-legende {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin-top: 12px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.cp-gc-legende-titre {
+  width: 100%;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.cp-gc-legende span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.cp-gc-legende u {
+  width: 20px;
+  height: 11px;
+  border-radius: 3px;
+  display: inline-block;
+  text-decoration: none;
+  flex: none;
+  background: var(--parl);
+}
+
+.cp-gc-legende u.cp-gc-seg--diagonales {
+  background: repeating-linear-gradient(135deg, var(--parl) 0 3px, var(--parl-pale) 3px 7px);
+}
+.cp-gc-legende u.cp-gc-seg--points {
+  background: var(--parl-pale);
+  background-image: radial-gradient(var(--parl) 1.4px, transparent 1.5px);
+  background-size: 6px 6px;
+}
+.cp-gc-legende u.cp-gc-seg--rayures {
+  background: var(--parl-pale);
+  box-shadow: inset 0 0 0 1.5px var(--parl);
+}
+.cp-gc-legende u.cp-gc-seg--fines-rayures {
+  background: var(--parl-pale);
+  border: 1.5px dashed var(--parl);
+}
+
+/* ── Les colonnes appariées ───────────────────────────────────────────────── */
+
+.cp-gc-duo {
+  display: grid;
+  grid-template-columns: 1fr;
+  column-gap: 44px;
+  margin-top: 24px;
+  border-top: 1px solid var(--border-strong);
+  padding-top: 4px;
+}
+
+.cp-gc-tete-col {
+  padding: 14px 0 12px;
+}
+
+.cp-gc-bandeau {
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+  margin-bottom: 12px;
+}
+
+.cp-gc-tete-col--parlement .cp-gc-bandeau { background: var(--parl); }
+.cp-gc-tete-col--gouvernement .cp-gc-bandeau { background: var(--gouv); }
+
+.cp-gc-col-nom {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 3px 10px 3px 8px;
+  border-radius: 999px;
+}
+
+.cp-gc-col-nom i {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+}
+
+.cp-gc-tete-col--parlement .cp-gc-col-nom { color: var(--parl); background: var(--parl-wash); }
+.cp-gc-tete-col--parlement .cp-gc-col-nom i { background: var(--parl); }
+.cp-gc-tete-col--gouvernement .cp-gc-col-nom { color: var(--gouv); background: var(--gouv-wash); }
+.cp-gc-tete-col--gouvernement .cp-gc-col-nom i { background: var(--gouv); }
+
+.cp-gc-rang {
+  border-top: 1px solid var(--border);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+  padding: 16px 0 2px;
+}
+
+.cp-gc-cell {
+  padding: 10px 0 18px;
+}
+
+/* **Seuls les nombres sont en gros.** Mettre l'objet à la même échelle que le
+ * chiffre faisait lire le titre du texte comme la mesure. */
+.cp-gc-n {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.012em;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.cp-gc-n small {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.cp-gc-q {
+  font-size: 13.5px;
+  font-weight: 600;
+  margin: 3px 0 0;
+}
+
+.cp-gc-d {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin: 5px 0 0;
+}
+
+/* Un tiret est un FAIT sur le métier — « un ministre ne dépose pas
+ * d'amendement » — jamais une liste vide, qui est un fait sur la collecte. */
+.cp-gc-absent {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0;
+  padding-top: 4px;
+}
+
+.cp-gc-absent span {
+  font-weight: 800;
+  margin-right: 4px;
+}
+
+.cp-gc-barre {
+  display: flex;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 9px 0 7px;
+  background: var(--rail);
+  max-width: 560px;
+}
+
+.cp-gc-part { display: block; height: 8px; }
+
+.cp-gc-part--examine_commission { background: var(--parl-line); }
+.cp-gc-part--inscrit_ordre_jour { background: var(--parl-pale); }
+.cp-gc-part--discute_seance { background: var(--parl-line); }
+.cp-gc-part--adopte { background: var(--parl); opacity: 0.65; }
+.cp-gc-part--promulgue { background: var(--parl); }
+
+.cp-gc-tete-col--gouvernement ~ * .cp-gc-part--promulgue { background: var(--gouv); }
+
+.cp-gc-barre-leg {
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.cp-gc-barre-leg b { color: var(--ink); font-weight: 700; }
+
+.cp-gc-barre-leg em {
+  font-style: normal;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cp-gc-barre-leg em::before {
+  content: '';
   width: 8px;
   height: 8px;
   border-radius: 2px;
-  background: #f7f6f4;
-  display: inline-block;
+  background: currentColor;
+  opacity: 0.9;
 }
 
-/* Podium (commissions) — trois hauteurs qui se comparent d'un regard là où
-   « 27 sur 60 » en prose ne se compare pas. Décompte de mandats, pas note. */
-.cp-podium {
-  display: flex;
-  align-items: flex-end;
-  gap: 18px;
-  margin-top: 12px;
+/* Une colonne seule prend toute la largeur : un gabarit à deux colonnes dont
+ * l'une est vide ferait lire un manque là où il n'y a qu'un seul métier. */
+@media (max-width: 720px) {
+  .cp-gc-duo--deux { grid-template-columns: 1fr !important; }
+  .cp-gc-etiq { font-size: 10.5px; }
 }
 
-.cp-podium-col {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  flex: 1 1 0;
-  min-width: 0;
-}
-
-.cp-podium-col b {
-  font-size: 16px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-.cp-podium-col i {
-  display: block;
-  width: 100%;
-  background: #f7f6f4;
-  border-radius: 3px;
-  margin: 4px 0 6px;
-}
-
-.cp-podium-col span {
-  font-size: 11.5px;
-  line-height: 1.35;
-  color: #c9c6d0;
-}
-
-@media (max-width: 640px) {
-  .cp-point,
-  .cp-point--couple {
-    grid-template-columns: 1fr;
-    gap: 4px;
-  }
-
-  .cp-podium {
-    gap: 10px;
-  }
-}
-
-/* ── Sections ────────────────────────────────────────────────────────────── */
+/* Les 25 sélecteurs de « L'essentiel » sont retirés avec sa vue (#328) : aucun
+ * n'est plus référencé par le composant, et du CSS mort se maintient tout seul
+ * pendant des mois avant qu'on ose y toucher.
+ */
 .cp-section {
   margin-top: 44px;
 }
