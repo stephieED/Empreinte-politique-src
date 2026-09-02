@@ -665,6 +665,50 @@ def appliquer_chambres(profil: dict[str, Any]) -> ChambresDerivees:
     return derivation
 
 
+def deriver_tags_thematiques(interventions: Optional[list[dict[str, Any]]]) -> list[str]:
+    """Les tags thématiques d'un profil, dérivés de ses interventions.
+
+    `theme_officiel` quand l'intervention en porte un — il vient du compte rendu
+    officiel de l'AN —, `mots_cles` sinon. Le repli sur `mots_cles` est CONSERVÉ
+    par #529 alors que plus rien ne les collecte : ils sont dans les profils déjà
+    collectés, que la fusion additive garde, et les retirer ferait tomber les 647
+    `tags_thematiques` publiés qui en dérivent — une liste surveillée bloquante
+    (#460/#470). On ne collecte plus cette matière ; on continue de savoir la lire
+    (AGENTS.md §2 règle 5).
+
+    **Fabrique unique, et champ DÉRIVÉ, comme `chambres` (#710).** La fusion
+    pivot unissait l'ancienne liste et la neuve : un tag publié une fois y restait
+    pour toujours, et aucune correction de `theme_officiel` — celle de #710 comme
+    une autre — ne pouvait l'en déloger. Un champ dérivé se recalcule, il ne se
+    fusionne pas ; sinon il décrit un ensemble d'interventions qui n'est plus
+    celui du profil.
+
+    **Le recalcul est un no-op sur l'état publié**, ce qui est la preuve qu'il ne
+    perd rien par lui-même : mesuré le 02/09/2026 sur les 481 profils publiés,
+    les 39 782 couples (profil, tag) publiés sont exactement ceux que cette
+    fonction rend depuis les `interventions[]` de ces mêmes profils, sur 0 profil
+    d'écart. Ce qui change ensuite ne vient donc que de la correction des
+    interventions elles-mêmes.
+    """
+    tags: set[str] = set()
+    for i in interventions or []:
+        if not isinstance(i, dict):
+            continue
+        theme = i.get("theme_officiel")
+        if theme and isinstance(theme, str):
+            cleaned = theme.strip().lower()
+            if cleaned:
+                tags.add(cleaned)
+        else:
+            for kw in (i.get("mots_cles") or []):
+                if not isinstance(kw, str):
+                    continue
+                cleaned = kw.strip().lower()
+                if cleaned:
+                    tags.add(cleaned)
+    return sorted(tags)
+
+
 def lire_chambres(profil: Any) -> list[str]:
     """Les chambres d'un profil pivot, **côté lecture** — seule porte d'entrée (#494).
 

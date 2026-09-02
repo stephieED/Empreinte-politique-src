@@ -102,6 +102,7 @@ from schema_pivot import (
     ETAT_NON_COLLECTE,
     LISTES_COUVERTES,
     appliquer_chambres,
+    deriver_tags_thematiques,
 )
 
 Key = Any
@@ -264,6 +265,112 @@ def backfill_dossier_nature(
                 if manquants:
                     d = {**d, **manquants}
         result.append(d)
+    return result
+
+
+#: Sujet d'une intervention et ses deux dérivés immédiats (#710). Trois champs,
+#: nommés — reporter tout ce qui manque ferait de la fusion additive une fusion
+#: champ par champ, ce qu'elle n'est pas. Seuls ceux que l'entrée neuve PORTE
+#: sont reportés : l'étage brut n'a pas de `theme_officiel`, et une entrée pivot
+#: réduite au thème (#657) n'a pas de `sujet`.
+CHAMPS_SUJET_INTERVENTION: tuple[str, ...] = (
+    "sujet",
+    "theme_officiel",
+    "sujet_code_grammaire",
+)
+
+#: Clé dont la PRÉSENCE, fût-elle à `None`, prouve qu'une entrée BRUTE sort du
+#: parseur corrigé de #710. Une entrée écrite avant lui ne la porte pas du tout.
+CLE_PREUVE_SUJET: str = "sujet_code_grammaire"
+
+
+def _entree_syceron_publiee(i: dict[str, Any]) -> bool:
+    """L'entrée pivot déclare-t-elle venir d'un compte rendu Syceron ? (#710)
+
+    C'est la preuve dont dispose l'étage pivot, et elle est déjà publiée :
+    `source.type`, que `normalize_profil` écrit sur les deux formes d'entrée, la
+    réduite au thème comprise. Republier `sujet_code_grammaire` ici pour disposer
+    du même critère qu'au brut coûterait ~48 octets sur chacune des 380 800
+    entrées réduites du corpus, exactement le budget que #657 est allé chercher.
+    """
+    source = i.get("source")
+    return isinstance(source, dict) and source.get("type") == "syceron"
+
+
+def backfill_sujet_seance(
+    merged: list[dict[str, Any]],
+    new_list: Optional[list[dict[str, Any]]],
+    key_fn: Callable[[dict[str, Any]], Key],
+    *,
+    preuve: Callable[[dict[str, Any]], bool],
+) -> list[dict[str, Any]]:
+    """Reporte le sujet d'une intervention neuve sur l'entrée ancienne (#710).
+
+    **Cinquième occurrence de la même famille** — #492 (`mandats[].chambre`),
+    #639 (`votes[]`), #641 (`identite.profession`), #696 (`texte_vise`) : un
+    champ corrigé n'atteint jamais une entrée déjà collectée tout seul.
+    `merge_lists_by_key` est additif pur et `_intervention_key` repose sur `id`,
+    que la correction ne touche pas : sans ce report, les entrées déjà publiées
+    garderaient indéfiniment le nom d'un créneau de séance en guise de sujet, et
+    `tags_thematiques` en garderait le faux thème.
+
+    **Ce report n'est pas monotone au sens des quatre précédents, et c'est le
+    fait à déclarer.** Les autres ne remplissaient qu'un champ absent ; celui-ci
+    RETIRE une valeur — 765 des 652 703 interventions publiées mesurées sur les
+    législatures 16 et 17 le 02/09/2026, dont 310 perdent leur sujet et 455 le
+    voient remplacé par celui de la question réellement posée. C'est une perte
+    sur `tags_thematiques`, liste surveillée bloquante : elle se déclare par
+    `allow_declared_losses`, jamais en désarmant le contrôle (AGENTS.md §3c).
+
+    **Son critère est sourcé, pas « la nouvelle valeur gagne »** — comme
+    `backfill_texte_vise` (#696), qui ne reporte que ce qui satisfait la grammaire
+    des uid AN. La preuve est passée en argument parce qu'elle n'est pas la même
+    aux deux étages, et qu'aucune des deux n'est un choix de commodité :
+
+    - au BRUT, la présence de la clé `sujet_code_grammaire` — fût-elle à `None` :
+      elle n'existe que depuis le parseur corrigé ;
+    - au PIVOT, `source.type == "syceron"`, déjà publié sur les deux formes
+      d'entrée (`_entree_syceron_publiee`). Y republier le code de point pour
+      unifier le critère coûterait le budget que #657 est allé chercher.
+
+    Une entrée neuve venue d'un autre chemin de collecte — questions de l'open
+    data AN, entrées héritées de NosDéputés — ne satisfait ni l'une ni l'autre et
+    n'est donc jamais touchée. C'est voulu : le critère structurel de #710 lit la
+    grammaire des points d'un compte rendu, il n'a rien à dire d'une source qui
+    n'en publie pas.
+
+    **La clé de fusion ne change pas** : `_intervention_key` et
+    `_pivot_intervention_key` restent ce qu'elles étaient, ce qui distingue ce
+    report du défaut de #668, où la clé elle-même avait changé de branche.
+
+    Ce que ce report ne peut pas faire : corriger une entrée qu'un run ne
+    recollecte pas. Une législature non rejouée garde son sujet de créneau — un
+    trou déclaré, pas un trou comblé (§2 règle 5).
+    """
+    if not new_list:
+        return merged
+
+    sujets_neufs: dict[Key, dict[str, Any]] = {}
+    for i in new_list:
+        if not isinstance(i, dict) or not preuve(i):
+            continue
+        # Seuls les champs que l'entrée neuve PORTE : une entrée réduite au thème
+        # n'a pas de `sujet`, et lui en reporter un absent effacerait celui de
+        # l'entrée complète qu'elle remplace (#657).
+        sujets_neufs.setdefault(
+            key_fn(i), {c: i[c] for c in CHAMPS_SUJET_INTERVENTION if c in i}
+        )
+
+    if not sujets_neufs:
+        return merged
+
+    result: list[dict[str, Any]] = []
+    for i in merged:
+        if isinstance(i, dict):
+            neufs = sujets_neufs.get(key_fn(i))
+            if neufs and any(i.get(c) != v for c, v in neufs.items()):
+                i = {**i, **neufs}
+        result.append(i)
     return result
 
 
@@ -1193,7 +1300,16 @@ def merge_raw_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dic
         key=lambda d: (d.get("date_max") or "", d.get("titre") or ""),
         reverse=True,
     )
-    merged["interventions"] = merge_lists_by_key(old.get("interventions"), new.get("interventions"), _intervention_key)
+    # #710 : le sujet corrigé est reporté sur les interventions déjà collectées.
+    # Sans lui, l'entrée ancienne gagne et le profil brut garderait indéfiniment
+    # le nom d'un créneau de séance — donc `normalize_profil` republierait le faux
+    # thème dans `theme_officiel` puis dans `tags_thematiques`.
+    merged["interventions"] = backfill_sujet_seance(
+        merge_lists_by_key(old.get("interventions"), new.get("interventions"), _intervention_key),
+        new.get("interventions"),
+        _intervention_key,
+        preuve=lambda i: CLE_PREUVE_SUJET in i,
+    )
     # merge_dossier_records (nouvelle valeur gagne en cas de collision, aucune perte
     # sinon) : un echec/vide transitoire de l'open data amendements ne doit pas
     # effacer des amendements deja collectes lors d'une regeneration precedente.
@@ -2001,7 +2117,12 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
     # pas d'`intervention_id` et seraient republiées EN DOUBLE à côté de leur
     # renormalisation identifiée. Voir sa docstring pour la preuve de non-perte.
     merged["interventions"] = clean_stale_interventions(
-        merge_lists_by_key(old.get("interventions"), new.get("interventions"), _pivot_intervention_key)
+        backfill_sujet_seance(
+            merge_lists_by_key(old.get("interventions"), new.get("interventions"), _pivot_intervention_key),
+            new.get("interventions"),
+            _pivot_intervention_key,
+            preuve=_entree_syceron_publiee,
+        )
     )
     # merge_dossier_records (nouvelle valeur gagne en cas de collision, aucune perte
     # sinon) : un echec/vide transitoire de l'open data amendements (voir
@@ -2009,9 +2130,20 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
     # amendements deja collectes lors d'une regeneration precedente.
     merged["amendements"] = merge_dossier_records(old.get("amendements"), new.get("amendements"), _pivot_amendement_key)
 
-    old_tags = old.get("tags_thematiques") or []
-    new_tags = new.get("tags_thematiques") or []
-    merged["tags_thematiques"] = list(dict.fromkeys(list(old_tags) + list(new_tags)))
+    # #710 — `tags_thematiques` est DÉRIVÉ des interventions fusionnées, comme
+    # `chambres` l'est des mandats fusionnés : on le recalcule ici, on ne
+    # l'unit plus. L'union ancienne+neuve rendait le champ MONOTONE CROISSANT —
+    # un tag publié une fois y restait pour toujours, et aucune correction de
+    # `theme_officiel` ne pouvait l'en déloger, pas même celle qui vient d'être
+    # reportée par `backfill_sujet_seance` deux lignes plus haut.
+    #
+    # Le recalcul ne perd rien par lui-même : mesuré le 02/09/2026, les 39 782
+    # couples (profil, tag) publiés sont exactement ceux que la fabrique rend
+    # depuis les `interventions[]` des 481 profils publiés, 0 profil d'écart. Et
+    # la fusion des interventions est additive : un run qui n'en collecte
+    # aucune (`--skip-interventions`) laisse `merged["interventions"]` égal à
+    # l'ancien, donc les tags aussi.
+    merged["tags_thematiques"] = deriver_tags_thematiques(merged.get("interventions"))
 
     if isinstance(merged.get("meta"), dict):
         # Politique de fusion provenance (#189) : un profil déjà enrichi via

@@ -187,7 +187,12 @@ def test_merge_pivot_profile_preserves_data_and_dedups_sources():
         "mandats": [{"label": "Commission X", "categorie": "commission", "fonction": "membre", "debut": "2022-01-01"}],
         "votes": [{"numero_scrutin": "1", "date": "2024-01-01", "texte": "T"}],
         "textes_portes": [],
-        "interventions": [{"source_url": "https://a.fr/1", "date": "2023-01-01"}],
+        # #710 — les tags sont DÉRIVÉS des interventions, plus unis d'une liste à
+        # l'autre : les interventions du fixture portent donc le thème dont on
+        # attend le tag.
+        "interventions": [
+            {"source_url": "https://a.fr/1", "date": "2023-01-01", "theme_officiel": "Budget"}
+        ],
         "tags_thematiques": ["budget"],
         "meta": {"warnings": []},
     }
@@ -196,7 +201,9 @@ def test_merge_pivot_profile_preserves_data_and_dedups_sources():
         "mandats": [],
         "votes": [],
         "textes_portes": [],
-        "interventions": [],
+        "interventions": [
+            {"source_url": "https://a.fr/2", "date": "2023-02-01", "theme_officiel": "Fiscalité"}
+        ],
         "tags_thematiques": ["fiscalité"],
         "meta": {"warnings": ["votes introuvables : ..."]},
     }
@@ -205,7 +212,7 @@ def test_merge_pivot_profile_preserves_data_and_dedups_sources():
 
     assert merged["votes"] == old["votes"]
     assert merged["mandats"] == old["mandats"]
-    assert merged["interventions"] == old["interventions"]
+    assert merged["interventions"] == old["interventions"] + new["interventions"]
     assert merged["sources"] == [{"type": "nosdeputes", "url": "u2", "synchro_le": "2026-02-01T00:00:00"}]
     assert merged["tags_thematiques"] == ["budget", "fiscalité"]
     assert not any(w.startswith("votes introuvables") for w in merged["meta"]["warnings"])
