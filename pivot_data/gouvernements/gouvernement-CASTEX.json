@@ -11,6 +11,15 @@
   },
   "membres": [
     {
+      "membre_id": "agnes-pannier-runacher",
+      "nom": "Agnès Pannier-Runacher",
+      "portefeuille": "Ministère auprès du ministre de l’économie, des finances et de la relance, chargé de l’industrie",
+      "debut": "2020-07-07",
+      "fin": "2022-05-16",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "barbara-pompili",
       "nom": "Barbara Pompili",
       "portefeuille": "Ministère de la transition écologique",
@@ -3790,6 +3799,16 @@
   },
   "sources": [
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA759832",
+      "synchro_le": "2026-09-02T13:03:03+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://data.assemblee-nationale.fr/",
+      "synchro_le": "2026-09-02T13:03:03+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/barbara-pompili",
       "synchro_le": null
@@ -3797,7 +3816,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA609520",
-      "synchro_le": "2026-08-28T19:21:04+0000"
+      "synchro_le": "2026-09-02T13:03:50+0000"
     },
     {
       "type": "nosdeputes",
@@ -3807,7 +3826,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643184",
-      "synchro_le": "2026-08-28T19:24:42+0000"
+      "synchro_le": "2026-09-02T13:12:36+0000"
     },
     {
       "type": "nosdeputes",
@@ -3817,7 +3836,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA774109",
-      "synchro_le": "2026-08-28T19:24:48+0000"
+      "synchro_le": "2026-09-02T13:03:53+0000"
     },
     {
       "type": "nosdeputes",
@@ -3837,7 +3856,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335758",
-      "synchro_le": "2026-08-28T19:24:31+0000"
+      "synchro_le": "2026-09-02T13:12:28+0000"
     },
     {
       "type": "nosdeputes",
@@ -3847,7 +3866,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722190",
-      "synchro_le": "2026-08-28T19:24:48+0000"
+      "synchro_le": "2026-09-02T13:03:53+0000"
     },
     {
       "type": "nosdeputes",
@@ -3867,7 +3886,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267336",
-      "synchro_le": "2026-08-28T19:20:45+0000"
+      "synchro_le": "2026-09-02T13:03:52+0000"
     },
     {
       "type": "nosdeputes",
@@ -3877,7 +3896,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722054",
-      "synchro_le": "2026-08-28T19:21:07+0000"
+      "synchro_le": "2026-09-02T13:04:41+0000"
     },
     {
       "type": "nosdeputes",
@@ -3887,7 +3906,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721764",
-      "synchro_le": "2026-08-28T19:20:54+0000"
+      "synchro_le": "2026-09-02T13:04:09+0000"
     },
     {
       "type": "nosdeputes",
@@ -3897,7 +3916,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA330357",
-      "synchro_le": "2026-08-28T19:24:19+0000"
+      "synchro_le": "2026-09-02T13:04:30+0000"
     },
     {
       "type": "nosdeputes",
@@ -3907,12 +3926,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA642788",
-      "synchro_le": "2026-08-28T19:20:51+0000"
+      "synchro_le": "2026-09-02T13:02:21+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-28T19:37:40+0000",
+    "genere_le": "2026-09-02T13:36:37+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": []
   }

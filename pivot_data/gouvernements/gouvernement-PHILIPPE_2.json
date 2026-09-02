@@ -15,6 +15,15 @@
   },
   "membres": [
     {
+      "membre_id": "agnes-pannier-runacher",
+      "nom": "Agnès Pannier-Runacher",
+      "portefeuille": "Secrétariat d'État auprès du ministre de l'économie et des finances",
+      "debut": "2018-10-17",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "edouard-philippe",
       "nom": "Édouard Philippe",
       "portefeuille": "Premier ministre",
@@ -5409,6 +5418,16 @@
   },
   "sources": [
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA759832",
+      "synchro_le": "2026-09-02T13:03:03+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://data.assemblee-nationale.fr/",
+      "synchro_le": "2026-09-02T13:03:03+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/edouard-philippe",
       "synchro_le": null
@@ -5436,7 +5455,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335758",
-      "synchro_le": "2026-08-28T19:24:31+0000"
+      "synchro_le": "2026-09-02T13:12:28+0000"
     },
     {
       "type": "nosdeputes",
@@ -5446,7 +5465,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722190",
-      "synchro_le": "2026-08-28T19:24:48+0000"
+      "synchro_le": "2026-09-02T13:03:53+0000"
     },
     {
       "type": "nosdeputes",
@@ -5466,7 +5485,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA330357",
-      "synchro_le": "2026-08-28T19:24:19+0000"
+      "synchro_le": "2026-09-02T13:04:30+0000"
     },
     {
       "type": "nosdeputes",
@@ -5476,7 +5495,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA642788",
-      "synchro_le": "2026-08-28T19:20:51+0000"
+      "synchro_le": "2026-09-02T13:02:21+0000"
     },
     {
       "type": "nosdeputes",
@@ -5486,12 +5505,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607395",
-      "synchro_le": "2026-08-28T19:24:40+0000"
+      "synchro_le": "2026-09-02T13:12:34+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-28T19:37:40+0000",
+    "genere_le": "2026-09-02T13:36:37+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": []
   }

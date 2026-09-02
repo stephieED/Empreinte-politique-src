@@ -3,13 +3,26 @@
   "type_document": "profil_gouvernement",
   "gouvernement_id": "gouvernement:BARNIER",
   "nom": "Gouvernement Barnier",
-  "premier_ministre": null,
+  "premier_ministre": {
+    "nom": "Michel Barnier",
+    "acteur_ref": "PA368",
+    "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+  },
   "periode": {
     "debut": "2024-09-28",
     "fin": "2024-12-13",
     "actif": false
   },
   "membres": [
+    {
+      "membre_id": "agnes-pannier-runacher",
+      "nom": "Agnès Pannier-Runacher",
+      "portefeuille": "Ministère de la transition écologique, de l’énergie, du climat et de la prévention des risques",
+      "debut": "2024-09-22",
+      "fin": "2024-12-13",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
     {
       "membre_id": "alexandre-portier",
       "nom": "Alexandre Portier",
@@ -119,6 +132,15 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "michel-barnier",
+      "nom": "Michel Barnier",
+      "portefeuille": "Premier ministre",
+      "debut": "2024-09-06",
+      "fin": "2024-12-13",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "olga-givernet",
       "nom": "Olga Givernet",
       "portefeuille": "Ministère délégué auprès de la ministre de la transition écologique, de l'énergie, du climat et de la prévention des risques, chargé de l’énergie",
@@ -149,7 +171,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA368",
-          "membre_id": null
+          "membre_id": "michel-barnier"
         },
         {
           "acteur_ref": "PA795144",
@@ -173,7 +195,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA368",
-          "membre_id": null
+          "membre_id": "michel-barnier"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51096"
@@ -189,7 +211,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA368",
-          "membre_id": null
+          "membre_id": "michel-barnier"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N50957"
@@ -205,7 +227,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA368",
-          "membre_id": null
+          "membre_id": "michel-barnier"
         },
         {
           "acteur_ref": "PA2538",
@@ -229,7 +251,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA368",
-          "membre_id": null
+          "membre_id": "michel-barnier"
         },
         {
           "acteur_ref": "PA795144",
@@ -253,7 +275,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA368",
-          "membre_id": null
+          "membre_id": "michel-barnier"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N50794"
@@ -269,7 +291,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA368",
-          "membre_id": null
+          "membre_id": "michel-barnier"
         },
         {
           "acteur_ref": "PA795144",
@@ -289,7 +311,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA368",
-          "membre_id": null
+          "membre_id": "michel-barnier"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N50744"
@@ -305,7 +327,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA368",
-          "membre_id": null
+          "membre_id": "michel-barnier"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N50745"
@@ -321,7 +343,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA368",
-          "membre_id": null
+          "membre_id": "michel-barnier"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N50731"
@@ -337,7 +359,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA368",
-          "membre_id": null
+          "membre_id": "michel-barnier"
         },
         {
           "acteur_ref": "PA795144",
@@ -361,7 +383,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA368",
-          "membre_id": null
+          "membre_id": "michel-barnier"
         },
         {
           "acteur_ref": "PA719914",
@@ -389,7 +411,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA368",
-          "membre_id": null
+          "membre_id": "michel-barnier"
         },
         {
           "acteur_ref": "PA795144",
@@ -414,6 +436,16 @@
   },
   "sources": [
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA759832",
+      "synchro_le": "2026-09-02T13:03:03+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://data.assemblee-nationale.fr/",
+      "synchro_le": "2026-09-02T13:03:03+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/alexandre-portier",
       "synchro_le": null
@@ -421,7 +453,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794994",
-      "synchro_le": "2026-08-28T19:21:26+0000"
+      "synchro_le": "2026-09-02T13:14:26+0000"
     },
     {
       "type": "nosdeputes",
@@ -431,7 +463,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721024",
-      "synchro_le": "2026-08-28T19:24:33+0000"
+      "synchro_le": "2026-09-02T13:09:56+0000"
     },
     {
       "type": "nosdeputes",
@@ -441,7 +473,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605991",
-      "synchro_le": "2026-08-28T19:25:01+0000"
+      "synchro_le": "2026-09-02T13:04:36+0000"
     },
     {
       "type": "nosdeputes",
@@ -451,7 +483,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795144",
-      "synchro_le": "2026-08-28T19:24:45+0000"
+      "synchro_le": "2026-09-02T13:04:10+0000"
     },
     {
       "type": "nosdeputes",
@@ -461,7 +493,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795050",
-      "synchro_le": "2026-08-28T19:24:49+0000"
+      "synchro_le": "2026-09-02T13:01:49+0000"
     },
     {
       "type": "nosdeputes",
@@ -471,7 +503,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795958",
-      "synchro_le": "2026-08-28T19:24:49+0000"
+      "synchro_le": "2026-09-02T13:03:54+0000"
     },
     {
       "type": "nosdeputes",
@@ -486,7 +518,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2538",
-      "synchro_le": "2026-08-28T11:45:11+0000"
+      "synchro_le": "2026-09-02T12:51:26+0000"
     },
     {
       "type": "nosdeputes",
@@ -496,7 +528,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720480",
-      "synchro_le": "2026-08-28T19:24:47+0000"
+      "synchro_le": "2026-09-02T13:12:38+0000"
     },
     {
       "type": "nosdeputes",
@@ -506,7 +538,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719372",
-      "synchro_le": "2026-08-28T19:24:46+0000"
+      "synchro_le": "2026-09-02T13:13:30+0000"
     },
     {
       "type": "nosdeputes",
@@ -516,7 +548,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643089",
-      "synchro_le": "2026-08-28T19:25:28+0000"
+      "synchro_le": "2026-09-02T13:04:27+0000"
     },
     {
       "type": "nosdeputes",
@@ -526,7 +558,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795884",
-      "synchro_le": "2026-08-28T19:20:55+0000"
+      "synchro_le": "2026-09-02T13:02:29+0000"
     },
     {
       "type": "nosdeputes",
@@ -536,7 +568,17 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795990",
-      "synchro_le": "2026-08-28T19:24:45+0000"
+      "synchro_le": "2026-09-02T13:04:11+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA368",
+      "synchro_le": "2026-09-02T13:13:37+0000"
+    },
+    {
+      "type": "europarl",
+      "url": "https://www.europarl.europa.eu/meps/fr/72776",
+      "synchro_le": "2026-09-02T13:13:41+0000"
     },
     {
       "type": "nosdeputes",
@@ -546,7 +588,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718674",
-      "synchro_le": "2026-08-28T19:24:31+0000"
+      "synchro_le": "2026-09-02T13:04:37+0000"
     },
     {
       "type": "nosdeputes",
@@ -556,13 +598,13 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA608416",
-      "synchro_le": "2026-08-28T19:21:28+0000"
+      "synchro_le": "2026-09-02T13:14:23+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-28T19:37:41+0000",
-    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
+    "genere_le": "2026-09-02T13:36:37+0000",
+    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO) + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
     "warnings": []
   }
 }
