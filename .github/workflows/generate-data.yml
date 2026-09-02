@@ -1466,8 +1466,23 @@ jobs:
   prepare-roster-matrix:
     runs-on: ubuntu-latest
     # 5 -> 15 min : ce job fait désormais un appel réseau avec reprises (#518).
-    # Reste un filet, pas un budget : le fetch tient en quelques secondes.
-    timeout-minutes: 15
+    # 15 -> 20 min (#708) : ce job dérive la composition des groupes depuis
+    # l'archive AMO30, donc son coût suit le nombre de membres — et #708 fait
+    # entrer les 156 membres de la XVIIe que la circularité du slug écartait,
+    # soit +34 % sur ~461. Mesuré sur le run 33514676506 : 7,8 min, la marge la
+    # plus faible du workflow (x1,9 quand `merge-and-pivot` est à x2,4 et les
+    # shards du roster à x6,3). Projetée à ~10,5 min, la marge tomberait à x1,4.
+    #
+    # Reste un filet, pas un budget : le fetch tient en quelques secondes, et
+    # la règle de #498 — ne jamais relever un `timeout-minutes` sans son
+    # `--budget-interventions-secondes` — ne s'applique pas ici : elle vise
+    # `extract-an` et sa collecte d'interventions, que ce job ne fait pas.
+    #
+    # Ce qu'il ne faut PAS faire si ce plafond est de nouveau atteint : le
+    # relever une troisième fois sans mesurer. Un job tué par `timeout-minutes`
+    # n'écrit RIEN (AGENTS.md §3b), donc le plafond doit couvrir un pic, pas
+    # une dérive — et une dérive se mesure, elle ne se compense pas.
+    timeout-minutes: 20
     outputs:
       shards: ${{ steps.shards.outputs.shards }}
       shard_total: ${{ steps.shards.outputs.shard_total }}
