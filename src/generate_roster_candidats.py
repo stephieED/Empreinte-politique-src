@@ -113,6 +113,28 @@ mais NosDéputés n'en produisait aucun. `membres_sans_slug` les compte et les
 nomme (4 à la bascule, tous déclarés dans `raw_data/groupes_reels.json`), en
 `warning` : ils ne bloquent pas, ils cessent d'être invisibles.
 
+## Compter n'était pas ouvrir la porte (#708)
+
+Le compteur de #527 a fait son travail : il a nommé 4 écarts sur la 16e, puis
+**156 sur les 461 entrées des 5 rosters de la 17e** — 33,8 %, `SOC-17` le plus
+touché avec **41 écartées sur 70** (mesuré le 02/09/2026). La cause n'était pas une table incomplète mais une
+**circularité** : la table est construite depuis les profils publiés, donc il
+fallait un profil pour avoir un slug et un slug pour avoir un profil.
+
+`an_roster.resoudre_slugs` ouvre la porte — `slugify(état civil AMO30)`, la
+fonction qui fabrique déjà tous les autres slugs du dépôt — et n'attribue
+**jamais** en silence un slug que quelqu'un d'autre porte. Ce qui arrive ici :
+
+- `membres_sans_slug` compte désormais ce qui reste **réellement** écarté, les
+  collisions non tranchées, et **pas zéro par construction**. Sur les 1 662
+  acteurs de l'index GP sans entrée de table — dont les 160 des 10 groupes
+  configurés — : **0 collision** mesurée le 02/09/2026 ; le compteur passe à 0
+  parce que le corpus n'en a pas, pas parce qu'on a retiré le compteur ;
+- `membres_slug_fabrique` compte l'inverse : ce qui entre par une porte que
+  personne n'a relue. En `notice` — ce n'est pas une panne, c'est un fait à
+  déclarer (AGENTS §2 règle 2), et la §5b du contrôle qualité bloquera de toute
+  façon le commit tant que leur entrée de correspondance n'aura pas été relue.
+
 Usage (depuis la racine du dépôt) :
     python src/generate_roster_candidats.py \\
         --config raw_data/groupes_reels.json \\
@@ -340,18 +362,28 @@ def membres_sans_slug(
 
     Ça ne coûtait rien tant que la source était NosDéputés, qui n'a pas d'autre
     identifiant que le slug : il n'y avait pas de membre sans slug. AMO30 en a,
-    par construction — il publie un `PA######` et l'état civil, et le slug vient
-    de la table committée du lot 2 (#525). Les 4 acteurs de la 16e qui n'y ont
-    pas d'entrée entrent maintenant dans le roster et en ressortent sans être
-    collectés : ils sont **comptés et nommés**, jamais silencieux.
+    par construction — il publie un `PA######` et l'état civil.
 
-    Non bloquant, et c'est un choix : ces 4-là sont une catégorie fermée, datée
-    et déclarée entrée par entrée dans `raw_data/groupes_reels.json`
-    (`correspondance_sigles_an[].ecart_membres`) — même arbitrage que les 5 389
-    identifiants non résolus de #510 et les rejets attendus-et-permanents de
-    #474. Ce qui doit rester bruyant, c'est leur **nombre s'il bouge**, et c'est
-    précisément ce que ce décompte publie. Leur sort est la clause 2 de la
-    condition de retrait du double calcul (#526 §9).
+    **Ce que compte cette fonction a changé de nature avec #708.** Jusque-là
+    elle comptait « pas d'entrée dans la table du lot 2 », et c'était une
+    circularité : la table se construit depuis les profils publiés, donc aucun
+    membre nouveau ne pouvait entrer — 156 des 461 entrées des 5 rosters de la
+    17e, 33,8 %. Depuis #708 un membre sans entrée reçoit
+    `slugify(état civil AMO30)`, et **ne reste ici que ce qui n'a pas pu être
+    attribué** : le slug visé appartient déjà à quelqu'un d'autre, deux acteurs
+    AMO30 le visent ensemble, ou l'état civil ne donne rien à slugifier
+    (`an_roster.MOTIFS_SLUG_NON_ATTRIBUE`).
+
+    Le compteur reste donc **vrai** : il dit ce qui est réellement écarté, et
+    il n'est pas ramené à zéro par construction. Mesuré le 02/09/2026 sur les
+    1 662 acteurs de l'index GP sans entrée de table, dont les 160 des 10
+    groupes configurés : **0**. Ce zéro
+    est une mesure du corpus, pas une propriété du code — le jour où une
+    deuxième *Alexandra Martin* est élue, il vaut 2 et l'annotation les nomme.
+
+    Non bloquant, et c'est le même choix qu'à #527 : une collision se tranche à
+    la main dans `raw_data/correspondance_acteurs_an.json`, elle n'arrête pas un
+    run. Ce qui doit rester bruyant, c'est son **nombre s'il bouge**.
 
     Fonction pure : elle ne lit que ce que la collecte a déjà rendu.
     """
@@ -399,9 +431,70 @@ def resume_membres_sans_slug(sans_slug: list[dict[str, Any]]) -> str:
         "et ne seront donc pas collectés ni publiés : "
         + "; ".join(noms)
         + suffixe
-        + ". Écart déclaré dans raw_data/groupes_reels.json "
-        "(correspondance_sigles_an[].ecart_membres) ; détail entrée par entrée : "
-        "python3 src/an_roster.py --divergence (#526 §9, clause 2)."
+        + ". Depuis #708 un membre sans entrée de correspondance reçoit "
+        "slugify(état civil AMO30) : ceux-ci restent dehors parce que le slug "
+        "visé est DÉJÀ PORTÉ par quelqu'un d'autre, ou visé par deux acteurs à "
+        "la fois. Ça se tranche à la main dans "
+        "raw_data/correspondance_acteurs_an.json ; motif entrée par entrée : "
+        "python3 src/an_roster.py --divergence."
+    )
+
+
+def membres_slug_fabrique(
+    groupes: list[dict[str, Any]],
+    rosters_bruts: dict[tuple[str, Optional[str]], Optional[list[dict[str, Any]]]],
+) -> list[dict[str, Any]]:
+    """Les membres qui entrent par un slug **fabriqué**, jamais relu (#708).
+
+    Le miroir de `membres_sans_slug`, et il est aussi nécessaire qu'elle : une
+    porte qui s'ouvre sans qu'aucun compteur ne le dise est le trou muet de
+    #510, simplement retourné. Un slug fabriqué est un identifiant que
+    `slugify` a déduit d'un état civil, pas une correspondance prouvée (#525) —
+    et le run qui publiera ces profils sera arrêté par la §5b du contrôle
+    qualité tant que leur entrée n'aura pas été relue et committée.
+
+    Fonction pure : elle ne lit que ce que la collecte a déjà rendu.
+    """
+    fabriques: list[dict[str, Any]] = []
+    for groupe in _actifs(groupes):
+        raw_members = rosters_bruts.get(_roster_key(groupe))
+        if not raw_members:
+            continue
+        roster = filter_roster_by_sigle(
+            raw_members,
+            groupe["roster_chambre"],
+            groupe["groupe_sigle"],
+        )
+        for membre in roster:
+            if membre.get("slug") and membre.get("slug_origine") == "fabrique":
+                fabriques.append(
+                    {
+                        "groupe": _libelle_groupe(groupe),
+                        "nom": membre.get("nom"),
+                        "slug": membre.get("slug"),
+                    }
+                )
+    return fabriques
+
+
+def resume_membres_slug_fabrique(fabriques: list[dict[str, Any]]) -> str:
+    """Une ligne, bornée comme `resume_membres_sans_slug` — même destination.
+
+    Le **décompte** n'est jamais tronqué ; les noms le sont, parce qu'une
+    annotation GitHub Actions tient sur une ligne.
+    """
+    noms = [f"{m['groupe']}/{m['slug']}" for m in fabriques]
+    suffixe = ""
+    if len(noms) > _MAX_MEMBRES_NOMMES:
+        suffixe = f" (+{len(noms) - _MAX_MEMBRES_NOMMES} autre(s))"
+        noms = noms[:_MAX_MEMBRES_NOMMES]
+    return (
+        f"ROSTER_SLUG_FABRIQUE — {len(fabriques)} membre(s) entrent avec un slug "
+        "fabriqué par slugify(état civil AMO30), sans correspondance relue "
+        f"(#708, #525) : {'; '.join(noms)}{suffixe}. "
+        "Leur entrée de raw_data/correspondance_acteurs_an.json reste à relire : "
+        "python3 src/build_correspondance_acteurs_an.py la propose, et la §5b du "
+        "contrôle qualité bloque le commit tant qu'elle manque."
     )
 
 
@@ -592,6 +685,16 @@ def main(argv: Optional[list[str]] = None) -> int:
         resume = resume_membres_sans_slug(sans_slug)
         print(f"[i] {resume}", file=sys.stderr)
         gha.annoter("warning", resume)
+
+    # Le miroir (#708). En `notice` et pas en `warning` : ce n'est pas une
+    # anomalie, c'est un fait — des membres entrent par un identifiant que
+    # personne n'a relu. Le taire ferait de l'ouverture de la porte le
+    # symétrique exact du trou que #527 avait bouché.
+    fabriques = membres_slug_fabrique(groupes, rosters_bruts)
+    if fabriques:
+        resume = resume_membres_slug_fabrique(fabriques)
+        print(f"[i] {resume}", file=sys.stderr)
+        gha.annoter("notice", resume)
 
     anomalies = anomalies_roster(groupes, rosters_bruts, membres_par_groupe, candidats, echecs)
     if anomalies:

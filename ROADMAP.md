@@ -413,23 +413,21 @@ Convention d'écriture : `AGENTS.md` §8.
 - Câbler `src/an_roster.py --divergence` dans `generate-data.yml` (prévu par #526 §6) :
   demande d'ajouter `.cache/acteurs_historique_an` au cache de `prepare-roster-matrix`,
   qui n'en a aucun et retélécharge donc 13,6 Mo par run depuis la bascule (#527).
-- Publier les 5 fiches de la 17e (#526 §4, clause 3 de la condition de retrait) suppose
-  156 slugs de plus dans `raw_data/correspondance_acteurs_an.json` — or cette table part
-  d'un slug **publié**, et AMO30 n'en fournit aucun. Il faut d'abord trancher comment un
-  slug naît quand la source n'en publie pas : `build_correspondance_acteurs_an.py` refuse
-  d'inventer (#525) et AGENTS §4 interdit un `id` fabriqué depuis un nom collecté.
-- 4 députés de la 16e connus d'AMO30 sont absents des fiches publiées faute de slug :
-  `PA794914` (LR), `PA722070`, `PA719032`, `PA721522` (REN) — tous partis avant
-  2024-06-09. Depuis #527 ils sont **nommés à chaque run** (annotation
-  `ROSTER_SANS_SLUG`) et comptés dans `meta.couverture_roster.roster_total`. Leur donner
-  une entrée dans `raw_data/correspondance_acteurs_an.json`, ou une décision écrite de ne
-  pas les publier, est la clause 2 de la condition de retrait de #526 §9 — la dernière
-  qui dépende d'une seule décision.
+- **#708 a tranché comment naît un slug** (clause 3 de #526 §9) : un acteur AMO30 sans
+  entrée de correspondance reçoit `text_utils.slugify` de son état civil, la table
+  gardant la priorité, et une collision reste un refus nommé. Les 156 de la 17e et les
+  4 de la 16e (`PA794914` LR, `PA722070`/`PA719032`/`PA721522` REN) entrent donc. **Ce
+  qui reste ouvert** : leur donner une entrée **relue** dans
+  `raw_data/correspondance_acteurs_an.json` — la §5b du portail bloque leur publication
+  sans elle, et `build_correspondance_acteurs_an.py` refuse toujours d'inventer (#525).
+  C'est la clause 2 de #526 §9, et le seul geste qui manque pour que les fiches de la
+  17e passent de 305/461 à leur couverture réelle. Coût mesuré d'un run : ~1,07 à
+  1,44 Gio de profils bruts. Voir `docs/decisions/slug-fabrique-membre-de-roster-708.md`.
 - Le repli `fetch_full_roster_nosdeputes` est **retiré** (#529) ; `AN_ROSTER_ACTIF`
   reste, non plus comme aiguillage mais comme refus bruyant — un roster vide écrit
-  sur disque est indiscernable d'un groupe dissous (#511/#524). Ce qui reste ouvert
-  de #526 §9 est la clause 3 : décider comment naît un slug quand la source n'en
-  publie pas. Décision de schéma, pas passe de collecte. Voir
+  sur disque est indiscernable d'un groupe dissous (#511/#524). La clause 3 de #526 §9
+  — comment naît un slug quand la source n'en publie pas — est **close par #708** ; il
+  reste la clause 2, la relecture des correspondances (ci-dessus). Voir
   `docs/decisions/retrait-nosdeputes-529.md` §5.
 - `raw_data/correspondance_acteurs_an.json` n'est pas dans le sparse-checkout de
   `tests.yml` : sa couverture réelle est contrôlée par le quality gate à l'exécution,

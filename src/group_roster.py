@@ -231,6 +231,16 @@ def filter_roster_by_sigle(
         mandat_fin = member.get("mandat_fin")
         roster.append({
             "slug": member.get("slug"),
+            # D'où vient ce slug (#708) : `table` = correspondance relue
+            # (#525), `fabrique` = `slugify(état civil AMO30)`, la porte
+            # d'entrée d'un membre que personne n'a encore collecté. `None`
+            # quand la source ne le déclare pas — l'absence dit « personne ne
+            # l'a déclaré », jamais « relu » (AGENTS §2 règle 5). Le champ
+            # traverse le filtre parce que `generate_roster_candidats` doit
+            # pouvoir COMPTER ce qui entre par cette porte : un membre entré
+            # sans qu'aucune relecture ne l'ait vu ne doit pas être
+            # indiscernable d'un membre relu.
+            "slug_origine": member.get("slug_origine"),
             "nom": member.get("nom"),
             "groupe_sigle": member.get("groupe_sigle"),
             "mandat_debut": member.get("mandat_debut"),

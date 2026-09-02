@@ -151,9 +151,14 @@ lus dans la **même** archive AMO30 déjà en cache — pas de téléchargement
 supplémentaire. **Produit** l'artifact `roster-candidats` et les sorties
 `shards` / `shard_total`. Un membre de roster **sans slug** n'entre pas dans
 `roster_candidats.json` : il est compté et nommé par l'annotation
-`ROSTER_SANS_SLUG`, jamais doté d'un slug inventé (#525/#527) — les 5 groupes de
-la XVIIe en comptent 156 sur 461, et c'est pourquoi les ajouter ne produit
-**aucun profil neuf**. Le filtrage se fait
+`ROSTER_SANS_SLUG` (#527). **Depuis #708** il en reçoit un, fabriqué par
+`text_utils.slugify` sur l'état civil AMO30 quand
+`raw_data/correspondance_acteurs_an.json` ne le couvre pas, la table gardant la
+priorité ; `ROSTER_SANS_SLUG` ne nomme plus que les **collisions** non
+tranchées, et son miroir `ROSTER_SLUG_FABRIQUE` (`::notice::`) nomme qui entre
+sans correspondance relue. Les 156 des 5 groupes de la XVIIe entrent donc — un
+run produira ~1,07 à 1,44 Gio de profils bruts neufs, et la §5b du portail
+bloquera leur **publication** tant que leur entrée n'est pas relue. Le filtrage se fait
 **sur le code de sortie, dans le shell** : seul le code 2 (« extraction de tous
 les groupes suspendue ») est toléré, le code 1 (collecte incomplète) ne l'est
 pas — un `continue-on-error: true` avalerait les deux.

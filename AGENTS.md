@@ -329,11 +329,25 @@ tolerance is **partitioned** — no input disarms another's check.
   published slug with no entry**, threshold 0. `build_correspondance_acteurs_an.py`
   reconducts reviewed entries verbatim and **refuses to invent**.
   → `docs/decisions/correspondance-acteurs-an-525.md`
+- **A roster member the table does not cover receives a fabricated slug — and a collision
+  never does (#708).** The table was built from **published** profiles, so no new member
+  could ever enter it: 156 of the 461 XVIIe roster entries were dropped in silence.
+  `an_roster.resoudre_slugs` fabricates `text_utils.slugify(AMO30 état civil)` — the
+  repo's **only** slug factory — with **the table always first**, which is what keeps a
+  changed *nom d'usage* from moving an already-collected person's identifier (#487, #668;
+  4 of #525's 10 écarts are noms d'usage). Three closed motifs receive nothing and are
+  named and counted (`nom_absent`, `slug_deja_publie` — the slug belongs to **someone
+  else**, `hors_an` included —, `homonymie_amo30`); the same slug borne by the **same**
+  person is not a collision. Resolution spans the **whole** GP index, never the configured
+  groups. **This does not relax #525**: fabricating is not filling a reviewed entry, gate
+  §5b still hard-fails on publication, and #525 §7's retirement condition is unchanged.
+  → `docs/decisions/slug-fabrique-membre-de-roster-708.md`
 - **The AN group roster comes from AMO30, and `AN_ROSTER_ACTIF` is a kill switch (#527)** —
   lowered → `RosterAnInactif`, never an empty roster. `ERREURS_ROSTER` unites both sources'
   failures so an absent archive stays a named « roster indisponible » (`exit 2`, committed
   sheets intact); a **slugless** member is counted and named (`ROSTER_SANS_SLUG`), never
-  dropped without a word; the **published** `fraicheur_donnees` warning follows the flag,
+  dropped without a word — **and since #708 that counter names collisions only**, a
+  member with no reviewed correspondence now *entering* with a fabricated slug; the **published** `fraicheur_donnees` warning follows the flag,
   because naming a source the composition no longer comes from breaks §2 rule 2. **The
   double computation is NOT retired** — of #526 §9's three clauses only the first holds.
   → `docs/decisions/bascule-roster-an-amo30-527.md`
@@ -577,7 +591,9 @@ themselves come from), `docs/decisions/mandats-agreges-siege-vs-passe-656.md`
   only because nothing in the repo splits it; a test forbids a `split(":")` on
   it. **Before quoting a coverage figure, name the legislature**: the XVIIe
   sheets will carry 305 of 461 members (66,2 %), against 99,1 % on the XVIe,
-  because 156 roster members have no slug — and a slug is never invented (#525).
+  because 156 roster members had no slug. **#708 lifts that**: they now enter with a
+  fabricated slug, and the coverage rises only once they are collected **and** their
+  correspondence reviewed — gate §5b blocks publication until then.
 
 → `docs/decisions/fiches-groupe-17e-legislature-700.md`
 
