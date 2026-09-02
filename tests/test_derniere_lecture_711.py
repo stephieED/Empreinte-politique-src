@@ -249,18 +249,12 @@ HOMONYMES_DE_DEUX_LEGISLATURES = [
 #: même texte. Le numéro de scrutin départage, et il ne le peut QUE parce que la
 #: clé porte la législature — le numéro repart à 1 à chaque législature
 #: (`AGENTS.md` §5).
+#:
+#: L'ordre de la liste est VOLONTAIREMENT l'inverse de l'ordre attendu : un tri
+#: stable qui ne départagerait plus rien rendrait `an:15:2769`, et le test doit
+#: tomber dans ce cas. Vérifié par mutation le 02/09/2026 — dans l'ordre
+#: naturel, retirer le tri par numéro laissait ce test au vert.
 ETHIQUE_DE_L_URGENCE = [
-    {
-        "id": "an:15:2769",
-        "legislature": "15",
-        "numero_scrutin": "2769",
-        "date": "2020-06-25",
-        "type_vote": "vote_texte",
-        "texte": (
-            "l'ensemble de la proposition de loi pour une éthique de l'urgence "
-            "(première lecture)."
-        ),
-    },
     {
         "id": "an:15:2770",
         "legislature": "15",
@@ -272,7 +266,69 @@ ETHIQUE_DE_L_URGENCE = [
             "(première lecture)."
         ),
     },
+    {
+        "id": "an:15:2769",
+        "legislature": "15",
+        "numero_scrutin": "2769",
+        "date": "2020-06-25",
+        "type_vote": "vote_texte",
+        "texte": (
+            "l'ensemble de la proposition de loi pour une éthique de l'urgence "
+            "(première lecture)."
+        ),
+    },
 ]
+
+#: Le même texte, deux lectures, deux apostrophes DANS LE TITRE. 18 groupes des
+#: 697 mêlent l'ASCII `\'` et la typographique `\u2019` entre leurs lectures :
+#: sans la normalisation de #672, ces textes seraient comptés deux fois. Et la
+#: typographique n'apparaît que dans les législatures 16 et 17, les deux plus
+#: récentes — le défaut s'aggraverait avec le temps.
+#:
+#: L'apostrophe choisie est celle d'« accélération », À L'INTÉRIEUR du titre,
+#: et non celle de « l'ensemble » : `OUVERTURE_VOTE_ENSEMBLE` accepte déjà les
+#: deux formes, si bien qu'une paire ne différant que là passerait au vert sur
+#: un module amputé de sa normalisation. Vérifié par mutation le 02/09/2026.
+NOUVELLES_INSTALLATIONS_NUCLEAIRES = [
+    {
+        "id": "an:16:1243",
+        "legislature": "16",
+        "numero_scrutin": "1243",
+        "date": "2023-03-21",
+        "type_vote": "vote_texte",
+        "texte": (
+            "l'ensemble du projet de loi relatif à l\u2019accélération des procédures "
+            "liées à la construction de nouvelles installations nucléaires à "
+            "proximité de sites nucléaires existants et au fonctionnement des "
+            "installations existantes (première lecture)."
+        ),
+    },
+    {
+        "id": "an:16:1533",
+        "legislature": "16",
+        "numero_scrutin": "1533",
+        "date": "2023-05-16",
+        "type_vote": "vote_texte",
+        "texte": (
+            "l'ensemble du projet de loi relatif à l'accélération des procédures "
+            "liées à la construction de nouvelles installations nucléaires à "
+            "proximité de sites nucléaires existants et au fonctionnement des "
+            "installations existantes (texte de la commission mixte paritaire)."
+        ),
+    },
+]
+
+#: Une mention de lecture qui n'est PAS en fin d'intitulé. Aucun des 925
+#: scrutins « sur l'ensemble d'un texte » n'est dans ce cas — mais 432 des
+#: 17 748 publiés le sont, tous des votes sur un article ou un amendement, que
+#: `isWholeTextVote` écarte. L'ancrage en fin est donc une garde dont l'effet
+#: n'est pas observable sur la population que ce lot replie, et c'est
+#: exactement pour cela qu'elle est testée ici plutôt que supposée.
+MENTION_QUI_N_EST_PAS_EN_FIN = (
+    "l'amendement n° 494 de M. Ratenon à l'article 39 et État B de la seconde "
+    "partie du projet de loi de finances pour 2019 (première lecture) - Mission "
+    "Outre-mer"
+)
 
 
 def sans_commentaires(source: str) -> str:
@@ -598,6 +654,49 @@ def test_l_ex_aequo_de_date_est_departage_par_le_numero_de_scrutin(moteur):
         "deux scrutins du 25/06/2020 sur le même texte : le départage est "
         "déterministe, par le numéro de scrutin, jamais par l'ordre de lecture "
         "du fichier"
+    )
+
+
+def test_les_deux_apostrophes_designent_le_meme_texte(moteur):
+    """18 groupes des 697 mêlent l'ASCII et la typographique ENTRE leurs lectures.
+
+    Sans la normalisation de #672, ces textes seraient comptés deux fois — et
+    l'apostrophe typographique n'apparaît que dans les législatures 16 et 17,
+    les deux plus récentes : le défaut s'aggraverait avec le temps.
+    """
+    groupes = moteur["grouper"](NOUVELLES_INSTALLATIONS_NUCLEAIRES)
+    assert len(groupes) == 1, (
+        "« l'ensemble » et « l’ensemble » nomment le même texte : la clé se "
+        f"compare sous forme normalisée, jamais brute — {list(groupes)}"
+    )
+
+    derniere = moteur["derniere"](next(iter(groupes.values())))
+    assert derniere["id"] == "an:16:1533"
+
+
+def test_une_mention_qui_n_est_pas_en_fin_reste_dans_la_cle(regles, moteur):
+    """L'ancrage en fin est une garde, et son effet n'est pas observable sur les
+    925 : aucun n'a de mention ailleurs qu'en fin.
+
+    432 des 17 748 scrutins publiés en ont une — tous des votes sur un article
+    ou un amendement, qu'`isWholeTextVote` écarte. Sans l'ancrage, le libellé
+    ci-dessous perdrait « (première lecture) » et garderait « - Mission
+    Outre-mer », c'est-à-dire une clé qui ne nomme plus la même chose.
+    """
+    gabarit = re.search(
+        r"MENTION_DE_LECTURE\s*=\s*new RegExp\(\s*`([^`]*)`", regles, flags=re.DOTALL
+    )
+    assert gabarit, "`MENTION_DE_LECTURE` a disparu"
+    assert gabarit.group(1).rstrip().endswith("$"), (
+        "la mention se cherche EN FIN d'intitulé. Non ancrée, elle se retire "
+        "n'importe où — et `MENTION_DE_LECTURE_PARTOUT` existe justement pour "
+        "le cas où c'est ce que l'on veut"
+    )
+
+    cle = moteur["cle"]({"legislature": "15", "texte": MENTION_QUI_N_EST_PAS_EN_FIN})
+    assert "première lecture" in cle, (
+        "une mention suivie d'autre chose n'est pas la mention finale : la "
+        "retirer changerait le texte que la clé désigne"
     )
 
 
