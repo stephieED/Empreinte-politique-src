@@ -127,15 +127,6 @@
   --gc-ombre: rgba(0, 0, 0, 0.5);
 }
 
-.cp-gc-label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin: 0 0 12px;
-}
-
 /* ── La poignée d'un pli — UNE seule forme, deux emplois ─────────────────────
  *
  * « Ce que cette personne a engagé, en chiffres. » et « Détails du parcours »
@@ -1332,4 +1323,137 @@
 .cp-cle-pastille--hors-mandat {
   background: transparent;
   border-bottom: 2px dotted var(--border-strong);
+}
+
+/* ── § 1 — les fonctions exercées, révision du 03/09/2026 (#328) ───────────────
+ *
+ * La section a perdu sa frise et sa liste datée — toutes deux vivent dans
+ * « En bref » — et ne porte plus que ce que personne d'autre ne montre. Les
+ * classes `.cp-fonctions-bloc`, `.cp-fonctions-titre`, `.cp-puces` et `.cp-puce`
+ * sont conservées telles quelles ; ce qui suit est ce que la nouvelle lecture
+ * demande en plus.
+ */
+.cp-fonctions-liste {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.cp-fonctions-item {
+  display: grid;
+  grid-template-columns: 104px 1fr;
+  gap: 12px;
+  align-items: baseline;
+  font-size: 13px;
+}
+
+/*
+ * La marque de ce qui ressort : un filet d'encre et le lavis des puces. SANS
+ * TEINTE, et ce n'est pas un oubli — aucune couleur n'était libre. Le jaune
+ * signal est pris par la sélection, l'action et le badge de source ; le vert et
+ * le rouge par les positions de vote (DESIGN_SYSTEM §2) ; le bleu et le bronze
+ * par les institutions dans la frise. En introduire une quatrième aurait dilué
+ * les trois autres, et la charte pose que le jaune n'indique jamais un jugement.
+ *
+ * C'est aussi ce qui la rend lisible en niveaux de gris et sous daltonisme sans
+ * la doubler d'un pictogramme : elle ne repose sur aucune perception chromatique.
+ *
+ * DEUX ÉTATS, jamais une graduation : une ligne porte la marque ou non, et les
+ * deux autres ne sont jamais hiérarchisées entre elles.
+ */
+.cp-fonctions-item--marquee {
+  margin: 0 -26px;
+  padding: 10px 26px 12px 23px;
+  border-left: 3px solid var(--ink);
+  background: #fbfaf8;
+}
+
+.cp-fonctions-duree {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.cp-fonctions-objet { min-width: 0; }
+
+/* La coupe se fait sur DEUX lignes — une seule perdait trop d'intitulé — donc en
+ * HAUTEUR. Pas de `-webkit-line-clamp` : il peint ses propres points de
+ * suspension, et on en aurait deux avec le bouton. */
+.cp-fonctions-ligne {
+  display: block;
+  line-height: 1.45;
+  max-height: 2.9em;
+  overflow: hidden;
+}
+
+.cp-fonctions-ligne[data-deplie] {
+  max-height: none;
+  overflow: visible;
+}
+
+/* Le rôle est le fait qui distingue la ligne : « Président » d'un groupe
+ * d'études n'est pas une précision, c'est ce qu'on est venu lire. Il prend donc
+ * l'encre et le gras, là où une teinte sourde le faisait passer inaperçu. */
+.cp-fonctions-role {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.cp-fonctions-plus {
+  display: block;
+  margin-top: 1px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.cp-fonctions-plus:hover { color: var(--ink); }
+
+.cp-fonctions-plus:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+.cp-pli--fonctions {
+  margin-top: 14px;
+  border-top-color: var(--border);
+}
+
+.cp-pli--fonctions .cp-poignee {
+  font-size: 13px;
+  padding: 12px 0 2px;
+}
+
+/* Le pied de section : la règle de lecture y est documentée, et le lien mène à
+ * la méthodologie pour qui veut le détail. Pas de `max-width` — il s'aligne sur
+ * la carte qui le précède, sinon les deux bords gauches se répondent et le bord
+ * droit part tout seul. */
+.cp-section-pied {
+  margin-top: 14px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: #6e6a78;
+}
+
+.cp-section-pied a {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* « En bref » est un titre de section : même écart au corps que les autres. */
+.cp-gc .cp-section-titre { margin-bottom: 16px; }
+
+@media (max-width: 720px) {
+  .cp-fonctions-item {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
 }
