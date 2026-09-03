@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 215 décisions
+gouverne sans avoir à fouiller les 216 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -263,7 +263,7 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 
 ## `src/candidate_profile.py`
 
-74 décision(s) le gouvernent ; le module en cite 12.
+75 décision(s) le gouvernent ; le module en cite 12.
 
 | Décision | Nomme |
 | --- | --- |
@@ -290,6 +290,7 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 | [L'existence d'un cache n'est pas la preuve de son contenu — et #447 n'avait pas de seconde cause (2026-08-19)](decisions/cache-amendements-existence-nest-pas-conformite.md) | `_cache_amendements_au_format_uid`, `_download_and_build_amendement_index`, `_read_cached_amendements_acteur`, `_scrutins_shard_path_acteur`, `_write_cached_amendements_agreges`, `_write_cached_scrutins`, `amendements_index_deja_figee`, `fetch_amendements_officiels` |
 | [Cache amendements stocké et lu sous forme dédupliquée (#377) (2026-08-17)](decisions/cache-amendements-forme-dedupliquee.md) | `AMENDEMENTS_CACHE_DIR`, `_aggregate_amendements_index`, `_download_and_build_amendement_index`, `_expand_aggregated_amendements_index`, `_load_frozen_amendement_index`, `_parse_amendements_zip`, `_read_cached_amendements_acteur`, `_write_cached_amendements_agreges`, `amendements_index_deja_figee`, `fetch_amendements_officiels` |
 | [La clé de cache AN porte la COMPLÉTUDE, et la sauvegarde devient explicite (#550) (2026-08-28)](decisions/cache-completude-interventions-550.md) | `AMENDEMENTS_FRAICHEUR_FILENAME`, `AN_QUESTIONS_PATH`, `AN_SCRUTINS_LEGISLATURES_FIGEES`, `_build_acteur_questions_index`, `_read_cached_interventions_syceron_acteur` |
+| [Six tests lisaient le cache du poste : la CI était verte parce que la machine est vide (#721) (2026-09-03)](decisions/cache-du-poste-hors-des-tests-721.md) | `_build_acteur_interventions_syceron_index`, `_interventions_syceron_acteur`, `fetch_interventions_syceron` |
 | [Les `restore-keys` du cache AN traversaient les semaines : la fraîcheur ne se met pas dans la clé, elle se lit dans celle qu'on a restaurée (#555) (2026-08-28)](decisions/cache-fraicheur-interventions-555.md) | `AMENDEMENTS_FRAICHEUR_FILENAME`, `AN_AMENDEMENTS_LEGISLATURES_FIGEES`, `AN_SCRUTINS_LEGISLATURES_FIGEES`, `_build_acteur_questions_index`, `_ensure_acteurs_historique_zip_downloaded`, `_read_cached_interventions_syceron_acteur` |
 | [La clé de cache AN porte le MODE, et le job roster ne l'écrit plus (#505) (2026-08-20)](decisions/cache-mode-interventions-505.md) | `_build_acteur_interventions_syceron_index`, `_build_acteur_questions_index`, `_parse_syceron_intervention_entry`, `fetch_questions_officielles` |
 | [La chambre est un fait du mandat, pas du profil : `mandats[].chambre` estampillée à la collecte (#492) (2026-08-20)](decisions/chambre-par-mandat-electif.md) | `build_profile` |
@@ -900,7 +901,7 @@ Le mentionnent sans le gouverner : [`normalisation-votes`](decisions/normalisati
 | [Syceron publie l'identifiant d'orateur NU, et n'a donc jamais rien indexé (#510) (2026-08-20)](decisions/syceron-acteur-ref-nu-510.md) | `SYCERON_AVAILABLE_LEGISLATURES` |
 | [Suite du 26/08/2026 : les trois archives vérifiées, les deux défauts de parseur corrigés](decisions/syceron-archives-verifiees-parseur-510.md) | `SYCERON_AVAILABLE_LEGISLATURES` |
 
-Le mentionnent sans le gouverner : [`plafond-roster-et-commit-518`](decisions/plafond-roster-et-commit-518.md), [`syceron`](decisions/syceron.md).
+Le mentionnent sans le gouverner : [`cache-du-poste-hors-des-tests-721`](decisions/cache-du-poste-hors-des-tests-721.md), [`plafond-roster-et-commit-518`](decisions/plafond-roster-et-commit-518.md), [`syceron`](decisions/syceron.md).
 
 ## `src/text_utils.py`
 

@@ -176,6 +176,21 @@ via `src/population_profils.py`.
   Watch CLI/function **defaults** pointing into the repo. Test-only deps go in
   `requirements-dev.txt`.
   → `docs/decisions/ci-tests-pytest.md`
+- **A test reading the developer's `.cache/` passes for the wrong reason, and CI never
+  sees it (#721).** The eleven cache constants are `Path(".cache") / …` — **relative to the
+  cwd**, i.e. the repo root locally. CI's sparse checkout does not materialise `.cache/`,
+  so the read fails and the fallback applies; on a machine that has collected, it
+  **succeeds**. Measured: six tests returned **688** interventions where their fixture
+  expected **1** — they patched the *builder* but not the cache read that runs before it.
+  `tests/conftest.py` now filters `builtins.open` and refuses any path under the repo's
+  `.cache`, naming the file (patron of #473). **Redirecting the constants was tried and
+  rejected**: it breaks the ten tests that already isolate via `monkeypatch.chdir(tmp_path)`
+  and write to a *relative* `.cache` — an absolute constant strips their isolation. The
+  property everything rests on — **the constants stay relative** — is tested, with a witness
+  counter. `.cache` is listed in `_NOMMES_POUR_ETRE_REFUSES` of
+  `tests/test_ci_perimetre_sparse_checkout.py`: it is named to be **refused**, never read,
+  and it must stay out of the sparse-checkout or the guard becomes a lie.
+  → `docs/decisions/cache-du-poste-hors-des-tests-721.md`
 - **A test reading a file outside `tests.yml`'s sparse-checkout passes locally and fails
   in CI** — #434, then #518 twice. Whitelisting the file is half of it; the other half is
   `tests/test_ci_perimetre_sparse_checkout.py`, which fails **locally** on an uncovered
