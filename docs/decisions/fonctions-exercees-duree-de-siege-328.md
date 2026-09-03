@@ -159,6 +159,28 @@ les deux bords gauches se répondent et le bord droit part tout seul. C'est un
 compromis assumé — 82 caractères était la longueur de ligne confortable, on monte
 à ~140 — tenable sur trois phrases courtes, à rediscuter si le pied s'allonge.
 
+## 8. La forme rendue a deux lecteurs, et le second n'est pas une vue
+
+`fonctionsExercees` rendait un **tableau** de blocs `{cle, titre, total, items[]}` ;
+elle rend un objet `{mandat, blocs[]}`. La vue a suivi. Le second lecteur n'a pas
+suivi, et rien ne l'a signalé : `vivierDesPoints` lit la même forme pour un point
+**dormant** — « L'essentiel » a emporté le rendu du vivier, pas son calcul, et
+`buildCandidateView` appelle `essentiel()` sans condition. `(fonctions || []).find(…)`
+sur un objet lève `find is not a function` : **toute la fiche disparaît, pour les
+treize candidats**. Mesuré en rejouant `buildCandidateView` sous Node sur les
+profils publiés — la suite, elle, était au vert, parce qu'aucun de ses 3 720 tests
+n'exécute une ligne de JS.
+
+Le point est réparé **en durée**, pas en compte : le remettre debout sur
+`items[0].n` aurait laissé dans le code la mesure que §2 vient d'écarter de la
+page. Il lit `blocs[].montrees`, déjà triées par durée, et l'adaptateur lui passe
+la forme **entière** — le dénominateur du point est le temps de mandat, qui vit
+sur `mandat`, et le défaire obligerait l'adaptateur à refaire une mesure.
+
+Trois tests le verrouillent, mutations vérifiées. Ils ne remplacent pas ce qui
+manque : **un consommateur qui n'est pas une vue ne se voit pas en relisant la
+page**, et le dépôt n'a aucun moyen de l'exécuter.
+
 ## Ce que ce lot a révélé, et qui n'est pas de son ressort
 
 Afficher le rôle et ne montrer que trois lignes a rendu lisibles deux défauts de
@@ -194,8 +216,11 @@ Filtrer ces entrées côté vue serait la classification par libellé que
   retirés ; **huit mutations** ont été vérifiées échouantes. Ils ne couvrent ni
   la mise en page rendue, ni le contraste, ni le parcours clavier.
 - Le rendu a été relu **sur une réplique publiée**, aux trois largeurs, sur les
-  deux profils de référence — pas sur l'application elle-même, qu'aucune session
-  n'a lancée ici.
+  deux profils de référence — pas sur l'application elle-même. C'est cette
+  omission qui a laissé passer le défaut du §8 : la réplique rendait la section,
+  jamais la fiche, et le point mort vivait ailleurs sur la fiche. L'application
+  a depuis été construite et servie, et les huit profils de référence rendus par
+  ses propres composants.
 - Les règles ont été **rejouées en Node sur les deux profils pivot publiés** et
   reproduisent la maquette à l'unité : 1 bloc marqué sur 6 chez Guedj, 3 sur 7
   chez Attal, mêmes durées, mêmes rôles.
