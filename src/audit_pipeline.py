@@ -260,6 +260,17 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         help="Dossier des fichiers *.json de groupe à auditer (défaut : pivot_data/groupes).",
     )
     parser.add_argument(
+        "--scrutins",
+        default="pivot_data/scrutins.json",
+        metavar="FICHIER",
+        help=(
+            "Index partagé des scrutins (#432), d'où l'audit des groupes tire la "
+            "date de chaque scrutin de cohésion (défaut : pivot_data/scrutins.json). "
+            "Absent ou vide : les plages temporelles sont vides et le rapport le "
+            "DÉCLARE (#726)."
+        ),
+    )
+    parser.add_argument(
         "--gouvernements-dir",
         default="pivot_data/gouvernements",
         metavar="DOSSIER",
@@ -348,8 +359,18 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     groupes, erreurs_groupes = audit_groupe_dataset.load_groupe_directory(groupes_dir)
+    index_scrutins = (
+        audit_groupe_dataset.charger_scrutins(Path(args.scrutins)) if args.scrutins else None
+    )
+    if args.scrutins and not len(index_scrutins or ()):
+        print(
+            f"[!] Index des scrutins vide ou introuvable ({args.scrutins}) : les plages "
+            "temporelles par groupe seront vides, et le rapport le déclare (#726).",
+            file=sys.stderr,
+        )
     rapport_groupes = audit_groupe_dataset.build_report(
         groupes, erreurs_groupes, staleness_days=args.staleness_days, reference_date=reference,
+        scrutins_index=index_scrutins,
     )
     print(
         f"→ groupes : {len(groupes)} chargé(s), {len(erreurs_groupes)} erreur(s) de lecture.",

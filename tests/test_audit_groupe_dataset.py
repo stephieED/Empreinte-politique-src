@@ -5,7 +5,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+from scrutins_index import ScrutinsIndex  # noqa: E402
+
 from audit_groupe_dataset import (
+    MOTIFS_DATE_NON_RESOLUE,
     _build_arg_parser,
     build_report,
     compute_agregation_warnings,
@@ -414,16 +417,22 @@ def test_compute_tableau_croise_groupes_nom_absent_tri_deterministe_par_id():
 # compute_plage_dates_groupes
 # ---------------------------------------------------------------------------
 
-def test_compute_plage_dates_groupes_liste_vide():
-    resultat = compute_plage_dates_groupes([])
+#: Index minimal, de la même classe que celui du pipeline : `cohesion_votes[]`
+#: ne porte qu'un `scrutin_id` depuis #432, la date vit ici (#726).
+def _index(scrutins):
+    return ScrutinsIndex({s["id"]: s for s in scrutins})
 
-    assert resultat == {"lignes": [], "dates_invalides": []}
+
+def test_compute_plage_dates_groupes_liste_vide():
+    resultat = compute_plage_dates_groupes([], _index([{"id": "an:16:1", "date": "2023-05-10"}]))
+
+    assert resultat == {"lignes": [], "index_disponible": True, "dates_non_resolues": {}}
 
 
 def test_compute_plage_dates_groupes_sans_cohesion_votes_cellule_null():
     groupes = [{"groupe_id": "AN:X", "groupe_nom": "X", "chambre": "AN"}]
 
-    resultat = compute_plage_dates_groupes(groupes)
+    resultat = compute_plage_dates_groupes(groupes, _index([{"id": "an:16:1", "date": "2023-05-10"}]))
 
     assert resultat["lignes"] == [
         {
@@ -431,85 +440,124 @@ def test_compute_plage_dates_groupes_sans_cohesion_votes_cellule_null():
             "cohesion_votes": None, "amendements_agreges": None,
         },
     ]
-    assert resultat["dates_invalides"] == []
+    assert resultat["dates_non_resolues"] == {}
 
 
 def test_compute_plage_dates_groupes_cohesion_votes_vide_cellule_null():
     groupes = [{"groupe_id": "AN:X", "groupe_nom": "X", "chambre": "AN", "cohesion_votes": []}]
 
-    resultat = compute_plage_dates_groupes(groupes)
+    resultat = compute_plage_dates_groupes(groupes, _index([]))
 
     assert resultat["lignes"][0]["cohesion_votes"] is None
 
 
-def test_compute_plage_dates_groupes_plusieurs_scrutins_min_max():
+def test_compute_plage_dates_groupes_la_date_vient_de_l_index_pas_de_l_entree():
+    """#726 — la fonction lisait `entree["date"]`, une clé qu'aucune des 61 596
+    entrées publiées ne porte : le tableau était vide par construction depuis
+    #432, et 61 596 lignes de « date invalide » enterraient le reste du rapport."""
     groupes = [
         {
             "groupe_id": "AN:X", "groupe_nom": "X", "chambre": "AN",
             "cohesion_votes": [
-                {"numero_scrutin": "1", "date": "2023-05-10"},
-                {"numero_scrutin": "2", "date": "2024-06-07"},
-                {"numero_scrutin": "3", "date": "2022-01-01"},
+                {"scrutin_id": "an:16:1"},
+                {"scrutin_id": "an:16:2"},
+                {"scrutin_id": "an:16:3"},
             ],
         },
     ]
+    index = _index([
+        {"id": "an:16:1", "date": "2023-05-10"},
+        {"id": "an:16:2", "date": "2024-06-07"},
+        {"id": "an:16:3", "date": "2022-01-01"},
+    ])
 
-    resultat = compute_plage_dates_groupes(groupes)
+    resultat = compute_plage_dates_groupes(groupes, index)
 
     assert resultat["lignes"][0]["cohesion_votes"] == {"min": "2022-01-01", "max": "2024-06-07"}
+    assert resultat["dates_non_resolues"] == {}
+
+
+def test_compute_plage_dates_groupes_une_date_dans_l_entree_ne_compte_pas():
+    """La date portée par l'entrée est ignorée : le champ n'existe pas au schéma,
+    et le lire ferait dépendre le rapport d'une donnée que rien ne produit."""
+    groupes = [
+        {
+            "groupe_id": "AN:X", "groupe_nom": "X", "chambre": "AN",
+            "cohesion_votes": [{"scrutin_id": "an:16:1", "date": "1999-01-01"}],
+        },
+    ]
+
+    resultat = compute_plage_dates_groupes(groupes, _index([{"id": "an:16:1", "date": "2023-05-10"}]))
+
+    assert resultat["lignes"][0]["cohesion_votes"] == {"min": "2023-05-10", "max": "2023-05-10"}
 
 
 def test_compute_plage_dates_groupes_amendements_agreges_toujours_null():
-    groupes = [
-        {
-            "groupe_id": "AN:X", "groupe_nom": "X", "chambre": "AN",
-            "amendements_agreges": {"nb_amendements": 100},
-        },
-    ]
+    groupes = [{"groupe_id": "AN:X", "groupe_nom": "X", "chambre": "AN"}]
 
-    resultat = compute_plage_dates_groupes(groupes)
+    resultat = compute_plage_dates_groupes(groupes, _index([]))
 
-    # Aucune date au niveau de l'agrégat dans schema_groupe.py : jamais calculée.
     assert resultat["lignes"][0]["amendements_agreges"] is None
 
 
-def test_compute_plage_dates_groupes_dates_invalides_ignorees_mais_comptees():
+def test_compute_plage_dates_groupes_motifs_comptes_jamais_enumeres():
+    """Trois motifs fermés, chacun compté : « le scrutin n'est pas dans l'index »
+    et « sa date est illisible » ne se réparent pas au même endroit."""
     groupes = [
         {
             "groupe_id": "AN:X", "groupe_nom": "X", "chambre": "AN",
             "cohesion_votes": [
-                {"numero_scrutin": "1", "date": "2024-06-07"},
-                {"numero_scrutin": "2", "date": "pas-une-date"},
-                {"numero_scrutin": "3"},  # date absente
+                {"scrutin_id": "an:16:1"},
+                {"scrutin_id": "an:16:absent"},
+                {"scrutin_id": "an:16:muet"},
+                {},
             ],
         },
     ]
+    index = _index([
+        {"id": "an:16:1", "date": "2024-06-07"},
+        {"id": "an:16:muet", "date": "pas-une-date"},
+    ])
 
-    resultat = compute_plage_dates_groupes(groupes)
+    resultat = compute_plage_dates_groupes(groupes, index)
 
-    # La date invalide/absente n'entre jamais dans le calcul min/max (AGENTS.md §2.5).
     assert resultat["lignes"][0]["cohesion_votes"] == {"min": "2024-06-07", "max": "2024-06-07"}
-    assert len(resultat["dates_invalides"]) == 2
-    assert resultat["dates_invalides"][0] == {
-        "groupe_id": "AN:X", "champ": "cohesion_votes[1].date", "valeur": "pas-une-date",
+    assert resultat["dates_non_resolues"] == {
+        "date_invalide": 1, "scrutin_id_absent": 1, "scrutin_inconnu": 1,
     }
-    assert resultat["dates_invalides"][1] == {
-        "groupe_id": "AN:X", "champ": "cohesion_votes[2].date", "valeur": None,
-    }
+    assert set(resultat["dates_non_resolues"]) <= MOTIFS_DATE_NON_RESOLUE
 
 
-def test_compute_plage_dates_groupes_toutes_dates_invalides_cellule_null():
+def test_compute_plage_dates_groupes_index_absent_est_un_trou_declare():
+    """Sans index, la cellule est `None` — mais `index_disponible: False` empêche
+    de lire ce `None` comme « ce groupe n'a pas de scrutin » (§2 règle 5)."""
     groupes = [
         {
             "groupe_id": "AN:X", "groupe_nom": "X", "chambre": "AN",
-            "cohesion_votes": [{"numero_scrutin": "1", "date": "invalide"}],
+            "cohesion_votes": [{"scrutin_id": "an:16:1"}],
         },
     ]
 
-    resultat = compute_plage_dates_groupes(groupes)
+    resultat = compute_plage_dates_groupes(groupes, None)
 
     assert resultat["lignes"][0]["cohesion_votes"] is None
-    assert len(resultat["dates_invalides"]) == 1
+    assert resultat["index_disponible"] is False
+
+
+def test_compute_plage_dates_groupes_index_vide_vaut_index_absent():
+    """`scrutins_index.charger()` rend un index VIDE sur un fichier absent : le
+    traiter comme disponible ferait passer « le fichier manquait » pour « ces
+    groupes n'ont pas de scrutin » — la règle de #510."""
+    groupes = [
+        {
+            "groupe_id": "AN:X", "groupe_nom": "X", "chambre": "AN",
+            "cohesion_votes": [{"scrutin_id": "an:16:1"}],
+        },
+    ]
+
+    resultat = compute_plage_dates_groupes(groupes, _index([]))
+
+    assert resultat["index_disponible"] is False
 
 
 def test_compute_plage_dates_groupes_trie_par_nom_comme_tableau_croise():
@@ -518,20 +566,9 @@ def test_compute_plage_dates_groupes_trie_par_nom_comme_tableau_croise():
         {"groupe_id": "x:a", "groupe_nom": "Alban", "chambre": "AN"},
     ]
 
-    resultat = compute_plage_dates_groupes(groupes)
+    resultat = compute_plage_dates_groupes(groupes, _index([]))
 
     assert [ligne["groupe_nom"] for ligne in resultat["lignes"]] == ["Alban", "Zoé"]
-
-
-def test_compute_plage_dates_groupes_dates_invalides_triees_par_groupe_id():
-    groupes = [
-        {"groupe_id": "AN:Z", "groupe_nom": "Z", "chambre": "AN", "cohesion_votes": [{"date": "invalide"}]},
-        {"groupe_id": "AN:A", "groupe_nom": "A", "chambre": "AN", "cohesion_votes": [{"date": "invalide"}]},
-    ]
-
-    resultat = compute_plage_dates_groupes(groupes)
-
-    assert [e["groupe_id"] for e in resultat["dates_invalides"]] == ["AN:A", "AN:Z"]
 
 
 # ---------------------------------------------------------------------------
@@ -1142,7 +1179,7 @@ def test_generate_markdown_report_sections_vides_affichent_un_message_explicite(
     assert "Aucun groupe périmé." in markdown
     assert "Aucun warning." in markdown
     assert "Aucune erreur de lecture." in markdown
-    assert "Aucune date invalide détectée." in markdown
+    assert "Toutes les dates de scrutin se résolvent." in markdown
 
 
 def test_generate_markdown_report_reflete_les_donnees_du_rapport():

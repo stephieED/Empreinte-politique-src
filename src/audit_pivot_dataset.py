@@ -45,6 +45,7 @@ Aucune dépendance lourde : stdlib uniquement.
 
 import argparse
 import json
+import re
 import statistics
 import sys
 from dataclasses import dataclass
@@ -585,8 +586,25 @@ def compute_coherence_schema_version(profils: list[dict[str, Any]]) -> dict[str,
 
 
 def _erreur_date(valeur: Any, maintenant: datetime) -> str | None:
-    """Code d'erreur pour `valeur` si ce n'est pas une date ISO-8601 passée valide, sinon `None`."""
-    if not isinstance(valeur, str) or not valeur:
+    """Code d'erreur pour `valeur` si ce n'est pas une date ISO-8601 passée valide, sinon `None`.
+
+    **`non_renseigne` n'est pas `format_invalide` (#726).** La prémisse d'origine
+    — « ces champs sont générés par le pipeline lui-même, une valeur absente
+    signale toujours une anomalie amont » — était vraie et ne l'est plus : depuis
+    #529, les entrées `sources[].type == "nosdeputes"` sont **conservées sans
+    être recollectées**, parce que la clause ODbL en dépend (`AGENTS.md` §7).
+    Rien ne peut plus leur donner de date, et elles sont **464 sur les 1 115**
+    entrées `sources[]` publiées au 03/09/2026. Les ranger sous « format
+    invalide » confond une donnée absente avec une donnée fautive — la
+    distinction même que §2 règle 5 impose, ici dans l'outil chargé de la faire
+    respecter.
+
+    Une valeur non-chaîne reste `format_invalide` : ce n'est pas une absence,
+    c'est une valeur d'un type que le champ n'admet pas.
+    """
+    if valeur is None or (isinstance(valeur, str) and not valeur.strip()):
+        return "non_renseigne"
+    if not isinstance(valeur, str):
         return "format_invalide"
 
     try:
@@ -603,16 +621,22 @@ def _erreur_date(valeur: Any, maintenant: datetime) -> str | None:
 def compute_validite_dates(profils: list[dict[str, Any]]) -> dict[str, Any]:
     """Valide les dates de traçabilité `sources[].synchro_le` et `meta.genere_le`.
 
-    Une date est en défaut si elle n'est pas une chaîne ISO-8601 parseable
-    (`datetime.fromisoformat`, suffixe `Z` accepté comme UTC) ou si elle est
-    postérieure à l'instant de l'audit — ces deux champs sont générés par le
-    pipeline lui-même (pas une donnée source potentiellement manquante), une
-    valeur absente ou future y signale toujours une anomalie amont.
+    Une date est en défaut si elle est absente, si elle n'est pas une chaîne
+    ISO-8601 parseable (`datetime.fromisoformat`, suffixe `Z` accepté comme UTC),
+    ou si elle est postérieure à l'instant de l'audit.
+
+    **Les trois cas ne se lisent pas de la même façon (#726).** Une valeur future
+    signale toujours une anomalie amont, et une valeur illisible aussi ; une
+    valeur ABSENTE, depuis #529, peut décrire une source retirée du pipeline et
+    conservée pour la clause ODbL (`AGENTS.md` §7). D'où `non_renseigne`, séparé
+    de `format_invalide` : le rendu Markdown agrège le premier et énumère les
+    seconds.
 
     Returns:
         {"dates_invalides": [{"id":..., "champ": "meta.genere_le" |
                                "sources[i].synchro_le", "valeur":...,
-                               "erreur": "format_invalide" | "date_future"}, ...]}
+                               "erreur": "non_renseigne" | "format_invalide"
+                                          | "date_future"}, ...]}
     """
     maintenant = datetime.now(timezone.utc)
     dates_invalides: list[dict[str, Any]] = []
@@ -1290,10 +1314,25 @@ def _md_section_coherence(coherence: dict[str, Any]) -> str:
         [p["id"], p["schema_version"], p["meta_schema_version"]]
         for p in coherence["coherence_schema_version"]["profils_incoherents"]
     ]
+    # #726 — `non_renseigne` est AGRÉGÉ, les anomalies sont ÉNUMÉRÉES. 464 lignes
+    # identiques disant « cette source retirée du pipeline n'a pas de date » ne
+    # sont pas de l'information : elles enterrent la ligne qui en serait une. Le
+    # compte par champ, lui, se lit — et il reste visible, ce qui est la
+    # différence avec le fait de ne rien afficher du tout (§2 règle 5).
+    dates_en_defaut = coherence["validite_dates"]["dates_invalides"]
     lignes_dates = [
         [d["id"], d["champ"], d["valeur"], d["erreur"]]
-        for d in coherence["validite_dates"]["dates_invalides"]
+        for d in dates_en_defaut if d["erreur"] != "non_renseigne"
     ]
+    non_renseignees: dict[str, int] = {}
+    for d in dates_en_defaut:
+        if d["erreur"] != "non_renseigne":
+            continue
+        # `sources[3].synchro_le` -> `sources[].synchro_le` : l'indice désigne
+        # une position dans une liste, pas un champ distinct.
+        champ = re.sub(r"\[\d+\]", "[]", d["champ"])
+        non_renseignees[champ] = non_renseignees.get(champ, 0) + 1
+    lignes_non_renseignees = [[champ, n] for champ, n in sorted(non_renseignees.items())]
     lignes_chambre_sources = [
         [
             p["id"],
@@ -1315,6 +1354,16 @@ def _md_section_coherence(coherence: dict[str, Any]) -> str:
         )
         + "\n### Dates de traçabilité invalides ou futures\n\n"
         + _md_table(["id", "Champ", "Valeur", "Erreur"], lignes_dates, "Aucune date invalide détectée.")
+        + "\n### Dates de traçabilité non renseignées\n\n"
+        + "> Un champ vide n'est pas un champ fautif (#726) : depuis #529 les entrées "
+        "`sources[].type == \"nosdeputes\"` sont conservées sans être recollectées, la clause "
+        "ODbL en dépendant (`AGENTS.md` §7), et plus rien ne peut les dater. Compté par champ "
+        "plutôt qu'énuméré profil par profil — la liste ne dirait rien de plus et cacherait "
+        "les anomalies ci-dessus.\n\n"
+        + _md_table(
+            ["Champ", "Profils concernés"], lignes_non_renseignees,
+            "Aucune date de traçabilité non renseignée.",
+        )
         + "\n### Cohérence `chambres` / types de `sources[]`\n\n"
         + _md_table(
             ["id", "Chambres", "Sans source attendue", "Types de sources déclarés"],

@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 214 décisions
+gouverne sans avoir à fouiller les 215 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -37,11 +37,11 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 
 | Module | Décisions qui le gouvernent |
 | --- | ---: |
+| `src/scrutins_index.py` | 4 |
 | `src/budget_collecte.py` | 3 |
 | `src/normalize_parltrack_dumps.py` | 3 |
 | `src/parse_syceron.py` | 3 |
 | `src/profil_brut.py` | 3 |
-| `src/scrutins_index.py` | 3 |
 | `src/audit_gouvernement_dataset.py` | 2 |
 | `src/audit_pipeline.py` | 2 |
 | `src/build_correspondance_acteurs_an.py` | 2 |
@@ -126,10 +126,11 @@ Le mentionnent sans le gouverner : [`audit-pipeline-gouvernement`](decisions/aud
 
 ## `src/audit_groupe_dataset.py`
 
-5 décision(s) le gouvernent ; le module en cite 1.
+6 décision(s) le gouvernent ; le module en cite 1.
 
 | Décision | Nomme |
 | --- | --- |
+| [Un audit qui lit un champ déplacé ne se tait pas : il crie 62 000 fois (#726) (2026-09-03)](decisions/audit-champs-deplaces-726.md) | `MOTIFS_DATE_NON_RESOLUE`, `_plage_cohesion_votes`, `compute_plage_dates_groupes` |
 | [Épic #316 — tableaux croisés des plages temporelles (#317/#318/#320/#321) : bilan et décisions transverses (2026-08-15)](decisions/audit-plages-temporelles.md) | `compute_plage_dates_groupes` |
 | [Tous les comptes d'une fiche de groupe se rapportent à une date, et elle est publiée (#653) (2026-08-31)](decisions/date-de-reference-des-comptes-de-groupe-653.md) | `CHAMPS_EFFECTIF` |
 | [L'effectif d'un groupe dans le temps : `min_historique` et `max_historique` portent leur date (#702) — 01/09/2026](decisions/effectif-du-groupe-dans-le-temps-702.md) | `compute_effectifs` |
@@ -155,14 +156,15 @@ Le mentionnent sans le gouverner : [`partition-profils-legislature-580`](decisio
 | [`audit_pipeline.py` : intégration du rapport gouvernement (#321, sous-issue 5/6 de #316) (2026-08-15)](decisions/audit-pipeline-gouvernement.md) | `compute_vue_ensemble` |
 | [Épic #316 — tableaux croisés des plages temporelles (#317/#318/#320/#321) : bilan et décisions transverses (2026-08-15)](decisions/audit-plages-temporelles.md) | `compute_vue_ensemble` |
 
-Le mentionnent sans le gouverner : [`lectures-pipeline-par-projection-635`](decisions/lectures-pipeline-par-projection-635.md).
+Le mentionnent sans le gouverner : [`audit-champs-deplaces-726`](decisions/audit-champs-deplaces-726.md), [`lectures-pipeline-par-projection-635`](decisions/lectures-pipeline-par-projection-635.md).
 
 ## `src/audit_pivot_dataset.py`
 
-11 décision(s) le gouvernent ; le module en cite 4.
+12 décision(s) le gouvernent ; le module en cite 4.
 
 | Décision | Nomme |
 | --- | --- |
+| [Un audit qui lit un champ déplacé ne se tait pas : il crie 62 000 fois (#726) (2026-09-03)](decisions/audit-champs-deplaces-726.md) | `_erreur_date` |
 | [Épic #316 — tableaux croisés des plages temporelles (#317/#318/#320/#321) : bilan et décisions transverses (2026-08-15)](decisions/audit-plages-temporelles.md) | `_plage_dates_champ_simple`, `compute_plage_dates_candidats`, `compute_tableau_croise_candidats` |
 | [Rapport d'audit pivot : détail réservé aux candidats déclarés, indicateurs de distribution retirés (2026-08-18)](decisions/audit-rapport-perimetre-candidats.md) | `_est_candidat`, `_stats_volumes` |
 | [La chambre est un fait du mandat, pas du profil : `mandats[].chambre` estampillée à la collecte (#492) (2026-08-20)](decisions/chambre-par-mandat-electif.md) | `compute_agregation_warnings` |
@@ -816,7 +818,7 @@ Le mentionnent sans le gouverner : [`deduplication-entrees-membres`](decisions/d
 | [Les 5 groupes de la XVIIe entrent dans `groupes[]`, et leur succession est déclarée comme une relecture (#700) (2026-09-01)](decisions/fiches-groupe-17e-legislature-700.md) | `ETABLISSEMENTS_SUCCESSION`, `POSITIONS_POLITIQUES_GROUPE`, `_valider_succede_a` |
 | [La position politique d'un groupe est celle que l'Assemblée déclare, lue dans une table committée (#686) (2026-09-01)](decisions/position-politique-groupes-686.md) | `POSITIONS_POLITIQUES_GROUPE`, `resumer_position_politique` |
 
-Le mentionnent sans le gouverner : [`audit-plages-temporelles`](decisions/audit-plages-temporelles.md), [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`dates-appartenance-groupe-653`](decisions/dates-appartenance-groupe-653.md), [`pivot-freshness-timestamps-stables`](decisions/pivot-freshness-timestamps-stables.md), [`plage-dates-groupes`](decisions/plage-dates-groupes.md).
+Le mentionnent sans le gouverner : [`audit-champs-deplaces-726`](decisions/audit-champs-deplaces-726.md), [`audit-plages-temporelles`](decisions/audit-plages-temporelles.md), [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`dates-appartenance-groupe-653`](decisions/dates-appartenance-groupe-653.md), [`pivot-freshness-timestamps-stables`](decisions/pivot-freshness-timestamps-stables.md), [`plage-dates-groupes`](decisions/plage-dates-groupes.md).
 
 ## `src/schema_parti.py`
 
@@ -866,10 +868,11 @@ Le mentionnent sans le gouverner : [`gouvernement-premier-ministre-portefeuille`
 
 ## `src/scrutins_index.py`
 
-3 décision(s) le gouvernent ; le module en cite 0.
+4 décision(s) le gouvernent ; le module en cite 0.
 
 | Décision | Nomme |
 | --- | --- |
+| [Un audit qui lit un champ déplacé ne se tait pas : il crie 62 000 fois (#726) (2026-09-03)](decisions/audit-champs-deplaces-726.md) | `ScrutinsIndex` |
 | [Le seuil de blob sort du critère de sortie, et les profils bruts se partitionnent par législature (#580) (2026-08-29)](decisions/partition-profils-legislature-580.md) | `iter_votes_du_repertoire` |
 | [La qualification d'un scrutin se perdait entre la collecte et le profil brut (#639, rang 1) (2026-08-31)](decisions/qualification-perdue-a-la-fusion-639.md) | `_valeur_scrutin`, `merge_scrutins_index` |
 | [La qualification d'un scrutin et la clé de son dossier étaient lues puis jetées (#639, rangs 1 et 2)](decisions/qualification-scrutins-et-cle-dossier-639.md) | `merge_scrutins_index` |

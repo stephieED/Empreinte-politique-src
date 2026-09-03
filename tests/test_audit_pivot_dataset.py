@@ -592,13 +592,45 @@ def test_compute_validite_dates_format_invalide():
 
 
 def test_compute_validite_dates_genere_le_absent():
+    """#726 — une valeur ABSENTE n'est pas une valeur FAUTIVE. La distinction
+    existe parce que 464 des 1 115 entrées `sources[]` publiées n'ont plus de
+    date depuis #529 et n'en auront jamais : les ranger sous « format invalide »
+    confondait une donnée manquante avec une donnée erronée (§2 règle 5)."""
     profils = [{"id": "a", "meta": {}, "sources": []}]
 
     resultat = compute_validite_dates(profils)
 
     assert resultat["dates_invalides"] == [
-        {"id": "a", "champ": "meta.genere_le", "valeur": None, "erreur": "format_invalide"}
+        {"id": "a", "champ": "meta.genere_le", "valeur": None, "erreur": "non_renseigne"}
     ]
+
+
+def test_compute_validite_dates_source_retiree_est_non_renseignee_pas_invalide():
+    """Le cas réel : une entrée `nosdeputes` conservée pour la clause ODbL
+    (`AGENTS.md` §7), que plus aucune collecte ne date."""
+    profils = [{
+        "id": "a",
+        "meta": {"genere_le": "2026-09-01T00:00:00+00:00"},
+        "sources": [
+            {"type": "nosdeputes", "url": "https://www.nosdeputes.fr/a", "synchro_le": None},
+            {"type": "assemblee_nationale", "url": "https://x", "synchro_le": "2026-09-01"},
+        ],
+    }]
+
+    resultat = compute_validite_dates(profils)
+
+    assert resultat["dates_invalides"] == [
+        {"id": "a", "champ": "sources[0].synchro_le", "valeur": None, "erreur": "non_renseigne"}
+    ]
+
+
+def test_compute_validite_dates_une_valeur_non_chaine_reste_invalide():
+    """Une absence est un trou ; un entier dans un champ de date est une faute."""
+    profils = [{"id": "a", "meta": {"genere_le": 20260901}, "sources": []}]
+
+    resultat = compute_validite_dates(profils)
+
+    assert resultat["dates_invalides"][0]["erreur"] == "format_invalide"
 
 
 def test_compute_validite_dates_date_future():

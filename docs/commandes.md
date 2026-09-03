@@ -242,11 +242,17 @@ agrégés par groupe, jamais membre par membre.
 
 ```bash
 python3 src/audit_groupe_dataset.py --input-dir pivot_data/groupes \
+    --scrutins pivot_data/scrutins.json \
     --output-json audit_groupe.json --output-md audit_groupe.md
 ```
 
 Produit : mêmes axes que ci-dessus pour `pivot_data/groupes`, plus les
 `cohesion_votes`, les `amendements_agreges` et l'écart de couverture du roster.
+
+`--scrutins` (défaut `pivot_data/scrutins.json`) fournit l'index partagé d'où
+vient la **date** de chaque scrutin de cohésion : `cohesion_votes[]` ne porte
+qu'un `scrutin_id` depuis #432. Un index absent ou vide n'est pas une panne —
+les plages temporelles sont vides et le rapport le **déclare** (#726).
 
 ### Les fiches de gouvernement
 
@@ -265,6 +271,9 @@ source » ne se lise jamais « vraiment zéro » (#399).
 ```bash
 python3 src/audit_pipeline.py --output-json audit_pipeline.json --output-md audit_pipeline.md
 ```
+
+Il porte lui aussi `--scrutins` (même défaut, même rôle), qu'il passe à l'audit
+des groupes.
 
 Produit : les trois rapports détaillés plus une « vue d'ensemble » (totaux
 audités, erreurs de lecture, warnings agrégés). Pure composition — aucun calcul

@@ -57,6 +57,10 @@ from schema_groupe import (
     valeur_borne_effectif,
     validate_profil_groupe,
 )
+# `charger` rend un `ScrutinsIndex` vide sur un fichier absent, jamais une
+# exception : un index manquant est un trou déclaré par le rapport (#726), pas
+# une panne de l'audit.
+from scrutins_index import charger as charger_scrutins
 
 # Sous-champs de `effectif` dont on mesure la distribution.
 # `a_la_date_de_reference` remplace `actuel` (#653). Les deux sont lus : les 2
@@ -344,7 +348,7 @@ def compute_tableau_croise_groupes(groupes: list[dict[str, Any]]) -> dict[str, A
 
 
 def _parse_date_cohesion(valeur: Any) -> date | None:
-    """Parse `cohesion_votes[].date` (`"YYYY-MM-DD"`, sous-préfixe accepté), `None` si invalide."""
+    """Parse une date de scrutin (`"YYYY-MM-DD"`, sous-préfixe accepté), `None` si invalide."""
     if not isinstance(valeur, str) or not valeur:
         return None
     try:
@@ -353,31 +357,54 @@ def _parse_date_cohesion(valeur: Any) -> date | None:
         return None
 
 
-def _plage_cohesion_votes(
-    groupe: dict[str, Any], dates_invalides: list[dict[str, Any]]
-) -> dict[str, str] | None:
-    """Plage `{"min":..., "max":...}` de `cohesion_votes[].date`, `None` si aucune date exploitable.
+#: Pourquoi une entrée de `cohesion_votes` ne rend aucune date. Fermé, et chacun
+#: compté séparément (#726) : « le scrutin n'est pas dans l'index » et « sa date
+#: est illisible » ne se réparent pas au même endroit.
+MOTIFS_DATE_NON_RESOLUE = frozenset({
+    "scrutin_id_absent",   # l'entrée ne porte pas de référence de scrutin
+    "scrutin_inconnu",     # la référence ne résout dans aucun scrutin de l'index
+    "date_invalide",       # le scrutin existe, sa date n'est pas lisible
+})
 
-    Chaque entrée sans date exploitable (absente, non-dict, ou format
-    invalide) est ajoutée à `dates_invalides` (muté en place) plutôt
-    qu'ignorée silencieusement.
+
+def _plage_cohesion_votes(
+    groupe: dict[str, Any],
+    scrutins_index: Any,
+    non_resolues: dict[str, int],
+) -> dict[str, str] | None:
+    """Plage `{"min":..., "max":...}` des scrutins d'un groupe, `None` si aucune.
+
+    **La date vient de l'index partagé, pas de l'entrée (#726).** `schema_groupe`
+    le dit depuis #432 : `cohesion_votes[]` porte un `scrutin_id`, et « `date`,
+    `texte` et `sort` vivent » dans `pivot_data/scrutins.json`. Cette fonction
+    lisait `entree["date"]` — une clé qu'**aucune** des 61 596 entrées publiées ne
+    porte, ce qui rendait ce tableau vide par construction et produisait 61 596
+    lignes de « date invalide » qui noyaient le reste du rapport.
+
+    `non_resolues` est muté en place : un compte par motif de
+    `MOTIFS_DATE_NON_RESOLUE`, jamais une ligne par entrée — le volume est de
+    l'ordre du corpus de scrutins, pas de celui d'une anomalie.
     """
     cohesion_votes = groupe.get("cohesion_votes")
     if not isinstance(cohesion_votes, list):
         return None
 
-    groupe_id = groupe.get("groupe_id")
     dates_valides: list[date] = []
 
-    for i, entree in enumerate(cohesion_votes):
-        valeur = entree.get("date") if isinstance(entree, dict) else None
-        date_parsee = _parse_date_cohesion(valeur)
-        if date_parsee is not None:
-            dates_valides.append(date_parsee)
-        else:
-            dates_invalides.append({
-                "groupe_id": groupe_id, "champ": f"cohesion_votes[{i}].date", "valeur": valeur,
-            })
+    for entree in cohesion_votes:
+        scrutin_id = entree.get("scrutin_id") if isinstance(entree, dict) else None
+        if not scrutin_id:
+            non_resolues["scrutin_id_absent"] = non_resolues.get("scrutin_id_absent", 0) + 1
+            continue
+        scrutin = scrutins_index.get(scrutin_id) if scrutins_index is not None else None
+        if scrutin is None:
+            non_resolues["scrutin_inconnu"] = non_resolues.get("scrutin_inconnu", 0) + 1
+            continue
+        date_parsee = _parse_date_cohesion(scrutin.get("date"))
+        if date_parsee is None:
+            non_resolues["date_invalide"] = non_resolues.get("date_invalide", 0) + 1
+            continue
+        dates_valides.append(date_parsee)
 
     if not dates_valides:
         return None
@@ -385,7 +412,9 @@ def _plage_cohesion_votes(
     return {"min": min(dates_valides).isoformat(), "max": max(dates_valides).isoformat()}
 
 
-def compute_plage_dates_groupes(groupes: list[dict[str, Any]]) -> dict[str, Any]:
+def compute_plage_dates_groupes(
+    groupes: list[dict[str, Any]], scrutins_index: Any = None
+) -> dict[str, Any]:
     """Tableau croisé des plages temporelles par groupe, symétrique de `compute_tableau_croise_groupes`.
 
     Là où `compute_tableau_croise_groupes` répond à « combien d'entrées ? »,
@@ -400,39 +429,51 @@ def compute_plage_dates_groupes(groupes: list[dict[str, Any]]) -> dict[str, Any]
     documentée comme telle dans le rapport Markdown, jamais laissée vide
     sans explication.
 
-    Une date invalide ou une entrée `cohesion_votes` sans date exploitable
-    est exclue du calcul min/max (jamais traitée comme une date par défaut,
-    AGENTS.md §2.5), mais comptée et recensée dans `dates_invalides` plutôt
-    qu'ignorée silencieusement.
+    **La date est résolue par `scrutins_index`, pas lue dans l'entrée (#726).**
+    `scrutin_id` est la seule clé que `cohesion_votes[]` porte depuis #432. Un
+    index absent (`scrutins_index=None`) rend donc toutes les cellules `None` —
+    et ce trou est **déclaré** par `index_disponible: False`, jamais présenté
+    comme « ce groupe n'a pas de scrutin » (AGENTS.md §2 règle 5).
+
+    Une entrée dont la date ne se résout pas est exclue du calcul min/max et
+    **comptée par motif** (`MOTIFS_DATE_NON_RESOLUE`), jamais énumérée : elle se
+    compte à l'échelle du corpus de scrutins — 61 596 entrées sur 12 fiches —,
+    pas à celle d'une anomalie.
 
     Returns:
         `{"lignes": [{"groupe_id":..., "groupe_nom":..., "chambre":...,
         "cohesion_votes": {"min":..., "max":...} | None,
-        "amendements_agreges": None}, ...], "dates_invalides": [{"groupe_id":...,
-        "champ": "cohesion_votes[i].date", "valeur":...}, ...]}`. `lignes`
-        trié par `groupe_nom` puis `groupe_id`, même ordre que
-        `compute_tableau_croise_groupes` ; `dates_invalides` trié par
-        `groupe_id` puis `champ`.
+        "amendements_agreges": None}, ...], "index_disponible": bool,
+        "dates_non_resolues": {motif: n, ...}}`. `lignes` trié par `groupe_nom`
+        puis `groupe_id`, même ordre que `compute_tableau_croise_groupes`.
     """
-    dates_invalides: list[dict[str, Any]] = []
+    # Un index VIDE ne résout rien : le traiter comme disponible ferait passer
+    # « le fichier était absent » pour « ces groupes n'ont pas de scrutin ».
+    # `scrutins_index.charger()` rend un index vide sur un fichier absent, donc
+    # le cas est atteignable par la CLI — c'est la règle de #510, un index qui ne
+    # résout rien n'est jamais rendu en silence.
+    if scrutins_index is not None and not len(scrutins_index):
+        scrutins_index = None
+
+    non_resolues: dict[str, int] = {}
 
     lignes = [
         {
             "groupe_id": groupe.get("groupe_id"),
             "groupe_nom": groupe.get("groupe_nom"),
             "chambre": groupe.get("chambre"),
-            "cohesion_votes": _plage_cohesion_votes(groupe, dates_invalides),
+            "cohesion_votes": _plage_cohesion_votes(groupe, scrutins_index, non_resolues),
             "amendements_agreges": None,
         }
         for groupe in groupes
     ]
 
     lignes.sort(key=lambda ligne: (ligne["groupe_nom"] or "", ligne["groupe_id"] or ""))
-    dates_invalides.sort(
-        key=lambda entree: (entree["groupe_id"] is None, entree["groupe_id"], entree["champ"])
-    )
-
-    return {"lignes": lignes, "dates_invalides": dates_invalides}
+    return {
+        "lignes": lignes,
+        "index_disponible": scrutins_index is not None,
+        "dates_non_resolues": dict(sorted(non_resolues.items())),
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -755,12 +796,18 @@ def build_report(
     erreurs_lecture: list[dict[str, Any]],
     staleness_days: int = 30,
     reference_date: datetime | None = None,
+    scrutins_index: Any = None,
 ) -> dict[str, Any]:
     """Assemble tous les indicateurs `compute_*` en un rapport structuré unique.
 
     Args:
         groupes: profils de groupe valides (sortie de `load_groupe_directory`).
         erreurs_lecture: erreurs de lecture (sortie de `load_groupe_directory`).
+        scrutins_index: index partagé des scrutins (#432), d'où vient la date de
+            chaque scrutin de cohésion (#726). Le défaut est `None` et **non un
+            chemin du dépôt** : la valeur par défaut d'une fonction qui pointe
+            dans l'arbre est le piège de `AGENTS.md` §3b. La CLI, elle, le charge
+            depuis `--scrutins`.
         staleness_days: seuil d'ancienneté en jours pour `compute_groupes_perimes`
             (défaut : 30).
         reference_date: date de référence injectable pour les indicateurs de
@@ -807,7 +854,7 @@ def build_report(
         },
         "warnings": compute_agregation_warnings(groupes),
         "tableau_croise_groupes": compute_tableau_croise_groupes(groupes),
-        "plage_dates_groupes": compute_plage_dates_groupes(groupes),
+        "plage_dates_groupes": compute_plage_dates_groupes(groupes, scrutins_index),
         "erreurs_lecture": erreurs_lecture,
     }
 
@@ -1004,9 +1051,7 @@ def _md_section_plage_dates_groupes(plage: dict[str, Any]) -> str:
         for ligne in plage["lignes"]
     ]
 
-    lignes_dates_invalides = [
-        [e["groupe_id"], e["champ"], e["valeur"]] for e in plage["dates_invalides"]
-    ]
+    lignes_non_resolues = [[motif, n] for motif, n in plage["dates_non_resolues"].items()]
 
     return (
         "## Tableau croisé des plages temporelles par groupe\n\n"
@@ -1027,11 +1072,21 @@ def _md_section_plage_dates_groupes(plage: dict[str, Any]) -> str:
         "une limite structurelle du schéma actuel, pas une donnée "
         "manquante à corriger. Voir la section Hors périmètre de l'issue "
         "#316.\n\n"
-        + f"### Dates `cohesion_votes[].date` invalides ignorées pour le calcul "
-        f"({len(plage['dates_invalides'])})\n\n"
+        + (
+            ""
+            if plage["index_disponible"]
+            else "> **Index des scrutins non fourni** : la colonne « Cohésion de vote » est "
+            "vide pour tous les groupes, et c'est un trou déclaré, jamais « ce groupe n'a "
+            "pas de scrutin » (AGENTS.md §2 règle 5). La date d'un scrutin vit dans "
+            "`pivot_data/scrutins.json` depuis #432 ; passer `--scrutins CHEMIN` la "
+            "résout.\n\n"
+        )
+        + "### Scrutins de cohésion dont la date ne se résout pas\n\n"
+        + "> Compté par motif, jamais énuméré (#726) : ces entrées se comptent à l'échelle "
+        "du corpus de scrutins, pas à celle d'une anomalie.\n\n"
         + _md_table(
-            ["groupe_id", "Champ", "Valeur"],
-            lignes_dates_invalides, "Aucune date invalide détectée.",
+            ["Motif", "Entrées"],
+            lignes_non_resolues, "Toutes les dates de scrutin se résolvent.",
         )
     )
 
@@ -1113,6 +1168,16 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--scrutins",
+        default="pivot_data/scrutins.json",
+        metavar="FICHIER",
+        help=(
+            "Index partagé des scrutins (#432), d'où vient la date de chaque "
+            "scrutin de cohésion. Absent ou illisible : la colonne des plages "
+            "est vide et le rapport le DÉCLARE (#726)."
+        ),
+    )
+    parser.add_argument(
         "--output-json",
         default=None,
         metavar="FICHIER",
@@ -1173,7 +1238,18 @@ def main(argv: list[str] | None = None) -> int:
         file=sys.stderr,
     )
 
-    rapport = build_report(groupes, erreurs_lecture, staleness_days=args.staleness_days)
+    index_scrutins = charger_scrutins(Path(args.scrutins)) if args.scrutins else None
+    if args.scrutins and not len(index_scrutins or ()):
+        print(
+            f"[!] Index des scrutins vide ou introuvable ({args.scrutins}) : les plages "
+            "temporelles par groupe seront vides, et le rapport le déclare (#726).",
+            file=sys.stderr,
+        )
+    rapport = build_report(
+        groupes, erreurs_lecture,
+        staleness_days=args.staleness_days,
+        scrutins_index=index_scrutins,
+    )
     output_json = json.dumps(rapport, ensure_ascii=False, indent=2)
 
     if output_json_path:
