@@ -93,13 +93,25 @@ def _media_etroit(feuille: str) -> str:
 # ── Le nom, et la ligne qui l'accompagne ────────────────────────────────────
 
 
-def test_le_bloc_s_appelle_les_grands_chiffres(composant):
-    """Deux noms ont été essayés et écartés : « Coup d'œil » promettait de la
-    rapidité et non du contenu, « L'essentiel » promettait une synthèse que le
-    bloc ne délivre pas."""
-    assert "Les grands chiffres" in composant
+def test_le_bloc_s_appelle_en_bref(composant):
+    """Quatre noms ont été essayés. « Coup d'œil » promettait de la rapidité et
+    non du contenu ; « L'essentiel » promettait une synthèse que le bloc ne
+    délivre pas ; « Les grands chiffres » nommait honnêtement un tableau de bord,
+    mais le bloc a changé de contenu — la frise et le détail daté y sont
+    descendus, et « chiffres » ne les couvre plus. « En bref » les couvre tous.
+
+    Le nom porte le format d'un titre de SECTION, pas d'une étiquette : c'est ce
+    qui le met au même rang que « Les fonctions exercées » juste dessous."""
+    assert "En bref" in composant
+    assert "Les grands chiffres" not in composant
     assert "Coup d’œil" not in composant and "Coup d'œil" not in composant
     assert "L’essentiel" not in composant
+    assert '<h2 className="cp-section-titre">En bref</h2>' in composant, (
+        "même bande, même filet, même h2 que les titres de section"
+    )
+    assert "cp-gc-label" not in composant, (
+        "l'étiquette propre au bloc part avec le format qu'elle portait"
+    )
 
 
 def test_la_these_tient_en_une_ligne(composant):
@@ -376,13 +388,21 @@ def test_la_fabrique_de_pistes_est_retiree_avec_la_copie(regles):
         "il survit : il nomme les COLONNES, que la frise du parcours ne porte pas"
     )
 
-def test_les_deux_plis_partagent_une_seule_poignee(composant, feuille):
+def test_tous_les_plis_partagent_une_seule_poignee(composant, feuille):
     """« Ce que cette personne a engagé, en chiffres. » et « Détails du parcours »
     sont deux plis de MÊME NATURE. Leur donner deux tailles faisait crier l'un
     plus fort que l'autre sans raison — relevé à l'écran le 03/09/2026. Une seule
-    classe, donc, et non deux qui divergeraient au premier ajustement."""
-    assert composant.count('className="cp-poignee"') == 2, (
-        "les deux poignées, et elles seules, portent la même classe"
+    classe, donc, et non deux qui divergeraient au premier ajustement.
+
+    La règle a été écrite sur deux plis ; elle n'en visait pas le nombre. Depuis
+    que « Les fonctions exercées » ouvre les siens (« N autres »), c'est la
+    propriété qui compte qui est vérifiée : AUCUN pli ne se donne sa propre
+    poignée. Compter les plis aurait fait échouer ce test à chaque pli ajouté,
+    sans que rien de ce qu'il protège ait bougé."""
+    poignees = composant.count('className="cp-poignee"')
+    assert poignees >= 2, "les plis du bloc de tête portent la classe commune"
+    assert composant.count("<summary") == poignees, (
+        "chaque pli ouvre sur la poignée commune, aucun n'en invente une autre"
     )
     for morte in ("cp-gc-these", "cp-gc-plus", "cp-gc-plis"):
         assert morte not in composant and morte not in feuille, (

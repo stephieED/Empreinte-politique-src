@@ -15,7 +15,8 @@
 import '../styles/shell.css';
 import './CandidateProfile.css';
 import { BadgeSource, Interdits, ListeVide, PositionVote } from './Lecture';
-import { Fragment } from 'react';
+import { Fragment, useLayoutEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   LAST_READING_LABEL,
   LAST_READING_RULE,
@@ -64,7 +65,7 @@ function periode(debut, fin, actif) {
  * publié, pas une légende décorative — c'est lui qui empêche de lire un
  * décompte comme une note.
  */
-function Section({ numero, titre, critere, children }) {
+function Section({ numero, titre, critere, pied, children }) {
   return (
     <section className="cp-section">
       <div className="cp-section-bande">
@@ -74,6 +75,11 @@ function Section({ numero, titre, critere, children }) {
       <h2 className="cp-section-titre">{titre}</h2>
       {critere && <p className="cp-section-critere">{critere}</p>}
       <div className="cp-section-corps">{children}</div>
+      {/* Le pied porte la règle de lecture APRÈS le contenu, jamais avant : une
+          section qui s'annonce avant qu'on ait rien lu fait lire la consigne à
+          la place du fait. C'est aussi ce qui a fait retirer le critère d'en-tête
+          de cette section-ci. */}
+      {pied && <p className="cp-section-pied">{pied}</p>}
     </section>
   );
 }
@@ -229,29 +235,131 @@ function Frise({ parcours }) {
 }
 
 /*
- * Les fonctions qu'on choisit d'exercer. Un bloc par catégorie, jamais un
- * total : un groupe d'amitié et une commission d'enquête ne s'additionnent pas.
+ * Un intitulé, coupé à DEUX lignes quand il déborde.
+ *
+ * Une seule ligne perdait trop : les commissions d'enquête portent des intitulés
+ * de plus de 200 caractères, et la moitié du sens y passait. À deux lignes, plus
+ * aucun ne déborde en pleine largeur ; c'est en écran étroit que la coupe sert.
+ *
+ * Le « … » est un VRAI bouton, pas un `text-overflow` : il faut pouvoir
+ * l'atteindre au clavier et qu'un lecteur d'écran annonce qu'il déplie. C'est
+ * aussi pourquoi la coupe est franche plutôt qu'un `-webkit-line-clamp`, qui
+ * peindrait ses propres points et en afficherait deux.
+ *
+ * Il n'apparaît QUE sur ce qui déborde vraiment, et ça se mesure — poser
+ * l'affordance partout apprendrait au lecteur à ne plus cliquer. La mesure se
+ * refait au redimensionnement : la place disponible décide, pas le texte.
+ */
+function Intitule({ label, roles }) {
+  const ligne = useRef(null);
+  const [deborde, setDeborde] = useState(false);
+  const [deplie, setDeplie] = useState(false);
+
+  useLayoutEffect(() => {
+    let attente = 0;
+    const mesurer = () => {
+      const el = ligne.current;
+      if (el) setDeborde(el.scrollHeight > el.clientHeight + 1);
+    };
+    const auRedimensionnement = () => {
+      clearTimeout(attente);
+      attente = setTimeout(mesurer, 120);
+    };
+    mesurer();
+    window.addEventListener('resize', auRedimensionnement);
+    return () => {
+      clearTimeout(attente);
+      window.removeEventListener('resize', auRedimensionnement);
+    };
+  }, [label, roles]);
+
+  return (
+    <span className="cp-fonctions-objet">
+      <span className="cp-fonctions-ligne" ref={ligne} data-deplie={deplie ? '' : undefined}>
+        {label}
+        {roles && <span className="cp-fonctions-role"> · {roles}</span>}
+      </span>
+      {deborde && (
+        <button
+          type="button"
+          className="cp-fonctions-plus"
+          aria-expanded={deplie}
+          onClick={() => setDeplie((o) => !o)}
+        >
+          {deplie ? 'Replier l’intitulé' : '…'}
+        </button>
+      )}
+    </span>
+  );
+}
+
+/*
+ * Les fonctions qu'on choisit d'exercer — ce que la section publie désormais en
+ * entier, la frise et le détail daté vivant tous deux dans « En bref ».
+ *
+ * Un bloc par catégorie, JAMAIS un total : un groupe d'amitié et une commission
+ * d'enquête ne s'additionnent pas. Chaque bloc montre ses trois plus longues, et
+ * le filet marque celle qui dépasse la moitié du temps de mandat — deux états,
+ * jamais une graduation. Le reste vit sous un pli, avec sa durée.
+ *
+ * La marque est SANS TEINTE, et ce n'est pas un oubli : aucune couleur n'était
+ * libre. Le jaune signal est pris par la sélection, l'action et le badge de
+ * source ; le vert et le rouge par les positions de vote ; le bleu et le bronze
+ * par les institutions dans la frise. En ajouter une quatrième aurait dilué les
+ * trois autres — et l'encre reste lisible en niveaux de gris et sous daltonisme,
+ * sans avoir à doubler la marque d'un pictogramme.
  */
 function Fonctions({ fonctions }) {
-  if (!fonctions.length) return null;
+  if (!fonctions || !fonctions.blocs.length) return null;
   return (
     <div className="cp-carte cp-fonctions">
-      {fonctions.map((c) => (
-        <div className="cp-fonctions-bloc" key={c.cle}>
-          <p className="cp-fonctions-titre">
-            {c.titre} · <span className="cp-num">{formatNumber(c.total)}</span>{' '}
-            {c.total > 1 ? 'mandats' : 'mandat'}
-          </p>
-          <div className="cp-puces">
-            {c.items.map((i) => (
-              <span className="cp-puce" key={i.label}>
-                {i.label}
-                {i.n > 1 && <b className="cp-num">{i.n}</b>}
-              </span>
-            ))}
+      {fonctions.blocs.map((b) => {
+        const marquee = b.montrees.some((e) => e.marquee);
+        return (
+          <div className="cp-fonctions-bloc" key={b.cle}>
+            {/* Le dénominateur vit dans le titre, pas sous chaque ligne : c'est
+                une constante du profil, et la répéter en faisait un refrain. Il
+                n'apparaît QUE là où une ligne est marquée — c'est elle qui
+                affirme « plus de la moitié », donc elle seule doit ses deux
+                nombres (§2 règle 7). */}
+            <p className="cp-fonctions-titre">
+              {b.titre} · <span className="cp-num">{formatNumber(b.nbIntitules)}</span>{' '}
+              {b.nbIntitules > 1 ? 'intitulés' : 'intitulé'}
+              {marquee && ` · sur ${fonctions.mandat.duree} de mandat`}
+            </p>
+
+            <ul className="cp-fonctions-liste">
+              {b.montrees.map((e) => (
+                <li
+                  className={`cp-fonctions-item${e.marquee ? ' cp-fonctions-item--marquee' : ''}`}
+                  key={e.label}
+                >
+                  <span className="cp-fonctions-duree cp-num">{e.duree}</span>
+                  <Intitule label={e.label} roles={e.roles} />
+                </li>
+              ))}
+            </ul>
+
+            {b.reste.length > 0 && (
+              <details className="cp-pli cp-pli--fonctions">
+                <summary className="cp-poignee">
+                  <i className="cp-poignee-plus" aria-hidden="true" />
+                  {formatNumber(b.reste.length)} {b.reste.length > 1 ? 'autres' : 'autre'}
+                </summary>
+                <div className="cp-puces">
+                  {b.reste.map((e) => (
+                    <span className="cp-puce" key={e.label}>
+                      {e.label}
+                      {e.roles && <span className="cp-fonctions-role"> · {e.roles}</span>}
+                      <b className="cp-num">{e.duree}</b>
+                    </span>
+                  ))}
+                </div>
+              </details>
+            )}
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -932,7 +1040,13 @@ function GrandsChiffres({ chiffres, parcours }) {
   const { colonnes, lignes } = chiffres;
   return (
     <section className="cp-gc">
-      <p className="cp-gc-label">Les grands chiffres</p>
+      {/* « En bref » prend la bande, le filet et le h2 d'un titre de section.
+          SANS numéro : le numéroter ferait de ce bloc la section 1 et décalerait
+          les sept suivantes, ce qui n'a pas été décidé. */}
+      <div className="cp-section-bande">
+        <span className="cp-section-trait" />
+      </div>
+      <h2 className="cp-section-titre">En bref</h2>
 
       <div className="cp-carte cp-gc-carte">
         {/* La FRISE reste toujours dépliée : c'est l'ossature, et elle donne aux
@@ -1030,20 +1144,28 @@ export default function CandidateProfile({ candidate }) {
           avant que le lecteur ait choisi de le lire. */}
       <GrandsChiffres chiffres={c.grandsChiffres} parcours={c.parcours} />
 
+      {/* La frise ET le détail daté vivent dans « En bref », au-dessus : les
+          republier ici était de la redondance pure. Ce qui reste est ce que
+          personne d'autre ne porte — les fonctions qu'on choisit d'exercer —
+          et le titre le dit. */}
       <Section
         numero="1"
-        titre="Le parcours"
-        critere="Une seule frise, où chaque situation se distingue par un motif et non par une hiérarchie de position. L’ordre est chronologique, jamais hiérarchique : c’est la date qui range, pour tout le monde. Sous la bande, le détail de chaque rôle, puis les fonctions qu’on choisit d’exercer."
+        titre="Les fonctions exercées"
+        pied={
+          <>
+            Chaque catégorie montre ses trois fonctions les plus longues. Un filet marque
+            celle qui dépasse la moitié du temps de mandat, quand il y en a une. Le rôle
+            n’est précisé que lorsqu’il n’est pas celui de membre.{' '}
+            <Link to="/methodologie">Méthodologie →</Link>
+          </>
+        }
       >
-        {c.parcours.roles.length === 0 ? (
+        {c.fonctions.blocs.length === 0 ? (
           <div className="cp-carte">
-            <ListeVide cause={c.causes.mandats} source="Mandats et fonctions" />
+            <ListeVide cause={c.causes.mandats} source="Fonctions exercées" />
           </div>
         ) : (
-          <>
-            <Frise parcours={c.parcours} />
-            <Fonctions fonctions={c.fonctions} />
-          </>
+          <Fonctions fonctions={c.fonctions} />
         )}
       </Section>
 
