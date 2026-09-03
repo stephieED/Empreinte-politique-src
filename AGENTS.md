@@ -896,6 +896,24 @@ When something does need deciding, five parts, in this order:
 ## References
 
 - `src/schema_pivot.py`, `schema_groupe.py`, `schema_parti.py`, `schema_gouvernement.py`: structure contracts.
+- **An audit is a consumer like any other, and nothing warns it that a field moved
+  (#726).** `audit_pipeline.py` printed **62 705 lines, 99 % of them two false findings**:
+  `sources[].synchro_le` on `nosdeputes` entries, which #529 stopped collecting while
+  keeping them for the ODbL clause (464 of 1 115 published `sources[]` entries), and
+  `cohesion_votes[].date`, which #432 moved into `pivot_data/scrutins.json` — **not one**
+  of the 61 596 published entries carries the key. The second buried the fact that the
+  group temporal-range table had been **empty by construction since #432**. Hence
+  `non_renseigne` split from `format_invalide` (an absence is not a fault, §2 rule 5; a
+  **non-string** value still is), aggregated in the render while faults stay enumerated;
+  and the date resolved **where it lives**, through `scrutins_index.charger()`. A missing
+  index is a **declared** hole (`index_disponible: False`), and an **empty** index counts
+  as missing — `charger()` returns one on an absent file, and calling it available would
+  read "the file was missing" as "these groups have no ballot" (#510). Measured
+  **62 705 → 653 lines**, ranges filled **0 → 10 of 12**. The lesson is about the tests:
+  they supplied a `date` inside the entry, so they checked that the function read a field
+  the corpus does not carry. **A fixture describing the world as the code imagines it
+  cannot reveal that the world moved.**
+  → `docs/decisions/audit-champs-deplaces-726.md`
 - `src/check_quality_gate.py`: quality gate, fourteen blocks (1, 2, 3, 3b-3e, 4, 4b, 5, 5b, 5c, 6, §7).
   The `n/4` denominators printed are themselves stale. Hard vs soft fail logic.
   Amendements coverage/freshness are deliberately never hard fails — see
