@@ -71,6 +71,25 @@ def _corps(source: str, debut: str, fin: str) -> str:
     return source[i : source.index(fin, i)]
 
 
+def _media_etroit(feuille: str) -> str:
+    """Le bloc `@media (max-width: 720px)` qui règle « Les grands chiffres ».
+
+    La feuille en porte trois, et le bloc visé n'est pas le premier : viser par
+    `index` lisait celui de la mise en page générale, et le test passait au vert
+    sur la mauvaise règle. On retient donc le bloc **par son contenu**.
+    """
+    morceaux = feuille.split("@media (max-width: 720px)")
+    vises = [m for m in morceaux[1:] if "overflow-x: auto" in m and ".cp-gc-duo--deux" in m]
+    assert len(vises) == 1, (
+        "un seul bloc étroit règle le tableau des grands chiffres ; "
+        f"{len(vises)} trouvé(s)"
+    )
+    # Jusqu'à la règle qui ferme le bloc, la dernière que la media query porte.
+    fin = vises[0].index(".cp-gc-pastille-seg")
+    return vises[0][: vises[0].index("\n}", vises[0].index("}", fin))]
+
+
+
 # ── Le nom, et la ligne qui l'accompagne ────────────────────────────────────
 
 
@@ -343,3 +362,77 @@ def test_aucune_mesure_n_est_refaite_dans_l_adaptateur(adaptateur):
     bloc = _corps(adaptateur, "grandsChiffres: grandsChiffres({", "}),")
     for passe in ("roles", "bornes", "mandats", "amendements", "textes", "interventions", "appartenances"):
         assert re.search(rf"^\s+{passe},$", bloc, re.M), f"`{passe}` n'est plus passé au bloc"
+
+# ── L'écran étroit ──────────────────────────────────────────────────────────
+
+
+def test_sous_le_seuil_le_tableau_defile_au_lieu_de_s_empiler(feuille):
+    """Empilé, chaque titre de rang se lisait DEUX FOIS de suite — 10 titres pour
+    5 rangs — et les deux en-têtes de rôle restaient en haut, séparés de leurs
+    cellules par tout le tableau : plus aucune cellule ne disait à quel rôle elle
+    appartenait. En défilement, l'en-tête ne quitte jamais sa colonne."""
+    bloc = _media_etroit(feuille)
+    assert "grid-template-columns: repeat(2, minmax(230px, 1fr))" in bloc, (
+        "les deux colonnes restent côte à côte, avec une largeur plancher"
+    )
+    assert "overflow-x: auto" in bloc
+    assert "grid-template-columns: 1fr;" not in bloc, (
+        "l'empilement est précisément ce que ce seuil ne fait PAS"
+    )
+
+
+def test_l_appariement_survit_a_l_ecran_etroit(regles, composant):
+    """Tout le bloc repose sur « des objets de même nature se font face ». Des
+    onglets par rôle ont été écartés pour cela : ils ne montrent jamais les deux
+    ensemble. Une seule grille, donc, quel que soit l'écran."""
+    bloc = _corps(composant, "function GrandsChiffres(", "export default function")
+    for interdit in ("onglet", "Tab", "role === ", "useState"):
+        assert interdit not in bloc, (
+            f"`{interdit}` : le choix d'un rôle à l'écran romprait l'appariement"
+        )
+
+
+def test_l_ombre_de_defilement_ne_ment_pas(feuille):
+    """Sans signal, la colonne « Au gouvernement » n'existe pas pour le lecteur ;
+    avec un dégradé permanent, elle mentirait une fois la course finie. Deux
+    calques `local` masquent deux calques `scroll` : l'ombre n'apparaît que s'il
+    reste du contenu de ce côté."""
+    bloc = _media_etroit(feuille)
+    assert bloc.count("no-repeat local") == 2, "deux calques suivent le contenu"
+    assert bloc.count("no-repeat scroll") == 2, "deux calques restent aux bords"
+    assert "var(--gc-ombre)" in bloc
+
+
+def test_le_nombre_de_colonnes_ne_vient_pas_d_un_style_en_ligne(composant, feuille):
+    """Une valeur en ligne ne se surcharge qu'avec `!important`, que le prochain
+    ajustement oublierait. La classe porte la largeur, la media query la reprend
+    sans forcer."""
+    bloc = _corps(composant, "function GrandsChiffres(", "export default function")
+    assert "gridTemplateColumns" not in bloc
+    assert ".cp-gc-duo--deux {" in feuille
+    i = feuille.index(".cp-gc {")
+    assert "!important" not in feuille[i : feuille.index(".cp-section {")], (
+        "aucune règle du bloc n'a besoin de `!important`"
+    )
+
+
+def test_les_etiquettes_quittent_le_rail_avec_leur_motif(feuille, composant):
+    """La règle de repli est en POURCENTAGE de l'axe (11 %), la collision est en
+    PIXELS : 104 px sur un écran large, 36 px sur un rail de 327 px — quand
+    « Secrétaire d'État » en mesure 99. En liste, la pastille est le seul lien
+    qui reste entre un libellé et sa posture."""
+    assert 'className={`cp-gc-pastille-seg cp-gc-seg--${s.motif}`}' in composant
+    i = feuille.index(".cp-gc-pastille-seg {")
+    assert "display: none" in feuille[i : feuille.index("}", i)], (
+        "sur le rail, l'étiquette est déjà au-dessus de son segment"
+    )
+    bloc = _media_etroit(feuille)
+    # DEUX règles doivent basculer, et une seule ne suffit pas : le conteneur
+    # cesse d'être un plan positionné, chaque étiquette cesse d'y flotter.
+    conteneur = bloc[bloc.index(".cp-gc-etiqs,") : bloc.index(".cp-gc-etiq {")]
+    etiquette = bloc[bloc.index(".cp-gc-etiq {") : bloc.index(".cp-gc-pastille-seg")]
+    assert "position: static" in conteneur, "le conteneur repasse dans le flux"
+    assert "flex-wrap: wrap" in conteneur, "la liste passe à la ligne"
+    assert "position: static" in etiquette, (
+        "une étiquette laissée en absolu se superpose encore à ses voisines"
+    )

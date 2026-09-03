@@ -91,6 +91,7 @@
   --neutre: #9a958d;
   --neutre-wash: #edebe7;
   --rail: #efede9;
+  --gc-ombre: rgba(20, 21, 26, 0.13);
   margin-bottom: 34px;
 }
 
@@ -107,6 +108,7 @@
     --neutre: #7c7772;
     --neutre-wash: #26251f;
     --rail: #1f2027;
+    --gc-ombre: rgba(0, 0, 0, 0.5);
   }
 }
 
@@ -122,6 +124,7 @@
   --neutre: #7c7772;
   --neutre-wash: #26251f;
   --rail: #1f2027;
+  --gc-ombre: rgba(0, 0, 0, 0.5);
 }
 
 .cp-gc-label {
@@ -280,7 +283,18 @@
 
 .cp-gc-etiqs {
   position: relative;
+  height: 22px;
   margin-top: 7px;
+}
+
+.cp-gc-etiqs--deux-niveaux {
+  height: 40px;
+}
+
+/* La pastille de motif ne sert que dans la liste étroite — sur le rail,
+ * l'étiquette est déjà au-dessus de son segment. */
+.cp-gc-pastille-seg {
+  display: none;
 }
 
 .cp-gc-etiq {
@@ -350,6 +364,10 @@
   grid-template-columns: 1fr;
   column-gap: 44px;
   margin-top: 4px;
+}
+
+.cp-gc-duo--deux {
+  grid-template-columns: 1fr 1fr;
 }
 
 .cp-gc-tete-col {
@@ -494,9 +512,89 @@
 
 /* Une colonne seule prend toute la largeur : un gabarit à deux colonnes dont
  * l'une est vide ferait lire un manque là où il n'y a qu'un seul métier. */
+/* ── Sous 720 px : le tableau défile, la frise passe en liste ────────────────
+ *
+ * Mesuré sur un écran de 375 px, avec les données publiées de `gabriel-attal`,
+ * et arbitré sur maquette le 03/09/2026.
+ *
+ * LE TABLEAU DÉFILE plutôt que de s'empiler. Empilé, chaque titre de rang se
+ * lisait deux fois de suite — 10 titres pour 5 rangs — et les deux en-têtes de
+ * rôle restaient en haut, séparés de leurs cellules par tout le tableau : plus
+ * aucune cellule ne disait à quel rôle elle appartenait. En défilement,
+ * l'en-tête ne quitte jamais sa colonne, et **l'appariement survit** — deux
+ * objets de même nature restent sur la même ligne, ce qui est la raison d'être
+ * du bloc. Les onglets par rôle ont été écartés pour cela : ils ne montrent
+ * jamais les deux ensemble.
+ *
+ * Le coût est assumé et se voit : 230 px × 2 plus 44 px de gouttière font
+ * 504 px pour ~347 px utiles, donc il en manque toujours un tiers.
+ */
 @media (max-width: 720px) {
-  .cp-gc-duo--deux { grid-template-columns: 1fr !important; }
-  .cp-gc-etiq { font-size: 10.5px; }
+  .cp-gc-duo--deux {
+    grid-template-columns: repeat(2, minmax(230px, 1fr));
+    overflow-x: auto;
+    padding-bottom: 8px;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+
+    /* L'OMBRE DE DÉFILEMENT, en CSS pur (patron de Roman Komarov) : deux
+     * calques `local` qui suivent le contenu masquent deux calques `scroll`
+     * fixés aux bords. L'ombre n'apparaît donc QUE s'il reste du contenu de ce
+     * côté — jamais au bout de la course, et jamais quand rien ne dépasse.
+     * Sans ce signal, la colonne « Au gouvernement » n'existe pas pour le
+     * lecteur ; avec un dégradé permanent, elle mentirait une fois arrivé. */
+    background:
+      linear-gradient(to right, var(--card) 40%, transparent) left / 44px 100% no-repeat local,
+      linear-gradient(to left, var(--card) 40%, transparent) right / 44px 100% no-repeat local,
+      linear-gradient(to right, var(--gc-ombre), transparent) left / 22px 100% no-repeat scroll,
+      linear-gradient(to left, var(--gc-ombre), transparent) right / 22px 100% no-repeat scroll;
+  }
+
+  .cp-gc-duo--deux > * {
+    scroll-snap-align: start;
+  }
+
+  .cp-gc-n {
+    font-size: 21px;
+  }
+
+  .cp-gc-barre {
+    max-width: 100%;
+  }
+
+  /* LES ÉTIQUETTES QUITTENT LE RAIL. La règle de repli est en pourcentage de
+   * l'axe (11 %), or la collision est en pixels : 104 px sur un écran large,
+   * mais 36 px sur un rail de 327 px — quand « Secrétaire d'État » en mesure
+   * 99, soit 30 % de l'axe. La règle sous-replie d'un facteur 2,7 et deux
+   * niveaux ne suffisent plus. La barre garde sa forme, qui reste informative ;
+   * les libellés deviennent une liste chronologique, et la pastille porte le
+   * motif — seul lien qui reste entre un libellé et sa posture. */
+  .cp-gc-etiqs,
+  .cp-gc-etiqs--deux-niveaux {
+    position: static;
+    height: auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 12px;
+    margin-top: 9px;
+  }
+
+  .cp-gc-etiq {
+    position: static;
+    transform: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+  }
+
+  .cp-gc-pastille-seg {
+    display: inline-block;
+    flex: none;
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+  }
 }
 
 /* Les 25 sélecteurs de « L'essentiel » sont retirés avec sa vue (#328) : aucun
