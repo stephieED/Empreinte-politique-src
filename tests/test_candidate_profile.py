@@ -4059,6 +4059,11 @@ def test_extract_mandats_officiels_resolves_organe_labels(tmp_path):
             "debut": "2022-06-22",
             "fin": None,
             "actif": True,
+            # #718 — la catégorie vient du `codeType` de l'organe (`COMPER`
+            # ci-dessus), et l'estampille le dit. C'est ce qui distingue ce
+            # mandat d'une entrée héritée que plus aucun référentiel ne
+            # qualifie, et donc ce qui rend le dénominateur de la fiche exact.
+            "categorie_source": "an",
         }
     ]
 
@@ -4095,6 +4100,10 @@ def test_build_profile_mandats_viennent_tous_du_referentiel_an():
             "debut": "2022-06-22",
             "fin": None,
             "actif": True,
+            # #718 — la doublure rend ce que l'extracteur réel produit,
+            # estampille comprise : `build_profile` la laisse passer sans y
+            # toucher, et l'assertion plus bas le vérifie.
+            "categorie_source": "an",
         }
     ]
 
@@ -4121,6 +4130,7 @@ def test_build_profile_mandats_viennent_tous_du_referentiel_an():
             "debut": "2022-06-22",
             "fin": None,
             "actif": True,
+            "categorie_source": "an",  # #718
         }
     ]
     # Mandat électif reconstruit depuis identite_an : `_extract_mandats_officiels`
@@ -4130,6 +4140,7 @@ def test_build_profile_mandats_viennent_tous_du_referentiel_an():
     assert mandat_electif_entries == [
         {
             "categorie": "mandat_electif",
+            "categorie_source": "an",  # #718
             "type": "mandat",
             "label": "Mandat parlementaire (Renaissance)",
             "debut": "2022-06-22",

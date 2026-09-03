@@ -112,6 +112,11 @@ def normalize_europarl(
         mandat: dict[str, Any] = {
             "label": label,
             "categorie": categorie,
+            # #718 — la catégorie vient de `_CATEGORIE_MAP`, donc du `type`
+            # d'organisation publié par le Parlement européen. Un `autre` de
+            # repli est estampillé lui aussi : ce qui est établi, c'est QUI a
+            # classé, pas la finesse du classement.
+            "categorie_source": "europarl",
             "fonction": fonction,
             "debut": m.get("debut"),
             "fin": m.get("fin"),

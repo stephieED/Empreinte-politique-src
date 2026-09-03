@@ -328,6 +328,14 @@ def _normalize_mandat(m: dict[str, Any]) -> dict[str, Any]:
     if mandat["categorie"] == "mandat_electif":
         chambre_brute = m.get("chambre")
         mandat["chambre"] = _CHAMBRE_MAP.get(chambre_brute) if chambre_brute else None
+    # #718 — `categorie_source` est une clé FACULTATIVE, et son absence est un
+    # sens : « personne n'a établi cette catégorie ». La publier à `null` sur
+    # les entrées héritées dirait la même chose sous la forme d'un constat, ce
+    # que §2 règle 5 refuse — même arbitrage que `interventions[].collecte`
+    # (#657), dont l'absence est aussi la forme pleine.
+    source_categorie = m.get("categorie_source")
+    if source_categorie:
+        mandat["categorie_source"] = source_categorie
     return mandat
 
 

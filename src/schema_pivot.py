@@ -802,6 +802,18 @@ KNOWN_POSITIONS: frozenset[str] = frozenset({
 # réellement distincte pour l'utilisateur, pas une par `typeOrgane` — les
 # variantes internes (MISINFO/MISINFOCOM/MISINFOPRE, CNPE/CNPS, GE/GEVI,
 # DELEG/API/OFFPAR) sont regroupées.
+#: Référentiel qui a ÉTABLI la catégorie d'un mandat (#718). Vocabulaire fermé,
+#: clé **facultative** : son absence dit « personne ne l'a établie », jamais
+#: « héritée » — un mandat que la source ne sert plus (#486 : 29 des 511
+#: `mandat_electif` publiés) serait sinon accusé à tort. Même forme que
+#: `interventions[].collecte` (#657), dont l'absence est aussi un sens.
+#:
+#: `an` : la catégorie vient du `codeType` de l'organe AMO30, par
+#: `_TYPE_ORGANE_TO_CATEGORIE` — ou des deux chemins qui lisent la même archive
+#: (`mandat_electif`, `groupe_politique`/`fonction_gouvernementale`).
+#: `europarl` : la catégorie vient du Parlement européen.
+KNOWN_CATEGORIE_SOURCES: frozenset[str] = frozenset({"an", "europarl"})
+
 KNOWN_CATEGORIES: frozenset[str] = frozenset({
     "mandat_electif", "commission", "groupe_amitie", "groupe_politique",
     "extra_parlementaire", "fonction_gouvernementale", "autre",
@@ -1898,6 +1910,21 @@ def validate_profil(
                     f"mandats[{i}].chambre non reconnue : {chambre_mandat!r}. "
                     f"Valeurs connues : {sorted(KNOWN_CHAMBRES)}."
                 )
+            # #718 : le référentiel qui a établi la catégorie. La clé est
+            # FACULTATIVE et son absence est un sens — « personne ne l'a
+            # établie » —, donc `None` n'est pas une valeur licite : il dirait
+            # la même chose que l'absence sous une forme qui ressemble à un
+            # constat. Une valeur hors nomenclature, elle, ferait passer un
+            # référentiel inventé pour une source.
+            if "categorie_source" in m:
+                source_categorie = m.get("categorie_source")
+                if source_categorie not in KNOWN_CATEGORIE_SOURCES:
+                    errors.append(
+                        f"mandats[{i}].categorie_source non reconnu : "
+                        f"{source_categorie!r}. Valeurs connues : "
+                        f"{sorted(KNOWN_CATEGORIE_SOURCES)} — ou la clé absente, "
+                        "qui dit que personne n'a établi la catégorie."
+                    )
 
     # Depuis #432, `votes[]` est un MAPPING : `type_scrutin`, `type_vote`,
     # `texte_lie_id` et `sort` ont migré vers `pivot_data/scrutins.json` et sont

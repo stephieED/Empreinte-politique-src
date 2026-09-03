@@ -428,6 +428,57 @@ def backfill_mandat_chambre(
     return result
 
 
+def backfill_mandat_categorie_source(
+    merged: list[dict[str, Any]],
+    new_list: Optional[list[dict[str, Any]]],
+    key_fn: Callable[[dict[str, Any]], Key],
+) -> list[dict[str, Any]]:
+    """Reporte `categorie_source` d'un mandat neuf sur l'entrée ancienne (#718).
+
+    **Sixième occurrence de la même famille** — #492 (`mandats[].chambre`), #639
+    (`votes[]`), #641 (`identite.profession`), #696 (`texte_vise`), #710
+    (`interventions[].sujet`) : un champ ajouté au schéma n'atteint jamais une
+    entrée déjà collectée tout seul, et le remède est un report **nommé**, jamais
+    une fusion plus permissive. `_mandat_key` ne contient pas le nouveau champ,
+    donc l'entrée neuve estampillée porte la même clé que l'ancienne et serait
+    écartée à chaque régénération.
+
+    **Ce report est strictement monotone, et il n'écrit JAMAIS le contraire.**
+    Il n'existe pas de valeur « héritée » : une entrée absente de la collecte
+    neuve reste **sans clé**, ce qui dit « personne n'a établi sa catégorie » et
+    non « sa catégorie est fausse ». La nuance est celle que #486 a payée — 29
+    des 511 `mandat_electif` publiés sont des entrées que la source ne sert
+    plus, et les accuser aurait été un fait faux de plus.
+
+    Mesuré le 03/09/2026 sur 40 profils, contre l'archive AMO30 en cache :
+    **3 188 mandats re-estampillés, 30 non** — dont 8 `fonction_gouvernementale`
+    écrits par l'autre chemin sourcé (estampillés depuis) et 22 qui sont
+    exactement le résidu NosDéputés que #718 cherche à sortir du dénominateur.
+    """
+    if not new_list:
+        return merged
+
+    sources_neuves: dict[Key, str] = {}
+    for m in new_list:
+        if not isinstance(m, dict):
+            continue
+        source_categorie = m.get("categorie_source")
+        if source_categorie:
+            sources_neuves.setdefault(key_fn(m), source_categorie)
+
+    if not sources_neuves:
+        return merged
+
+    result: list[dict[str, Any]] = []
+    for m in merged:
+        if isinstance(m, dict) and not m.get("categorie_source"):
+            source_categorie = sources_neuves.get(key_fn(m))
+            if source_categorie:
+                m = {**m, "categorie_source": source_categorie}
+        result.append(m)
+    return result
+
+
 def _prefer_non_empty(new_value: Any, old_value: Any) -> Any:
     """Garde `new_value` si elle est renseignée (non vide/non nulle), sinon
     retombe sur `old_value` (évite qu'un échec transitoire de collecte fasse
@@ -1264,7 +1315,11 @@ def merge_raw_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dic
     merged["source"] = _prefer_non_empty(new.get("source"), old.get("source"))
     merged["votes_source"] = _prefer_non_empty(new.get("votes_source"), old.get("votes_source"))
     merged["mandats"] = backfill_mandat_chambre(
-        merge_lists_by_key(old.get("mandats"), new.get("mandats"), _mandat_key),
+        backfill_mandat_categorie_source(
+            merge_lists_by_key(old.get("mandats"), new.get("mandats"), _mandat_key),
+            new.get("mandats"),
+            _mandat_key,
+        ),
         new.get("mandats"),
         _mandat_key,
     )
@@ -2065,8 +2120,17 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
         merged.pop("couverture", None)
 
     merged["sources"] = _merge_pivot_sources(old.get("sources"), new.get("sources"))
+    # #718 — le report vaut aux DEUX étages, et pour la même raison qu'au brut :
+    # `_pivot_mandat_key` ne contient pas `categorie_source`, donc l'entrée
+    # ancienne gagne et n'acquiert jamais l'estampille. L'oublier ici laisserait
+    # le champ arriver dans le profil brut sans jamais atteindre le pivot, qui
+    # est la seule couche que `web/` lit — un correctif vrai et sans effet.
     merged["mandats"] = backfill_mandat_chambre(
-        merge_lists_by_key(old.get("mandats"), new.get("mandats"), _pivot_mandat_key),
+        backfill_mandat_categorie_source(
+            merge_lists_by_key(old.get("mandats"), new.get("mandats"), _pivot_mandat_key),
+            new.get("mandats"),
+            _pivot_mandat_key,
+        ),
         new.get("mandats"),
         _pivot_mandat_key,
     )
