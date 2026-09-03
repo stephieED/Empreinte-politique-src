@@ -403,23 +403,155 @@ export const CATEGORIES_FONCTIONS = [
   { cle: 'groupe_amitie', titre: "Groupes d'amitié" },
 ];
 
-export function fonctionsExercees(mandats) {
-  return CATEGORIES_FONCTIONS.map(({ cle, titre }) => {
-    const entrees = (mandats || []).filter((m) => m.categorie === cle);
-    const parIntitule = new Map();
-    for (const m of entrees) {
-      const label = m.label || 'Intitulé non publié';
-      parIntitule.set(label, (parIntitule.get(label) || 0) + 1);
+/* ── Règle : le rôle ne s'affiche que lorsqu'il DISTINGUE ────────────────────
+ *
+ * `Membre` couvre 90,7 % des 14 128 mandats de commission du corpus, et 203 des
+ * 225 des 13 candidats déclarés. L'écrire sur neuf lignes sur dix serait un mot
+ * dont le lecteur ne tire rien — la règle 1 de #326 le disqualifie. Ce qui
+ * s'affiche est ce qui distingue : une présidence, un rapport, un secrétariat.
+ *
+ * ⚠ La casse n'est pas normalisée à la source : `Membre`/`membre`,
+ * `Vice-Président`/`vice-président`, `vice-présidente`. 48 des 225 mandats de
+ * commission des 13 candidats déclarés sont en bas de casse. On normalise à
+ * L'AFFICHAGE seulement : la donnée n'est pas touchée, et le défaut de collecte
+ * reste lisible pour qui l'ouvre. Le dépôt a déjà tranché ce point côté fiches
+ * de groupe — voir `normalisation-fonction-mandats-agreges`.
+ */
+const ROLES_PAR_DEFAUT = new Set(['membre', 'membre titulaire', 'membre de droit']);
+
+export function roleDistinctif(fonction) {
+  const brut = (fonction || '').trim();
+  if (!brut || ROLES_PAR_DEFAUT.has(brut.toLowerCase())) return null;
+  return brut.slice(0, 1).toUpperCase() + brut.slice(1).toLowerCase();
+}
+
+/* ── Règle : une durée de siège se compte en UNION d'intervalles ─────────────
+ *
+ * Le nombre affiché n'est PAS un compte d'enregistrements. La source réécrit un
+ * même siège à chaque changement de composition : 27 entrées pour 5 ans 10 mois
+ * continus à la commission des affaires sociales de Jérôme Guedj, dont aucune ne
+ * dure un jour ; en face, 4 entrées pour 2 jours à la commission des lois. Le
+ * compte ne distingue pas les deux, la durée si. C'est la même confusion que
+ * #656 a séparée sur les fiches de groupe — « y siège » n'est pas « y est
+ * passé » — vue depuis la fiche candidat.
+ *
+ * L'union, JAMAIS la somme : la fusion additive a laissé des doublons littéraux
+ * (même début, fin décalée d'un jour), et la somme donnerait 9,5 ans là où il y
+ * en a 5,8.
+ *
+ * Un mandat sans `debut` n'est comptable à aucune date : il ne compte pas, et il
+ * ne vaut pas zéro non plus — il est simplement absent du calcul (§2 règle 5).
+ */
+const MS_PAR_JOUR = 86400000;
+const JOURS_PAR_MOIS = 30.44;
+
+export function aujourdhuiISO() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+export function joursCumules(mandats, aujourdhui = aujourdhuiISO()) {
+  const intervalles = (mandats || [])
+    .filter((m) => m.debut)
+    .map((m) => [m.debut, m.actif || !m.fin ? aujourdhui : m.fin])
+    .filter(([debut, fin]) => fin >= debut)
+    .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+  if (!intervalles.length) return 0;
+
+  const ecart = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / MS_PAR_JOUR);
+  let total = 0;
+  let [debut, fin] = intervalles[0];
+  for (const [d, f] of intervalles.slice(1)) {
+    if (d <= fin) {
+      if (f > fin) fin = f;
+    } else {
+      total += ecart(debut, fin);
+      debut = d;
+      fin = f;
     }
+  }
+  return total + ecart(debut, fin);
+}
+
+/* Une durée se lit en années et en mois, jamais en jours au-delà d'un mois : le
+ * lecteur compare des sièges, pas des calendriers. En deçà, le jour reste la
+ * seule unité honnête — « 0 mois » effacerait un passage réel. */
+export function dureeDeSiege(jours) {
+  if (jours < 31) return `${jours} jour${jours > 1 ? 's' : ''}`;
+  const mois = Math.round(jours / JOURS_PAR_MOIS);
+  const ans = Math.floor(mois / 12);
+  const reste = mois % 12;
+  if (!ans) return `${reste} mois`;
+  const annees = `${ans} an${ans > 1 ? 's' : ''}`;
+  return reste ? `${annees} ${reste} mois` : annees;
+}
+
+/* ── Règle : ce qui ressort dépasse la MOITIÉ du temps de mandat ─────────────
+ *
+ * Chaque catégorie montre ses trois fonctions les plus longues — toujours trois,
+ * jamais une seule : un bloc à une grande ligne et un autre à trois petites
+ * déséquilibraient la carte sans que la donnée le justifie.
+ *
+ * Une seule d'entre elles peut porter la marque, et c'est un FAIT, pas un seuil
+ * choisi : la personne y a passé plus de la moitié de son temps de mandat. C'est
+ * le test de majorité que #328 a déjà retenu pour les amendements (« ce dossier
+ * porte plus que tous les autres réunis »), posé cette fois sur un dénominateur
+ * qui en est un.
+ *
+ * LE DÉNOMINATEUR EST L'UNION DES SIÈGES ÉLECTIFS, et ce choix est le cœur de la
+ * règle : on ne siège pas deux fois à la fois, donc c'est un vrai tout, et le
+ * ratio est publiable (§2 règle 7). Le total des fonctions n'en serait pas un —
+ * on appartient à treize groupes d'amitié simultanément, et leur somme fait
+ * 33 ans sur une carrière de 19.
+ *
+ * Elle sait se taire, et c'est ce qui la rend utile : mesurée sur les 13 blocs
+ * des deux profils de référence, elle parle 4 fois. Une règle qui ne peut pas se
+ * taire ne dit rien quand elle parle (#326, règle 5).
+ */
+export const NB_FONCTIONS_MONTREES = 3;
+
+export function fonctionsExercees(mandats, aujourdhui = aujourdhuiISO()) {
+  const liste = mandats || [];
+  const jours = joursCumules(
+    liste.filter((m) => m.categorie === 'mandat_electif'),
+    aujourdhui,
+  );
+
+  const blocs = CATEGORIES_FONCTIONS.map(({ cle, titre }) => {
+    const parIntitule = new Map();
+    for (const m of liste.filter((x) => x.categorie === cle)) {
+      const label = m.label || 'Intitulé non publié';
+      if (!parIntitule.has(label)) parIntitule.set(label, []);
+      parIntitule.get(label).push(m);
+    }
+
+    const lignes = [...parIntitule.entries()]
+      .map(([label, lot]) => {
+        const j = joursCumules(lot, aujourdhui);
+        const roles = [...new Set(lot.map((m) => roleDistinctif(m.fonction)).filter(Boolean))];
+        return {
+          label,
+          jours: j,
+          duree: dureeDeSiege(j),
+          roles: roles.length ? roles.sort().join(' · ') : null,
+          marquee: false,
+        };
+      })
+      .sort((a, b) => b.jours - a.jours || a.label.localeCompare(b.label, 'fr'));
+
+    // La marque va nécessairement à la plus longue : dépasser la moitié du tout
+    // interdit qu'une autre le fasse aussi.
+    if (lignes.length && jours > 0 && lignes[0].jours * 2 > jours) lignes[0].marquee = true;
+
     return {
       cle,
       titre,
-      total: entrees.length,
-      items: [...parIntitule.entries()]
-        .map(([label, n]) => ({ label, n }))
-        .sort((a, b) => b.n - a.n || a.label.localeCompare(b.label, 'fr')),
+      nbIntitules: lignes.length,
+      montrees: lignes.slice(0, NB_FONCTIONS_MONTREES),
+      reste: lignes.slice(NB_FONCTIONS_MONTREES),
     };
-  }).filter((c) => c.total > 0);
+  }).filter((c) => c.nbIntitules > 0);
+
+  return { mandat: { jours, duree: dureeDeSiege(jours) }, blocs };
 }
 
 /* ── Livrable : ce qu'il a proposé, par législature ──────────────────────────
