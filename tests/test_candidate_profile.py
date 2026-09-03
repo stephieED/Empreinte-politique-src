@@ -1146,7 +1146,15 @@ def test_fetch_interventions_syceron_returns_empty_without_acteur_ref():
     assert fetch_interventions_syceron("https://www.nosdeputes.fr/jean-dupont") == []
 
 
-def test_fetch_interventions_syceron_maps_actor_to_candidate_interventions():
+def test_fetch_interventions_syceron_maps_actor_to_candidate_interventions(tmp_path, monkeypatch):
+    # Le cache Syceron de CE test, jamais celui du poste (#721) :
+    # `fetch_interventions_syceron` LIT LE CACHE avant d'appeler le
+    # constructeur patché ci-dessous, et sur une machine ayant déjà
+    # collecté, la lecture réussissait et rendait 688 interventions
+    # réelles pour la seule qu'attend la fixture. Les constantes de cache
+    # étant relatives, déplacer le répertoire courant les emmène toutes.
+    monkeypatch.chdir(tmp_path)
+
     index = {
         "PA1567": [
             {
@@ -1172,7 +1180,15 @@ def test_fetch_interventions_syceron_maps_actor_to_candidate_interventions():
     assert result[0]["sujet"] == "Questions au Gouvernement"
 
 
-def test_fetch_interventions_syceron_aggregates_multiple_legislatures():
+def test_fetch_interventions_syceron_aggregates_multiple_legislatures(tmp_path, monkeypatch):
+    # Le cache Syceron de CE test, jamais celui du poste (#721) :
+    # `fetch_interventions_syceron` LIT LE CACHE avant d'appeler le
+    # constructeur patché ci-dessous, et sur une machine ayant déjà
+    # collecté, la lecture réussissait et rendait 688 interventions
+    # réelles pour la seule qu'attend la fixture. Les constantes de cache
+    # étant relatives, déplacer le répertoire courant les emmène toutes.
+    monkeypatch.chdir(tmp_path)
+
     index_16 = {
         "PA1567": [{"id": "syceron_CRS16_000001", "date": "2024-06-01", "sujet": "L16"}]
     }

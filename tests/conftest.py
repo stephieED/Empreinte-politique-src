@@ -27,6 +27,7 @@ probable quand un test échoue sur un fichier que le sparse-checkout ne
 télécharge pas. Son docstring porte le pourquoi.
 """
 
+import builtins
 import os
 import sys
 from functools import lru_cache
@@ -75,7 +76,80 @@ def _reseau_coupe(monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# Second garde-fou du fichier : diagnostiquer le piège du sparse-checkout.
+# Deuxième garde-fou : aucun test ne lit le cache du POSTE (#721).
+# ---------------------------------------------------------------------------
+#
+# Les onze constantes de cache du dépôt valent `Path(".cache") / ...` — un
+# chemin RELATIF au répertoire courant, donc la racine du dépôt quand pytest
+# tourne en local. En CI, `tests.yml` fait un checkout partiel, `.cache/`
+# n'existe pas, la lecture échoue et le repli s'applique. Sur un poste qui a
+# déjà lancé une collecte, la même lecture RÉUSSIT et sert des données réelles
+# à la place de la fixture.
+#
+# Mesuré le 02/09/2026 : six tests — les quatre de `test_budget_interventions`
+# et deux de `test_candidate_profile` — rendaient **688** interventions là où
+# leur fixture en attendait **1**. Ils patchaient le CONSTRUCTEUR
+# (`_build_acteur_interventions_syceron_index`) mais pas la lecture du cache,
+# qui passe avant lui. Verts en CI parce que la machine est vide, verts en local
+# depuis #719 parce que le cache du poste est périmé donc rejeté : deux raisons
+# accidentelles, aucune bonne.
+#
+# Ce garde-fou DIAGNOSTIQUE, il ne redirige pas. Réécrire les constantes vers un
+# répertoire jetable a été essayé et cassait dix tests qui isolent déjà leur
+# cache par `monkeypatch.chdir(tmp_path)` : leur `.cache` relatif suit le
+# répertoire courant, et une constante rendue absolue le leur retire. L'idiome
+# existant est bon ; ce qui manquait était de voir ceux qui ne l'appliquent pas.
+
+#: Le cache réel du poste — celui qu'aucun test ne doit lire.
+CACHE_DU_DEPOT = (Path(__file__).resolve().parents[1] / ".cache").resolve()
+
+
+class CacheDuPosteLuDansUnTest(AssertionError):
+    """Levée quand un test ouvre un fichier du cache réel du dépôt (#721)."""
+
+
+def _sous_le_cache_du_depot(fichier) -> bool:
+    """Vrai si `fichier` désigne quelque chose sous le `.cache/` du dépôt.
+
+    Le test grossier sur la chaîne vient d'abord : `resolve()` sur chaque
+    ouverture de fichier coûterait cher pour un cas qui ne se produit presque
+    jamais.
+    """
+    if isinstance(fichier, int):  # descripteur déjà ouvert : aucun chemin à lire
+        return False
+    texte = os.fspath(fichier) if hasattr(fichier, "__fspath__") else fichier
+    if isinstance(texte, bytes):
+        texte = texte.decode("utf-8", "replace")
+    if not isinstance(texte, str) or ".cache" not in texte:
+        return False
+    try:
+        resolu = Path(texte).resolve()
+    except (OSError, ValueError):
+        return False
+    return CACHE_DU_DEPOT in (resolu, *resolu.parents)
+
+
+@pytest.fixture(autouse=True)
+def _cache_du_poste_hors_de_portee(monkeypatch):
+    ouvrir_reel = builtins.open
+
+    def _filtrer(fichier, *args, **kwargs):
+        if _sous_le_cache_du_depot(fichier):
+            raise CacheDuPosteLuDansUnTest(
+                f"Ce test lit {fichier} — le cache RÉEL du poste, pas sa fixture "
+                "(#721). Il passera ou échouera selon ce qu'une collecte locale y "
+                "a laissé, et la CI ne le verra jamais : son checkout est vide. "
+                "Isole le cache, comme le fait `tests/test_syceron_acteur_ref.py` "
+                "avec `monkeypatch.chdir(tmp_path)`, ou règle la constante de "
+                "cache du module vers un `tmp_path`."
+            )
+        return ouvrir_reel(fichier, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "open", _filtrer)
+
+
+# ---------------------------------------------------------------------------
+# Troisième garde-fou du fichier : diagnostiquer le piège du sparse-checkout.
 # ---------------------------------------------------------------------------
 
 #: Racine du dépôt et fichier de workflow : repris de `_outils_ci`, le seul

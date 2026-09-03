@@ -60,6 +60,15 @@ def _liste_blanche() -> frozenset[str]:
     return blanche
 
 
+#: Chemins que la suite nomme pour les REFUSER, jamais pour les lire (#721).
+#: `.cache` est le cache du poste : `conftest.py` le résout une fois pour faire
+#: échouer tout test qui l'ouvrirait. L'ajouter au sparse-checkout serait le
+#: contraire de ce qu'on veut — la CI doit continuer de ne pas l'avoir —, et
+#: construire le chemin autrement pour esquiver ce relevé masquerait le garde-fou
+#: au lieu de le déclarer. Cet ensemble reste minuscule ou il ne vaut rien.
+_NOMMES_POUR_ETRE_REFUSES = frozenset({".cache"})
+
+
 def _chemins_lus() -> set[tuple[str, ...]]:
     """Chemins ancrés à la racine, relevés dans tous les fichiers de tests."""
     trouves = set()
@@ -74,7 +83,9 @@ def test_la_liste_blanche_couvre_tout_ce_que_la_suite_lit():
     blanche = _liste_blanche()
     non_couverts = sorted(
         "/".join(chemin) for chemin in _chemins_lus()
-        if chemin[0] not in blanche and "/".join(chemin) not in blanche
+        if chemin[0] not in blanche
+        and "/".join(chemin) not in blanche
+        and chemin[0] not in _NOMMES_POUR_ETRE_REFUSES
     )
     assert not non_couverts, (
         "ces chemins sont lus par la suite mais absents du sparse-checkout de "
@@ -98,3 +109,11 @@ def test_le_corpus_vivant_reste_hors_de_la_liste_blanche():
     assert not any(e == "raw_data" for e in blanche), (
         "`raw_data` entier ramènerait `raw_data/profiles/` : n'inscrire que "
         "les fichiers de configuration lus par la suite.")
+
+
+def test_le_cache_du_poste_reste_hors_de_la_liste_blanche():
+    """L'exemption de `.cache` dit « nommé pour être refusé » (#721). Elle ne
+    vaut que tant que la CI ne le matérialise pas : le jour où il entrerait dans
+    le sparse-checkout, les tests liraient de nouveau un cache réel — celui du
+    runner — et le garde-fou de `conftest.py` deviendrait un mensonge."""
+    assert ".cache" not in _liste_blanche()

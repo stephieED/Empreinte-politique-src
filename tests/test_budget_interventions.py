@@ -46,6 +46,20 @@ class HorlogeFactice:
         self.maintenant += secondes
 
 
+@pytest.fixture(autouse=True)
+def cache_syceron_isole(tmp_path, monkeypatch):
+    """Le cache Syceron de CE test, jamais celui du poste (#721).
+
+    `fetch_interventions_syceron` passe par `_interventions_syceron_acteur`, qui
+    LIT LE CACHE avant d'appeler le constructeur. Patcher le constructeur — ce
+    que ces tests font — ne suffit donc pas : sur une machine ayant déjà
+    collecté, la lecture réussissait et servait 688 interventions réelles là où
+    la fixture en attend une. Le répertoire courant porte le cache parce que les
+    constantes sont relatives ; le déplacer suffit à les emmener toutes.
+    """
+    monkeypatch.chdir(tmp_path)
+
+
 @pytest.fixture
 def horloge(monkeypatch):
     faux = HorlogeFactice()
