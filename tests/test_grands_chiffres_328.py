@@ -85,7 +85,7 @@ def _media_etroit(feuille: str) -> str:
         f"{len(vises)} trouvé(s)"
     )
     # Jusqu'à la règle qui ferme le bloc, la dernière que la media query porte.
-    fin = vises[0].index(".cp-gc-pastille-seg")
+    fin = vises[0].index(".cp-gc-barre")
     return vises[0][: vises[0].index("\n}", vises[0].index("}", fin))]
 
 
@@ -150,44 +150,6 @@ def test_le_pli_porte_un_plus_visible(composant, feuille):
     assert ".cp-gc-these::-webkit-details-marker" in feuille, (
         "le triangle natif est retiré, sinon deux marqueurs cohabitent"
     )
-
-
-def test_chaque_piste_etiquette_ce_que_son_nom_ne_dit_pas_deja(regles):
-    """Trois pistes, trois clés. Étiqueter la piste du gouvernement par sa
-    PÉRIODE remplaçait la seule information qu'elle portait — le poste — par une
-    redite de l'axe qui court juste en dessous."""
-    assert "[INSTITUTION_PARLEMENT]: 'periode'" in regles
-    assert "[INSTITUTION_GOUVERNEMENT]: 'role'" in regles
-    assert "[INSTITUTION_MISSION]: 'detail'" in regles
-    bloc = _corps(regles, "export function pistesDuParcours(", "\nexport ")
-    assert "etiquette: ETIQUETTE_PISTE[institution]" in bloc
-
-
-def test_aucune_abreviation_n_est_fabriquee(composant):
-    """La maquette portait « Sec. d'État, Éducation » et « Éduc. », écrites à la
-    main : rien dans la donnée ne les dérive, et un libellé que NOUS écrivons
-    n'est plus le libellé de la source (§2 règle 2). L'étiquette rend le champ
-    tel quel, l'intitulé complet reste en infobulle."""
-    bloc = _corps(composant, "function etiquetteDuSegment(", "\nfunction ")
-    assert "return s.role;" in bloc
-    for interdit in ("slice(0,", "substring(", "…", "...", "ABREG"):
-        assert interdit not in bloc, (
-            f"`{interdit}` tronquerait un libellé sourcé dans la vue"
-        )
-
-
-def test_la_periode_compacte_ne_calcule_rien(composant):
-    """Une étiquette de 5 % de large ne peut pas porter « 18 juin 2017 → 16
-    novembre 2018 ». La forme compacte rend les deux bornes telles qu'elles
-    sont, à la granularité qui suffit — jamais une durée, jamais un arrondi."""
-    bloc = _corps(composant, "function periodeCompacte(", "\nfunction ")
-    for interdit in ("Math.", "Date(", "durée", "duree"):
-        assert interdit not in bloc, (
-            f"`{interdit}` calculerait une durée là où deux bornes suffisent"
-        )
-
-
-# ── L'appariement des colonnes ──────────────────────────────────────────────
 
 
 def test_chaque_colonne_compte_contre_son_propre_total(regles):
@@ -293,48 +255,20 @@ def test_le_seuil_de_publication_des_textes_se_dit(regles):
 # ── La frise : l'ossature ───────────────────────────────────────────────────
 
 
-def test_la_frise_porte_une_piste_par_role(regles):
-    """Le parcours n'est pas une section à part : c'est l'ossature du bloc. Chez
-    un ancien ministre, cinq catégories décrivant le métier de député se
-    remplissent de ce que son ministère a produit, et son travail parlementaire
-    disparaît."""
-    bloc = _corps(regles, "export function pistesDuParcours(", "\nexport ")
-    assert "for (const institution of ORDRE_PISTES)" in bloc
-
-
-def test_un_parlementaire_en_mission_a_sa_propre_piste(regles):
-    """Ce sont des missions auprès d'un ministère, pas des appartenances : elles
-    ne peuvent pas partager la piste du gouvernement."""
-    assert "ORDRE_PISTES = [INSTITUTION_PARLEMENT, INSTITUTION_GOUVERNEMENT, INSTITUTION_MISSION]" in regles
-    assert "[INSTITUTION_MISSION]: 'Parlementaire en mission'" in regles
-
-
-def test_la_posture_est_un_motif_jamais_une_couleur(feuille):
-    """La couleur code déjà le rôle. Cinq états, cinq motifs — et la couleur
-    reste celle de la piste."""
-    motifs = ["plein", "diagonales", "points", "rayures", "fines-rayures"]
-    for m in motifs:
-        assert f".cp-gc-seg--{m}" in feuille, f"le motif `{m}` n'est plus déclaré"
-
-
-def test_les_deux_absences_de_posture_ne_se_confondent_pas(composant):
-    """« Non déclarée par l'Assemblée » est une VALEUR publiée — c'est le cas des
-    cinq groupes de la XVIIe législature — quand l'absence chez nous est un trou
-    de collecte. Les confondre publierait un trou comme un fait (§2 règle 5)."""
-    bloc = _corps(composant, "function LegendePostures(", "\nfunction ")
-    assert "'non renseignée chez nous'" in bloc
-    assert "libellePosition(p)" in bloc, (
-        "la valeur publiée garde son libellé de source, jamais réécrit ici"
-    )
-
-
-def test_le_couple_de_couleurs_survit_au_daltonisme(feuille):
-    """Bleu contre bronze. Le vert et le rouge sont pris par les positions de
-    vote (`DESIGN_SYSTEM` §2), et ni le bleu ni le bronze ne se lit comme
-    positif ou négatif : ce sont deux métiers, pas deux notes."""
+def test_les_colonnes_prennent_la_teinte_de_la_frise(feuille):
+    """La couleur fait le lien entre une piste et sa colonne — encore faut-il que
+    ce soit LA MÊME. Le bloc portait un bleu et un bronze à lui, plus saturés,
+    qui se seraient éloignés de la frise au premier ajustement de l'une ou de
+    l'autre. Ce sont désormais les colonnes qui prennent la teinte de la frise."""
     bloc = _corps(feuille, ".cp-gc {", "\n}")
-    assert "--parl: #2e4a7d" in bloc
-    assert "--gouv: #8a6512" in bloc
+    parlement = _corps(feuille, ".cp-fs--parlement {", "\n}")
+    gouvernement = _corps(feuille, ".cp-fs--gouvernement {", "\n}")
+    assert "#3f5166" in parlement and "--parl: #3f5166" in bloc, (
+        "la colonne parlementaire porte exactement la teinte de la piste"
+    )
+    assert "#8a6b4c" in gouvernement and "--gouv: #8a6b4c" in bloc, (
+        "la colonne gouvernementale porte exactement la teinte de la piste"
+    )
 
 
 def test_le_bloc_a_ses_deux_themes(feuille):
@@ -360,7 +294,7 @@ def test_aucune_mesure_n_est_refaite_dans_l_adaptateur(adaptateur):
     fiche deux comptes du même fait, qui divergeraient au premier ajustement —
     c'est la duplication que #672 a fermée sur `isWholeTextVote`."""
     bloc = _corps(adaptateur, "grandsChiffres: grandsChiffres({", "}),")
-    for passe in ("roles", "bornes", "mandats", "amendements", "textes", "interventions", "appartenances"):
+    for passe in ("roles", "mandats", "amendements", "textes", "interventions", "appartenances"):
         assert re.search(rf"^\s+{passe},$", bloc, re.M), f"`{passe}` n'est plus passé au bloc"
 
 # ── L'écran étroit ──────────────────────────────────────────────────────────
@@ -415,24 +349,29 @@ def test_le_nombre_de_colonnes_ne_vient_pas_d_un_style_en_ligne(composant, feuil
         "aucune règle du bloc n'a besoin de `!important`"
     )
 
+def test_le_bloc_reprend_la_frise_du_parcours_et_non_une_copie(composant):
+    """Relevé en relecture d'écran le 03/09/2026 : « reprends exactement la même
+    frise que dans la section parcours, avec la légende et le détail daté ».
 
-def test_les_etiquettes_quittent_le_rail_avec_leur_motif(feuille, composant):
-    """La règle de repli est en POURCENTAGE de l'axe (11 %), la collision est en
-    PIXELS : 104 px sur un écran large, 36 px sur un rail de 327 px — quand
-    « Secrétaire d'État » en mesure 99. En liste, la pastille est le seul lien
-    qui reste entre un libellé et sa posture."""
-    assert 'className={`cp-gc-pastille-seg cp-gc-seg--${s.motif}`}' in composant
-    i = feuille.index(".cp-gc-pastille-seg {")
-    assert "display: none" in feuille[i : feuille.index("}", i)], (
-        "sur le rail, l'étiquette est déjà au-dessus de son segment"
+    Le bloc en portait une SECONDE — pistes par institution, étiquettes propres,
+    légende propre — et c'est exactement ce que #672 a fermé sur
+    `isWholeTextVote` : deux définitions du même objet, qui divergent au premier
+    ajustement. `Frise` porte déjà la bande, la légende et la liste datée."""
+    bloc = _corps(composant, "function GrandsChiffres(", "export default function")
+    assert "<Frise parcours={parcours} />" in bloc, (
+        "le bloc appelle LE composant `Frise`, il n'en dessine pas un autre"
     )
-    bloc = _media_etroit(feuille)
-    # DEUX règles doivent basculer, et une seule ne suffit pas : le conteneur
-    # cesse d'être un plan positionné, chaque étiquette cesse d'y flotter.
-    conteneur = bloc[bloc.index(".cp-gc-etiqs,") : bloc.index(".cp-gc-etiq {")]
-    etiquette = bloc[bloc.index(".cp-gc-etiq {") : bloc.index(".cp-gc-pastille-seg")]
-    assert "position: static" in conteneur, "le conteneur repasse dans le flux"
-    assert "flex-wrap: wrap" in conteneur, "la liste passe à la ligne"
-    assert "position: static" in etiquette, (
-        "une étiquette laissée en absolu se superpose encore à ses voisines"
+    assert composant.count("function Frise(") == 1, "une seule frise dans le module"
+    for mort in ("PisteFrise", "LegendePostures", "cp-gc-rail", "cp-gc-seg"):
+        assert mort not in composant, f"`{mort}` était la seconde frise"
+
+
+def test_la_fabrique_de_pistes_est_retiree_avec_la_copie(regles):
+    """`pistesDuParcours` et son vocabulaire n'alimentaient que la seconde frise.
+    Les laisser en place, exportés et testés, aurait maintenu une fabrique que
+    plus rien n'appelle — et la prochaine vue s'en serait resservie."""
+    for mort in ("pistesDuParcours", "ETIQUETTE_PISTE", "ORDRE_PISTES"):
+        assert mort not in regles, f"`{mort}` n'a plus de consommateur"
+    assert "LIBELLE_PISTE" in regles, (
+        "il survit : il nomme les COLONNES, que la frise du parcours ne porte pas"
     )

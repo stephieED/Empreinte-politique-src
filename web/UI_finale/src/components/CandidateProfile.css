@@ -80,11 +80,11 @@
  * part ici, ni filet ni décor.
  */
 .cp-gc {
-  --parl: #2e4a7d;
+  --parl: #3f5166;
   --parl-wash: #e9eef6;
   --parl-line: #c6d4e8;
   --parl-pale: #dce5f2;
-  --gouv: #8a6512;
+  --gouv: #8a6b4c;
   --gouv-wash: #f6f0e4;
   --gouv-line: #e3d2ab;
   --gouv-pale: #efe4cc;
@@ -209,152 +209,19 @@
   padding: 26px 24px;
 }
 
-/* ── La frise : l'ossature du bloc ────────────────────────────────────────── */
-
-.cp-gc-piste {
-  margin-bottom: 20px;
+/* La frise du bloc est CELLE DU PARCOURS (`.cp-frise`), pas une copie : les 24
+ * sélecteurs qui la redessinaient ici — pistes, rail, segments, étiquettes,
+ * légende — sont retirés avec elle. `.cp-gc-frise` ne fait plus que l'espacer.
+ */
+.cp-gc-frise {
+  margin-bottom: 4px;
 }
 
-.cp-gc-piste-nom {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11.5px;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-  padding: 3px 10px 3px 8px;
-  border-radius: 999px;
-}
-
-.cp-gc-piste-nom i {
-  width: 9px;
-  height: 9px;
-  border-radius: 2px;
-}
-
-.cp-gc-piste--parlement .cp-gc-piste-nom { color: var(--parl); background: var(--parl-wash); }
-.cp-gc-piste--parlement .cp-gc-piste-nom i { background: var(--parl); }
-.cp-gc-piste--gouvernement .cp-gc-piste-nom { color: var(--gouv); background: var(--gouv-wash); }
-.cp-gc-piste--gouvernement .cp-gc-piste-nom i { background: var(--gouv); }
-.cp-gc-piste--mission .cp-gc-piste-nom { color: var(--neutre); background: var(--neutre-wash); }
-.cp-gc-piste--mission .cp-gc-piste-nom i { background: var(--neutre); }
-
-.cp-gc-rail {
-  position: relative;
-  height: 22px;
-  background: var(--rail);
-  border-radius: 5px;
-}
-
-.cp-gc-piste--mission .cp-gc-rail { height: 12px; }
-
-.cp-gc-seg {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  border-radius: 5px;
-}
-
-.cp-gc-piste--gouvernement .cp-gc-seg { background: var(--gouv); }
-.cp-gc-piste--mission .cp-gc-seg { background: var(--neutre); }
-
-/* Cinq états de posture, en MOTIFS et non en couleur — la couleur code déjà le
- * rôle. Et deux absences qui ne se confondent pas : `non-declaree` est une
- * valeur publiée par l'Assemblée, le contour tireté dit qu'on ne l'a pas. */
-.cp-gc-piste--parlement .cp-gc-seg--plein { background: var(--parl); }
-.cp-gc-piste--parlement .cp-gc-seg--diagonales {
-  background: repeating-linear-gradient(135deg, var(--parl) 0 3px, var(--parl-pale) 3px 7px);
-}
-.cp-gc-piste--parlement .cp-gc-seg--points {
-  background: var(--parl-pale);
-  background-image: radial-gradient(var(--parl) 1.4px, transparent 1.5px);
-  background-size: 6px 6px;
-}
-.cp-gc-piste--parlement .cp-gc-seg--rayures {
-  background: var(--parl-pale);
-  box-shadow: inset 0 0 0 1.5px var(--parl);
-}
-.cp-gc-piste--parlement .cp-gc-seg--fines-rayures {
-  background: var(--parl-pale);
-  border: 1.5px dashed var(--parl);
-}
-
-.cp-gc-etiqs {
-  position: relative;
-  height: 22px;
-  margin-top: 7px;
-}
-
-.cp-gc-etiqs--deux-niveaux {
-  height: 40px;
-}
-
-/* La pastille de motif ne sert que dans la liste étroite — sur le rail,
- * l'étiquette est déjà au-dessus de son segment. */
-.cp-gc-pastille-seg {
-  display: none;
-}
-
-.cp-gc-etiq {
-  position: absolute;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--muted);
-  white-space: nowrap;
-  transform: translateX(-50%);
-}
-
-.cp-gc-legende {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 18px;
-  margin-top: 12px;
-  font-size: 11.5px;
-  color: var(--muted);
-}
-
-.cp-gc-legende-titre {
-  width: 100%;
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  opacity: 0.8;
-}
-
-.cp-gc-legende span {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.cp-gc-legende u {
-  width: 20px;
-  height: 11px;
-  border-radius: 3px;
-  display: inline-block;
-  text-decoration: none;
-  flex: none;
-  background: var(--parl);
-}
-
-.cp-gc-legende u.cp-gc-seg--diagonales {
-  background: repeating-linear-gradient(135deg, var(--parl) 0 3px, var(--parl-pale) 3px 7px);
-}
-.cp-gc-legende u.cp-gc-seg--points {
-  background: var(--parl-pale);
-  background-image: radial-gradient(var(--parl) 1.4px, transparent 1.5px);
-  background-size: 6px 6px;
-}
-.cp-gc-legende u.cp-gc-seg--rayures {
-  background: var(--parl-pale);
-  box-shadow: inset 0 0 0 1.5px var(--parl);
-}
-.cp-gc-legende u.cp-gc-seg--fines-rayures {
-  background: var(--parl-pale);
-  border: 1.5px dashed var(--parl);
+.cp-gc-frise .cp-frise {
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
 }
 
 /* ── Les colonnes appariées ───────────────────────────────────────────────── */
@@ -560,40 +427,6 @@
 
   .cp-gc-barre {
     max-width: 100%;
-  }
-
-  /* LES ÉTIQUETTES QUITTENT LE RAIL. La règle de repli est en pourcentage de
-   * l'axe (11 %), or la collision est en pixels : 104 px sur un écran large,
-   * mais 36 px sur un rail de 327 px — quand « Secrétaire d'État » en mesure
-   * 99, soit 30 % de l'axe. La règle sous-replie d'un facteur 2,7 et deux
-   * niveaux ne suffisent plus. La barre garde sa forme, qui reste informative ;
-   * les libellés deviennent une liste chronologique, et la pastille porte le
-   * motif — seul lien qui reste entre un libellé et sa posture. */
-  .cp-gc-etiqs,
-  .cp-gc-etiqs--deux-niveaux {
-    position: static;
-    height: auto;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2px 12px;
-    margin-top: 9px;
-  }
-
-  .cp-gc-etiq {
-    position: static;
-    transform: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-  }
-
-  .cp-gc-pastille-seg {
-    display: inline-block;
-    flex: none;
-    width: 9px;
-    height: 9px;
-    border-radius: 2px;
   }
 }
 

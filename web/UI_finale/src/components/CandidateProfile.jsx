@@ -41,11 +41,6 @@ const MOIS = [
   'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre',
 ];
 
-const MOIS_COURT = [
-  'janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin',
-  'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.',
-];
-
 function jour(iso) {
   if (!iso) return null;
   const [a, m, j] = iso.split('-');
@@ -56,24 +51,6 @@ function jour(iso) {
 
 function annee(iso) {
   return iso ? iso.slice(0, 4) : null;
-}
-
-/* La période, en forme COMPACTE — l'étiquette d'un segment de frise dispose
- * d'une ligne, parfois large de 5 % de l'axe. « 18 juin 2017 → 16 novembre 2018 »
- * y est illisible et se chevauche avec la voisine.
- *
- * Rien n'est calculé : ni durée, ni arrondi. Les deux bornes sont rendues telles
- * qu'elles sont, à la granularité qui suffit à les distinguer — l'année seule
- * quand elles diffèrent, le mois quand la période tient dans une année.
- */
-function periodeCompacte(debut, fin, actif) {
-  const a1 = annee(debut);
-  if (actif) return `depuis ${MOIS_COURT[Number(debut.slice(5, 7)) - 1]} ${a1}`;
-  const a2 = annee(fin);
-  if (a1 !== a2) return `${a1} – ${a2}`;
-  const m1 = MOIS_COURT[Number(debut.slice(5, 7)) - 1];
-  const m2 = MOIS_COURT[Number(fin.slice(5, 7)) - 1];
-  return m1 === m2 ? `${m1} ${a1}` : `${m1} – ${m2} ${a1}`;
 }
 
 function periode(debut, fin, actif) {
@@ -878,90 +855,20 @@ function Couverture({ couverture, limites }) {
 
 /* ── § Les grands chiffres — la frise commande les colonnes ──────────────────
  *
- * Le bloc de tête (#328). La FRISE est l'ossature : une piste par rôle, une
- * colonne par rôle, et la couleur fait le lien — une piste et sa colonne portent
- * la même. Bleu contre bronze : c'est le seul couple qui survive au daltonisme
- * rouge-vert, et ni l'un ni l'autre ne se lit comme positif ou négatif. Ce sont
- * deux métiers, pas deux notes.
+ * **La frise est CELLE DU PARCOURS, pas une seconde.** Ce bloc en portait une
+ * copie — pistes par institution, étiquettes propres, légende propre — et cette
+ * copie coûtait exactement ce que #672 a fermé sur `isWholeTextVote` : deux
+ * définitions du même objet, qui divergent au premier ajustement. Relevé en
+ * relecture d'écran le 03/09/2026 : « reprends exactement la même frise que dans
+ * la section parcours, avec la légende et le détail daté ».
  *
- * La POSTURE est en motifs, pas en couleur, parce que la couleur code déjà le
- * rôle. Le vert et le rouge sont pris par les positions de vote, le jaune signal
- * par la sélection et la source vérifiée (`DESIGN_SYSTEM` §2).
+ * `Frise` porte déjà tout ce que la copie refaisait, et mieux : la teinte porte
+ * l'institution, le MOTIF porte la position, les repères numérotés renvoient à
+ * une liste datée, et la légende dit pourquoi les deux familles ne forment
+ * aucune progression. La couleur fait donc toujours le lien avec les colonnes —
+ * ce sont désormais les colonnes qui prennent la teinte de la frise, et non
+ * l'inverse.
  */
-/* Une piste étiquette ce que son NOM ne dit pas déjà — `ETIQUETTE_PISTE` porte
- * la clé, cette fonction la rend. Un `detail` absent retombe sur le rôle plutôt
- * que de laisser un segment muet : une période non nommée est une période que le
- * lecteur ne peut pas situer. */
-function etiquetteDuSegment(cle, s) {
-  if (cle === 'role') return s.role;
-  if (cle === 'detail') return s.detail || s.role;
-  return periodeCompacte(s.debut, s.fin, s.actif);
-}
-
-function PisteFrise({ piste }) {
-
-  return (
-    <div className={`cp-gc-piste cp-gc-piste--${piste.institution}`}>
-      <span className="cp-gc-piste-nom">
-        <i />
-        {piste.libelle}
-      </span>
-      <div className="cp-gc-rail">
-        {piste.segments.map((s) => (
-          <span
-            key={`${s.debut}-${s.role}`}
-            className={`cp-gc-seg cp-gc-seg--${s.motif}`}
-            style={{ left: `${s.gauche.toFixed(2)}%`, width: `${s.largeur.toFixed(2)}%` }}
-            title={`${s.role}${s.detail ? ` — ${s.detail}` : ''} · ${periode(s.debut, s.fin, s.actif)}${
-              piste.institution === INSTITUTION_PARLEMENT ? ` · ${libellePosition(s.position)}` : ''
-            }`}
-          />
-        ))}
-      </div>
-      {/* La hauteur est portée par une CLASSE et non par un style en ligne : sous
-          le seuil étroit, les étiquettes quittent le rail pour une liste, et une
-          hauteur en ligne ne se surcharge qu'à coups de `!important`. */}
-      <div className={`cp-gc-etiqs ${piste.deuxNiveaux ? 'cp-gc-etiqs--deux-niveaux' : ''}`}>
-        {piste.segments.map((s) => (
-          <span
-            key={`e-${s.debut}-${s.role}`}
-            className="cp-gc-etiq"
-            style={{ left: `${s.centre.toFixed(2)}%`, top: s.niveau === 0 ? 0 : 18 }}
-          >
-            {/* La pastille ne sert QUE dans la liste : sur le rail, l'étiquette
-                est déjà au-dessus de son segment. En liste, elle est le seul lien
-                qui reste entre un libellé et sa posture. */}
-            <i className={`cp-gc-pastille-seg cp-gc-seg--${s.motif}`} aria-hidden="true" />
-            {etiquetteDuSegment(piste.etiquette, s)}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* La légende ne liste que les postures RÉELLEMENT présentes sur la frise. Et
- * elle distingue deux absences que rien ne doit confondre : « non déclarée par
- * l'Assemblée » est une valeur publiée — c'est le cas des cinq groupes de la
- * XVIIe législature — quand l'absence chez nous est un trou de collecte
- * (§2 règle 5). */
-function LegendePostures({ postures }) {
-  const vues = postures.filter((p) => p !== undefined);
-  if (vues.length < 2) return null;
-  return (
-    <div className="cp-gc-legende">
-      <span className="cp-gc-legende-titre">
-        Sa position dans l’hémicycle, telle que l’Assemblée la déclare
-      </span>
-      {vues.map((p) => (
-        <span key={p ?? 'aucune'}>
-          <u className={`cp-gc-seg--${motifPosition(p)}`} />
-          {p ? libellePosition(p) : 'non renseignée chez nous'}
-        </span>
-      ))}
-    </div>
-  );
-}
 
 /* Une cellule. **Seuls les nombres sont en gros** : mettre l'objet à la même
  * échelle que le chiffre faisait lire « Orientation et réussite des étudiants »
@@ -1015,10 +922,9 @@ function CelluleChiffre({ cellule: c }) {
   );
 }
 
-function GrandsChiffres({ chiffres }) {
+function GrandsChiffres({ chiffres, parcours }) {
   if (!chiffres || chiffres.cas === CAS_RIEN_A_MONTRER) return null;
-  const { colonnes, pistes, lignes } = chiffres;
-  const parlementaire = pistes.find((p) => p.institution === INSTITUTION_PARLEMENT);
+  const { colonnes, lignes } = chiffres;
   return (
     <section className="cp-gc">
       <p className="cp-gc-label">Les grands chiffres</p>
@@ -1026,12 +932,13 @@ function GrandsChiffres({ chiffres }) {
       <div className="cp-carte cp-gc-carte">
         {/* La FRISE reste toujours dépliée : c'est l'ossature, et elle donne aux
             colonnes leur couleur et leur raison d'être. Replier le bloc entier
-            cachait ce qui explique le reste. */}
+            cachait ce qui explique le reste.
+
+            C'est LE composant `Frise`, celui de la section « Le parcours » —
+            même bande, même légende, même liste datée. Une seconde frise aurait
+            divergé de la première au premier ajustement. */}
         <div className="cp-gc-frise">
-          {pistes.map((p) => (
-            <PisteFrise key={p.institution} piste={p} />
-          ))}
-          {parlementaire && <LegendePostures postures={parlementaire.postures} />}
+          <Frise parcours={parcours} />
         </div>
 
         {/* La thèse introduit LES COLONNES, pas le parcours : elle se lit juste
@@ -1116,7 +1023,7 @@ export default function CandidateProfile({ candidate }) {
 
           Il est dense — c'est assumé — donc repliable : il ne doit pas s'imposer
           avant que le lecteur ait choisi de le lire. */}
-      <GrandsChiffres chiffres={c.grandsChiffres} />
+      <GrandsChiffres chiffres={c.grandsChiffres} parcours={c.parcours} />
 
       <Section
         numero="1"

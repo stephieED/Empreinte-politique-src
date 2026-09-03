@@ -1719,114 +1719,17 @@ export const CAS_PARLEMENT_SEUL = 'parlement_seul';
 export const CAS_GOUVERNEMENT_SEUL = 'gouvernement_seul';
 export const CAS_RIEN_A_MONTRER = 'rien_a_montrer';
 
-/* Écart minimal, en % de l'axe, entre deux étiquettes de piste avant de replier
- * la seconde sur un deuxième niveau. Même patron que les repères de la frise
- * détaillée : une étiquette illisible ne dit rien de plus qu'une absente. */
-const ECART_MINIMAL_ETIQUETTES = 11;
 
-/* ── Les pistes de la frise ──────────────────────────────────────────────────
- *
- * Une piste par institution, dans l'ordre où on les lit : le Parlement d'abord
- * parce que c'est le métier que les cinq lignes décrivent, le gouvernement
- * ensuite, la mission en dernier.
- *
- * **Un parlementaire en mission n'est pas un membre du gouvernement.** Ce sont
- * des missions auprès d'un ministère, pas des appartenances : piste distincte,
- * en gris neutre, et AUCUNE colonne — une mission ne dépose pas de texte.
- *
- * La POSTURE est portée par un motif, pas par une couleur, parce que la couleur
- * code déjà le rôle. Et deux absences ne se confondent pas : `non_declaree` est
- * une valeur publiée par l'Assemblée, `null` est un trou chez nous (§2 règle 5).
+/* `LIBELLE_PISTE` survit à la fabrique de pistes : il nomme les COLONNES, que
+ * la frise du parcours ne porte pas. Le reste — `ORDRE_PISTES`,
+ * `ETIQUETTE_PISTE`, `pistesDuParcours` — était une seconde frise, et la
+ * première la rendait inutile (#672 : jamais deux définitions du même objet).
  */
-export const ORDRE_PISTES = [INSTITUTION_PARLEMENT, INSTITUTION_GOUVERNEMENT, INSTITUTION_MISSION];
-
-/* ── Règle : une piste étiquette CE QUE SON NOM NE DIT PAS DÉJÀ ──────────────
- *
- * Trois pistes, trois clés, et le motif est le même à chaque fois : répéter sur
- * l'étiquette une information que le lecteur a déjà sous les yeux gaspille la
- * seule ligne dont le segment dispose.
- *
- * - **Parlement** : le rôle est « Député·e » partout et la posture est dans le
- *   motif — ce qui varie, c'est la PÉRIODE.
- * - **Gouvernement** : la date se lit sur l'axe juste en dessous ; ce qui varie
- *   d'un segment à l'autre, c'est le POSTE. L'avoir étiqueté par sa période
- *   remplaçait la seule information que cette piste portait par une redite de
- *   l'axe (relevé en relecture d'écran le 02/09/2026).
- * - **Mission** : le rôle EST le nom de la piste (« Parlementaire en mission »),
- *   donc l'étiquette porte le MINISTÈRE auprès duquel elle s'exerce.
- *
- * Les libellés sont publiés **verbatim** (§2 règle 2) : aucune abréviation n'est
- * fabriquée ici. La maquette en portait — « Sec. d'État, Éducation », « Éduc. » —
- * écrites à la main, et rien dans la donnée ne les dérive ; deux « Secrétaire
- * d'État » qui se suivent ne sont pas une ambiguïté, ce sont deux postes que
- * l'axe date. L'intitulé complet reste en infobulle.
- */
-export const ETIQUETTE_PISTE = {
-  [INSTITUTION_PARLEMENT]: 'periode',
-  [INSTITUTION_GOUVERNEMENT]: 'role',
-  [INSTITUTION_MISSION]: 'detail',
-};
-
 export const LIBELLE_PISTE = {
   [INSTITUTION_PARLEMENT]: "À l'Assemblée",
   [INSTITUTION_GOUVERNEMENT]: 'Au gouvernement',
   [INSTITUTION_MISSION]: 'Parlementaire en mission',
 };
-
-export function pistesDuParcours(roles, bornes) {
-  if (!roles?.length || !bornes) return [];
-  const pistes = [];
-  for (const institution of ORDRE_PISTES) {
-    const duRole = roles.filter((r) => r.institution === institution);
-    if (!duRole.length) continue;
-    const niveaux = [-Infinity, -Infinity];
-    const segments = duRole
-      .slice()
-      .sort((a, b) => a.debut.localeCompare(b.debut))
-      .map((r) => {
-        const gauche = positionSurAxe(r.debut, bornes);
-        const largeur = Math.max(0.6, positionSurAxe(r.fin, bornes) - gauche);
-        const centre = gauche + largeur / 2;
-        // L'étiquette se replie plutôt que de se chevaucher — jamais elle ne
-        // disparaît : une période non nommée est une période qu'on ne peut pas
-        // dater, et la frise ne sert plus à rien.
-        let niveau = 0;
-        if (centre - niveaux[0] < ECART_MINIMAL_ETIQUETTES) {
-          niveau = centre - niveaux[1] < ECART_MINIMAL_ETIQUETTES ? 0 : 1;
-        }
-        niveaux[niveau] = centre;
-        return {
-          gauche,
-          largeur,
-          centre,
-          niveau,
-          // `position` reste la clé brute — `null` compris, qu'aucun libellé ne
-          // doit transformer en valeur.
-          position: r.position ?? null,
-          motif: motifPosition(r.position),
-          role: r.role,
-          detail: r.detail ?? null,
-          debut: r.debut,
-          fin: r.fin,
-          actif: r.actif,
-        };
-      });
-    pistes.push({
-      institution,
-      libelle: LIBELLE_PISTE[institution],
-      etiquette: ETIQUETTE_PISTE[institution],
-      segments,
-      deuxNiveaux: segments.some((s) => s.niveau === 1),
-      // La légende ne liste que les postures RÉELLEMENT présentes : une légende
-      // exhaustive fait chercher au lecteur une nuance que la frise ne porte pas.
-      postures:
-        institution === INSTITUTION_PARLEMENT
-          ? [...new Set(segments.map((s) => s.position))]
-          : [],
-    });
-  }
-  return pistes;
-}
 
 /* ── Une cellule ─────────────────────────────────────────────────────────────
  *
@@ -1880,7 +1783,6 @@ export const RANGS_GRANDS_CHIFFRES = [
 
 export function grandsChiffres({
   roles = [],
-  bornes = null,
   mandats = [],
   amendements = null,
   textes = null,
@@ -1899,14 +1801,12 @@ export function grandsChiffres({
   if (aParlement) colonnes.push(COLONNE_PARLEMENT);
   if (aGouvernement) colonnes.push(COLONNE_GOUVERNEMENT);
 
-  const pistes = pistesDuParcours(roles, bornes);
-
   if (cas === CAS_RIEN_A_MONTRER) {
     // Quatre des treize candidats déclarés n'ont ni mandat parlementaire ni
     // appartenance gouvernementale — un mandat européen, une mairie. Le bloc
     // n'a rien à montrer, et il le DIT plutôt que d'afficher cinq tirets :
     // l'arbitrage sur ces deux formes d'activité est ouvert, pas rendu.
-    return { cas, colonnes, pistes, bornes, lignes: [] };
+    return { cas, colonnes, lignes: [] };
   }
 
   /* Le partage des interventions est DATÉ, jamais global. `depuisLeBancDuGouvernement`
@@ -2085,7 +1985,7 @@ export function grandsChiffres({
   // rangs vides ne décrivent pas une personne, ils décrivent le gabarit.
   const retenues = lignes.filter((l) => colonnes.some((c) => l.cellules[c] && !l.cellules[c].absent));
 
-  return { cas, colonnes, pistes, bornes, lignes: retenues };
+  return { cas, colonnes, lignes: retenues };
 }
 
 /* ── Livrable : ce qu'on n'a pas pu lire ─────────────────────────────────────

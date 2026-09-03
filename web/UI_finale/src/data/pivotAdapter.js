@@ -459,7 +459,6 @@ export function buildCandidateView(
     // refaite ici, sinon la fiche porterait deux comptes du même fait.
     grandsChiffres: grandsChiffres({
       roles,
-      bornes,
       mandats,
       amendements,
       textes,
