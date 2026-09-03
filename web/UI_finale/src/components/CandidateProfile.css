@@ -80,11 +80,11 @@
  * part ici, ni filet ni décor.
  */
 .cp-gc {
-  --parl: #2e4a7d;
+  --parl: #3f5166;
   --parl-wash: #e9eef6;
   --parl-line: #c6d4e8;
   --parl-pale: #dce5f2;
-  --gouv: #8a6512;
+  --gouv: #8a6b4c;
   --gouv-wash: #f6f0e4;
   --gouv-line: #e3d2ab;
   --gouv-pale: #efe4cc;
@@ -136,31 +136,40 @@
   margin: 0 0 12px;
 }
 
-/* La thèse sert de poignée : c'est elle qui replie les colonnes, pas le bloc
- * entier — la frise reste visible parce qu'elle explique le reste. Le « + »
- * porte l'affordance sans une phrase (relecture d'écran du 02/09/2026). */
-.cp-gc-plis {
+/* ── La poignée d'un pli — UNE seule forme, deux emplois ─────────────────────
+ *
+ * « Ce que cette personne a engagé, en chiffres. » et « Détails du parcours »
+ * sont deux plis de même nature. Leur donner deux tailles faisait crier l'un
+ * plus fort que l'autre sans que rien ne le justifie (relevé à l'écran le
+ * 03/09/2026). Une classe, donc, et non deux qui divergeraient.
+ *
+ * **Les deux sont fermés par défaut.** Le bloc s'ouvre sur la frise seule : elle
+ * est ce que le lecteur voit sans effort, les chiffres et le détail sont ce
+ * qu'il déplie s'il veut. C'est la §7 de la décision — le bloc ne doit pas
+ * s'imposer avant qu'on ait choisi de le lire — appliquée à ses deux moitiés
+ * plutôt qu'à l'ensemble.
+ */
+.cp-pli {
   border-top: 1px solid var(--border-strong);
-  margin-top: 24px;
+  margin-top: 20px;
 }
 
-.cp-gc-these {
+.cp-poignee {
   cursor: pointer;
   list-style: none;
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 20px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  padding: 20px 0 4px;
+  gap: 10px;
+  font-size: 14.5px;
+  font-weight: 700;
+  padding: 14px 0 2px;
 }
 
-.cp-gc-these::-webkit-details-marker {
+.cp-poignee::-webkit-details-marker {
   display: none;
 }
 
-.cp-gc-these:focus-visible {
+.cp-poignee:focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 3px;
   border-radius: 4px;
@@ -169,192 +178,69 @@
 /* Le « + » est dessiné, pas écrit : une barre verticale qui disparaît à
  * l'ouverture, donc « − ». Deux glyphes différents changeraient de chasse et
  * feraient sauter la ligne. */
-.cp-gc-plus {
+.cp-poignee-plus {
   position: relative;
   flex: none;
-  width: 20px;
-  height: 20px;
+  width: 17px;
+  height: 17px;
   border: 1.5px solid var(--border-strong);
-  border-radius: 6px;
+  border-radius: 5px;
 }
 
-.cp-gc-plus::before,
-.cp-gc-plus::after {
+.cp-poignee-plus::before,
+.cp-poignee-plus::after {
   content: '';
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 9px;
+  width: 8px;
   height: 1.5px;
   background: var(--muted);
   transform: translate(-50%, -50%);
 }
 
-.cp-gc-plus::after {
+.cp-poignee-plus::after {
   transform: translate(-50%, -50%) rotate(90deg);
   transition: opacity 0.12s ease;
 }
 
-.cp-gc-plis[open] .cp-gc-plus::after {
+.cp-pli[open] .cp-poignee-plus::after {
   opacity: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cp-gc-plus::after {
+  .cp-poignee-plus::after {
     transition: none;
   }
+}
+
+/* Dans la frise, le pli sépare le détail daté du reste : filet plus discret. */
+.cp-frise .cp-pli {
+  border-top-color: var(--border);
+  margin-top: 16px;
+}
+
+.cp-frise .cp-roles {
+  margin-top: 10px;
 }
 
 .cp-gc-carte {
   padding: 26px 24px;
 }
 
-/* ── La frise : l'ossature du bloc ────────────────────────────────────────── */
-
-.cp-gc-piste {
-  margin-bottom: 20px;
+/* La frise du bloc est CELLE DU PARCOURS (`.cp-frise`), pas une copie : les 24
+ * sélecteurs qui la redessinaient ici — pistes, rail, segments, étiquettes,
+ * légende — sont retirés avec elle. `.cp-gc-frise` ne fait plus que l'espacer.
+ */
+.cp-gc-frise {
+  margin-bottom: 4px;
 }
 
-.cp-gc-piste-nom {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11.5px;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-  padding: 3px 10px 3px 8px;
-  border-radius: 999px;
-}
-
-.cp-gc-piste-nom i {
-  width: 9px;
-  height: 9px;
-  border-radius: 2px;
-}
-
-.cp-gc-piste--parlement .cp-gc-piste-nom { color: var(--parl); background: var(--parl-wash); }
-.cp-gc-piste--parlement .cp-gc-piste-nom i { background: var(--parl); }
-.cp-gc-piste--gouvernement .cp-gc-piste-nom { color: var(--gouv); background: var(--gouv-wash); }
-.cp-gc-piste--gouvernement .cp-gc-piste-nom i { background: var(--gouv); }
-.cp-gc-piste--mission .cp-gc-piste-nom { color: var(--neutre); background: var(--neutre-wash); }
-.cp-gc-piste--mission .cp-gc-piste-nom i { background: var(--neutre); }
-
-.cp-gc-rail {
-  position: relative;
-  height: 22px;
-  background: var(--rail);
-  border-radius: 5px;
-}
-
-.cp-gc-piste--mission .cp-gc-rail { height: 12px; }
-
-.cp-gc-seg {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  border-radius: 5px;
-}
-
-.cp-gc-piste--gouvernement .cp-gc-seg { background: var(--gouv); }
-.cp-gc-piste--mission .cp-gc-seg { background: var(--neutre); }
-
-/* Cinq états de posture, en MOTIFS et non en couleur — la couleur code déjà le
- * rôle. Et deux absences qui ne se confondent pas : `non-declaree` est une
- * valeur publiée par l'Assemblée, le contour tireté dit qu'on ne l'a pas. */
-.cp-gc-piste--parlement .cp-gc-seg--plein { background: var(--parl); }
-.cp-gc-piste--parlement .cp-gc-seg--diagonales {
-  background: repeating-linear-gradient(135deg, var(--parl) 0 3px, var(--parl-pale) 3px 7px);
-}
-.cp-gc-piste--parlement .cp-gc-seg--points {
-  background: var(--parl-pale);
-  background-image: radial-gradient(var(--parl) 1.4px, transparent 1.5px);
-  background-size: 6px 6px;
-}
-.cp-gc-piste--parlement .cp-gc-seg--rayures {
-  background: var(--parl-pale);
-  box-shadow: inset 0 0 0 1.5px var(--parl);
-}
-.cp-gc-piste--parlement .cp-gc-seg--fines-rayures {
-  background: var(--parl-pale);
-  border: 1.5px dashed var(--parl);
-}
-
-.cp-gc-etiqs {
-  position: relative;
-  height: 22px;
-  margin-top: 7px;
-}
-
-.cp-gc-etiqs--deux-niveaux {
-  height: 40px;
-}
-
-/* La pastille de motif ne sert que dans la liste étroite — sur le rail,
- * l'étiquette est déjà au-dessus de son segment. */
-.cp-gc-pastille-seg {
-  display: none;
-}
-
-.cp-gc-etiq {
-  position: absolute;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--muted);
-  white-space: nowrap;
-  transform: translateX(-50%);
-}
-
-.cp-gc-legende {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 18px;
-  margin-top: 12px;
-  font-size: 11.5px;
-  color: var(--muted);
-}
-
-.cp-gc-legende-titre {
-  width: 100%;
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  opacity: 0.8;
-}
-
-.cp-gc-legende span {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.cp-gc-legende u {
-  width: 20px;
-  height: 11px;
-  border-radius: 3px;
-  display: inline-block;
-  text-decoration: none;
-  flex: none;
-  background: var(--parl);
-}
-
-.cp-gc-legende u.cp-gc-seg--diagonales {
-  background: repeating-linear-gradient(135deg, var(--parl) 0 3px, var(--parl-pale) 3px 7px);
-}
-.cp-gc-legende u.cp-gc-seg--points {
-  background: var(--parl-pale);
-  background-image: radial-gradient(var(--parl) 1.4px, transparent 1.5px);
-  background-size: 6px 6px;
-}
-.cp-gc-legende u.cp-gc-seg--rayures {
-  background: var(--parl-pale);
-  box-shadow: inset 0 0 0 1.5px var(--parl);
-}
-.cp-gc-legende u.cp-gc-seg--fines-rayures {
-  background: var(--parl-pale);
-  border: 1.5px dashed var(--parl);
+.cp-gc-frise .cp-frise {
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
 }
 
 /* ── Les colonnes appariées ───────────────────────────────────────────────── */
@@ -560,40 +446,6 @@
 
   .cp-gc-barre {
     max-width: 100%;
-  }
-
-  /* LES ÉTIQUETTES QUITTENT LE RAIL. La règle de repli est en pourcentage de
-   * l'axe (11 %), or la collision est en pixels : 104 px sur un écran large,
-   * mais 36 px sur un rail de 327 px — quand « Secrétaire d'État » en mesure
-   * 99, soit 30 % de l'axe. La règle sous-replie d'un facteur 2,7 et deux
-   * niveaux ne suffisent plus. La barre garde sa forme, qui reste informative ;
-   * les libellés deviennent une liste chronologique, et la pastille porte le
-   * motif — seul lien qui reste entre un libellé et sa posture. */
-  .cp-gc-etiqs,
-  .cp-gc-etiqs--deux-niveaux {
-    position: static;
-    height: auto;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2px 12px;
-    margin-top: 9px;
-  }
-
-  .cp-gc-etiq {
-    position: static;
-    transform: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-  }
-
-  .cp-gc-pastille-seg {
-    display: inline-block;
-    flex: none;
-    width: 9px;
-    height: 9px;
-    border-radius: 2px;
   }
 }
 
