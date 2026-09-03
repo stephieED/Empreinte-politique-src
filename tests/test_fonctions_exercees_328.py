@@ -306,3 +306,49 @@ def test_une_section_vide_dit_pourquoi(composant):
     section = _corps(composant, 'titre="Les fonctions exercées"', "</Section>")
     assert "<ListeVide" in section
     assert "c.causes.mandats" in section
+
+
+# ── Les lecteurs de la forme rendue ──────────────────────────────────────────
+#
+# `fonctionsExercees` a changé de forme le 03/09/2026 : elle rendait un TABLEAU
+# de blocs `{cle, titre, total, items[]}`, elle rend un objet
+# `{mandat, blocs[]}` dont les lignes portent une durée. La vue a suivi. Le
+# second lecteur, lui, n'a pas suivi — et il n'est pas une vue : `vivierDesPoints`
+# lit la même forme pour un point dormant, dont « L'essentiel » a emporté le
+# rendu sans emporter le calcul. `essentiel()` est appelé sans condition par
+# `buildCandidateView` : `(fonctions || []).find(...)` sur un objet lève
+# `find is not a function`, et c'est TOUTE la fiche qui ne s'affiche plus, pour
+# les treize candidats.
+#
+# Rien ne l'a vu : les tests du dépôt lisent le source, aucun n'exécute le JS.
+# Ce que ces deux-ci verrouillent est donc la seule chose relisable — que les
+# lecteurs de cette forme nomment les clés que cette forme porte.
+
+
+def test_le_vivier_lit_la_forme_que_fonctions_exercees_rend(regles):
+    """Un consommateur qui n'est pas une vue ne se voit pas en relisant la page.
+    Celui-ci lit `blocs[]` et ses lignes, jamais le tableau d'avant."""
+    bloc = _corps(regles, "const commissions = (fonctions?.blocs", "\n  }")
+    assert "fonctions?.blocs" in bloc, "le tableau des blocs est sous `blocs`"
+    assert ".items" not in bloc, "`items[]` était l'ancienne forme, elle n'existe plus"
+    assert "montrees" in bloc and "nbIntitules" in bloc
+
+
+def test_le_point_des_commissions_parle_en_duree_comme_la_section(regles):
+    """Le point dormant portait « 27 mandats en commission sont à la commission
+    des affaires sociales » : le compte d'enregistrements que #328 a écarté de
+    la section publiée. Le réparer en le laissant compter aurait gardé dans le
+    code la mesure que la page vient de désavouer."""
+    bloc = _corps(regles, "const commissions = (fonctions?.blocs", "\n  }")
+    assert "tete.jours" in bloc and "tete.duree" in bloc
+    assert "mandat en commission est" not in bloc
+
+
+def test_l_adaptateur_passe_la_forme_entiere_sans_la_defaire(regles):
+    """Le dénominateur du point est le temps de mandat, qui vit sur `mandat` et
+    non sur les blocs : passer `fonctions.blocs` seul obligerait l'adaptateur à
+    refaire une mesure, ce que la fiche s'interdit."""
+    adaptateur = sans_commentaires(ADAPTATEUR.read_text(encoding="utf-8"))
+    bloc = _corps(adaptateur, "essentiel({", "}),")
+    assert re.search(r"\bfonctions,", bloc), "la forme est passée entière"
+    assert "fonctions.blocs" not in bloc and "fonctions.mandat" not in bloc

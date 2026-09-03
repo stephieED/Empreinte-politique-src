@@ -1583,26 +1583,34 @@ function vivierDesPoints({
   }
 
   // 3. Les commissions. Déjà nommées, rien à réparer — la suite l'est aussi.
-  //    En PODIUM : « 27 sur 60 » se compare mal en prose, trois rangs côte à
-  //    côte se comparent d'un regard. Un siège en commission est un mandat
+  //    En PODIUM : trois rangs côte à côte se comparent d'un regard là où la
+  //    prose oblige à relire. Un siège en commission est un mandat
   //    parlementaire, quel que soit ce que la personne a fait par ailleurs.
-  const commissions = (fonctions || []).find((f) => f.cle === 'commission');
-  if (commissions?.items.length) {
+  //
+  //    Le point se lit sur la DURÉE, jamais sur un compte d'entrées : #328 a
+  //    mesuré que le nombre d'entrées d'un intitulé compte des enregistrements
+  //    de collecte (27 chez Guedj pour 5 ans 10 mois, 4 chez un autre pour
+  //    2 jours) et ne dit rien du temps passé. Il lit donc la forme rendue par
+  //    `fonctionsExercees` — `blocs[].montrees`, déjà triées par durée — et
+  //    n'en recalcule aucune part.
+  const commissions = (fonctions?.blocs || []).find((f) => f.cle === 'commission');
+  if (commissions?.montrees.length) {
+    const tete = commissions.montrees[0];
     points.push({
       cle: 'commissions',
       role: INSTITUTION_PARLEMENT,
       rendu: RENDU_PODIUM,
-      valeur: commissions.items[0].n,
-      sur: commissions.total,
-      rangs: commissions.items.slice(0, NB_COMMISSIONS_MONTREES),
-      texte: `${pluriel(commissions.items[0].n, 'mandat en commission est', 'mandats en commission sont')} à la ${commissions.items[0].label}`,
+      valeur: tete.jours,
+      sur: fonctions.mandat.jours,
+      rangs: commissions.montrees,
+      texte: `le temps passé en commission l'a le plus été à la ${tete.label} : ${tete.duree}`,
       // Pas de `suite` : le podium NOMME déjà les deux suivantes avec leur
-      // compte. La garder ferait lire deux fois la même liste, une fois en
+      // durée. La garder ferait lire deux fois la même liste, une fois en
       // prose et une fois en colonnes.
       suite: null,
       socle:
-        commissions.items.length > NB_COMMISSIONS_MONTREES
-          ? `${formatNumber(commissions.items.length)} commissions en tout`
+        commissions.nbIntitules > NB_COMMISSIONS_MONTREES
+          ? `${formatNumber(commissions.nbIntitules)} commissions en tout`
           : null,
       garde: null,
     });
