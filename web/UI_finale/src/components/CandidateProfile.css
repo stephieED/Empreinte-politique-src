@@ -136,31 +136,40 @@
   margin: 0 0 12px;
 }
 
-/* La thèse sert de poignée : c'est elle qui replie les colonnes, pas le bloc
- * entier — la frise reste visible parce qu'elle explique le reste. Le « + »
- * porte l'affordance sans une phrase (relecture d'écran du 02/09/2026). */
-.cp-gc-plis {
+/* ── La poignée d'un pli — UNE seule forme, deux emplois ─────────────────────
+ *
+ * « Ce que cette personne a engagé, en chiffres. » et « Détails du parcours »
+ * sont deux plis de même nature. Leur donner deux tailles faisait crier l'un
+ * plus fort que l'autre sans que rien ne le justifie (relevé à l'écran le
+ * 03/09/2026). Une classe, donc, et non deux qui divergeraient.
+ *
+ * **Les deux sont fermés par défaut.** Le bloc s'ouvre sur la frise seule : elle
+ * est ce que le lecteur voit sans effort, les chiffres et le détail sont ce
+ * qu'il déplie s'il veut. C'est la §7 de la décision — le bloc ne doit pas
+ * s'imposer avant qu'on ait choisi de le lire — appliquée à ses deux moitiés
+ * plutôt qu'à l'ensemble.
+ */
+.cp-pli {
   border-top: 1px solid var(--border-strong);
-  margin-top: 24px;
+  margin-top: 20px;
 }
 
-.cp-gc-these {
+.cp-poignee {
   cursor: pointer;
   list-style: none;
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 20px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  padding: 20px 0 4px;
+  gap: 10px;
+  font-size: 14.5px;
+  font-weight: 700;
+  padding: 14px 0 2px;
 }
 
-.cp-gc-these::-webkit-details-marker {
+.cp-poignee::-webkit-details-marker {
   display: none;
 }
 
-.cp-gc-these:focus-visible {
+.cp-poignee:focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 3px;
   border-radius: 4px;
@@ -169,40 +178,50 @@
 /* Le « + » est dessiné, pas écrit : une barre verticale qui disparaît à
  * l'ouverture, donc « − ». Deux glyphes différents changeraient de chasse et
  * feraient sauter la ligne. */
-.cp-gc-plus {
+.cp-poignee-plus {
   position: relative;
   flex: none;
-  width: 20px;
-  height: 20px;
+  width: 17px;
+  height: 17px;
   border: 1.5px solid var(--border-strong);
-  border-radius: 6px;
+  border-radius: 5px;
 }
 
-.cp-gc-plus::before,
-.cp-gc-plus::after {
+.cp-poignee-plus::before,
+.cp-poignee-plus::after {
   content: '';
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 9px;
+  width: 8px;
   height: 1.5px;
   background: var(--muted);
   transform: translate(-50%, -50%);
 }
 
-.cp-gc-plus::after {
+.cp-poignee-plus::after {
   transform: translate(-50%, -50%) rotate(90deg);
   transition: opacity 0.12s ease;
 }
 
-.cp-gc-plis[open] .cp-gc-plus::after {
+.cp-pli[open] .cp-poignee-plus::after {
   opacity: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cp-gc-plus::after {
+  .cp-poignee-plus::after {
     transition: none;
   }
+}
+
+/* Dans la frise, le pli sépare le détail daté du reste : filet plus discret. */
+.cp-frise .cp-pli {
+  border-top-color: var(--border);
+  margin-top: 16px;
+}
+
+.cp-frise .cp-roles {
+  margin-top: 10px;
 }
 
 .cp-gc-carte {

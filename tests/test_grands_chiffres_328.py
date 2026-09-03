@@ -105,8 +105,8 @@ def test_le_bloc_s_appelle_les_grands_chiffres(composant):
 def test_la_these_tient_en_une_ligne(composant):
     """Réduite trois fois. Le motif de chaque coupe est le même : si une phrase
     doit expliquer un chiffre, c'est la forme qui n'a pas fait son travail."""
-    assert "Ce que cette personne a engagé." in composant
-    bloc = _corps(composant, "cp-gc-these", "</summary>")
+    assert "Ce que cette personne a engagé, en chiffres." in composant
+    bloc = _corps(composant, "Ce que cette personne a engagé", "</summary>")
     assert bloc.count(".") <= 2, (
         "la thèse est une phrase, pas un paragraphe : le texte explicatif est "
         "un aveu d'échec"
@@ -132,8 +132,8 @@ def test_la_these_est_la_poignee_et_precede_les_colonnes(composant):
     le parcours. Elle sert de `<summary>`, donc de poignée à ce qu'elle
     annonce."""
     bloc = _corps(composant, "function GrandsChiffres(", "export default function")
-    assert '<summary className="cp-gc-these">' in bloc
-    assert bloc.index("cp-gc-these") < bloc.index("cp-gc-tete-col"), (
+    assert '<summary className="cp-poignee">' in bloc
+    assert bloc.index("a engagé, en chiffres") < bloc.index("cp-gc-tete-col"), (
         "la thèse se lit avant l'en-tête « À l'Assemblée »"
     )
 
@@ -143,11 +143,11 @@ def test_le_pli_porte_un_plus_visible(composant, feuille):
     dessiné et non écrit — deux glyphes changeraient de chasse et feraient
     sauter la ligne."""
     bloc = _corps(composant, "function GrandsChiffres(", "export default function")
-    assert 'className="cp-gc-plus"' in bloc
-    assert ".cp-gc-plis[open] .cp-gc-plus::after" in feuille, (
+    assert 'className="cp-poignee-plus"' in bloc
+    assert ".cp-pli[open] .cp-poignee-plus::after" in feuille, (
         "la barre verticale disparaît à l'ouverture : « + » devient « − »"
     )
-    assert ".cp-gc-these::-webkit-details-marker" in feuille, (
+    assert ".cp-poignee::-webkit-details-marker" in feuille, (
         "le triangle natif est retiré, sinon deux marqueurs cohabitent"
     )
 
@@ -375,3 +375,45 @@ def test_la_fabrique_de_pistes_est_retiree_avec_la_copie(regles):
     assert "LIBELLE_PISTE" in regles, (
         "il survit : il nomme les COLONNES, que la frise du parcours ne porte pas"
     )
+
+def test_les_deux_plis_partagent_une_seule_poignee(composant, feuille):
+    """« Ce que cette personne a engagé, en chiffres. » et « Détails du parcours »
+    sont deux plis de MÊME NATURE. Leur donner deux tailles faisait crier l'un
+    plus fort que l'autre sans raison — relevé à l'écran le 03/09/2026. Une seule
+    classe, donc, et non deux qui divergeraient au premier ajustement."""
+    assert composant.count('className="cp-poignee"') == 2, (
+        "les deux poignées, et elles seules, portent la même classe"
+    )
+    for morte in ("cp-gc-these", "cp-gc-plus", "cp-gc-plis"):
+        assert morte not in composant and morte not in feuille, (
+            f"`{morte}` était la forme propre au bloc"
+        )
+
+
+def test_les_deux_plis_sont_fermes_par_defaut(composant):
+    """Le bloc s'ouvre sur la FRISE SEULE : elle est ce que le lecteur voit sans
+    effort, les chiffres et le détail sont ce qu'il déplie s'il veut. C'est la §7
+    de la décision appliquée aux deux moitiés du bloc plutôt qu'à l'ensemble."""
+    assert "<details className=\"cp-pli\" open>" not in composant
+    assert composant.count('<details className="cp-pli">') == 2
+
+
+def test_le_detail_date_du_parcours_se_replie(composant):
+    """Le détail daté n'a pas à s'imposer entre la frise et ce qui suit."""
+    bloc = _corps(composant, "function Frise(", "\nfunction ")
+    assert "Détails du parcours" in bloc
+    assert bloc.index("<details") < bloc.index('<ul className="cp-roles">'), (
+        "le pli enveloppe la liste datée"
+    )
+
+
+def test_la_note_de_legende_ne_garde_que_sa_phrase_de_source(composant):
+    """766 caractères, puis 188. Ce qui part expliquait comment LIRE la frise —
+    désaturation, absence de progression, niveaux de gris — et c'est le texte
+    explicatif qu'on coupe partout (#326, règle 2). Ce qui reste est la seule
+    phrase de la fiche disant que les trois postures viennent de l'Assemblée et
+    pas de nous (§2 règle 2)."""
+    bloc = _corps(composant, 'className="cp-legende-note"', "</p>")
+    assert "publie elle-même" in bloc, "la phrase de source survit"
+    for parti in ("désaturées", "niveaux de gris", "aucune progression", "rangement"):
+        assert parti not in bloc, f"« {parti} » expliquait comment lire, pas d'où ça vient"

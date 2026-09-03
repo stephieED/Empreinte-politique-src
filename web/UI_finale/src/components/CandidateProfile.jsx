@@ -188,24 +188,28 @@ function Frise({ parcours }) {
             </span>
           ))}
         </div>
-        <p className="cp-legende-note">
-          <b>La teinte porte l’institution, le motif porte la position.</b> Les deux familles sont
-          désaturées et n’évoquent aucun parti ; elles ne forment aucune progression — ce sont deux
-          catégories, pas deux niveaux. Le vert et le rouge restent réservés aux positions de vote.
-          La couleur ne porte jamais seule : chaque situation se distingue aussi par son motif et
-          reste lisible en niveaux de gris. Majorité, minorité et opposition sont les trois valeurs
-          que <b>l’Assemblée nationale publie elle-même</b> sur chaque groupe politique ; elle ne
-          les publie pas pour la législature en cours.
-          {nbLignes > 1 && (
-            <>
-              {' '}
-              Quand deux rôles se chevauchent, la bande se scinde et le rôle commencé le premier
-              occupe la ligne du haut : <b>c’est un rangement, pas une hiérarchie.</b>
-            </>
-          )}
-        </p>
+        {/* La note ne garde que ce qui est SOURCÉ. Le reste — désaturation, absence
+            de progression, lisibilité en niveaux de gris, scission de la bande —
+            expliquait comment lire la frise, et c'est exactement le texte
+            explicatif qu'on coupe partout ailleurs (#326, règle 2). Ce qui reste
+            n'est pas de l'explication : c'est la seule phrase de toute la fiche
+            qui dit que les trois postures viennent de l'Assemblée et pas de nous
+            (§2 règle 2). 766 caractères, puis 188. */}
+          <p className="cp-legende-note">
+            Majorité, minorité et opposition sont les trois valeurs que{' '}
+            <b>l’Assemblée nationale publie elle-même</b> sur chaque groupe politique ; elle ne les
+            publie pas pour la législature en cours.
+          </p>
       </div>
 
+      {/* Le détail daté se replie : c'est du DÉTAIL, et il n'a pas à s'imposer
+          entre la frise et ce qui suit. Même poignée que le bloc « Les grands
+          chiffres » — deux plis de même nature ne prennent pas deux formes. */}
+      <details className="cp-pli">
+        <summary className="cp-poignee">
+          <i className="cp-poignee-plus" aria-hidden="true" />
+          Détails du parcours
+        </summary>
       <ul className="cp-roles">
         {roles.map((r) => (
           <li className="cp-role" key={r.numero}>
@@ -219,6 +223,7 @@ function Frise({ parcours }) {
           </li>
         ))}
       </ul>
+      </details>
     </div>
   );
 }
@@ -949,10 +954,10 @@ function GrandsChiffres({ chiffres, parcours }) {
             La ligne elle-même a été réduite trois fois : le texte explicatif est
             un aveu d'échec, et si une phrase doit expliquer un chiffre, c'est la
             forme qui n'a pas fait son travail. */}
-        <details className="cp-gc-plis" open>
-          <summary className="cp-gc-these">
-            <i className="cp-gc-plus" aria-hidden="true" />
-            Ce que cette personne a engagé.
+        <details className="cp-pli">
+          <summary className="cp-poignee">
+            <i className="cp-poignee-plus" aria-hidden="true" />
+            Ce que cette personne a engagé, en chiffres.
           </summary>
 
           {/* Le nombre de colonnes vient de la CLASSE, jamais d'un style en
