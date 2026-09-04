@@ -77,6 +77,7 @@ def generate_all(
     profiles_dir: Path,
     out_dir: Path,
     validate: bool = False,
+    commissions_par_dossier: Optional[dict[str, Any]] = None,
 ) -> Any:
     """Génère tous les profils de gouvernement de `gouvernements`, un seul
     chargement des profils pivot et un seul fetch des dossiers législatifs
@@ -138,6 +139,7 @@ def generate_all(
                 periode_fin=periode.get("fin"),
                 profils=profils,
                 dossiers_gouvernementaux=dossiers,
+                commissions_par_dossier=commissions_par_dossier,
             )
         except Exception as exc:  # noqa: BLE001 - un échec sur un gouvernement ne doit pas arrêter les autres
             print(f"  [!] Échec de génération pour {gouvernement_id} : {exc}", file=sys.stderr)
@@ -194,11 +196,56 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         help="Dossier de sortie des profils de gouvernement (défaut : pivot_data/gouvernements).",
     )
     parser.add_argument(
+        "--commissions-dossiers",
+        default="pivot_data/commissions_dossiers.json",
+        metavar="FICHIER",
+        help=(
+            "Index dossier_id -> commission saisie au fond (#689), d'où les textes "
+            "tirent leur matière. Absent, illisible ou vide : chaque texte publie "
+            "`commission_non_resolue.motif = index_indisponible` — jamais un silence."
+        ),
+    )
+    parser.add_argument(
         "--validate",
         action="store_true",
         help="Valide chaque profil de gouvernement produit et affiche les erreurs éventuelles.",
     )
     return parser
+
+
+def charger_commissions_dossiers(chemin: Optional[Path]) -> Optional[dict[str, Any]]:
+    """Index `dossier_id` → commission saisie au fond, ou `None` (#689).
+
+    `None` n'est pas une erreur : c'est ce qui fait publier
+    `commission_non_resolue.motif = "index_indisponible"` sur chaque texte, au
+    lieu d'un silence. Une panne du run et une limite de périmètre ne doivent pas
+    se lire pareil — la leçon de #726, où un audit rendait 62 705 lignes parce
+    qu'il lisait un champ déplacé.
+
+    Un index **vide** vaut un index absent : le croire disponible ferait passer
+    « le fichier manquait » pour « aucun texte n'a de commission » (#510).
+    """
+    if chemin is None:
+        return None
+    try:
+        with open(chemin, encoding="utf-8") as f:
+            charge = json.load(f)
+    except (OSError, json.JSONDecodeError) as exc:
+        print(
+            f"  [!] Index des commissions saisies au fond illisible ({chemin}) : {exc}. "
+            "Les textes porteront `commission_non_resolue.motif = index_indisponible`.",
+            file=sys.stderr,
+        )
+        return None
+    commissions = (charge or {}).get("commissions")
+    if not isinstance(commissions, dict) or not commissions:
+        print(
+            f"  [!] Index des commissions saisies au fond vide ({chemin}) : traité comme "
+            "absent, et les textes le déclarent (#689).",
+            file=sys.stderr,
+        )
+        return None
+    return commissions
 
 
 def main(argv: Optional[list[str]] = None) -> int:
@@ -220,11 +267,24 @@ def main(argv: Optional[list[str]] = None) -> int:
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    # #689 — chargé UNE fois pour les dix fiches : l'index pèse 1,2 Mo et
+    # 6 024 dossiers, et le relire par gouvernement serait le coût que
+    # #392/#403/#467 ont déjà payé trois fois au même endroit.
+    commissions_par_dossier = charger_commissions_dossiers(
+        Path(args.commissions_dossiers) if args.commissions_dossiers else None
+    )
+    if commissions_par_dossier is not None:
+        print(
+            f"  -> Commissions saisies au fond : {len(commissions_par_dossier)} "
+            "dossier(s) indexé(s)."
+        )
+
     echecs = generate_all(
         gouvernements,
         profiles_dir=Path(args.profiles_dir),
         out_dir=out_dir,
         validate=args.validate,
+        commissions_par_dossier=commissions_par_dossier,
     )
 
     # Collecte incomplète : aucun profil n'a été écrit, le compteur d'échecs
