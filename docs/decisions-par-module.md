@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 219 décisions
+gouverne sans avoir à fouiller les 220 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -46,12 +46,12 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 | `src/audit_pipeline.py` | 2 |
 | `src/build_correspondance_acteurs_an.py` | 2 |
 | `src/gouvernement_profile.py` | 2 |
+| `src/purge_mandats_dupliques.py` | 2 |
 | `src/avertissements.py` | 1 |
 | `src/build_amendements_index.py` | 1 |
 | `src/candidate_profile_ue.py` | 1 |
 | `src/json_io.py` | 1 |
 | `src/licences.py` | 1 |
-| `src/purge_mandats_dupliques.py` | 1 |
 | `src/scrutins_legislature.py` | 1 |
 | `src/textes_vises_figes.py` | 1 |
 
@@ -783,10 +783,11 @@ Le mentionnent sans le gouverner : [`absences-publiees-comme-faits-556-558-560`]
 
 ## `src/purge_mandats_dupliques.py`
 
-1 décision(s) le gouvernent ; le module en cite 0.
+2 décision(s) le gouvernent ; le module en cite 0.
 
 | Décision | Nomme |
 | --- | --- |
+| [185 doublons hérités retirés : l'outil existait, il n'avait jamais été relancé (#729) (2026-09-04)](decisions/purge-doublons-herites-729.md) | `_normalize_label` |
 | [Purge des mandats hérités dupliqués : appariement prudent (#387) (2026-08-17)](decisions/purge-mandats-dupliques-prudence.md) | `_PREFIXES_NATURE` |
 
 Le mentionnent sans le gouverner : [`categorie-source-des-mandats-718`](decisions/categorie-source-des-mandats-718.md), [`collecte-vs-publie-545`](decisions/collecte-vs-publie-545.md), [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`point-de-sauvegarde-dans-les-profils-518`](decisions/point-de-sauvegarde-dans-les-profils-518.md).
