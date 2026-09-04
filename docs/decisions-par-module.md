@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 221 décisions
+gouverne sans avoir à fouiller les 222 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -641,7 +641,7 @@ Le mentionnent sans le gouverner : [`profils-json-compact`](decisions/profils-js
 | --- | --- |
 | [Le versant AN passe en Licence Ouverte, et `meta.licence_donnees` devient un champ dérivé (#530, lot 6 de l'épic « une seule source AN ») (2026-08-27)](decisions/licence-lot-6-530.md) | `appliquer_licence_donnees` |
 
-Le mentionnent sans le gouverner : [`licences`](decisions/licences.md), [`pages-statiques-methodologie-mentions-legales`](decisions/pages-statiques-methodologie-mentions-legales.md).
+Le mentionnent sans le gouverner : [`licences`](decisions/licences.md), [`pages-statiques-methodologie-mentions-legales`](decisions/pages-statiques-methodologie-mentions-legales.md), [`regles-par-domaine-737`](decisions/regles-par-domaine-737.md).
 
 ## `src/mep_profile.py`
 
