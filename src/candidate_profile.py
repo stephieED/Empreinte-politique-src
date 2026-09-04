@@ -4202,6 +4202,11 @@ def fetch_organe(organe_ref: Optional[str]) -> Optional[dict[str, Any]]:
 # distincte pour le lecteur, pas une par typeOrgane - les variantes internes
 # sont regroupees (MISINFO/MISINFOCOM/MISINFOPRE, CNPE/CNPS, GE/GEVI,
 # DELEG/API/OFFPAR).
+#: Valeur de `mandats[].categorie_source` pour tout mandat dont la catégorie
+#: est établie par le référentiel de l'Assemblée nationale (#718). Importée du
+#: schéma pour qu'une seule fabrique porte le vocabulaire.
+CATEGORIE_SOURCE_AN = "an"
+
 _TYPE_ORGANE_TO_CATEGORIE: dict[str, str] = {
     # Commissions permanentes et assimilees.
     "COMPER": "commission",
@@ -4396,6 +4401,12 @@ def _extract_mandats_officiels(acteur_ref: str) -> list[dict[str, Any]]:
             "debut": entry.get("debut"),
             "fin": entry.get("fin"),
             "actif": entry.get("actif", False),
+            # #718 — la catégorie vient du `codeType` de l'organe, via
+            # `_TYPE_ORGANE_TO_CATEGORIE`. L'estampiller ici est ce qui permet
+            # de distinguer, dans un corpus où la fusion est additive, un mandat
+            # dont un référentiel a établi la nature d'un mandat hérité de
+            # NosDéputés que rien ne qualifie plus.
+            "categorie_source": CATEGORIE_SOURCE_AN,
         })
     return mandats
 
@@ -5610,6 +5621,7 @@ def build_profile(
             groupe_label_an = periode.get("groupe_nom") or periode.get("groupe_sigle")
             mandats_an.append({
                 "categorie": "mandat_electif",
+                "categorie_source": CATEGORIE_SOURCE_AN,  # #718
                 "type": "mandat",
                 "label": "Mandat parlementaire" + (f" ({groupe_label_an})" if groupe_label_an else ""),
                 "debut": periode.get("debut"),
@@ -5669,6 +5681,10 @@ def build_profile(
                 label = f"Groupe politique ({sigle})" if sigle else "Groupe politique"
             profile["mandats"].append({
                 "categorie": categorie,
+                # #718 — même archive que les mandats catégoriels
+                # (AN_ACTEURS_HISTORIQUE_ZIP_URL) : la catégorie est établie par
+                # la `positionPolitique` que l'Assemblée publie, pas par nous.
+                "categorie_source": CATEGORIE_SOURCE_AN,
                 "type": "membre",
                 "label": label,
                 "debut": periode.get("debut"),

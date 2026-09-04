@@ -404,6 +404,11 @@ def normalize_parltrack(mep_raw: dict[str, Any], votes: Optional[list[dict[str, 
         mandats.append({
             "label": c.get("Organization") or c.get("abbr") or "",
             "categorie": "commission",
+            # #718 — c'est le Parlement européen qui range cet organe parmi ses
+            # commissions, pas nous. Sans cette estampille, les 152 commissions
+            # du PE publiées tomberaient du dénominateur de la fiche au même
+            # titre que le résidu NosDéputés, alors qu'elles sont sourcées.
+            "categorie_source": "europarl",
             "fonction": (c.get("role") or "membre").lower(),
             "debut": c.get("start"),
             "fin": fin if fin and fin != "9999-12-31" else None,
