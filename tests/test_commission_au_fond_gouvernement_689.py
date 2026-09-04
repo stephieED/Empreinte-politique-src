@@ -54,16 +54,32 @@ def test_un_dossier_indexe_rend_sa_commission():
         "organe_ref": "PO420120",
         "sigle": "Affaires sociales",
         "nom": "Commission des affaires sociales",
+        "type": "COMPER",
     }
 
 
-def test_le_type_d_organe_n_est_pas_republie():
-    """La projection est explicite : `type` décrit le référentiel, pas le texte.
-    Recopier l'entrée telle quelle ferait entrer dans la fiche un champ dont
-    personne n'a décidé qu'il y avait sa place."""
+def test_le_type_d_organe_est_republie_verbatim():
+    """Ce test disait d'abord l'inverse, et il avait tort.
+
+    `type` n'est pas une propriété du seul référentiel : une `CNPS` est une
+    commission **spéciale créée pour ce texte-là**, une `COMPER` est permanente
+    et couvre une matière. Sans lui, séparer les matières principales de la
+    traîne n'a d'autre règle qu'un seuil — l'arbitrage éditorial déguisé en
+    mesure que §2 règle 1 refuse. Mesuré sur les 725 textes publiés :
+    COMPER 532, CNPS 19.
+    """
     commission, _ = _commission_du_texte("DLR5L17N50172", "AN", INDEX)
 
-    assert "type" not in commission
+    assert commission["type"] == "COMPER"
+
+
+def test_un_type_absent_de_l_index_est_publie_null_pas_omis():
+    """Une clé qui disparaît selon l'entrée oblige chaque lecteur à se défendre ;
+    `null` dit « l'index ne le porte pas » et se lit d'une seule façon."""
+    index = {"DLR5L17N50172": {"organe_ref": "PO1", "sigle": "S", "nom": "N"}}
+    commission, _ = _commission_du_texte("DLR5L17N50172", "AN", index)
+
+    assert commission["type"] is None
 
 
 def test_un_depot_senat_absent_de_l_index_est_une_limite_de_perimetre():

@@ -239,12 +239,25 @@ def _commission_du_texte(
         return None, {"motif": "index_indisponible"}
     commission = commissions_par_dossier.get(dossier_id) if dossier_id else None
     if isinstance(commission, dict):
-        # Projection explicite : l'index porte aussi un `type` d'organe, qui
-        # décrit le référentiel et non le texte.
+        # Projection explicite, `type` compris — et il n'est PAS une propriété du
+        # seul référentiel, contrairement à ce que ce commentaire affirmait
+        # d'abord. Une `CNPS` est une commission **spéciale, créée pour ce
+        # texte-là** ; une `COMPER` est permanente et couvre une matière. Le type
+        # est donc ce qui sépare « la commission des lois a examiné 50 textes »
+        # de « une commission a été créée pour celui-ci ».
+        #
+        # Sans lui, distinguer les matières principales de la traîne n'a d'autre
+        # règle qu'un seuil — « les 8 premières », « au moins 5 % » —, c'est-à-dire
+        # l'arbitrage éditorial déguisé en mesure que §2 règle 1 refuse. Avec lui,
+        # il n'y a aucun seuil : l'Assemblée a déjà fait le partage. Mesuré sur
+        # les 725 textes publiés : COMPER 532, CNPS 19 — et sur le gouvernement
+        # Philippe II, 8 organes permanents pour 218 textes contre 8 spéciales
+        # pour 10, à une ou deux occurrences chacune.
         return {
             "organe_ref": commission.get("organe_ref"),
             "sigle": commission.get("sigle"),
             "nom": commission.get("nom"),
+            "type": commission.get("type"),
         }, None
     motif = "depot_senat" if chambre == "Senat" else "absente_de_l_index"
     return None, {"motif": motif}
