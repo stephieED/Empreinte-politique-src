@@ -503,6 +503,24 @@ l'ordre, refuse d'avancer sur une précondition en échec, et tient un journal d
 ce qui a été fait. `--etape N` n'exécute qu'une étape, `--jusqu-a N` s'arrête
 après la N-ième.
 
+### Sortir de `commission` les mandats que l'AN type « gouvernement » (#730)
+
+```bash
+python3 src/reprise_mandats_gouvernementaux.py            # simulation
+python3 src/reprise_mandats_gouvernementaux.py --apply     # applique
+```
+
+Huit mandats ministériels étaient publiés en `commission`, sur l'organe
+`Gouvernement`. Le critère est **le typage du référentiel** — l'index d'organes
+AN type cet organe `GOUVERNEMENT`, et c'est le seul libellé dans ce cas — jamais
+une lecture du libellé. Une entrée dont la période est déjà couverte par un
+`fonction_gouvernementale` du profil est **retirée** ; sinon elle est
+**requalifiée**, parce que la retirer effacerait une période réelle.
+
+Simulation par défaut, idempotent, et sans effet si l'index d'organes manque
+(`.cache/acteurs_historique_an/index_organes_v2.json`) : un critère qui ne peut
+pas s'établir ne se devine pas.
+
 ### Les migrations ponctuelles
 
 Déjà appliquées au corpus. Elles restent relançables : **`--verifier` ne

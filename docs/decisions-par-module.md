@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 222 décisions
+gouverne sans avoir à fouiller les 223 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -263,7 +263,7 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 
 ## `src/candidate_profile.py`
 
-76 décision(s) le gouvernent ; le module en cite 12.
+77 décision(s) le gouvernent ; le module en cite 12.
 
 | Décision | Nomme |
 | --- | --- |
@@ -313,6 +313,7 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 | [`extract-senat` ne collecte plus d'interventions : la collecte n'en retenait aucune, par construction (#501) (2026-08-20)](decisions/interventions-senat-501.md) | `build_profile`, `fetch_questions_officielles` |
 | [Le libellé d'organe du chef du gouvernement s'accorde en genre, la qualité jamais (#658) (2026-08-31)](decisions/libelle-chef-du-gouvernement-au-feminin-658.md) | `_build_acteur_mandats_index` |
 | [Un profil publie tous ses mandats de député, et le compteur devient un témoin de couverture (#640) (2026-08-31)](decisions/mandats-electifs-liste-complete-640.md) | `_select_mandat_assemblee_courant`, `_select_mandat_par_type_courant` |
+| [Le référentiel type l'organe, il n'y a rien à interpréter (#730) (2026-09-04)](decisions/mandats-gouvernementaux-en-commission-730.md) | `_TYPE_ORGANE_TO_CATEGORIE` |
 | [Mandats commission/groupe_amitie/extra_parlementaire sourcés depuis l'AN, fetch_identity NosDéputés rendu conditionnel (#369, complet), watchdog générique sur tous les téléchargements zip (#370, complet) (2026-08-17)](decisions/mandats-officiels-an-369.md) | `_TYPE_ORGANE_TO_CATEGORIE`, `_build_acteur_identite_index`, `_build_acteur_mandats_index`, `_build_organe_index`, `_ensure_acteurs_historique_zip_downloaded`, `_extract_mandats_officiels`, `build_profile`, `fetch_identite_officielle_par_slug`, `fetch_organe`, `fetch_votes_officiels` |
 | [Mode d'extraction léger pour `extract-roster-groupes` (#357, sous-issue 6/6 de #351) (2026-08-16)](decisions/mode-extraction-leger-roster.md) | `build_profile`, `fetch_textes_portes_officiels` |
 | [Suppression de l'archive brute `amendements.zip` après construction de l'index (#264) (2026-08-17)](decisions/nettoyage-archive-brute-amendements.md) | `_download_amendements_zip`, `_download_and_build_amendement_index`, `_read_cached_amendements_acteur` |
@@ -525,7 +526,7 @@ Le mentionnent sans le gouverner : [`audit-599-projection-blocs-lus-628`](decisi
 
 ## `src/gouvernement_roster.py`
 
-12 décision(s) le gouvernent ; le module en cite 3.
+13 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
@@ -538,6 +539,7 @@ Le mentionnent sans le gouverner : [`audit-599-projection-blocs-lus-628`](decisi
 | [L'`id` d'un profil pivot est le slug : le préfixe de provenance était instable (#487) (2026-08-20)](decisions/id-pivot-sans-prefixe.md) | `build_gouvernement_roster` |
 | [Trois lectures du corpus passent à la projection, et chacune a son plafond dans un test (#635, 2026-08-30)](decisions/lectures-pipeline-par-projection-635.md) | `BLOCS_LUS_COMPOSITION`, `acteur_ref_depuis_profil`, `build_premier_ministre`, `load_profils_from_dir` |
 | [Le libellé d'organe du chef du gouvernement s'accorde en genre, la qualité jamais (#658) (2026-08-31)](decisions/libelle-chef-du-gouvernement-au-feminin-658.md) | `FONCTIONS_MINISTERIELLES_OBSERVEES`, `LABELS_PORTEFEUILLE_PREMIER_MINISTRE_OBSERVES`, `_normalise_fonction`, `_normalise_libelle_organe`, `_normalise_typographique`, `build_gouvernement_roster`, `build_premier_ministre` |
+| [Le référentiel type l'organe, il n'y a rien à interpréter (#730) (2026-09-04)](decisions/mandats-gouvernementaux-en-commission-730.md) | `FONCTIONS_MINISTERIELLES`, `_normalise_fonction` |
 | [Le `label` d'un mandat `MINISTERE` ne dit pas si c'est un maroquin (#474) (2026-08-20)](decisions/parlementaire-en-mission-nest-pas-ministre.md) | `FONCTIONS_MINISTERIELLES`, `FONCTIONS_MINISTERIELLES_OBSERVEES`, `_est_mandat_appartenance_gouvernement`, `_normalise_fonction`, `_portefeuilles_du_mandat`, `_qualite_portefeuille`, `build_gouvernement_roster`, `build_premier_ministre` |
 | [`check_quality_gate.py` : section gouvernements (§5), couverture ministérielle proxy par `portefeuille` (#212) (2026-08-14)](decisions/quality-gate-gouvernements.md) | `build_gouvernement_roster` |
 | [Un test d'acceptation adossé au corpus vivant rougit quand la donnée s'améliore (#457) (2026-08-20)](decisions/test-adosse-au-corpus-vivant.md) | `build_gouvernement_roster` |
