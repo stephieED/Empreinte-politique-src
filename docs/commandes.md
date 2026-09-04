@@ -147,10 +147,20 @@ python3 src/group_profile.py --groupe-id "AN:SOC" --groupe-sigle SOC \
 Tous les gouvernements déclarés dans `raw_data/gouvernements_reels.json` :
 
 ```bash
-python3 src/generate_gouvernement_profiles.py --validate
+python3 src/generate_gouvernement_profiles.py --validate \
+    --commissions-dossiers pivot_data/commissions_dossiers.json
 ```
 
-Produit : `pivot_data/gouvernements/gouvernement-<ID>.json`. Un seul :
+Produit : `pivot_data/gouvernements/gouvernement-<ID>.json`.
+
+`--commissions-dossiers` (défaut `pivot_data/commissions_dossiers.json`) donne
+l'index d'où chaque texte tire sa **commission saisie au fond** (#689) — la
+matière qu'une fiche peut afficher sans qu'on en invente une. Absent, illisible
+ou vide, chaque texte publie `commission_non_resolue.motif = index_indisponible`,
+et jamais un silence : une panne du run ne doit pas se lire « aucun texte n'a de
+commission ».
+
+Un seul gouvernement :
 
 ```bash
 python3 src/gouvernement_profile.py --gouvernement-id "gouvernement:BAYROU" \
