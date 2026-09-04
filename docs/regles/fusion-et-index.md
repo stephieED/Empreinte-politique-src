@@ -63,6 +63,18 @@ les charger, ni à les faire grossir. -->
   entry into one. Scalars take the new value only if populated, and **never regress to
   `null`**.
   → `docs/decisions/collecte-vide-necrase-jamais.md`
+- **The additive merge protects BOTH stages, and a removal must be applied to both
+  (#729, #730).** `merge_pivot_profile` is additive exactly as the raw merge is: the
+  previously published entry wins. So a correction that **adds** a field travels through a
+  named backfill at the raw stage, but a correction that **removes** an entry has to run
+  on `raw_data/profiles/` **and** `pivot_data/profiles/`, or it lands nowhere. Measured on
+  run `33872886135`: after purging 185 duplicates from the raw profiles,
+  `alexandra-martin` carried **54 mandates raw and 65 in the pivot**, and the loss check
+  blocked nothing because nothing had been lost. At the pivot stage the actor ref no
+  longer comes from the profile — it is not there — but from the slug ↔ AN actor table
+  (#525). `purge_mandats_dupliques.py` and `reprise_mandats_gouvernementaux.py` both take
+  `--profiles-dir`.
+  → `docs/decisions/purge-doublons-herites-729.md`
 - **A field added to the schema never reaches an already-collected entry on its own —
   and the fix is a named backfill, never a looser merge (#492, #639, #641, #696, #710,
   #718).** On a list, "old entry wins" and the key does not contain the new field, so the

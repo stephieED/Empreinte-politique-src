@@ -76,15 +76,23 @@ requalification** ; le bon test rend **6 et 2**.
 
 Idempotent : une seconde exécution ne trouve plus rien.
 
-## 6. Ce qu'il faut pour que ça se voie
+## 6. Ce que ce lot avait faux, et qui a été corrigé
 
-Le lot ne touche que `raw_data/profiles/` — 7 fichiers. **Rien n'a bougé dans
-`pivot_data/`** : il faut un run.
+Ce paragraphe annonçait qu'un run suffirait et qu'il bloquerait au contrôle de
+perte. **Les deux étaient faux** : `merge_pivot_profile` est additif comme la
+fusion brute, donc retirer une entrée du profil brut ne la retire pas du pivot,
+et le contrôle n'a rien eu à bloquer. Détail et règle générale dans
+[[purge-doublons-herites-729]] §5.
 
-Ce run **bloquera au contrôle de perte**, comme celui de #729 : `mandats` est une
-liste stable surveillée et 6 entrées disparaissent. Perte voulue, nommée
-d'avance, à déclarer par `allow_declared_losses` **après** avoir comparé le
-rapport de perte aux 6 — le protocole de #710.
+La reprise s'applique donc **aux deux étages**
+(`--profiles-dir pivot_data/profiles`). Au pivot, le sort des 8 entrées diffère —
+**8 retirées, 0 requalifiée** au lieu de 6 et 2 — et c'est correct : les deux
+requalifications faites au brut sont arrivées au pivot comme entrées **neuves**,
+si bien que les 8 anciennes y ont toutes leur jumeau.
+
+Vérifié entrée par entrée après application : **les 8 périodes ministérielles
+restent couvertes**, `yael-braun-pivet` et `damien-abad` compris, par une entrée
+`fonction_gouvernementale` du même profil.
 
 ## 7. Vérification
 

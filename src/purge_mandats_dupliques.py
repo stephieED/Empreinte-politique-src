@@ -48,6 +48,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from functools import lru_cache
 import sys
 import unicodedata
 from datetime import date
@@ -152,6 +153,26 @@ def _periodes_se_chevauchent(
     if db is not None and fa is not None and db > fa:
         return False
     return True
+
+
+@lru_cache(maxsize=1)
+def _table_correspondance() -> dict[str, Any]:
+    """La table slug ↔ acteur AN (#525), lue une fois. Vide si absente."""
+    try:
+        with open(Path("raw_data") / "correspondance_acteurs_an.json", encoding="utf-8") as f:
+            return (json.load(f) or {}).get("correspondances") or {}
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def _acteur_du_slug(slug: str) -> Optional[str]:
+    """`acteur_an` d'un slug, ou `None`. Jamais une devinette : un slug absent
+    de la table rend `None`, et le profil est ignoré plutôt que purgé sur une
+    référence approchante (#525 §6)."""
+    entree = _table_correspondance().get(slug)
+    if not isinstance(entree, dict):
+        return None
+    return entree.get("acteur_an") or (entree.get("identifiants") or {}).get("an")
 
 
 def purge_profil(
@@ -275,6 +296,13 @@ def main(argv: Optional[list[str]] = None) -> int:
             continue
 
         acteur_ref = _extract_acteur_ref((profil.get("identite") or {}).get("url_an_ou_senat") or "")
+        if not acteur_ref:
+            # Un profil PIVOT ne porte ni `url_an_ou_senat` ni `identifiants` :
+            # son acteur vit dans la table de correspondance, qui est
+            # l'autorité du dépôt sur « ce slug, cet acteur AN » (#525). Sans ce
+            # repli, la purge ne peut pas passer au pivot — et elle DOIT y
+            # passer, `merge_pivot_profile` étant additif comme la fusion brute.
+            acteur_ref = _acteur_du_slug(chemin.stem.removesuffix(".pivot"))
         if not acteur_ref:
             ignores_sans_acteur += 1
             continue

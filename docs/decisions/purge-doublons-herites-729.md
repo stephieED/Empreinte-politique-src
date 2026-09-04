@@ -67,13 +67,30 @@ voit, et cela n'a pas été instruit — déclaré ici plutôt que passé sous s
 `yael-braun-pivet` rendent **0** doublon, parce qu'aucun organe AMO30 nommé
 `Gouvernement` n'existe pour servir de jumeau. Ce lot-là reste à écrire.
 
-## 5. Ce qu'il faut pour que ça se voie
+## 5. Ce que ce lot avait faux, et qui a été corrigé
 
-Le lot ne touche que `raw_data/profiles/` — 13 fichiers, écrits compacts (#433),
-donc 13 lignes changées. **Rien n'a bougé dans `pivot_data/`** : il faut un run.
+Ce paragraphe disait : « le lot ne touche que `raw_data/profiles/` … il faut un
+run, qui bloquera au contrôle de perte ». **Les deux affirmations étaient
+fausses**, et le run du 04/09 (`33872886135`) l'a montré.
 
-Ce run **bloquera au contrôle de perte** : `mandats` est une liste stable
-surveillée, et 185 entrées disparaissent. C'est une perte **voulue et nommée
-d'avance** — elle se déclare par `allow_declared_losses`, jamais en retirant le
-contrôle (AGENTS.md §3c). Le rapport de perte du run bloqué doit être comparé aux
-185 avant de relancer, comme cela a été fait pour #710.
+**Retirer une entrée du profil BRUT ne la retire pas du PIVOT.**
+`merge_pivot_profile` est additif exactement comme la fusion brute : l'ancienne
+entrée publiée gagne, et la purge ne l'atteint jamais. Mesuré après ce run :
+`alexandra-martin` porte **54 mandats au brut et 65 au pivot**.
+
+Et le contrôle de perte n'a donc **rien bloqué** : il n'y avait rien à perdre.
+C'est la même mécanique qui avait rendu « aucune perte bloquante » à #710 le
+02/09, pour la même raison, et je ne l'ai pas reconnue dans l'autre sens.
+
+**La règle qui manquait, et qu'il faut lire à côté de §3a** : la fusion additive
+protège les deux étages. Une correction qui **ajoute** un champ passe par un
+report nommé au brut ; une correction qui **retire** une entrée doit être
+appliquée **aux deux corpus**, sinon elle n'est nulle part.
+
+`purge_mandats_dupliques.py` et `reprise_mandats_gouvernementaux.py` acceptent
+donc `--profiles-dir pivot_data/profiles`. Au pivot, l'`acteurRef` ne vient plus
+du profil — il n'y figure pas — mais de la **table de correspondance** (#525),
+qui est l'autorité du dépôt sur « ce slug, cet acteur AN ».
+
+Appliqué : **193 entrées retirées sur 19 profils pivot** — 185 doublons de ce lot
+et 8 mandats ministériels de #730. Le prochain run, lui, bloquera pour de bon.

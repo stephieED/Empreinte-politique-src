@@ -223,7 +223,10 @@ def main(argv: Optional[list[str]] = None) -> int:
                 profil = json.load(f)
         except (OSError, json.JSONDecodeError):
             continue
-        slug = chemin.stem
+        # `<slug>.pivot.json` au pivot, `<slug>.json` au brut : la reprise doit
+        # passer aux DEUX étages, parce que `merge_pivot_profile` est additif lui
+        # aussi — retirer une entrée du brut ne la retire pas du publié (#729).
+        slug = chemin.stem.removesuffix(".pivot")
         if slug not in periodes:
             n_ignores += 1
             continue
