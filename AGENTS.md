@@ -944,10 +944,14 @@ When something does need deciding, five parts, in this order:
   the file says so. Locked by `tests/test_commandes_documentees.py`.
 - `docs/data-architecture.md`: what the data becomes — the seven outputs of
   `pivot_data/` (profiles, groupes, gouvernements, partis, scrutins, amendements,
-  commissions_dossiers). **`commissions_dossiers.json` n'a jamais été produit** :
-  son constructeur existe (`src/build_commissions_dossiers.py`), sa sortie n'est ni
-  versionnée ni générée par un run, et l'empreinte thématique de la fiche candidat
-  qui en dépend est donc inerte (#328). Six outputs sur disque, sept nommés.
+  commissions_dossiers). **`commissions_dossiers.json` est produit et versionné depuis le commit de
+  données `5de11422`** (02/09/2026) — 6 024 dossiers, 1,2 Mo : la ligne qui disait ici qu'il
+  « n'a jamais été produit » et que l'empreinte thématique de la fiche candidat
+  « est donc inerte » (#328) est périmée. Les **sept** outputs sont sur disque.
+  Sa jointure `dossier_id` → commission saisie au fond résout **381/381** des
+  dossiers déposés à l'AN et **0** des 174 déposés au Sénat : le référentiel est
+  celui de l'AN, et le Sénat est hors périmètre (#528) — une absence de cause
+  connue, à déclarer et non à combler.
 - `docs/workflow-generate-data.md`: what a run does — the eight jobs one by one, the
   form, caches, artifacts, budgets, push, automatic retry. **Start here for "what was
   that job again, and why like that".**

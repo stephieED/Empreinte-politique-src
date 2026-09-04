@@ -405,7 +405,7 @@ fusion indexées par `docs/technical_decisions.md`.
 | `pivot_data/gouvernements/` | `gouvernement_roster.py` + `gouvernement_textes.py` → `gouvernement_profile.py` | `src/schema_gouvernement.py` | **10** fiches, < 1 Mo |
 | `pivot_data/scrutins.json` | index partagé, ci-dessus | `scrutins-v1` | **17 748** scrutins, 9 Mo (~10,2 Mo une fois la qualification de #639 régénérée) |
 | `pivot_data/amendements/` | index partagé, ci-dessus | `amendements-v1` + `amendements-cosignatures-v1` | **484 132** amendements distincts, 259 Mo (index + compagnons) |
-| `pivot_data/commissions_dossiers.json` | `build_commissions_dossiers.py` (#328) | `commissions-dossiers-v1` | **6 024** dossiers renvoyés en commission au fond (mesuré 01/09/2026 sur les archives XV/XVI/XVII), ~0,8 Mo — **absent tant qu'aucun run ne l'a construit** |
+| `pivot_data/commissions_dossiers.json` | `build_commissions_dossiers.py` (#328) | `commissions-dossiers-v1` | **6 024** dossiers renvoyés en commission au fond (mesuré 01/09/2026 sur les archives XV/XVI/XVII), 1,2 Mo — **produit et versionné depuis le commit de données `5de11422`** (02/09/2026). Consommé par `generate_gouvernement_profiles.py` (`--commissions-dossiers`), qui en tire `textes[].commission_saisie_au_fond` (#689) |
 
 Populations, pour qu'aucun de ces chiffres ne se lise de travers : les 481
 profils sont les **fiches committées**, pas les candidats déclarés (13) ni les
@@ -711,6 +711,17 @@ date de conclusion, un texte déposé sous A puis conclu sous B restant crédit�
 Il résout aussi `textes[].initiateurs` vers un `membre_id` quand l'`acteurRef`
 correspond à un membre retenu ; sinon l'`acteurRef` brut est conservé avec
 `membre_id = null`, jamais rattaché à un profil approchant (#435).
+
+Depuis #689, il joint chaque texte à `pivot_data/commissions_dossiers.json` **par
+`dossier_id`** — jamais par le titre — et publie `textes[].commission_saisie_au_fond`
+(`{organe_ref, sigle, nom}`), la matière que l'Assemblée assigne elle-même au
+dossier. Quand elle manque, `commission_non_resolue.motif` dit **laquelle** des
+trois causes, qui ne se réparent pas au même endroit : `depot_senat` (l'index est
+celui de l'AN, le Sénat est hors périmètre #528 — **174 textes, et jamais
+réparable**), `absente_de_l_index` (un trou de l'index AN, **0** aujourd'hui,
+compteur-témoin), `index_indisponible` (une panne du run). Mesuré sur les 725
+textes : **381/381 des dépôts AN résolvent**, 170/344 des dépôts Sénat, **551 au
+total (76,0 %)**.
 `comptages.par_statut` est un **dénombrement**, aucun taux ni pourcentage nulle
 part (AGENTS.md §2.1). Le 49.3 est un booléen `sort_49_3` porté par le texte,
 jamais fusionné avec une position de vote (AGENTS.md §2.4).

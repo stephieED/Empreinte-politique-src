@@ -77,6 +77,22 @@ Format d'un profil de gouvernement v1 :
                 },                             # pas dans membres[] (couverture partielle)
             ],                               # null (jamais []) si la source n'en déclare aucun
             "source_url": None,
+            # #689 — la commission saisie AU FOND du dossier, lue dans
+            # `pivot_data/commissions_dossiers.json` par `dossier_id`. C'est ce
+            # qui permet de lire les lois d'un gouvernement par matière sans
+            # inventer de taxonomie : l'Assemblée renvoie elle-même chaque
+            # dossier à une commission.
+            "commission_saisie_au_fond": {
+                "organe_ref": "PO420120",
+                "sigle": "Affaires sociales",
+                "nom": "Commission des affaires sociales",
+            },
+            # Présent SEULEMENT quand la précédente est `null`, et il l'explique.
+            # Une absence de cause connue se déclare, elle ne se comble pas
+            # (AGENTS.md §2 règle 5) : les 174 textes déposés au Sénat n'ont pas
+            # de commission au fond dans un référentiel qui est celui de l'AN,
+            # et le Sénat est hors périmètre (#528).
+            "commission_non_resolue": {"motif": "depot_senat"},
         }
     ],
 
@@ -169,6 +185,17 @@ from typing import Any
 # Version du schéma de gouvernement ; indépendante de SCHEMA_VERSION du pivot
 # individuel et de SCHEMA_GROUPE_VERSION du profil de groupe parlementaire.
 SCHEMA_GOUVERNEMENT_VERSION = "1"
+
+#: Pourquoi un texte ne porte pas sa commission saisie au fond (#689). Fermé, et
+#: chaque motif se répare ailleurs : `depot_senat` est une limite de PÉRIMÈTRE
+#: (#528) et ne se réparera pas, `absente_de_l_index` est un trou de l'index AN,
+#: `index_indisponible` est une panne du run. Les confondre ferait passer une
+#: décision éditoriale pour une panne.
+KNOWN_MOTIFS_COMMISSION_NON_RESOLUE: frozenset[str] = frozenset({
+    "depot_senat",
+    "absente_de_l_index",
+    "index_indisponible",
+})
 
 # Nomenclature fermée de l'issue d'un texte porté par le gouvernement.
 # Distincte de KNOWN_STADES_PROCEDURAUX (schema_pivot.py) qui encode une
@@ -504,6 +531,36 @@ def validate_profil_gouvernement(profil: dict[str, Any]) -> list[str]:
                     f"textes[{i}] : sort_49_3 = True mais statut = {statut!r} — "
                     f"le 49.3 ne doit jamais être collapsé vers 'adopte'/'rejete' ou tout autre statut."
                 )
+
+            # #689 — la commission au fond et son motif d'absence sont deux
+            # faces d'une seule information, et la contradiction est l'erreur
+            # qui compte : un texte qui porte les deux dirait à la fois « voici
+            # sa commission » et « voici pourquoi elle manque ».
+            commission = texte.get("commission_saisie_au_fond")
+            non_resolue = texte.get("commission_non_resolue")
+            if commission is not None and not isinstance(commission, dict):
+                errors.append(
+                    f"textes[{i}].commission_saisie_au_fond doit être un dict ou null."
+                )
+            if commission is not None and non_resolue is not None:
+                errors.append(
+                    f"textes[{i}] porte à la fois commission_saisie_au_fond et "
+                    "commission_non_resolue — une commission résolue n'a pas de motif "
+                    "d'absence."
+                )
+            if non_resolue is not None:
+                if not isinstance(non_resolue, dict):
+                    errors.append(
+                        f"textes[{i}].commission_non_resolue doit être un dict."
+                    )
+                else:
+                    motif = non_resolue.get("motif")
+                    if motif not in KNOWN_MOTIFS_COMMISSION_NON_RESOLUE:
+                        errors.append(
+                            f"textes[{i}].commission_non_resolue.motif inconnu : "
+                            f"{motif!r}. Valeurs connues : "
+                            f"{sorted(KNOWN_MOTIFS_COMMISSION_NON_RESOLUE)}."
+                        )
 
             errors.extend(_erreurs_initiateurs(i, texte["initiateurs"], membres_connus))
 

@@ -209,11 +209,53 @@ def _initiateurs_texte(
 # Sélection et normalisation des textes du gouvernement
 # ---------------------------------------------------------------------------
 
+def _commission_du_texte(
+    dossier_id: Optional[str],
+    chambre: Optional[str],
+    commissions_par_dossier: Optional[dict[str, Any]],
+) -> tuple[Optional[dict[str, Any]], Optional[dict[str, str]]]:
+    """La commission saisie au fond d'un texte, ou le motif de son absence (#689).
+
+    Rend `(commission, non_resolue)` dont **exactement un** membre est non nul.
+    Lire les lois d'un gouvernement par matière suppose une matière ; l'Assemblée
+    en fournit une sans que nous ayons à en inventer — elle renvoie chaque
+    dossier à une commission. La jointure se fait sur `dossier_id`, jamais sur le
+    titre : c'est la règle de `regrouper-nest-pas-joindre-639`.
+
+    **Les trois motifs d'absence ne se confondent pas**, et c'est tout l'objet du
+    vocabulaire fermé :
+
+    - `depot_senat` — le texte est déposé au Sénat, et l'index est celui de
+      l'**AN**. Mesuré le 04/09/2026 sur les 725 textes publiés : **381 des 381**
+      dossiers déposés à l'AN résolvent, **0 des 174** non résolus n'est un dépôt
+      AN. Ce n'est pas un trou de collecte, c'est le périmètre (#528), et il ne
+      se comblera pas ;
+    - `absente_de_l_index` — dépôt AN, dossier absent de l'index : là, c'est un
+      vrai trou. Il vaut **0** aujourd'hui, ce qui en fait un compteur-témoin ;
+    - `index_indisponible` — l'index n'a pas été fourni au run. Le distinguer
+      évite de lire une panne comme une décision, la leçon de #726.
+    """
+    if commissions_par_dossier is None:
+        return None, {"motif": "index_indisponible"}
+    commission = commissions_par_dossier.get(dossier_id) if dossier_id else None
+    if isinstance(commission, dict):
+        # Projection explicite : l'index porte aussi un `type` d'organe, qui
+        # décrit le référentiel et non le texte.
+        return {
+            "organe_ref": commission.get("organe_ref"),
+            "sigle": commission.get("sigle"),
+            "nom": commission.get("nom"),
+        }, None
+    motif = "depot_senat" if chambre == "Senat" else "absente_de_l_index"
+    return None, {"motif": motif}
+
+
 def _select_textes_gouvernement(
     dossiers_gouvernementaux: list[dict[str, Any]],
     g_debut: Optional[date],
     g_fin: Optional[date],
     acteur_ref_vers_membre: Optional[dict[str, str]] = None,
+    commissions_par_dossier: Optional[dict[str, Any]] = None,
 ) -> tuple[list[dict[str, Any]], dict[str, int], list[str]]:
     """Filtre `dossiers_gouvernementaux` (sortie non filtrée de
     `gouvernement_textes`) sur la période du gouvernement, normalise chaque
@@ -278,6 +320,12 @@ def _select_textes_gouvernement(
             ),
             "source_url": dossier.get("source_url"),
         })
+        commission, non_resolue = _commission_du_texte(
+            dossier_id, chambre, commissions_par_dossier
+        )
+        textes[-1]["commission_saisie_au_fond"] = commission
+        if non_resolue is not None:
+            textes[-1]["commission_non_resolue"] = non_resolue
         par_statut[statut] += 1
 
     return textes, par_statut, warnings
@@ -296,6 +344,7 @@ def build_gouvernement_profile(
     profils: list[dict[str, Any]],
     dossiers_gouvernementaux: list[dict[str, Any]],
     licence_donnees: str = "",
+    commissions_par_dossier: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     """Construit un profil de gouvernement à partir des profils pivot
     individuels déjà collectés et des dossiers législatifs d'origine
@@ -342,7 +391,8 @@ def build_gouvernement_profile(
     g_fin = _parse_date(periode_fin)
     acteur_ref_vers_membre = _index_acteur_ref_vers_membre(profils, membre_ids, warnings)
     textes, par_statut, textes_warnings = _select_textes_gouvernement(
-        dossiers_gouvernementaux, g_debut, g_fin, acteur_ref_vers_membre
+        dossiers_gouvernementaux, g_debut, g_fin, acteur_ref_vers_membre,
+        commissions_par_dossier=commissions_par_dossier,
     )
     warnings.extend(textes_warnings)
 

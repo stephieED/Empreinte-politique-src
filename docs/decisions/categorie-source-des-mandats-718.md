@@ -86,9 +86,17 @@ ont une correspondance relue *et* des mandats AMO30 :
 | Mandats catégoriels | 38 809 | **640** (1,6 %) |
 | dont `categorie: "commission"` | 11 308 | **467** (4,0 %) |
 
-**33 profils** verraient leur dénominateur `commission` baisser, et la baisse est
-concentrée : `eric-poulliat` 65 → 27, `emilie-chandler` 61 → 24,
-`sabrina-agresti-roubache` 38 → 4. Vérifié sur `eric-poulliat` : ses 38 entrées
+**33 profils** verraient leur nombre d'**entrées** `commission` baisser, et la
+baisse est concentrée : `eric-poulliat` 65 → 27, `emilie-chandler` 61 → 24,
+`sabrina-agresti-roubache` 38 → 4.
+
+**Ce sont des entrées, pas ce que le lecteur voit.** Depuis #731 le bloc affiche
+un nombre d'**intitulés distincts** et mesure une **durée**, pas un compte
+d'entrées : retirer l'entrée `Gouvernement` de `gabriel-attal` fait passer son
+bloc de 14 à 13 intitulés, pas de 67 à 66. Un résidu ne change donc l'écran que
+s'il introduit un intitulé que rien d'autre ne porte, ou s'il ouvre un intervalle
+hors des autres. L'ampleur à l'écran reste **à mesurer sur les intitulés**, et
+elle revient à qui tient la vue. Vérifié sur `eric-poulliat` : ses 38 entrées
 non estampillées portent toutes la signature NosDéputés (`type` en minuscules,
 libellés d'organe que l'AN nomme autrement) et sont, pour l'essentiel, des
 **groupes d'études** rangés sous `commission`.
@@ -99,10 +107,13 @@ rend.
 
 ## 6. Ce que le lot ne fait pas
 
-- **Il ne touche pas la vue.** L'étape « le dénominateur de la fiche ne compte
-  que les entrées établies » vit dans `web/UI_finale/src/utils/profilCandidat.js`,
-  qu'une autre session tient. Tant qu'elle n'est pas faite, le champ est publié
-  et personne ne le lit : **le dénominateur reste faux à l'écran.**
+- **Il ne touche pas la vue.** L'étape « le bloc ne compte que les entrées
+  établies » vit dans `web/UI_finale/src/utils/profilCandidat.js`, qu'une autre
+  session tient. Tant qu'elle n'est pas faite, le champ est publié et personne ne
+  le lit. **Et l'estampille n'existera dans le corpus qu'après un run qui
+  recollecte** : aujourd'hui aucun profil publié ne la porte, donc un filtre sur
+  `categorie_source === "an"` viderait les blocs. Le filtre devra se comporter
+  comme aujourd'hui sur un corpus sans estampille, et le déclarer.
 - **Il ne corrige aucune catégorie fausse.** Une entrée sans estampille reste
   mal catégorisée ; elle est seulement reconnaissable. Ce qui la corrigerait
   serait un appariement AN ↔ NosDéputés par organe, que #387 a instruit et
