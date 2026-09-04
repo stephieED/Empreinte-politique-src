@@ -439,7 +439,32 @@ def test_la_couleur_dit_le_banc_et_non_la_categorie(regles, composant, feuille):
 def test_la_teinte_du_banc_double_l_intitule_sans_le_remplacer(feuille):
     """La section doit se lire en niveaux de gris et sous daltonisme : le titre
     du bloc nomme la catégorie, la couleur ne fait que la doubler."""
-    mission = _corps(feuille, ".cp-fonctions-bloc--mission {\n  --teinte-banc", "\n}")
-    assert "dashed" in mission, (
-        "la mission se distingue aussi par la forme du filet, pas par la seule teinte"
+    pastille = _corps(feuille, ".cp-fonctions-bloc--mission .cp-fonctions-titre::before", "\n}")
+    assert "dashed" in pastille, (
+        "la mission se distingue aussi par la FORME de sa pastille, pas par la seule teinte"
     )
+
+
+def test_le_banc_ne_prend_pas_le_bord_gauche_du_bloc(feuille):
+    """Le bord gauche appartient à la MARQUE, qui déborde jusqu'au bord de la
+    carte pour signaler la fonction dépassant la moitié du temps de mandat. Un
+    filet de banc au même endroit donnait deux traits verticaux à trois pixels
+    l'un de l'autre, que la ligne marquée recouvrait. Deux faits de nature
+    différente ne partagent pas un bord : celui-ci revient au seul des deux qui
+    qualifie UNE ligne."""
+    for banc in ["parlement", "gouvernement", "mission"]:
+        regle = _corps(feuille, f".cp-fonctions-bloc--{banc} {{", "\n}")
+        assert "border-left" not in regle, f"{banc} ne pose pas de filet à gauche"
+        assert "padding-left" not in regle
+    marque = _corps(feuille, ".cp-fonctions-item--marquee {", "\n}")
+    assert "border-left: 3px solid var(--ink)" in marque, "la marque garde son filet"
+
+
+def test_le_banc_se_dit_par_la_pastille_et_par_le_titre(feuille):
+    """Deux porteurs, pas un : la pastille et la couleur du titre. Et le titre y
+    gagne en lisibilité — `--muted` vaut 3,51:1 sur blanc, sous le seuil AA,
+    quand le bleu vaut 8,14:1 et le bronze 4,90:1."""
+    titres = _corps(feuille, ".cp-fonctions-bloc--parlement .cp-fonctions-titre,", "\n}")
+    assert "color: var(--teinte-banc)" in titres
+    pastille = _corps(feuille, ".cp-fonctions-titre::before {", "\n}")
+    assert "background: var(--teinte-banc)" in pastille
