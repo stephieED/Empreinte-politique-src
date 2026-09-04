@@ -12,7 +12,29 @@
  * maquette, qui vivait dans un lecteur d'artifact bi-thème.
  */
 
+/*
+ * LES TROIS BANCS ONT UNE TEINTE, ET ELLE EST DÉCLARÉE ICI, UNE FOIS (#328).
+ *
+ * Elle était écrite en littéral à trois endroits — la frise, les colonnes
+ * d'« En bref », le fond de piste — au point qu'un test existait pour vérifier
+ * qu'elles n'avaient pas divergé. Une valeur qu'un test doit surveiller pour
+ * rester unique est une valeur qui n'aurait pas dû être copiée : même leçon
+ * que les teintes de stades de `teintes-des-stades-en-bref-328`.
+ *
+ * Le bleu et le bronze ne décorent pas : ils disent DE QUEL BANC relève ce
+ * qu'on lit, et ils sont désormais lus par la frise, par les colonnes
+ * appariées et par les blocs de « Les fonctions exercées ».
+ */
 .cp-main {
+  --parl: #3f5166;
+  --parl-wash: #e9eef6;
+  --parl-line: #c6d4e8;
+  --parl-pale: #dce5f2;
+  --gouv: #8a6b4c;
+  --gouv-wash: #f6f0e4;
+  --gouv-line: #e3d2ab;
+  --gouv-pale: #efe4cc;
+
   flex: 1;
   min-width: 0;
   width: 100%;
@@ -80,14 +102,6 @@
  * part ici, ni filet ni décor.
  */
 .cp-gc {
-  --parl: #3f5166;
-  --parl-wash: #e9eef6;
-  --parl-line: #c6d4e8;
-  --parl-pale: #dce5f2;
-  --gouv: #8a6b4c;
-  --gouv-wash: #f6f0e4;
-  --gouv-line: #e3d2ab;
-  --gouv-pale: #efe4cc;
   --neutre: #9a958d;
   --neutre-wash: #edebe7;
   --rail: #efede9;
@@ -621,11 +635,11 @@
 }
 
 .cp-fs--parlement {
-  background: #3f5166;
+  background: var(--parl);
 }
 
 .cp-fs--gouvernement {
-  background: #8a6b4c;
+  background: var(--gouv);
 }
 
 .cp-fs--chef {
@@ -634,7 +648,7 @@
 
 .cp-fs--mission {
   background: var(--card);
-  border: 1.5px dashed #8a6b4c;
+  border: 1.5px dashed var(--gouv);
 }
 
 .cp-fs--motif-diagonales::after {
@@ -811,8 +825,8 @@
 }
 
 .cp-position--rayures {
-  border-color: #8a6b4c;
-  color: #8a6b4c;
+  border-color: var(--gouv);
+  color: var(--gouv);
 }
 
 .cp-position--fines-rayures {
@@ -1081,7 +1095,7 @@
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #8a6b4c;
+  color: var(--gouv);
 }
 
 .cp-textes {
@@ -1498,4 +1512,49 @@
     grid-template-columns: 1fr;
     gap: 2px;
   }
+}
+
+/* ── § 1 — le banc de chaque catégorie de fonction (#328) ────────────────── */
+/* Une seule grammaire de couleurs sur toute la fiche : le bleu de l'Assemblée,
+   le bronze du gouvernement, le contour tireté de la mission — exactement les
+   trois pistes de la frise. La couleur DOUBLE l'intitulé du bloc, elle ne le
+   remplace pas : la section se lit en niveaux de gris comme sous daltonisme. */
+.cp-fonctions-bloc--parlement,
+.cp-fonctions-bloc--gouvernement,
+.cp-fonctions-bloc--mission {
+  padding-left: 14px;
+  border-left: 3px solid var(--teinte-banc);
+}
+
+.cp-fonctions-bloc--parlement {
+  --teinte-banc: var(--parl);
+}
+
+.cp-fonctions-bloc--gouvernement {
+  --teinte-banc: var(--gouv);
+}
+
+/* La mission n'est ni l'un ni l'autre : un⋅e parlementaire en mission auprès
+   d'un ministère reste parlementaire. La frise la rend en contour tireté ; le
+   filet la reprend en tireté plutôt qu'en pleine teinte. */
+.cp-fonctions-bloc--mission {
+  --teinte-banc: var(--gouv);
+
+  border-left-style: dashed;
+}
+
+.cp-fonctions-titre::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 7px;
+  border-radius: 2px;
+  background: var(--teinte-banc);
+  vertical-align: 1px;
+}
+
+.cp-fonctions-bloc--mission .cp-fonctions-titre::before {
+  background: var(--card);
+  border: 1.5px dashed var(--gouv);
 }
