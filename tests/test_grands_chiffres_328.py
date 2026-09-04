@@ -437,3 +437,76 @@ def test_la_note_de_legende_ne_garde_que_sa_phrase_de_source(composant):
     assert "publie elle-même" in bloc, "la phrase de source survit"
     for parti in ("désaturées", "niveaux de gris", "aucune progression", "rangement"):
         assert parti not in bloc, f"« {parti} » expliquait comment lire, pas d'où ça vient"
+
+
+# ── Les teintes des stades : une déclaration, deux lectures ──────────────────
+#
+# Trois défauts de couleur ont vécu en production dans ce bloc, et aucun test ne
+# les voyait — la suite était verte à 3 720 le jour où ils ont été trouvés à
+# l'écran. Tous les trois viennent du même geste : une classe qui décide d'un
+# FOND et qu'on pose sur autre chose qu'un fond.
+
+
+def test_la_legende_ne_porte_pas_la_classe_du_segment(composant):
+    """Les `<em>` de la légende portaient `cp-gc-part--<stade>`, la classe du
+    segment de barre, qui pose un fond. Résultat : `var(--parl)` (#3f5166)
+    derrière un texte `var(--muted)` (#8b8794), soit 1,9:1. « 15 promulgué »
+    était illisible."""
+    bloc = _corps(composant, 'className="cp-gc-barre-leg"', "</span>")
+    assert "cp-gc-part--" not in bloc, "la légende ne réutilise pas la classe du segment"
+    assert "cp-gc-cle-stade" in bloc
+
+
+def test_la_pastille_porte_la_teinte_et_le_libelle_reste_neutre(feuille):
+    """`background: currentColor` rendait les cinq pastilles grises, donc
+    identiques : la légende n'identifiait plus rien. La pastille prend la teinte,
+    le libellé garde `--muted` — c'est la pastille qui identifie."""
+    pastille = _corps(feuille, ".cp-gc-barre-leg em::before {", "\n}")
+    assert "var(--teinte" in pastille
+    legende = _corps(feuille, ".cp-gc-barre-leg {", "\n}")
+    assert "color: var(--muted)" in legende
+
+
+def test_la_famille_de_teintes_vient_de_la_cellule_pas_de_ses_freres(composant, feuille):
+    """`.cp-gc-tete-col--gouvernement ~ * .cp-gc-part--promulgue` partait de
+    l'en-tête « gouvernement » et descendait sur TOUS ses frères. Dans la
+    grille, les cellules de la colonne parlementaire viennent après cet
+    en-tête : la barre « 2 promulgué » de l'Assemblée était brune."""
+    assert "cp-gc-tete-col--gouvernement ~" not in feuille, (
+        "aucune couleur ne se décide par voisinage dans la grille"
+    )
+    assert "cp-gc-cell--${piste}" in composant, "la cellule porte sa colonne"
+    assert "piste={c}" in composant, "et la colonne lui est passée"
+    assert ".cp-gc-cell--gouvernement {" in feuille
+
+
+def test_les_deux_colonnes_ont_chacune_leur_famille_entiere(feuille):
+    """Seul `promulgue` basculait au brun : les quatre autres stades restaient
+    bleus dans la colonne du gouvernement, qui affichait donc une barre à deux
+    familles. La famille bascule en entier, ou elle ne veut rien dire."""
+    parlement = _corps(feuille, ".cp-gc-cell {", "\n}")
+    gouvernement = _corps(feuille, ".cp-gc-cell--gouvernement {", "\n}")
+    for i in range(1, 6):
+        assert f"--t{i}:" in parlement, f"la famille parlementaire déclare --t{i}"
+        assert f"--t{i}:" in gouvernement, f"la famille gouvernementale déclare --t{i}"
+    assert "--gouv" in gouvernement and "--parl" not in gouvernement
+
+
+def test_la_rampe_des_cinq_stades_monte(feuille, regles):
+    """`examine_commission` valait `--parl-line` et `inscrit_ordre_jour`
+    `--parl-pale`, plus CLAIR : la rampe descendait puis remontait. Et
+    `discute_seance` reprenait `--parl-line`, identique à
+    `examine_commission` — deux segments voisins de la même couleur ne se
+    distinguent pas. Un stade plus avancé n'est pas « mieux » (§2 règle 1) :
+    c'est un ordre publié par la source, et la rampe le suit."""
+    stades = re.search(r"STADES_PUBLIES = \[(.*?)\]", regles, re.DOTALL).group(1)
+    ordre = re.findall(r"'([a-z_]+)'", stades)
+    assert len(ordre) == 5
+    degres = [
+        re.search(rf"\.cp-gc-stade--{stade} \{{ --teinte: var\(--t(\d)\)", feuille)
+        for stade in ordre
+    ]
+    assert all(degres), "chaque stade publié porte un degré de la rampe"
+    assert [int(m.group(1)) for m in degres] == [1, 2, 3, 4, 5], (
+        "la rampe suit l'ordre des stades, sans palier ni retour en arrière"
+    )

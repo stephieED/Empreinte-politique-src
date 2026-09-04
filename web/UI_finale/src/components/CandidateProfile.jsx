@@ -986,11 +986,16 @@ function Couverture({ couverture, limites }) {
 /* Une cellule. **Seuls les nombres sont en gros** : mettre l'objet à la même
  * échelle que le chiffre faisait lire « Orientation et réussite des étudiants »
  * comme la mesure, alors que la mesure est 211. */
-function CelluleChiffre({ cellule: c }) {
-  if (!c) return <div className="cp-gc-cell cp-gc-cell--vide" />;
+function CelluleChiffre({ cellule: c, piste }) {
+  // La PISTE est portée par la cellule, pas déduite de sa position (#328). La
+  // règle d'avant partait de l'en-tête « gouvernement » et descendait sur tous
+  // ses frères : dans une grille, les cellules de la colonne PARLEMENT viennent
+  // après cet en-tête, et prenaient donc la teinte du gouvernement.
+  const classe = `cp-gc-cell cp-gc-cell--${piste}`;
+  if (!c) return <div className={`${classe} cp-gc-cell--vide`} />;
   if (c.absent) {
     return (
-      <div className="cp-gc-cell">
+      <div className={classe}>
         <p className="cp-gc-absent">
           <span aria-hidden="true">—</span> {c.absent}
         </p>
@@ -998,7 +1003,7 @@ function CelluleChiffre({ cellule: c }) {
     );
   }
   return (
-    <div className="cp-gc-cell">
+    <div className={classe}>
       <p className="cp-gc-n">
         <b className="cp-num">{formatNumber(c.nombre)}</b> <small>{c.objet}</small>
         {c.sur != null && (
@@ -1018,12 +1023,16 @@ function CelluleChiffre({ cellule: c }) {
         <>
           <span className="cp-gc-barre">
             {c.barre.segments.map((s) => (
-              <span key={s.cle} className={`cp-gc-part cp-gc-part--${s.cle}`} style={{ width: `${s.part.toFixed(2)}%` }} />
+              <span
+                key={s.cle}
+                className={`cp-gc-part cp-gc-stade--${s.cle}`}
+                style={{ width: `${s.part.toFixed(2)}%` }}
+              />
             ))}
           </span>
           <span className="cp-gc-barre-leg">
             {c.barre.segments.map((s) => (
-              <em key={s.cle} className={`cp-gc-part--${s.cle}`}>
+              <em key={s.cle} className={`cp-gc-cle-stade cp-gc-stade--${s.cle}`}>
                 <b>{formatNumber(s.nombre)}</b>&nbsp;{s.libelle}
               </em>
             ))}
@@ -1096,7 +1105,7 @@ function GrandsChiffres({ chiffres, parcours }) {
                   </p>
                 ))}
                 {colonnes.map((c) => (
-                  <CelluleChiffre cellule={l.cellules[c]} key={`c-${l.cle}-${c}`} />
+                  <CelluleChiffre cellule={l.cellules[c]} key={`c-${l.cle}-${c}`} piste={c} />
                 ))}
               </Fragment>
             ))}

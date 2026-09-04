@@ -297,6 +297,22 @@
 
 .cp-gc-cell {
   padding: 10px 0 18px;
+
+  /* La famille de teintes de la colonne. Déclarée ICI, sur la cellule, et non
+     déduite du voisinage dans la grille — voir le bloc des stades plus bas. */
+  --t1: var(--parl-wash);
+  --t2: var(--parl-pale);
+  --t3: var(--parl-line);
+  --t4: var(--parl);
+  --t5: var(--parl);
+}
+
+.cp-gc-cell--gouvernement {
+  --t1: var(--gouv-wash);
+  --t2: var(--gouv-pale);
+  --t3: var(--gouv-line);
+  --t4: var(--gouv);
+  --t5: var(--gouv);
 }
 
 /* **Seuls les nombres sont en gros.** Mettre l'objet à la même échelle que le
@@ -351,15 +367,37 @@
   max-width: 560px;
 }
 
-.cp-gc-part { display: block; height: 8px; }
+/*
+ * La teinte d'un stade est déclarée UNE fois, sur la classe du stade, et lue
+ * deux fois : par le segment de barre, qui la prend en FOND, et par la pastille
+ * de la légende, qui la prend en PASTILLE. La légende ne la prend jamais en
+ * fond — c'était le défaut : les `<em>` de légende portaient la classe du
+ * segment, donc `background: var(--parl)` (#3f5166) passait derrière un texte
+ * `var(--muted)` (#8b8794), soit 1,9:1. « 15 promulgué » était illisible.
+ *
+ * La FAMILLE de teintes vient de la colonne, pas du stade : à l'Assemblée le
+ * bleu, au gouvernement le brun. Seul `promulgue` basculait, et par un
+ * sélecteur de frères qui débordait — d'où une barre brune dans la colonne de
+ * l'Assemblée, et une barre à deux familles dans celle du gouvernement.
+ *
+ * Cinq stades, cinq degrés, et la rampe MONTE : `examine_commission` était plus
+ * foncé qu'`inscrit_ordre_jour`, et identique à `discute_seance` — deux
+ * segments voisins de la même couleur ne se distinguent pas. Un stade plus
+ * avancé n'est pas « mieux » (§2 règle 1) : c'est l'ordre que la source publie,
+ * et la rampe le suit.
+ */
+.cp-gc-stade--examine_commission { --teinte: var(--t1); }
+.cp-gc-stade--inscrit_ordre_jour { --teinte: var(--t2); }
+.cp-gc-stade--discute_seance { --teinte: var(--t3); }
+.cp-gc-stade--adopte { --teinte: var(--t4); --voile: 0.65; }
+.cp-gc-stade--promulgue { --teinte: var(--t5); }
 
-.cp-gc-part--examine_commission { background: var(--parl-line); }
-.cp-gc-part--inscrit_ordre_jour { background: var(--parl-pale); }
-.cp-gc-part--discute_seance { background: var(--parl-line); }
-.cp-gc-part--adopte { background: var(--parl); opacity: 0.65; }
-.cp-gc-part--promulgue { background: var(--parl); }
-
-.cp-gc-tete-col--gouvernement ~ * .cp-gc-part--promulgue { background: var(--gouv); }
+.cp-gc-part {
+  display: block;
+  height: 8px;
+  background: var(--teinte, var(--neutre));
+  opacity: var(--voile, 1);
+}
 
 .cp-gc-barre-leg {
   font-size: 12px;
@@ -378,13 +416,17 @@
   gap: 6px;
 }
 
+/* La pastille porte la teinte, le libellé garde `--muted` : c'est la pastille
+   qui identifie le segment, pas la couleur du texte. `currentColor` les rendait
+   toutes grises, donc identiques — la légende n'identifiait rien. */
 .cp-gc-barre-leg em::before {
   content: '';
+  flex: none;
   width: 8px;
   height: 8px;
   border-radius: 2px;
-  background: currentColor;
-  opacity: 0.9;
+  background: var(--teinte, currentColor);
+  opacity: var(--voile, 0.9);
 }
 
 /* Une colonne seule prend toute la largeur : un gabarit à deux colonnes dont
