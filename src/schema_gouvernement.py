@@ -86,6 +86,10 @@ Format d'un profil de gouvernement v1 :
                 "organe_ref": "PO420120",
                 "sigle": "Affaires sociales",
                 "nom": "Commission des affaires sociales",
+                "type": "COMPER",   # verbatim de l'organe : `COMPER` permanente,
+                                    # `CNPS` spéciale — créée pour CE texte. Le
+                                    # partage vient de l'Assemblée, pas d'un seuil
+                                    # que nous choisirions (§2 règle 1).
             },
             # Présent SEULEMENT quand la précédente est `null`, et il l'explique.
             # Une absence de cause connue se déclare, elle ne se comble pas

@@ -78,10 +78,20 @@ La matière, telle qu'elle se lira : Affaires étrangères 169, Lois 118, Financ
 
 ## 4. Trois choix de mise en œuvre
 
-- **La projection est explicite.** L'index porte aussi un `type` d'organe
-  (`COMPER`), qui décrit le référentiel et non le texte : recopier l'entrée telle
-  quelle ferait entrer dans la fiche un champ dont personne n'a décidé qu'il y
-  avait sa place.
+- **La projection est explicite, `type` compris — et ce point a été corrigé.**
+  Il disait d'abord que `type` « décrit le référentiel et non le texte », et
+  c'était faux : une **`CNPS` est une commission spéciale créée pour ce
+  texte-là**, quand une `COMPER` est permanente et couvre une matière. Le type
+  est donc ce qui sépare « la commission des lois a examiné 50 textes » de « une
+  commission a été créée pour celui-ci ». Sans lui, distinguer les matières
+  principales de la traîne n'a d'autre règle qu'un **seuil** — « les 8
+  premières », « au moins 5 % » —, c'est-à-dire l'arbitrage éditorial déguisé en
+  mesure que §2 règle 1 refuse ; avec lui, il n'y a aucun seuil, l'Assemblée
+  ayant déjà fait le partage. Mesuré sur les 725 textes publiés : **COMPER 532,
+  CNPS 19** — et sur le gouvernement Philippe II, **8 organes permanents pour 218
+  textes contre 8 spéciales pour 10**, à une ou deux occurrences chacune. Un
+  `type` absent de l'index est publié `null`, jamais omis : une clé qui
+  disparaît selon l'entrée oblige chaque lecteur à s'en défendre.
 - **L'index est chargé UNE fois pour les dix fiches**, dans `main()`. Le relire
   par gouvernement serait le coût que #392, #403 et #467 ont déjà payé trois fois
   au même endroit — 1,2 Mo et 6 024 dossiers.
