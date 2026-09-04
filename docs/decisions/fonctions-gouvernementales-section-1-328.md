@@ -44,11 +44,22 @@ sans son dénominateur, ce que §2 règle 7 refuse.
 Les deux blocs portent donc `sansMarque`, et c'est la seule exception : le reste
 de la règle est inchangé.
 
-## 3. La couleur dit le BANC, pas la catégorie
+## 3. La couleur dit le BANC, pas la catégorie — et elle ne prend pas le bord gauche
 
-Chaque bloc porte un filet et une pastille : bleu pour l'Assemblée, bronze pour
-le gouvernement, **contour tireté** pour la mission. Ce sont les trois pistes de
-la frise, sans une teinte de plus.
+Chaque bloc porte une **pastille** et un **titre teinté** : bleu pour
+l'Assemblée, bronze pour le gouvernement, **pastille au contour tireté** pour la
+mission. Ce sont les trois pistes de la frise, sans une teinte de plus.
+
+**Le bord gauche est déjà pris, et il le reste.** Un filet de banc à gauche du
+bloc se superposait au filet d'encre de la **marque**, qui signale la fonction
+dépassant la moitié du temps de mandat : deux traits verticaux à trois pixels
+l'un de l'autre se lisent comme un seul, et la ligne marquée — qui déborde
+volontairement jusqu'au bord de la carte — passait par-dessus celui du banc.
+Deux faits de nature différente ne partagent pas un bord : **il revient au seul
+des deux qui qualifie UNE ligne**.
+
+Le titre y gagne au passage : `--muted` vaut **3,51:1** sur blanc, sous le seuil
+AA de 4,5:1 ; le bleu vaut **8,14:1** et le bronze **4,90:1**.
 
 Une teinte par catégorie aurait demandé **neuf** couleurs, en concurrence avec
 la seule grammaire de couleurs de la fiche — et sur un profil qui a connu les
@@ -83,9 +94,11 @@ plus haut.
 
 ## Ce qui n'est pas vérifié
 
-- **Aucun harnais JS.** Les 8 tests ajoutés lisent le code exécuté,
-  commentaires retirés ; **six mutations** ont été vérifiées échouantes. Ils ne
-  couvrent ni le rendu, ni le contraste, ni le parcours clavier.
+- **Aucun harnais JS.** Les 11 tests ajoutés lisent le code exécuté,
+  commentaires retirés ; **neuf mutations** ont été vérifiées échouantes. Ils ne
+  couvrent ni le rendu, ni le parcours clavier. Les trois rapports de contraste
+  ci-dessus sont **calculés à la main**, pas par un test : le dépôt n'a pas de
+  quoi les mesurer.
 - Le rendu a été relu **sur les 7 profils publiés qui portent une fonction
   gouvernementale**, rendus par les composants de l'application.
 - **Ce lot ne touche pas la section « Les gouvernements dont il a été membre ».**

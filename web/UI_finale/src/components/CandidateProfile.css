@@ -1515,17 +1515,22 @@
 }
 
 /* ── § 1 — le banc de chaque catégorie de fonction (#328) ────────────────── */
-/* Une seule grammaire de couleurs sur toute la fiche : le bleu de l'Assemblée,
-   le bronze du gouvernement, le contour tireté de la mission — exactement les
-   trois pistes de la frise. La couleur DOUBLE l'intitulé du bloc, elle ne le
-   remplace pas : la section se lit en niveaux de gris comme sous daltonisme. */
-.cp-fonctions-bloc--parlement,
-.cp-fonctions-bloc--gouvernement,
-.cp-fonctions-bloc--mission {
-  padding-left: 14px;
-  border-left: 3px solid var(--teinte-banc);
-}
-
+/*
+ * LE BANC NE PREND PAS LE BORD GAUCHE : IL EST DÉJÀ PRIS.
+ *
+ * Un filet de banc à gauche du bloc se superposait au filet d'encre de la
+ * MARQUE, qui signale la fonction dépassant la moitié du temps de mandat. Deux
+ * traits verticaux à trois pixels l'un de l'autre se lisent comme un seul, et
+ * la ligne marquée — qui déborde volontairement jusqu'au bord de la carte —
+ * passait par-dessus le filet du banc. Deux faits de nature différente, un seul
+ * bord : le bord revient à la marque, qui est le seul des deux à qualifier UNE
+ * ligne.
+ *
+ * Le banc se dit donc par la PASTILLE et par la couleur du titre du bloc. Ce
+ * n'est pas un repli : le titre gagne au change, `--muted` valant 3,51:1 sur
+ * blanc quand le bleu vaut 8,14:1 et le bronze 4,90:1 — sous le seuil AA avant,
+ * au-dessus après.
+ */
 .cp-fonctions-bloc--parlement {
   --teinte-banc: var(--parl);
 }
@@ -1535,12 +1540,17 @@
 }
 
 /* La mission n'est ni l'un ni l'autre : un⋅e parlementaire en mission auprès
-   d'un ministère reste parlementaire. La frise la rend en contour tireté ; le
-   filet la reprend en tireté plutôt qu'en pleine teinte. */
+   d'un ministère reste parlementaire. La frise la rend en contour tireté ; la
+   pastille la reprend en tireté, pour qu'elle se distingue aussi par la FORME
+   et pas par la seule teinte. */
 .cp-fonctions-bloc--mission {
   --teinte-banc: var(--gouv);
+}
 
-  border-left-style: dashed;
+.cp-fonctions-bloc--parlement .cp-fonctions-titre,
+.cp-fonctions-bloc--gouvernement .cp-fonctions-titre,
+.cp-fonctions-bloc--mission .cp-fonctions-titre {
+  color: var(--teinte-banc);
 }
 
 .cp-fonctions-titre::before {
