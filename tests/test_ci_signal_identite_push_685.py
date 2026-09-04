@@ -219,11 +219,18 @@ def test_agents_md_ne_promet_plus_la_suite_sur_les_commits_de_donnees():
     `tests.yml` really runs on data commits » — décrivait un mécanisme réel
     sous une condition jamais remplie. Laisser une garantie fausse en place est
     plus coûteux que de n'en donner aucune : on s'y fie."""
-    texte = AGENTS.read_text(encoding="utf-8")
+    # #737 — la §3b vit désormais dans `docs/regles/ci.md`, `AGENTS.md` n'en
+    # gardant que la ligne d'index. On lit LES DEUX : la garantie fausse ne doit
+    # réapparaître ni dans le fichier de règles, ni dans l'index qui le résume.
+    regles_ci = AGENTS.parent / "docs" / "regles" / "ci.md"
+    assert regles_ci.is_file(), (
+        "`docs/regles/ci.md` a disparu : la §3b n'est plus nulle part (#737)."
+    )
+    texte = AGENTS.read_text(encoding="utf-8") + regles_ci.read_text(encoding="utf-8")
     assert "so `tests.yml` really runs on data commits" not in texte, (
-        "AGENTS.md §3b affirmait cette garantie comme acquise alors que 0 des 15 "
-        "commits de données depuis l'existence de tests.yml la vérifient (#685). "
-        "Elle ne peut se rétablir qu'avec les trois gestes de #508 §7."
+        "§3b affirmait cette garantie comme acquise alors qu'aucun commit de "
+        "données depuis l'existence de tests.yml ne la vérifie (#685). Elle ne "
+        "peut se rétablir qu'avec les trois gestes de #508 §7."
     )
     assert "#685" in texte, (
         "§3b doit renvoyer à #685 : sans lui, la ligne corrigée ne dit pas où "
