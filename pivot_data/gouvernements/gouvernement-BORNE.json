@@ -336,7 +336,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49124"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49124",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419865",
+        "sigle": "Développement durable",
+        "nom": "Commission du développement durable et de l'aménagement du territoire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N49123",
@@ -352,7 +358,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49123"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49123",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N49095",
@@ -372,7 +384,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/liberte_interruption_grossesse"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/liberte_interruption_grossesse",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N49096",
@@ -396,7 +414,13 @@
           "membre_id": "clement-beaune"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/renovation_habitat_degrade"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/renovation_habitat_degrade",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N49049",
@@ -412,7 +436,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49049"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49049",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N48971",
@@ -432,7 +462,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_ddaddue_aveugles"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_ddaddue_aveugles",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N48970",
@@ -452,7 +488,13 @@
           "membre_id": "stanislas-guerini"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_ddaddue"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_ddaddue",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N48973",
@@ -468,7 +510,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48973"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48973",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N48909",
@@ -484,7 +532,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48909"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48909",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N48908",
@@ -500,7 +554,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48908"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48908",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N48913",
@@ -520,7 +580,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ordonnance_30_aout_2023"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ordonnance_30_aout_2023",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N48872",
@@ -540,7 +606,13 @@
           "membre_id": "agnes-pannier-runacher"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_2023-816"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_2023-816",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N48839",
@@ -564,7 +636,13 @@
           "membre_id": "thomas-cazenave"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/PJL_finances_gestion_fin_2023"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/PJL_finances_gestion_fin_2023",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N48838",
@@ -584,7 +662,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratif_convention_fiscal_moldavie"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratif_convention_fiscal_moldavie",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N48779",
@@ -600,7 +684,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48779"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48779",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N48719",
@@ -620,7 +710,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/faciliter_financement_reconstruction_batiments"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/faciliter_financement_reconstruction_batiments",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N48721",
@@ -640,7 +736,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/derogations_code_commande_publique_emeutes"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/derogations_code_commande_publique_emeutes",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N48720",
@@ -660,7 +762,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/acceleration_delivrance_urbanisme_emeute"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/acceleration_delivrance_urbanisme_emeute",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N48397",
@@ -684,7 +792,13 @@
           "membre_id": "thomas-cazenave"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/PLF_2024"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/PLF_2024",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N48683",
@@ -712,7 +826,13 @@
           "membre_id": "thomas-cazenave"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/PLFSS2024"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/PLFSS2024",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N48681",
@@ -736,7 +856,13 @@
           "membre_id": "olivia-gregoire"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/urgence_nego_grd_distrib"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/urgence_nego_grd_distrib",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N48654",
@@ -764,7 +890,13 @@
           "membre_id": "clement-beaune"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_2023-661"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_2023-661",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419865",
+        "sigle": "Développement durable",
+        "nom": "Commission du développement durable et de l'aménagement du territoire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N48652",
@@ -784,7 +916,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_2003-483"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_2003-483",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N48541",
@@ -804,7 +942,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/entraide_Maurice_France"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/entraide_Maurice_France",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N48481",
@@ -820,7 +964,11 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48481"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48481",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L16N48392",
@@ -836,7 +984,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48392"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48392",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N48390",
@@ -856,7 +1010,13 @@
           "membre_id": "gerald-darmanin"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/fomation_activites_privees_securite"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/fomation_activites_privees_securite",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N48347",
@@ -876,7 +1036,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/reglement_differends_investissements"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/reglement_differends_investissements",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N48350",
@@ -892,7 +1058,11 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48350"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48350",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L16N48255",
@@ -912,7 +1082,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/approbation_accord_france_andorre_demarcation"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/approbation_accord_france_andorre_demarcation",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N48212",
@@ -932,7 +1108,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ordonnance_2023208"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ordonnance_2023208",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N48165",
@@ -952,7 +1134,13 @@
           "membre_id": "agnes-pannier-runacher"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratif_ordonnance_2022887"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratif_ordonnance_2022887",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N48163",
@@ -968,7 +1156,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48163"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48163",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N48040",
@@ -988,7 +1182,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/entraide_kazakhstan"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/entraide_kazakhstan",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N47979",
@@ -1012,7 +1212,13 @@
           "membre_id": "olivier-dussopt"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/partage_valeur_accord"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/partage_valeur_accord",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N47978",
@@ -1036,7 +1242,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/approbation_comptes_ss_2022"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/approbation_comptes_ss_2022",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N47917",
@@ -1052,7 +1264,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47917"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47917",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO825530",
+        "sigle": "CS Industrie verte",
+        "nom": "Commission spéciale chargée d’examiner le projet de loi relatif à l'industrie verte",
+        "type": "CNPS"
+      }
     },
     {
       "dossier_id": "DLR5L16N47859",
@@ -1068,7 +1286,11 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47859"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47859",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L16N47884",
@@ -1084,7 +1306,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47884"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47884",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO826232",
+        "sigle": "CS Espace numérique",
+        "nom": "Commission spéciale chargée d’examiner le projet de loi visant à sécuriser et réguler l’espace numérique",
+        "type": "CNPS"
+      }
     },
     {
       "dossier_id": "DLR5L16N47858",
@@ -1104,7 +1332,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/approbation_accord_france_canada_vol"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/approbation_accord_france_canada_vol",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N47779",
@@ -1120,7 +1354,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47779"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47779",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N47780",
@@ -1136,7 +1376,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47780"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47780",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N47778",
@@ -1156,7 +1402,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accord_France_Luxembourg_transports_transfrontaliers"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accord_France_Luxembourg_transports_transfrontaliers",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N47698",
@@ -1172,7 +1424,11 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47698"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47698",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L16N47696",
@@ -1192,7 +1448,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ordonnance_secheresse_rehydratation"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ordonnance_secheresse_rehydratation",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N47719",
@@ -1208,7 +1470,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47719"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47719",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N47616",
@@ -1224,7 +1492,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47616"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47616",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419604",
+        "sigle": "Affaires culturelles et éducation",
+        "nom": "Commission des affaires culturelles et de l'éducation",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N47614",
@@ -1244,7 +1518,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratifiantordonnance2023-53du1erfevrier2023"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratifiantordonnance2023-53du1erfevrier2023",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N47615",
@@ -1260,7 +1540,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47615"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47615",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N47569",
@@ -1284,7 +1570,13 @@
           "membre_id": "gabriel-attal"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/PLR2022"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/PLR2022",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N47568",
@@ -1308,7 +1600,13 @@
           "membre_id": "gabriel-attal"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/PLR_2021"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/PLR_2021",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N47571",
@@ -1324,7 +1622,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/douanes_moyens_nouvelles_menaces"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/douanes_moyens_nouvelles_menaces",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N47509",
@@ -1344,7 +1648,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/programmation_militaire_2024_2030"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/programmation_militaire_2024_2030",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59046",
+        "sigle": "Défense",
+        "nom": "Commission de la défense nationale et des forces armées",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N47463",
@@ -1360,7 +1670,11 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47463"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47463",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L16N47439",
@@ -1376,7 +1690,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47439"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47439",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N47436",
@@ -1396,7 +1716,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ordonnance_reforme_adoption"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ordonnance_reforme_adoption",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N47335",
@@ -1416,7 +1742,13 @@
           "membre_id": "olivier-dussopt"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ordonnance_apprentissage_transfrontalier"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ordonnance_apprentissage_transfrontalier",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N47299",
@@ -1432,7 +1764,11 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47299"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47299",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L16N47305",
@@ -1452,7 +1788,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/acces_qualite_eaux_consommationhumaine"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/acces_qualite_eaux_consommationhumaine",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419865",
+        "sigle": "Développement durable",
+        "nom": "Commission du développement durable et de l'aménagement du territoire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N47268",
@@ -1472,7 +1814,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_casierjudiciairenationalautomatise"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_casierjudiciairenationalautomatise",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N47267",
@@ -1492,7 +1840,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/protocole_France_MacedoineduNord_sejourirregulier"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/protocole_France_MacedoineduNord_sejourirregulier",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N47271",
@@ -1508,7 +1862,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47271"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47271",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N47211",
@@ -1528,7 +1888,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accord_france_andorre_routes_nationales"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accord_france_andorre_routes_nationales",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N47118",
@@ -1544,7 +1910,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47118"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47118",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N47066",
@@ -1576,7 +1948,13 @@
           "membre_id": "gabriel-attal"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/plrfss_pour_2023"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/plrfss_pour_2023",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N47054",
@@ -1600,7 +1978,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratif_orodnnance_20221421_ladefense"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratif_orodnnance_20221421_ladefense",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N47052",
@@ -1620,7 +2004,13 @@
           "membre_id": "olivier-dussopt"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratif_ordonnance20221203"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratif_ordonnance20221203",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N46989",
@@ -1644,7 +2034,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_dispositions_controles_sanctions_reforme_outil_gestion_agriculture"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_dispositions_controles_sanctions_reforme_outil_gestion_agriculture",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N46988",
@@ -1664,7 +2060,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_resolution_convention_1948_creation_omi"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_resolution_convention_1948_creation_omi",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N46947",
@@ -1684,7 +2086,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratif_ordonnance_droits_sociaux_detenus"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratif_ordonnance_droits_sociaux_detenus",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N46948",
@@ -1700,7 +2108,11 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46948"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46948",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L16N46920",
@@ -1724,7 +2136,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_detachement_salaries_transports"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_detachement_salaries_transports",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419865",
+        "sigle": "Développement durable",
+        "nom": "Commission du développement durable et de l'aménagement du territoire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N46918",
@@ -1740,7 +2158,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46918"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46918",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N46919",
@@ -1756,7 +2180,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46919"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46919",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N46828",
@@ -1772,7 +2202,11 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46828"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46828",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L16N46825",
@@ -1792,7 +2226,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/approbation_premier_amendement_protocole_convention_espoo"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/approbation_premier_amendement_protocole_convention_espoo",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N46734",
@@ -1808,7 +2248,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46734"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46734",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N46617",
@@ -1832,7 +2278,13 @@
           "membre_id": "gabriel-attal"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/plfr_2022"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/plfr_2022",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N46622",
@@ -1848,7 +2300,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46622"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46622",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N46537",
@@ -1864,7 +2322,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46537"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46537",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N46495",
@@ -1884,7 +2348,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_20221086"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_20221086",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N46447",
@@ -1908,7 +2378,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_regles_construction2"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_regles_construction2",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N46539",
@@ -1924,7 +2400,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46539"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46539",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N45988",
@@ -1948,7 +2430,13 @@
           "membre_id": "gabriel-attal"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/plf_2023"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/plf_2023",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N46346",
@@ -1972,7 +2460,13 @@
           "membre_id": "gabriel-attal"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/programmation_finances_publiques_2023_2027"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/programmation_finances_publiques_2023_2027",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N46347",
@@ -2000,7 +2494,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/securite_sociale_2023"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/securite_sociale_2023",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N46292",
@@ -2020,7 +2520,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/pjlratifiantordonnance2022-1075developpementoutilsgestionrisquesclimatiquesenagriculture"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/pjlratifiantordonnance2022-1075developpementoutilsgestionrisquesclimatiquesenagriculture",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N46267",
@@ -2040,7 +2546,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/transfert_dgfip_ta_partlogement"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/transfert_dgfip_ta_partlogement",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N46269",
@@ -2056,7 +2568,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46269"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46269",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N46266",
@@ -2076,7 +2594,13 @@
           "membre_id": "olivier-dussopt"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/mesures_urgence_fonctionnement_marche_travail"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/mesures_urgence_fonctionnement_marche_travail",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N46205",
@@ -2100,7 +2624,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/approbationconventionentraidejudiciaireenmatierepenaleFranceSenegal"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/approbationconventionentraidejudiciaireenmatierepenaleFranceSenegal",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N46206",
@@ -2124,7 +2654,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accordFranceRoyaumeUnisecuritemaritime"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accordFranceRoyaumeUnisecuritemaritime",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N46063",
@@ -2144,7 +2680,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/restructuration_plateforme_douaniere_bale_saintlouis"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/restructuration_plateforme_douaniere_bale_saintlouis",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N46009",
@@ -2160,7 +2702,11 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46009"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46009",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L16N46008",
@@ -2176,7 +2722,11 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46008"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46008",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L16N45972",
@@ -2192,7 +2742,11 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N45972"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N45972",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L16N45973",
@@ -2208,7 +2762,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N45973"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N45973",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N45971",
@@ -2228,7 +2788,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accord_cour_penale_internationale"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accord_cour_penale_internationale",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N45942",
@@ -2260,7 +2826,13 @@
           "membre_id": "agnes-pannier-runacher"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/mesures_urgence_pouvoir_achat"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/mesures_urgence_pouvoir_achat",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N45943",
@@ -2284,7 +2856,13 @@
           "membre_id": "gabriel-attal"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/loi_finances_rectificative_2022"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/loi_finances_rectificative_2022",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N45944",
@@ -2308,7 +2886,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accord_banque_reglements_internationaux"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accord_banque_reglements_internationaux",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N45929",
@@ -2332,7 +2916,13 @@
           "membre_id": "gabriel-attal"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/reglement_budget_2021"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/reglement_budget_2021",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N45931",
@@ -2352,7 +2942,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratif_traite_coop_france_italie"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratif_traite_coop_france_italie",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N45930",
@@ -2372,7 +2968,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ordonnance_partie_legislative_code_penitentiaire"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ordonnance_partie_legislative_code_penitentiaire",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N45927",
@@ -2388,7 +2990,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/maintien_dispositif_veille_securite_sanitaire"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/maintien_dispositif_veille_securite_sanitaire",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L16N45914",
@@ -2404,7 +3012,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accord_statut_force_france_paysbas"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accord_statut_force_france_paysbas",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N49541",
@@ -2420,7 +3034,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_extradition_avec_le_cambodge"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_extradition_avec_le_cambodge",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N45831",
@@ -2436,7 +3056,11 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45831"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45831",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N45830",
@@ -2452,7 +3076,11 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45830"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45830",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N45798",
@@ -2468,7 +3096,11 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45798"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45798",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N45806",
@@ -2484,7 +3116,11 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45806"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45806",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     }
   ],
   "comptages": {
@@ -2504,12 +3140,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA759832",
-      "synchro_le": "2026-09-02T16:27:55+0000"
+      "synchro_le": "2026-09-04T12:57:33+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA826635",
-      "synchro_le": "2026-09-02T16:27:52+0000"
+      "synchro_le": "2026-09-04T12:57:42+0000"
     },
     {
       "type": "nosdeputes",
@@ -2519,7 +3155,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722046",
-      "synchro_le": "2026-09-02T16:27:15+0000"
+      "synchro_le": "2026-09-04T12:56:54+0000"
     },
     {
       "type": "nosdeputes",
@@ -2529,7 +3165,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719624",
-      "synchro_le": "2026-09-02T16:30:20+0000"
+      "synchro_le": "2026-09-04T13:05:32+0000"
     },
     {
       "type": "nosdeputes",
@@ -2539,7 +3175,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720170",
-      "synchro_le": "2026-09-02T16:36:49+0000"
+      "synchro_le": "2026-09-04T13:06:24+0000"
     },
     {
       "type": "nosdeputes",
@@ -2549,7 +3185,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA774109",
-      "synchro_le": "2026-09-02T16:27:39+0000"
+      "synchro_le": "2026-09-04T12:57:06+0000"
     },
     {
       "type": "nosdeputes",
@@ -2559,12 +3195,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605036",
-      "synchro_le": "2026-09-02T16:26:40+0000"
+      "synchro_le": "2026-09-04T12:55:09+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/96850",
-      "synchro_le": "2026-09-02T16:26:44+0000"
+      "synchro_le": "2026-09-04T12:55:16+0000"
     },
     {
       "type": "nosdeputes",
@@ -2574,7 +3210,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793788",
-      "synchro_le": "2026-09-02T16:27:16+0000"
+      "synchro_le": "2026-09-04T12:56:54+0000"
     },
     {
       "type": "nosdeputes",
@@ -2584,7 +3220,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717161",
-      "synchro_le": "2026-08-28T19:21:05+0000"
+      "synchro_le": "2026-09-04T12:55:17+0000"
     },
     {
       "type": "nosdeputes",
@@ -2594,7 +3230,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719186",
-      "synchro_le": "2026-09-02T16:26:55+0000"
+      "synchro_le": "2026-09-04T12:56:55+0000"
     },
     {
       "type": "nosdeputes",
@@ -2604,7 +3240,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335758",
-      "synchro_le": "2026-09-02T16:30:06+0000"
+      "synchro_le": "2026-09-04T13:05:25+0000"
     },
     {
       "type": "nosdeputes",
@@ -2614,7 +3250,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722190",
-      "synchro_le": "2026-09-02T16:27:39+0000"
+      "synchro_le": "2026-09-04T12:57:06+0000"
     },
     {
       "type": "nosdeputes",
@@ -2624,7 +3260,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607846",
-      "synchro_le": "2026-08-28T19:20:51+0000"
+      "synchro_le": "2026-09-04T12:56:54+0000"
     },
     {
       "type": "nosdeputes",
@@ -2634,7 +3270,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719218",
-      "synchro_le": "2026-09-02T16:27:12+0000"
+      "synchro_le": "2026-09-04T12:56:51+0000"
     },
     {
       "type": "nosdeputes",
@@ -2644,7 +3280,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721764",
-      "synchro_le": "2026-09-02T16:26:49+0000"
+      "synchro_le": "2026-09-04T12:55:19+0000"
     },
     {
       "type": "nosdeputes",
@@ -2654,7 +3290,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA642935",
-      "synchro_le": "2026-09-02T16:36:46+0000"
+      "synchro_le": "2026-09-04T13:03:42+0000"
     },
     {
       "type": "nosdeputes",
@@ -2664,7 +3300,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA330357",
-      "synchro_le": "2026-09-02T16:36:34+0000"
+      "synchro_le": "2026-09-04T13:03:37+0000"
     },
     {
       "type": "nosdeputes",
@@ -2674,7 +3310,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA642788",
-      "synchro_le": "2026-09-02T16:27:11+0000"
+      "synchro_le": "2026-09-04T12:56:50+0000"
     },
     {
       "type": "nosdeputes",
@@ -2684,7 +3320,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719668",
-      "synchro_le": "2026-09-02T16:26:47+0000"
+      "synchro_le": "2026-09-04T12:55:17+0000"
     },
     {
       "type": "nosdeputes",
@@ -2694,7 +3330,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795920",
-      "synchro_le": "2026-09-02T16:36:52+0000"
+      "synchro_le": "2026-09-04T13:06:27+0000"
     },
     {
       "type": "nosdeputes",
@@ -2704,7 +3340,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721134",
-      "synchro_le": "2026-09-02T16:30:22+0000"
+      "synchro_le": "2026-09-04T13:05:33+0000"
     },
     {
       "type": "nosdeputes",
@@ -2714,7 +3350,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793278",
-      "synchro_le": "2026-09-02T16:36:51+0000"
+      "synchro_le": "2026-09-04T13:06:26+0000"
     },
     {
       "type": "nosdeputes",
@@ -2724,7 +3360,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721498",
-      "synchro_le": "2026-09-02T16:26:49+0000"
+      "synchro_le": "2026-09-04T12:55:19+0000"
     },
     {
       "type": "nosdeputes",
@@ -2734,7 +3370,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793940",
-      "synchro_le": "2026-09-02T16:36:51+0000"
+      "synchro_le": "2026-09-04T13:06:26+0000"
     },
     {
       "type": "nosdeputes",
@@ -2744,12 +3380,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721908",
-      "synchro_le": "2026-09-02T16:30:23+0000"
+      "synchro_le": "2026-09-04T13:05:34+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-02T17:00:05+0000",
+    "genere_le": "2026-09-04T13:31:09+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO) + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
     "warnings": []
   }

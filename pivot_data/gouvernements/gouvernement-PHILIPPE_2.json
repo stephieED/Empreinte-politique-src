@@ -120,7 +120,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-234"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-234",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N39975",
@@ -140,7 +144,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_modificatives_procedures_covid-19"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_modificatives_procedures_covid-19",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N39947",
@@ -160,7 +170,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/code_securite_interieure"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/code_securite_interieure",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N39896",
@@ -180,7 +196,13 @@
           "membre_id": "olivier-veran"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/fin_etat_urgence_sanitaire"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/fin_etat_urgence_sanitaire",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N39895",
@@ -204,7 +226,13 @@
           "membre_id": "gerald-darmanin"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfr3_2020"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfr3_2020",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N39853",
@@ -228,7 +256,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-538"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-538",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419604",
+        "sigle": "Affaires culturelles et éducation",
+        "nom": "Commission des affaires culturelles et de l'éducation",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N39856",
@@ -244,7 +278,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-562"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-562",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N39876",
@@ -260,7 +298,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-539"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-539",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N39854",
@@ -284,7 +326,13 @@
           "membre_id": "olivier-veran"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-560"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-560",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N39851",
@@ -304,7 +352,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-534"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-534",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N39855",
@@ -320,7 +374,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_luxembourg_doubles_impositions_fraude_fiscale"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_luxembourg_doubles_impositions_fraude_fiscale",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N39852",
@@ -340,7 +400,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_partenariat_migrations_mobilite_inde"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_partenariat_migrations_mobilite_inde",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N39814",
@@ -360,7 +426,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/scrutin_second_tour_municipales_2020"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/scrutin_second_tour_municipales_2020",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N39815",
@@ -376,7 +448,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/report_senatoriales_legislatives_partielles"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/report_senatoriales_legislatives_partielles",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N39811",
@@ -396,7 +474,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-161"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-161",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N39812",
@@ -420,7 +504,13 @@
           "membre_id": "gerald-darmanin"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/dette_sociale_autonomie"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/dette_sociale_autonomie",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO771964",
+        "sigle": "Commission spéciale dette sociale et autonomie",
+        "nom": "Commission spéciale chargée d'examiner le projet de loi organique relatif à la dette sociale et à l’autonomie et le projet de loi relatif à la dette sociale et à l’autonomie",
+        "type": "CNPS"
+      }
     },
     {
       "dossier_id": "DLR5L15N39813",
@@ -444,7 +534,13 @@
           "membre_id": "gerald-darmanin"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/autonomie_dette_sociale"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/autonomie_dette_sociale",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO771964",
+        "sigle": "Commission spéciale dette sociale et autonomie",
+        "nom": "Commission spéciale chargée d'examiner le projet de loi organique relatif à la dette sociale et à l’autonomie et le projet de loi relatif à la dette sociale et à l’autonomie",
+        "type": "CNPS"
+      }
     },
     {
       "dossier_id": "DLR5L15N39810",
@@ -464,7 +560,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_securite_sociale_institut_etudes_securite"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_securite_sociale_institut_etudes_securite",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N39765",
@@ -488,7 +590,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_cooperation_union_monetaire_ouest_africaine"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_cooperation_union_monetaire_ouest_africaine",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N41024",
@@ -508,7 +616,13 @@
           "membre_id": "franck-riester"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_droits_auteurs"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_droits_auteurs",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419604",
+        "sigle": "Affaires culturelles et éducation",
+        "nom": "Commission des affaires culturelles et de l'éducation",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N39692",
@@ -528,7 +642,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-328"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-328",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N39705",
@@ -544,7 +664,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_covid-19_elections_expulsions_outre-mer"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_covid-19_elections_expulsions_outre-mer",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N39704",
@@ -560,7 +684,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-351"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-351",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N39693",
@@ -580,7 +708,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_covid-19_economie_finances"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_covid-19_economie_finances",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N39694",
@@ -600,7 +734,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_covid-19_travail_formation_professionnelle"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_covid-19_travail_formation_professionnelle",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N39691",
@@ -620,7 +760,13 @@
           "membre_id": "olivier-veran"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_covid-19_solidarites_sante"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_covid-19_solidarites_sante",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N39690",
@@ -640,7 +786,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_covid-19_procedures"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_covid-19_procedures",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N39702",
@@ -656,7 +808,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_covid-19_comptables_fonction_publique"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_covid-19_comptables_fonction_publique",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N39703",
@@ -672,7 +828,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-329"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-329",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N39701",
@@ -688,7 +848,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_covid-19_collectivites_logement"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_covid-19_collectivites_logement",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N39644",
@@ -704,7 +868,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/dispositions_urgentes_consequences_covid-19"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/dispositions_urgentes_consequences_covid-19",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO771611",
+        "sigle": "Commission spéciale DDU covid-19",
+        "nom": "Commission spéciale chargée d’examiner le projet de loi portant diverses dispositions urgentes pour faire face aux conséquences de l’épidémie de covid-19",
+        "type": "CNPS"
+      }
     },
     {
       "dossier_id": "DLR5L15N39596",
@@ -724,7 +894,13 @@
           "membre_id": "gerald-darmanin"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/reglement_comptes_2019"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/reglement_comptes_2019",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N39597",
@@ -740,7 +916,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/prorogation_etat_urgence_sanitaire"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/prorogation_etat_urgence_sanitaire",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N39515",
@@ -760,7 +942,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-390"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-390",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N39430",
@@ -776,7 +964,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-307"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-307",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N39427",
@@ -800,7 +992,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfr2_2020"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfr2_2020",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N39206",
@@ -816,7 +1014,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/loi_organique_urgence_epidemie_covid-19"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/loi_organique_urgence_epidemie_covid-19",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N39144",
@@ -840,7 +1044,13 @@
           "membre_id": "gerald-darmanin"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfr_2020"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfr_2020",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N39205",
@@ -856,7 +1066,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/loi_urgence_epidemie_covid-19"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/loi_urgence_epidemie_covid-19",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N38909",
@@ -872,7 +1088,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_2019-1335_2020-7"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_2019-1335_2020-7",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N38847",
@@ -892,7 +1112,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/remuneration_mandataires_sociaux"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/remuneration_mandataires_sociaux",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N38846",
@@ -912,7 +1138,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/conformite_droit_code_mondial_antidopage"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/conformite_droit_code_mondial_antidopage",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419604",
+        "sigle": "Affaires culturelles et éducation",
+        "nom": "Commission des affaires culturelles et de l'éducation",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N38864",
@@ -928,7 +1160,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_suisse_cooperation_instruction_militaire"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_suisse_cooperation_instruction_militaire",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N38766",
@@ -948,7 +1186,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/dispositions_relatives_offres_public_titres"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/dispositions_relatives_offres_public_titres",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N38769",
@@ -964,7 +1208,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/dispositions_adaptation_droit_ue_economie_finances"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/dispositions_adaptation_droit_ue_economie_finances",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N38768",
@@ -980,7 +1230,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accords_turkmenistan_etats-unis_personnes_charge_agents"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accords_turkmenistan_etats-unis_personnes_charge_agents",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N38691",
@@ -996,7 +1252,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-1170"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-1170",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N38690",
@@ -1012,7 +1272,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/acceleration_simplification_action_publique"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/acceleration_simplification_action_publique",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO770932",
+        "sigle": "Commisssion spéciale ASAP",
+        "nom": "Commission spéciale chargée d'examiner le projet de loi d’accélération et de simplification de l’action publique",
+        "type": "CNPS"
+      }
     },
     {
       "dossier_id": "DLR5L15N38587",
@@ -1032,7 +1298,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-1034"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-1034",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419865",
+        "sigle": "Développement durable",
+        "nom": "Commission du développement durable et de l'aménagement du territoire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N38588",
@@ -1048,7 +1320,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/parquet_europeen_justice_penale_specialisee"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/parquet_europeen_justice_penale_specialisee",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N38564",
@@ -1072,7 +1350,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/systeme_universel_retraite"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/systeme_universel_retraite",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO769550",
+        "sigle": "Commission spéciale retraite",
+        "nom": "Commission spéciale chargée d'examiner le projet de loi instituant un système universel de retraite et le projet de loi organique relatif au système universel de retraite",
+        "type": "CNPS"
+      }
     },
     {
       "dossier_id": "DLR5L15N38565",
@@ -1096,7 +1380,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/systeme_universel_de_retraite"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/systeme_universel_de_retraite",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO769550",
+        "sigle": "Commission spéciale retraite",
+        "nom": "Commission spéciale chargée d'examiner le projet de loi instituant un système universel de retraite et le projet de loi organique relatif au système universel de retraite",
+        "type": "CNPS"
+      }
     },
     {
       "dossier_id": "DLR5L15N38566",
@@ -1112,7 +1402,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_protocole_convention_europeenne_extradition"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_protocole_convention_europeenne_extradition",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N38462",
@@ -1128,7 +1424,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-1110"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-1110",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N38455",
@@ -1148,7 +1448,13 @@
           "membre_id": "gerald-darmanin"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-1068"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-1068",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N38463",
@@ -1164,7 +1470,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-1101"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-1101",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N38428",
@@ -1180,7 +1490,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-964"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-964",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N38417",
@@ -1200,7 +1514,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-1069"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-1069",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N38427",
@@ -1216,7 +1536,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_lys_deulemont_menin"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_lys_deulemont_menin",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N38416",
@@ -1236,7 +1562,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_Burkina_Faso_emplois_agents_missions"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_Burkina_Faso_emplois_agents_missions",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N38367",
@@ -1256,7 +1588,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/protocole_amendement_convention_infractions_aeronefs"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/protocole_amendement_convention_infractions_aeronefs",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N38376",
@@ -1272,7 +1610,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_suisse_poincons_metaux"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_suisse_poincons_metaux",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N38350",
@@ -1292,7 +1636,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_extradition_france_algerie"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_extradition_france_algerie",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N38352",
@@ -1312,7 +1662,13 @@
           "membre_id": "franck-riester"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/communication_audiovisuel_et_souverainete_culturelle_pjlo"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/communication_audiovisuel_et_souverainete_culturelle_pjlo",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N38351",
@@ -1332,7 +1688,13 @@
           "membre_id": "franck-riester"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/communication_audiovisuel_et_souverainete_culturelle"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/communication_audiovisuel_et_souverainete_culturelle",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419604",
+        "sigle": "Affaires culturelles et éducation",
+        "nom": "Commission des affaires culturelles et de l'éducation",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N38322",
@@ -1352,7 +1714,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord-cadre_ue_australie"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord-cadre_ue_australie",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37977",
@@ -1372,7 +1740,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_inde_trafic_stupefiants"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_inde_trafic_stupefiants",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37968",
@@ -1388,7 +1762,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/prorogation_mandat_membres_hadopi"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/prorogation_mandat_membres_hadopi",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37956",
@@ -1408,7 +1788,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-771"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-771",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37969",
@@ -1424,7 +1810,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/modification_loi_alinea5_article13_constitution"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/modification_loi_alinea5_article13_constitution",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37942",
@@ -1448,7 +1840,13 @@
           "membre_id": "gerald-darmanin"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfr_2019"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfr_2019",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37944",
@@ -1464,7 +1862,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-738"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-738",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N37947",
@@ -1480,7 +1882,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-848"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-848",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N37920",
@@ -1500,7 +1906,13 @@
           "membre_id": "gerald-darmanin"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-1015"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-1015",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37919",
@@ -1520,7 +1932,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-950"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-950",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37838",
@@ -1536,7 +1954,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-761"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-761",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N37827",
@@ -1556,7 +1978,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-766"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-766",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37840",
@@ -1572,7 +2000,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-784"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-784",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N37831",
@@ -1596,7 +2028,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfss_2020"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfss_2020",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37839",
@@ -1612,7 +2050,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-770"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-770",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N37828",
@@ -1632,7 +2074,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-765"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-765",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37793",
@@ -1652,7 +2100,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-740"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-740",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37798",
@@ -1668,7 +2122,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-741"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-741",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N37805",
@@ -1684,7 +2142,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-724"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-724",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N37768",
@@ -1708,7 +2170,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/regimes_professionnels_retraite_supplementaire"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/regimes_professionnels_retraite_supplementaire",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37770",
@@ -1724,7 +2192,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-698"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-698",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N37615",
@@ -1744,7 +2216,13 @@
           "membre_id": "gerald-darmanin"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/loi_finances_2020"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/loi_finances_2020",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37732",
@@ -1772,7 +2250,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-610"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-610",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59046",
+        "sigle": "Défense",
+        "nom": "Commission de la défense nationale et des forces armées",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37733",
@@ -1788,7 +2272,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-700"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-700",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N37722",
@@ -1804,7 +2292,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/conventions_entraide_judiciaire_penale_extradition_niger"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/conventions_entraide_judiciaire_penale_extradition_niger",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N37727",
@@ -1820,7 +2312,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/conventions_entraide_penale_extradition_niger"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/conventions_entraide_penale_extradition_niger",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37712",
@@ -1840,7 +2338,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/renouveau_vie_democratique-organique"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/renouveau_vie_democratique-organique",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37711",
@@ -1860,7 +2364,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/renouveau_vie_democratique"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/renouveau_vie_democratique",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37713",
@@ -1880,7 +2390,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/renouveau_vie_democratique-pjl"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/renouveau_vie_democratique-pjl",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37709",
@@ -1900,7 +2416,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/activites_et_surveillance_institutions_retraite"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/activites_et_surveillance_institutions_retraite",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37715",
@@ -1916,7 +2438,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/conventions_entraide_judiciaire_extradition_burkina_faso"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/conventions_entraide_judiciaire_extradition_burkina_faso",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37706",
@@ -1940,7 +2468,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-552"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-552",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419865",
+        "sigle": "Développement durable",
+        "nom": "Commission du développement durable et de l'aménagement du territoire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37686",
@@ -1956,7 +2490,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-501"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-501",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N37672",
@@ -1976,7 +2514,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/bioethique_2"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/bioethique_2",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO766718",
+        "sigle": "Commission spéciale bioéthique",
+        "nom": "Commission spéciale chargée d'examiner le projet de loi relatif à la bioéthique",
+        "type": "CNPS"
+      }
     },
     {
       "dossier_id": "DLR5L15N37654",
@@ -1996,7 +2540,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-397"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-397",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419865",
+        "sigle": "Développement durable",
+        "nom": "Commission du développement durable et de l'aménagement du territoire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37655",
@@ -2020,7 +2570,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_articles65-88_loi_elan"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_articles65-88_loi_elan",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37659",
@@ -2036,7 +2592,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/engagement_vie_locale_proximite_action_publique"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/engagement_vie_locale_proximite_action_publique",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37658",
@@ -2052,7 +2614,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accession_macedoine_nord_otan"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accession_macedoine_nord_otan",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37641",
@@ -2068,7 +2636,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/lutte_gaspillage_economie_circulaire"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/lutte_gaspillage_economie_circulaire",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419865",
+        "sigle": "Développement durable",
+        "nom": "Commission du développement durable et de l'aménagement du territoire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37640",
@@ -2084,7 +2658,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-414"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-414",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N37624",
@@ -2100,7 +2678,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-48"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-48",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59046",
+        "sigle": "Défense",
+        "nom": "Commission de la défense nationale et des forces armées",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37625",
@@ -2124,7 +2708,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_2019-358_2019-359"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_2019-358_2019-359",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37613",
@@ -2140,7 +2730,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-363"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-363",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N37608",
@@ -2164,7 +2758,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_preparation_retrait_royaume-uni_ue"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_preparation_retrait_royaume-uni_ue",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419865",
+        "sigle": "Développement durable",
+        "nom": "Commission du développement durable et de l'aménagement du territoire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37609",
@@ -2192,7 +2792,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-76"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-76",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37607",
@@ -2212,7 +2818,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/aecg_partenariat_strategique_ue-canada"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/aecg_partenariat_strategique_ue-canada",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37575",
@@ -2232,7 +2844,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-362"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-362",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37595",
@@ -2248,7 +2866,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-235"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-235",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37594",
@@ -2264,7 +2888,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-361"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-361",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N37570",
@@ -2284,7 +2912,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_transport_tactique_aerien_allemagne"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_transport_tactique_aerien_allemagne",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37573",
@@ -2300,7 +2934,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-207"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-207",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419604",
+        "sigle": "Affaires culturelles et éducation",
+        "nom": "Commission des affaires culturelles et de l'éducation",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37597",
@@ -2316,7 +2956,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/traite_cooperation_integration_franco-allemandes"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/traite_cooperation_integration_franco-allemandes",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37513",
@@ -2336,7 +2982,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_traite_allemagne_cooperation_integration"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_traite_allemagne_cooperation_integration",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37499",
@@ -2356,7 +3008,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-1165"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-1165",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37500",
@@ -2372,7 +3030,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-183"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-183",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N37495",
@@ -2388,7 +3050,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_armenie_readmission_sejour_irregulier"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_armenie_readmission_sejour_irregulier",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37471",
@@ -2408,7 +3076,13 @@
           "membre_id": "gerald-darmanin"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/reglement_comptes_2018"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/reglement_comptes_2018",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37465",
@@ -2428,7 +3102,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-116"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-116",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37447",
@@ -2452,7 +3132,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/energie_climat"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/energie_climat",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37442",
@@ -2468,7 +3154,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-59"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-59",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N37436",
@@ -2488,7 +3178,13 @@
           "membre_id": "franck-riester"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/souscription_nationale_restauration_notre-dame_paris"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/souscription_nationale_restauration_notre-dame_paris",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419604",
+        "sigle": "Affaires culturelles et éducation",
+        "nom": "Commission des affaires culturelles et de l'éducation",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37434",
@@ -2508,7 +3204,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/entree_fonction_deputes_europeens_2019"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/entree_fonction_deputes_europeens_2019",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37404",
@@ -2524,7 +3226,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/modernisation_distribution_presse"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/modernisation_distribution_presse",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419604",
+        "sigle": "Affaires culturelles et éducation",
+        "nom": "Commission des affaires culturelles et de l'éducation",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37366",
@@ -2544,7 +3252,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-1125"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-1125",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37372",
@@ -2560,7 +3274,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_armenie_agents_missions_officielles"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_armenie_agents_missions_officielles",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37357",
@@ -2584,7 +3304,13 @@
           "membre_id": "olivier-dussopt"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/transformation_fonction_publique"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/transformation_fonction_publique",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37341",
@@ -2600,7 +3326,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_fiscale_botswana"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_fiscale_botswana",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37310",
@@ -2620,7 +3352,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-1178"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-1178",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419604",
+        "sigle": "Affaires culturelles et éducation",
+        "nom": "Commission des affaires culturelles et de l'éducation",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37309",
@@ -2640,7 +3378,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/creation_taxe_services_numeriques"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/creation_taxe_services_numeriques",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37307",
@@ -2660,7 +3404,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_luxembourg_transports_transfrontaliers"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_luxembourg_transports_transfrontaliers",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37290",
@@ -2676,7 +3426,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-1135"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-1135",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N37297",
@@ -2696,7 +3450,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-1128"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-1128",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37289",
@@ -2712,7 +3472,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/competences_collectivite_europeenne_alsace"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/competences_collectivite_europeenne_alsace",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37298",
@@ -2732,7 +3498,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ordonnances_application_article30_loi_2018-607"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ordonnances_application_article30_loi_2018-607",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59046",
+        "sigle": "Défense",
+        "nom": "Commission de la défense nationale et des forces armées",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37271",
@@ -2752,7 +3524,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-1074"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-1074",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37272",
@@ -2768,7 +3546,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord-cadres_cooperation_monaco"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord-cadres_cooperation_monaco",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37234",
@@ -2788,7 +3572,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/organisation_transformation_systeme_sante"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/organisation_transformation_systeme_sante",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37247",
@@ -2804,7 +3594,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_belgique_mobilite_terrestre"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_belgique_mobilite_terrestre",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37192",
@@ -2824,7 +3620,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-1131"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-1131",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419604",
+        "sigle": "Affaires culturelles et éducation",
+        "nom": "Commission des affaires culturelles et de l'éducation",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37201",
@@ -2840,7 +3642,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-937"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-937",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N37133",
@@ -2860,7 +3666,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_ue_ceea_armenie"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_ue_ceea_armenie",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37132",
@@ -2880,7 +3692,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_tchad_angola_services_aeriens"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_tchad_angola_services_aeriens",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37103",
@@ -2904,7 +3722,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/mesures_urgence_economiques_sociales"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/mesures_urgence_economiques_sociales",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37075",
@@ -2920,7 +3744,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/statut_autonomie_polynesie_francaise"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/statut_autonomie_polynesie_francaise",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37074",
@@ -2936,7 +3766,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/dispositions_institutionnelles_polynesie_francaise"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/dispositions_institutionnelles_polynesie_francaise",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37055",
@@ -2956,7 +3792,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ecole_de_la_confiance"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ecole_de_la_confiance",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419604",
+        "sigle": "Affaires culturelles et éducation",
+        "nom": "Commission des affaires culturelles et de l'éducation",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37029",
@@ -2972,7 +3814,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/loi_orientation_mobilites"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/loi_orientation_mobilites",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419865",
+        "sigle": "Développement durable",
+        "nom": "Commission du développement durable et de l'aménagement du territoire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37030",
@@ -2988,7 +3836,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_cooperation_afghanistan"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_cooperation_afghanistan",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N37018",
@@ -3008,7 +3862,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_hong_kong_remise_personnes_condamnees"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_hong_kong_remise_personnes_condamnees",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36997",
@@ -3028,7 +3888,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/creation_afb-oncfs"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/creation_afb-oncfs",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419865",
+        "sigle": "Développement durable",
+        "nom": "Commission du développement durable et de l'aménagement du territoire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36996",
@@ -3048,7 +3914,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/modification_loi_2010-837"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/modification_loi_2010-837",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36998",
@@ -3064,7 +3936,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_albanie_chypre_defense"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_albanie_chypre_defense",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36985",
@@ -3088,7 +3966,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfr_2018"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfr_2018",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36969",
@@ -3104,7 +3988,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_loi_modernisation_justice"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_loi_modernisation_justice",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N36955",
@@ -3124,7 +4012,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/acte_election_parlement_europeen"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/acte_election_parlement_europeen",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36954",
@@ -3140,7 +4034,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_luxembourg_doubles_impositions"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_luxembourg_doubles_impositions",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36949",
@@ -3160,7 +4060,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-341"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-341",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36932",
@@ -3176,7 +4082,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-310"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-310",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N36892",
@@ -3200,7 +4110,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfss_2019"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfss_2019",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36902",
@@ -3216,7 +4132,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-361"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-361",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N36909",
@@ -3232,7 +4152,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/suppression_sur-transpositions_directives"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/suppression_sur-transpositions_directives",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36910",
@@ -3248,7 +4174,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/preparation_retrait_royaume-uni_ue"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/preparation_retrait_royaume-uni_ue",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO760148",
+        "sigle": "Commission spéciale retrait du Royaume-Uni de l'Union européenne",
+        "nom": "Commission spéciale chargée d'examiner le projet de loi habilitant le Gouvernement à prendre par ordonnances les mesures de préparation au retrait du Royaume-Uni de l'Union européenne",
+        "type": "CNPS"
+      }
     },
     {
       "dossier_id": "DLR5L15N36733",
@@ -3268,7 +4200,13 @@
           "membre_id": "gerald-darmanin"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/loi_finances_2019"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/loi_finances_2019",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36856",
@@ -3288,7 +4226,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-603"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-603",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419604",
+        "sigle": "Affaires culturelles et éducation",
+        "nom": "Commission des affaires culturelles et de l'éducation",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36847",
@@ -3308,7 +4252,13 @@
           "membre_id": "gerald-darmanin"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-474"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-474",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36853",
@@ -3324,7 +4274,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_suisse_organisation_europeenne_recherche_nucleaire"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_suisse_organisation_europeenne_recherche_nucleaire",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36842",
@@ -3344,7 +4300,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-470"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-470",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36838",
@@ -3364,7 +4326,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_republicaine_dominicaine_et_nicaragua"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_republicaine_dominicaine_et_nicaragua",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36831",
@@ -3380,7 +4348,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_protocole_additionnel_nagoya-kuala-lumpur"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_protocole_additionnel_nagoya-kuala-lumpur",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36817",
@@ -3400,7 +4374,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-207"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-207",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36802",
@@ -3420,7 +4400,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_services_aeriens_ethiopie_costa-rica_mozambique"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_services_aeriens_ethiopie_costa-rica_mozambique",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36780",
@@ -3436,7 +4422,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/protocole_djibouti_competences_prevote"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/protocole_djibouti_competences_prevote",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36769",
@@ -3452,7 +4444,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-22"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-22",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36751",
@@ -3468,7 +4466,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_siege_autorite_europeenne_marches_financiers"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_siege_autorite_europeenne_marches_financiers",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36728",
@@ -3488,7 +4492,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/Croissance_transformation_des_entreprises"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/Croissance_transformation_des_entreprises",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO757134",
+        "sigle": "Commission spéciale sur la croissance et la transformation des entreprises",
+        "nom": "Commission spéciale chargée d'examiner le projet de loi relatif à la croissance et la transformation des entreprises",
+        "type": "CNPS"
+      }
     },
     {
       "dossier_id": "DLR5L15N36749",
@@ -3504,7 +4514,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_2018-3_2018-4_2018-17"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_2018-3_2018-4_2018-17",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N36667",
@@ -3524,7 +4538,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1674"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1674",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36672",
@@ -3540,7 +4560,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_pays_emploi_familles_missions_officielles"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_pays_emploi_familles_missions_officielles",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36644",
@@ -3560,7 +4586,13 @@
           "membre_id": "gerald-darmanin"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/reglement_comptes_2017"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/reglement_comptes_2017",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36641",
@@ -3580,7 +4612,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/democratie_representative_responsable_efficace"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/democratie_representative_responsable_efficace",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36642",
@@ -3600,7 +4638,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/democratie_representative_responsable_efficace_pjo"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/democratie_representative_responsable_efficace_pjo",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36637",
@@ -3616,7 +4660,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_2018-74_2018-75"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_2018-74_2018-75",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N36615",
@@ -3640,7 +4688,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/democratie_plus_representative_responsable_efficace"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/democratie_plus_representative_responsable_efficace",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36601",
@@ -3660,7 +4714,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/choix_avenir_professionnel"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/choix_avenir_professionnel",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36627",
@@ -3676,7 +4736,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/renforcement_organisation_juridictions"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/renforcement_organisation_juridictions",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36626",
@@ -3692,7 +4758,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/reforme_justice_programmation_2018-2022"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/reforme_justice_programmation_2018-2022",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36558",
@@ -3712,7 +4784,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1519"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1519",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36539",
@@ -3728,7 +4806,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-20"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-20",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N36537",
@@ -3748,7 +4830,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/evolution_logement_amenagement_numerique"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/evolution_logement_amenagement_numerique",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36530",
@@ -3764,7 +4852,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/lutte_contre_fraude"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/lutte_contre_fraude",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36496",
@@ -3784,7 +4878,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/lutte_violences_sexuelles_sexistes"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/lutte_violences_sexuelles_sexistes",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36460",
@@ -3804,7 +4904,13 @@
           "membre_id": "elisabeth-borne"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/nouveau_pacte_ferroviaire"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/nouveau_pacte_ferroviaire",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419865",
+        "sigle": "Développement durable",
+        "nom": "Commission du développement durable et de l'aménagement du territoire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36459",
@@ -3824,7 +4930,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-21"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-21",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36465",
@@ -3840,7 +4952,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accords_ouzbekistan_kazakhstan_cote_ivoire_services_aeriens"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accords_ouzbekistan_kazakhstan_cote_ivoire_services_aeriens",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36456",
@@ -3856,7 +4974,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1717"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1717",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N36449",
@@ -3876,7 +4998,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_accord_dialogue_politique_ue_cuba"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_accord_dialogue_politique_ue_cuba",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36426",
@@ -3896,7 +5024,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1433"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1433",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36430",
@@ -3912,7 +5046,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-157"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-157",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36418",
@@ -3928,7 +5068,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1609"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1609",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N36410",
@@ -3948,7 +5092,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/immigration_maitrisee_droit_asile_effectif"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/immigration_maitrisee_droit_asile_effectif",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36374",
@@ -3968,7 +5118,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1608"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1608",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36362",
@@ -3988,7 +5144,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/programmation_militaire_2019-2025"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/programmation_militaire_2019-2025",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59046",
+        "sigle": "Défense",
+        "nom": "Commission de la défense nationale et des forces armées",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36336",
@@ -4008,7 +5170,13 @@
           "membre_id": "stephane-travert"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/equilibre_relations_commerciales_agriculture"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/equilibre_relations_commerciales_agriculture",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36332",
@@ -4028,7 +5196,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_cooperation_ue_nouvelle-zelande"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_cooperation_ue_nouvelle-zelande",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36304",
@@ -4048,7 +5222,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/protocole_fabrication_trafic_armes-a-feu"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/protocole_fabrication_trafic_armes-a-feu",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36319",
@@ -4064,7 +5244,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_accord_fondation_internationale_ue-alc"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_accord_fondation_internationale_ue-alc",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36293",
@@ -4080,7 +5266,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_prevention_erosion_base_imposition"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_prevention_erosion_base_imposition",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36260",
@@ -4100,7 +5292,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1491"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1491",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36292",
@@ -4116,7 +5314,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1177"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1177",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N36294",
@@ -4132,7 +5334,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1178"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1178",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N36283",
@@ -4148,7 +5354,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1179"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1179",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N36302",
@@ -4164,7 +5374,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1162"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1162",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N36254",
@@ -4180,7 +5394,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/election_des_representants_parlement_europeen"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/election_des_representants_parlement_europeen",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36250",
@@ -4196,7 +5416,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1142"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1142",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N36240",
@@ -4216,7 +5440,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_sauvegarde_droits_hommes"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_sauvegarde_droits_hommes",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36249",
@@ -4232,7 +5462,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1432"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1432",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N36239",
@@ -4252,7 +5486,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_andorre_routes_nationales"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_andorre_routes_nationales",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36224",
@@ -4268,7 +5508,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1426"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1426",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N36220",
@@ -4288,7 +5532,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/donnees_personnelles_protection"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/donnees_personnelles_protection",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36221",
@@ -4308,7 +5558,13 @@
           "membre_id": "gerald-darmanin"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1390"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1390",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36214",
@@ -4328,7 +5584,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1092"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1092",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36333",
@@ -4344,7 +5606,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/organisation_consultation_pleine_souverainete_nouvelle-caledonie"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/organisation_consultation_pleine_souverainete_nouvelle-caledonie",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36159",
@@ -4364,7 +5632,13 @@
           "membre_id": "gerald-darmanin"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/etat_service_societe_confiance"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/etat_service_societe_confiance",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO744107",
+        "sigle": "Commission spéciale sur la société de confiance",
+        "nom": "Commission spéciale chargée d'examiner le projet de loi pour un État au service d'une société de confiance",
+        "type": "CNPS"
+      }
     },
     {
       "dossier_id": "DLR5L15N36143",
@@ -4384,7 +5658,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/orientation_reussite_etudiants"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/orientation_reussite_etudiants",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419604",
+        "sigle": "Affaires culturelles et éducation",
+        "nom": "Commission des affaires culturelles et de l'éducation",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36157",
@@ -4400,7 +5680,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/adaptation_droit_ue_securite"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/adaptation_droit_ue_securite",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36142",
@@ -4420,7 +5706,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_cooperation_sanitaire_suisse_luxembourg"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_cooperation_sanitaire_suisse_luxembourg",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36130",
@@ -4444,7 +5736,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/jeux_olympiques_paralympiques_2024"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/jeux_olympiques_paralympiques_2024",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419604",
+        "sigle": "Affaires culturelles et éducation",
+        "nom": "Commission des affaires culturelles et de l'éducation",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36131",
@@ -4468,7 +5766,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/deuxieme_collectif_budgetaire_2017"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/deuxieme_collectif_budgetaire_2017",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36122",
@@ -4488,7 +5792,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1252"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1252",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36123",
@@ -4504,7 +5814,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_congo_equateur_perou_missions"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_congo_equateur_perou_missions",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36107",
@@ -4528,7 +5844,13 @@
           "membre_id": "gerald-darmanin"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/collectif_budgetaire_2017"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/collectif_budgetaire_2017",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36114",
@@ -4544,7 +5866,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_allemagne_emploi_transfrontalier_aeronefs"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_allemagne_emploi_transfrontalier_aeronefs",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36084",
@@ -4564,7 +5892,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-647"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-647",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36093",
@@ -4580,7 +5914,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-747"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-747",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N36077",
@@ -4600,7 +5938,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_extradition_cambodge"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_extradition_cambodge",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36079",
@@ -4620,7 +5964,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_bosnie-herzegovine_mobilite_jeunes"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_bosnie-herzegovine_mobilite_jeunes",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36078",
@@ -4640,7 +5990,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_readmission_personnes_situation_irreguliere"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_readmission_personnes_situation_irreguliere",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36076",
@@ -4660,7 +6016,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/maurice_accord_investissements"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/maurice_accord_investissements",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36080",
@@ -4680,7 +6042,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/application_accord_bosnie-herzegovine_sejour_irregulier"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/application_accord_bosnie-herzegovine_sejour_irregulier",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36058",
@@ -4700,7 +6068,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1180"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1180",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36056",
@@ -4720,7 +6094,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-650"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-650",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419604",
+        "sigle": "Affaires culturelles et éducation",
+        "nom": "Commission des affaires culturelles et de l'éducation",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36057",
@@ -4740,7 +6120,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_2017-1117_2017-1134"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_2017-1117_2017-1134",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419604",
+        "sigle": "Affaires culturelles et éducation",
+        "nom": "Commission des affaires culturelles et de l'éducation",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36069",
@@ -4756,7 +6142,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_fiscalite_aeroport_bale-mulhouse"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_fiscalite_aeroport_bale-mulhouse",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36031",
@@ -4776,7 +6168,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/protocole_montreal_appauvrissement_couche_ozone"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/protocole_montreal_appauvrissement_couche_ozone",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36032",
@@ -4792,7 +6190,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-762"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-762",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N36030",
@@ -4816,7 +6218,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfss_2018"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfss_2018",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36012",
@@ -4836,7 +6244,13 @@
           "membre_id": "gerald-darmanin"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-543"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-543",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N36021",
@@ -4852,7 +6266,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-496"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-496",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N35984",
@@ -4872,7 +6290,13 @@
           "membre_id": "gerald-darmanin"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/programmation_finances_publiques_2018-2022"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/programmation_finances_publiques_2018-2022",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N35986",
@@ -4892,7 +6316,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_loi2017-1340"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_loi2017-1340",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N35854",
@@ -4912,7 +6342,13 @@
           "membre_id": "gerald-darmanin"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/loi_finances_2018"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/loi_finances_2018",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N35977",
@@ -4932,7 +6368,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1107"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1107",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N35950",
@@ -4952,7 +6394,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_cooperation_policiere_andorre"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_cooperation_policiere_andorre",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N35949",
@@ -4972,7 +6420,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_cooperation_securite_civile_andorre"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_cooperation_securite_civile_andorre",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N35935",
@@ -4992,7 +6446,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-734"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-734",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N35929",
@@ -5012,7 +6472,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/fin_recherche_exploitation_hydrocarbures"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/fin_recherche_exploitation_hydrocarbures",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419865",
+        "sigle": "Développement durable",
+        "nom": "Commission du développement durable et de l'aménagement du territoire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N35926",
@@ -5028,7 +6494,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1090"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1090",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N35896",
@@ -5048,7 +6518,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_partenariat_ue_kazakhstan"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_partenariat_ue_kazakhstan",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N35893",
@@ -5068,7 +6544,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/privileges_juridiction_unifiee_brevet"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/privileges_juridiction_unifiee_brevet",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N35868",
@@ -5084,7 +6566,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-970"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-970",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N35864",
@@ -5100,7 +6586,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-748"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-748",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L15N35852",
@@ -5120,7 +6610,13 @@
           "membre_id": "gerald-darmanin"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-562"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-562",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N35851",
@@ -5136,7 +6632,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/traites_extradition_entraide_penale_vietnam"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/traites_extradition_entraide_penale_vietnam",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N35837",
@@ -5156,7 +6658,13 @@
           "membre_id": "gerald-darmanin"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/reglement_comptes_2016"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/reglement_comptes_2016",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N35835",
@@ -5176,7 +6684,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-484"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-484",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N35844",
@@ -5196,7 +6710,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/protocole_convention_algerie_securite_sociale"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/protocole_convention_algerie_securite_sociale",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N35846",
@@ -5216,7 +6736,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-48_ordonnance_2017-50"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-48_ordonnance_2017-50",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N35848",
@@ -5236,7 +6762,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-31"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-31",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N35836",
@@ -5256,7 +6788,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/habilitation_ordonnances_dialogue_social"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/habilitation_ordonnances_dialogue_social",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N35847",
@@ -5276,7 +6814,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-644"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-644",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N35843",
@@ -5296,7 +6840,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_2016-1058_2016_1060"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_2016-1058_2016_1060",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419865",
+        "sigle": "Développement durable",
+        "nom": "Commission du développement durable et de l'aménagement du territoire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N35845",
@@ -5316,7 +6866,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/repression_actes_illicites_navigation_maritime"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/repression_actes_illicites_navigation_maritime",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N35842",
@@ -5336,7 +6892,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_entraide_judiciaire_penale_algerie"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_entraide_judiciaire_penale_algerie",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N35850",
@@ -5352,7 +6914,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_oit_securite_sante_agriculture"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_oit_securite_sante_agriculture",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N35857",
@@ -5368,7 +6936,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/securite_interieure_lutte_terrorisme"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/securite_interieure_lutte_terrorisme",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N35829",
@@ -5384,7 +6958,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/prorogation_loi_etat_urgence"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/prorogation_loi_etat_urgence",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L15N35832",
@@ -5400,7 +6980,11 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-378"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-378",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     }
   ],
   "comptages": {
@@ -5420,7 +7004,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA759832",
-      "synchro_le": "2026-09-02T16:27:55+0000"
+      "synchro_le": "2026-09-04T12:57:33+0000"
     },
     {
       "type": "nosdeputes",
@@ -5430,7 +7014,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA345619",
-      "synchro_le": "2026-08-28T15:44:28+0000"
+      "synchro_le": "2026-09-04T12:41:57+0000"
     },
     {
       "type": "nosdeputes",
@@ -5440,7 +7024,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717161",
-      "synchro_le": "2026-08-28T19:21:05+0000"
+      "synchro_le": "2026-09-04T12:55:17+0000"
     },
     {
       "type": "nosdeputes",
@@ -5450,7 +7034,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335758",
-      "synchro_le": "2026-09-02T16:30:06+0000"
+      "synchro_le": "2026-09-04T13:05:25+0000"
     },
     {
       "type": "nosdeputes",
@@ -5460,7 +7044,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722190",
-      "synchro_le": "2026-09-02T16:27:39+0000"
+      "synchro_le": "2026-09-04T12:57:06+0000"
     },
     {
       "type": "nosdeputes",
@@ -5470,7 +7054,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607846",
-      "synchro_le": "2026-08-28T19:20:51+0000"
+      "synchro_le": "2026-09-04T12:56:54+0000"
     },
     {
       "type": "nosdeputes",
@@ -5480,7 +7064,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA330357",
-      "synchro_le": "2026-09-02T16:36:34+0000"
+      "synchro_le": "2026-09-04T13:03:37+0000"
     },
     {
       "type": "nosdeputes",
@@ -5490,7 +7074,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA642788",
-      "synchro_le": "2026-09-02T16:27:11+0000"
+      "synchro_le": "2026-09-04T12:56:50+0000"
     },
     {
       "type": "nosdeputes",
@@ -5500,12 +7084,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607395",
-      "synchro_le": "2026-09-02T16:30:18+0000"
+      "synchro_le": "2026-09-04T13:05:30+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-02T17:00:05+0000",
+    "genere_le": "2026-09-04T13:31:09+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": []
   }

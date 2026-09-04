@@ -57,7 +57,13 @@
           "membre_id": "edouard-philippe"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/retablissement_confiance_action_publique"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/retablissement_confiance_action_publique",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     }
   ],
   "comptages": {
@@ -82,7 +88,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA345619",
-      "synchro_le": "2026-08-28T15:44:28+0000"
+      "synchro_le": "2026-09-04T12:41:57+0000"
     },
     {
       "type": "nosdeputes",
@@ -92,7 +98,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717161",
-      "synchro_le": "2026-08-28T19:21:05+0000"
+      "synchro_le": "2026-09-04T12:55:17+0000"
     },
     {
       "type": "nosdeputes",
@@ -102,12 +108,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607846",
-      "synchro_le": "2026-08-28T19:20:51+0000"
+      "synchro_le": "2026-09-04T12:56:54+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-28T19:37:40+0000",
+    "genere_le": "2026-09-04T13:31:09+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": []
   }

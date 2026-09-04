@@ -197,7 +197,11 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54767"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54767",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L17N54762",
@@ -213,7 +217,11 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54762"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54762",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L17N54703",
@@ -229,7 +237,11 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54703"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54703",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L17N54702",
@@ -245,7 +257,11 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54702"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54702",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L17N54666",
@@ -261,7 +277,11 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54666"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54666",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L17N54696",
@@ -277,7 +297,11 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54696"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54696",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L17N54616",
@@ -293,7 +317,11 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54616"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54616",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L17N54608",
@@ -309,7 +337,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/PJL_relance_decentralisation_logement_2"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/PJL_relance_decentralisation_logement_2",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N54573",
@@ -325,7 +359,11 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54573"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54573",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L17N54567",
@@ -341,7 +379,11 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54567"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54567",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L17N54566",
@@ -361,7 +403,13 @@
           "membre_id": "vincent-jeanbrun"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/PJL_relance_decentralisation_logement"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/PJL_relance_decentralisation_logement",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N54372",
@@ -389,7 +437,13 @@
           "membre_id": "stephanie-rist"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/projet_de_loi_relatif_a_la_protection_des_enfants"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/projet_de_loi_relatif_a_la_protection_des_enfants",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO883517",
+        "sigle": "CS Protection des enfants",
+        "nom": "Commission spéciale chargée d’examiner le projet de loi relatif à la protection des enfants",
+        "type": "CNPS"
+      }
     },
     {
       "dossier_id": "DLR5L17N54373",
@@ -417,7 +471,13 @@
           "membre_id": "david-amiel"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/projet_de_loi_portant_approbation_des_comptes_de_la_securite_sociale_de_annee_2025"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/projet_de_loi_portant_approbation_des_comptes_de_la_securite_sociale_de_annee_2025",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N54379",
@@ -433,7 +493,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54379"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54379",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N54347",
@@ -449,7 +515,11 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54347"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54347",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L17N54291",
@@ -465,7 +535,11 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54291"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54291",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L17N54292",
@@ -481,7 +555,11 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54292"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54292",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L17N54258",
@@ -497,7 +575,11 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54258"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54258",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L17N54259",
@@ -513,7 +595,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54259"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54259",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N54218",
@@ -533,7 +621,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/projet_loi_constitutionnelle_pour_Corse_autonome_au_sein_Republique"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/projet_loi_constitutionnelle_pour_Corse_autonome_au_sein_Republique",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N54196",
@@ -553,7 +647,13 @@
           "membre_id": "sebastien-martin"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/resultats_gestion_approbation_comptes_2025"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/resultats_gestion_approbation_comptes_2025",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N54164",
@@ -569,7 +669,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54164"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54164",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N54169",
@@ -585,7 +691,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54169"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54169",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N54168",
@@ -601,7 +713,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54168"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54168",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N54094",
@@ -617,7 +735,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54094"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54094",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N54085",
@@ -637,7 +761,13 @@
           "membre_id": "annie-genevard"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/projet_loi_urgence_pour_protection_et_souverainete_agricoles"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/projet_loi_urgence_pour_protection_et_souverainete_agricoles",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N54083",
@@ -657,7 +787,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/PJL_actualisation_loi_programmation_militaire_annees_2024_2030_diverses_dispositions_defense"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/PJL_actualisation_loi_programmation_militaire_annees_2024_2030_diverses_dispositions_defense",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59046",
+        "sigle": "Défense",
+        "nom": "Commission de la défense nationale et des forces armées",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N53980",
@@ -673,7 +809,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53980"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53980",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N53983",
@@ -689,7 +831,11 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53983"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53983",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L17N53981",
@@ -705,7 +851,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53981"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53981",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N53940",
@@ -721,7 +873,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53940"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53940",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N53942",
@@ -737,7 +895,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53942"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53942",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N53920",
@@ -753,7 +917,11 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53920"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53920",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L17N53882",
@@ -769,7 +937,11 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53882"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53882",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L17N53847",
@@ -785,7 +957,11 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53847"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53847",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L17N53848",
@@ -801,7 +977,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53848"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53848",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N53844",
@@ -817,7 +999,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53844"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53844",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N53760",
@@ -833,7 +1021,11 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53760"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53760",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L17N53743",
@@ -853,7 +1045,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/moldavie_securite_sociale"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/moldavie_securite_sociale",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N53785",
@@ -869,7 +1067,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53785"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53785",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419865",
+        "sigle": "Développement durable",
+        "nom": "Commission du développement durable et de l'aménagement du territoire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N53730",
@@ -885,7 +1089,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53730"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53730",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N54344",
@@ -901,7 +1111,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/regulation_enseignement_superieur_prive_2026"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/regulation_enseignement_superieur_prive_2026",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419604",
+        "sigle": "Affaires culturelles et éducation",
+        "nom": "Commission des affaires culturelles et de l'éducation",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N53706",
@@ -917,7 +1133,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53706"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53706",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N53600",
@@ -933,7 +1155,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53600"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53600",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419865",
+        "sigle": "Développement durable",
+        "nom": "Commission du développement durable et de l'aménagement du territoire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N53496",
@@ -949,7 +1177,11 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53496"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53496",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L17N53762",
@@ -965,7 +1197,11 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53762"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53762",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L17N53497",
@@ -981,7 +1217,11 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53497"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53497",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L17N53386",
@@ -1001,7 +1241,13 @@
           "membre_id": "roland-lescure"
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/loi_speciale_2026"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/loi_speciale_2026",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N53388",
@@ -1017,7 +1263,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53388"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53388",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N53299",
@@ -1033,7 +1285,11 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53299"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53299",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L17N53259",
@@ -1053,7 +1309,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/approbation_accord_Gouvernement_Agence_spatiale_europeenne_installations_France"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/approbation_accord_Gouvernement_Agence_spatiale_europeenne_installations_France",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N53230",
@@ -1069,7 +1331,11 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53230"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53230",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L17N53235",
@@ -1085,7 +1351,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53235"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53235",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N53140",
@@ -1101,7 +1373,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53140"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53140",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO419610",
+        "sigle": "Affaires économiques",
+        "nom": "Commission des affaires économiques",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N53135",
@@ -1125,7 +1403,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/projet_de_loi_de_finances_de_fin_de_gestion_pour_2025"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/projet_de_loi_de_finances_de_fin_de_gestion_pour_2025",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N53096",
@@ -1141,7 +1425,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53096"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53096",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N53075",
@@ -1161,7 +1451,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/projet_loi_autorisant_approbation_accord_gouvernement_moldova_defense"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/projet_loi_autorisant_approbation_accord_gouvernement_moldova_defense",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N53095",
@@ -1177,7 +1473,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53095"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53095",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N52985",
@@ -1193,7 +1495,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52985"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52985",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N52998",
@@ -1209,7 +1517,11 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52998"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52998",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     },
     {
       "dossier_id": "DLR5L17N52428",
@@ -1233,7 +1545,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/PLF_2026"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/PLF_2026",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59048",
+        "sigle": "Finances",
+        "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N52922",
@@ -1261,7 +1579,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/PLFSS_2026"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/PLFSS_2026",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO420120",
+        "sigle": "Affaires sociales",
+        "nom": "Commission des affaires sociales",
+        "type": "COMPER"
+      }
     },
     {
       "dossier_id": "DLR5L17N52984",
@@ -1277,7 +1601,13 @@
           "membre_id": null
         }
       ],
-      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52984"
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52984",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
     }
   ],
   "comptages": {
@@ -1302,7 +1632,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605991",
-      "synchro_le": "2026-09-02T16:27:17+0000"
+      "synchro_le": "2026-09-04T12:55:41+0000"
     },
     {
       "type": "nosdeputes",
@@ -1312,7 +1642,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722046",
-      "synchro_le": "2026-09-02T16:27:15+0000"
+      "synchro_le": "2026-09-04T12:56:54+0000"
     },
     {
       "type": "nosdeputes",
@@ -1322,12 +1652,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795958",
-      "synchro_le": "2026-09-02T16:27:40+0000"
+      "synchro_le": "2026-09-04T12:57:08+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719736",
-      "synchro_le": "2026-09-02T16:27:21+0000"
+      "synchro_le": "2026-09-04T12:55:44+0000"
     },
     {
       "type": "nosdeputes",
@@ -1337,7 +1667,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720480",
-      "synchro_le": "2026-09-02T16:30:21+0000"
+      "synchro_le": "2026-09-04T13:05:33+0000"
     },
     {
       "type": "nosdeputes",
@@ -1347,7 +1677,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795950",
-      "synchro_le": "2026-09-02T16:26:59+0000"
+      "synchro_le": "2026-09-04T12:56:59+0000"
     },
     {
       "type": "nosdeputes",
@@ -1357,7 +1687,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795330",
-      "synchro_le": "2026-09-02T16:36:51+0000"
+      "synchro_le": "2026-09-04T13:06:12+0000"
     },
     {
       "type": "nosdeputes",
@@ -1367,12 +1697,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607846",
-      "synchro_le": "2026-08-28T19:20:51+0000"
+      "synchro_le": "2026-09-04T12:56:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA408578",
-      "synchro_le": "2026-09-02T16:27:56+0000"
+      "synchro_le": "2026-09-04T12:57:46+0000"
     },
     {
       "type": "nosdeputes",
@@ -1382,7 +1712,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795386",
-      "synchro_le": "2026-09-02T16:30:25+0000"
+      "synchro_le": "2026-09-04T13:05:36+0000"
     },
     {
       "type": "nosdeputes",
@@ -1392,7 +1722,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795990",
-      "synchro_le": "2026-09-02T16:26:51+0000"
+      "synchro_le": "2026-09-04T12:55:20+0000"
     },
     {
       "type": "nosdeputes",
@@ -1402,7 +1732,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1327",
-      "synchro_le": "2026-09-02T16:28:21+0000"
+      "synchro_le": "2026-09-04T12:57:46+0000"
     },
     {
       "type": "nosdeputes",
@@ -1412,7 +1742,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721134",
-      "synchro_le": "2026-09-02T16:30:22+0000"
+      "synchro_le": "2026-09-04T13:05:33+0000"
     },
     {
       "type": "nosdeputes",
@@ -1422,12 +1752,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793278",
-      "synchro_le": "2026-09-02T16:36:51+0000"
+      "synchro_le": "2026-09-04T13:06:26+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA870010",
-      "synchro_le": "2026-09-02T16:37:27+0000"
+      "synchro_le": "2026-09-04T13:04:20+0000"
     },
     {
       "type": "nosdeputes",
@@ -1437,17 +1767,17 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720066",
-      "synchro_le": "2026-09-02T16:26:56+0000"
+      "synchro_le": "2026-09-04T12:56:56+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA842117",
-      "synchro_le": "2026-09-02T16:27:56+0000"
+      "synchro_le": "2026-09-04T12:57:46+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-02T17:00:05+0000",
+    "genere_le": "2026-09-04T13:31:09+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": []
   }
