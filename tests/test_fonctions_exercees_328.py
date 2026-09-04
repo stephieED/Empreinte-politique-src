@@ -148,7 +148,7 @@ def test_la_marque_ne_peut_aller_qu_a_la_plus_longue(regles):
     marque est donc structurellement unique, elle n'est pas choisie."""
     bloc = _corps(regles, "export function fonctionsExercees", "\n}")
     assert "lignes[0].marquee = true" in bloc
-    assert "forEach" not in _corps(bloc, "if (lignes.length", "return {")
+    assert "forEach" not in _corps(bloc, "if (!sansMarque && lignes.length", "return {")
 
 
 def test_la_regle_sait_se_taire(regles):
@@ -352,3 +352,94 @@ def test_l_adaptateur_passe_la_forme_entiere_sans_la_defaire(regles):
     bloc = _corps(adaptateur, "essentiel({", "}),")
     assert re.search(r"\bfonctions,", bloc), "la forme est passée entière"
     assert "fonctions.blocs" not in bloc and "fonctions.mandat" not in bloc
+
+
+# ── Les fonctions exercées hors du Parlement ─────────────────────────────────
+#
+# La section ne montrait que les sept catégories parlementaires. Un portefeuille
+# ministériel est pourtant un siège occupé — un intitulé, des dates, une durée —
+# et 6 des 13 candidats déclarés en ont exercé un. Ce qui suit verrouille les
+# trois natures que la catégorie `fonction_gouvernementale` mélange, et le fait
+# que le discriminant soit SOURCÉ.
+
+
+def test_le_portefeuille_ministeriel_est_une_fonction_exercee(regles):
+    """Un ministère occupé se mesure comme une commission : même bloc, même
+    durée, même forme. L'en exclure ne montrait qu'une moitié des fonctions."""
+    bloc = _corps(regles, "export const CATEGORIES_FONCTIONS", "\n];")
+    assert "'fonction_gouvernementale'" in bloc
+    assert "Portefeuilles ministériels" in bloc
+
+
+def test_les_trois_natures_se_separent_sur_la_fonction_jamais_sur_le_libelle(regles):
+    """`fonction_gouvernementale` couvre l'appartenance, le portefeuille et la
+    mission. Le champ `fonction` les sépare déjà pour
+    `appartenancesGouvernementales` ; filtrer sur « Gouvernement (…) » aurait
+    été une jointure par ressemblance de chaîne, que #639 interdit."""
+    bloc = _corps(regles, "export const CATEGORIES_FONCTIONS", "\n];")
+    assert "FONCTION_MEMBRE" in bloc and "FONCTION_MISSION" in bloc
+    assert "Gouvernement (" not in bloc, "aucun filtre sur le libellé"
+    assert "startsWith" not in bloc and "includes(" not in bloc
+
+
+def test_l_appartenance_au_gouvernement_n_est_pas_un_intitule_de_fonction(regles):
+    """`fonction: membre` est l'ENVELOPPE — « Gouvernement (BORNE) ». La publier
+    doublerait chaque portefeuille d'une ligne qui ne dit pas ce qu'on y
+    faisait. Elle reste à la frise, qui en fait une piste."""
+    bloc = _corps(regles, "titre: 'Portefeuilles ministériels'", "sansMarque")
+    assert "f !== FONCTION_MEMBRE" in bloc
+
+
+def test_la_mission_aupres_d_un_ministere_a_son_propre_bloc(regles):
+    """Un⋅e parlementaire en mission auprès d'un ministère RESTE parlementaire.
+    La frise lui donne sa piste depuis le lot ; la ranger avec les ministres
+    serait le contresens que la frise évite déjà."""
+    bloc = _corps(regles, "Missions auprès d’un ministère", "\n  },")
+    assert "f === FONCTION_MISSION" in bloc
+    assert "INSTITUTION_MISSION" in bloc
+
+
+def test_les_deux_blocs_gouvernementaux_ont_des_cles_distinctes(regles):
+    """Ils partagent la catégorie `fonction_gouvernementale` : sans suffixe,
+    React en monterait deux sous la même clé."""
+    fabrique = _corps(regles, "export function fonctionsExercees", "\n}")
+    assert "suffixe ? `${cle}_${suffixe}` : cle" in fabrique
+
+
+def test_la_marque_ne_s_applique_pas_aux_blocs_gouvernementaux(regles):
+    """Son dénominateur est le temps de mandat ÉLECTIF, et un portefeuille ne
+    s'y compare pas : Édouard Philippe a été Premier ministre trois ans sans
+    siéger. La marque aurait affirmé « plus de la moitié » d'un tout dont il
+    était absent — un ratio sans son dénominateur (§2 règle 7)."""
+    categories = _corps(regles, "export const CATEGORIES_FONCTIONS", "\n];")
+    assert categories.count("sansMarque: true") == 2, (
+        "les deux blocs gouvernementaux, et eux seuls"
+    )
+    fabrique = _corps(regles, "export function fonctionsExercees", "\n}")
+    assert "if (!sansMarque && lignes.length" in fabrique
+
+
+def test_la_couleur_dit_le_banc_et_non_la_categorie(regles, composant, feuille):
+    """Neuf catégories auraient demandé neuf teintes, en concurrence avec la
+    seule grammaire de couleurs de la fiche. Sur un profil qui a connu les deux
+    bancs, c'est le banc qu'on aurait perdu — et ce qui sépare une commission
+    d'un groupe d'amitié est déjà écrit dans le titre du bloc."""
+    categories = _corps(regles, "export const CATEGORIES_FONCTIONS", "\n];")
+    assert categories.count("banc: INSTITUTION_PARLEMENT") == 7
+    assert categories.count("banc: INSTITUTION_GOUVERNEMENT") == 1
+    assert categories.count("banc: INSTITUTION_MISSION") == 1
+    assert "cp-fonctions-bloc--${b.banc}" in composant
+    # Trois classes de banc, pas neuf de catégorie.
+    bancs = set(re.findall(r"\.cp-fonctions-bloc--(\w+)", feuille))
+    assert bancs == {"parlement", "gouvernement", "mission"}, (
+        f"une classe par banc, pas par catégorie : {sorted(bancs)}"
+    )
+
+
+def test_la_teinte_du_banc_double_l_intitule_sans_le_remplacer(feuille):
+    """La section doit se lire en niveaux de gris et sous daltonisme : le titre
+    du bloc nomme la catégorie, la couleur ne fait que la doubler."""
+    mission = _corps(feuille, ".cp-fonctions-bloc--mission {\n  --teinte-banc", "\n}")
+    assert "dashed" in mission, (
+        "la mission se distingue aussi par la forme du filet, pas par la seule teinte"
+    )

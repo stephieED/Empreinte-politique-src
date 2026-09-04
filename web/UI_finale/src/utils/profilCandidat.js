@@ -394,13 +394,56 @@ export const CATEGORIES_FONCTIONS = [
   // permanentes : commissions spéciales, groupes de travail, un comité
   // consultatif. Le titre reprend donc la catégorie telle qu'elle est, sans
   // promettre une taxonomie que le corpus ne porte pas (§2 règle 2).
-  { cle: 'commission', titre: 'Commissions' },
-  { cle: 'commission_enquete', titre: "Commissions d'enquête et commissions spéciales" },
-  { cle: 'mission_information', titre: "Missions d'information" },
-  { cle: 'groupe_etudes', titre: "Groupes d'études" },
-  { cle: 'delegation', titre: 'Délégations' },
-  { cle: 'extra_parlementaire', titre: 'Organismes extra-parlementaires' },
-  { cle: 'groupe_amitie', titre: "Groupes d'amitié" },
+  { cle: 'commission', titre: 'Commissions', banc: INSTITUTION_PARLEMENT },
+  { cle: 'commission_enquete', titre: "Commissions d'enquête et commissions spéciales", banc: INSTITUTION_PARLEMENT },
+  { cle: 'mission_information', titre: "Missions d'information", banc: INSTITUTION_PARLEMENT },
+  { cle: 'groupe_etudes', titre: "Groupes d'études", banc: INSTITUTION_PARLEMENT },
+  { cle: 'delegation', titre: 'Délégations', banc: INSTITUTION_PARLEMENT },
+  { cle: 'extra_parlementaire', titre: 'Organismes extra-parlementaires', banc: INSTITUTION_PARLEMENT },
+  { cle: 'groupe_amitie', titre: "Groupes d'amitié", banc: INSTITUTION_PARLEMENT },
+
+  /*
+   * UNE FONCTION EXERCÉE NE L'EST PAS TOUJOURS AU PARLEMENT (#328).
+   *
+   * Un portefeuille ministériel est un siège occupé, au même titre qu'une
+   * commission : il a un intitulé, des dates, une durée. Il manquait ici, et la
+   * section ne montrait donc qu'une moitié des fonctions — 6 des 13 candidats
+   * déclarés ont exercé au gouvernement.
+   *
+   * LE FILTRE PAR `fonction` EST SOURCÉ, pas lexical. La catégorie
+   * `fonction_gouvernementale` mélange trois natures que le même champ sépare
+   * déjà pour `appartenancesGouvernementales` :
+   *
+   *   `membre`     → l'appartenance au gouvernement. C'est l'ENVELOPPE, pas un
+   *                  intitulé de fonction : elle nourrit la frise, et la
+   *                  publier ici doublerait chaque portefeuille d'une ligne
+   *                  « Gouvernement (BORNE) » qui ne dit pas ce qu'on y faisait ;
+   *   `en mission` → un⋅e parlementaire en mission auprès d'un ministère, qui
+   *                  RESTE parlementaire. La frise lui donne sa propre piste
+   *                  depuis #328 ; elle a ici son propre bloc, pour la même
+   *                  raison — la ranger avec les ministres serait le
+   *                  contresens que la frise évite déjà ;
+   *   le reste     → le portefeuille lui-même (Ministre, Secrétaire d'État,
+   *                  Premier ministre).
+   *
+   * Filtrer sur le libellé (« Gouvernement (… ) ») aurait été une jointure par
+   * ressemblance de chaîne, ce que `regrouper-nest-pas-joindre-639` interdit.
+   */
+  {
+    cle: 'fonction_gouvernementale',
+    titre: 'Portefeuilles ministériels',
+    banc: INSTITUTION_GOUVERNEMENT,
+    fonctions: (f) => f !== FONCTION_MEMBRE && f !== FONCTION_MISSION,
+    sansMarque: true,
+  },
+  {
+    cle: 'fonction_gouvernementale',
+    titre: 'Missions auprès d’un ministère',
+    suffixe: 'mission',
+    banc: INSTITUTION_MISSION,
+    fonctions: (f) => f === FONCTION_MISSION,
+    sansMarque: true,
+  },
 ];
 
 /* ── Règle : le rôle ne s'affiche que lorsqu'il DISTINGUE ────────────────────
@@ -516,9 +559,9 @@ export function fonctionsExercees(mandats, aujourdhui = aujourdhuiISO()) {
     aujourdhui,
   );
 
-  const blocs = CATEGORIES_FONCTIONS.map(({ cle, titre }) => {
+  const blocs = CATEGORIES_FONCTIONS.map(({ cle, titre, banc, fonctions, sansMarque, suffixe }) => {
     const parIntitule = new Map();
-    for (const m of liste.filter((x) => x.categorie === cle)) {
+    for (const m of liste.filter((x) => x.categorie === cle && (!fonctions || fonctions(x.fonction)))) {
       const label = m.label || 'Intitulé non publié';
       if (!parIntitule.has(label)) parIntitule.set(label, []);
       parIntitule.get(label).push(m);
@@ -540,11 +583,25 @@ export function fonctionsExercees(mandats, aujourdhui = aujourdhuiISO()) {
 
     // La marque va nécessairement à la plus longue : dépasser la moitié du tout
     // interdit qu'une autre le fasse aussi.
-    if (lignes.length && jours > 0 && lignes[0].jours * 2 > jours) lignes[0].marquee = true;
+    //
+    // Elle ne s'applique PAS aux blocs gouvernementaux (`sansMarque`) : leur
+    // dénominateur serait le temps de mandat ÉLECTIF, et un portefeuille ne
+    // s'y compare pas. Édouard Philippe a été Premier ministre trois ans sans
+    // siéger : la marque aurait dit « plus de la moitié » d'un tout dont il
+    // était absent, ce que §2 règle 7 interdit — un ratio se publie avec son
+    // numérateur ET son dénominateur, et celui-ci n'en est pas un.
+    if (!sansMarque && lignes.length && jours > 0 && lignes[0].jours * 2 > jours) {
+      lignes[0].marquee = true;
+    }
 
     return {
-      cle,
+      // Deux blocs partagent la catégorie `fonction_gouvernementale` : leur clé
+      // les distingue, sinon React en monterait deux sous la même.
+      cle: suffixe ? `${cle}_${suffixe}` : cle,
       titre,
+      // Le BANC dont relève la fonction, pour que la vue reprenne la grammaire
+      // de couleurs de la frise plutôt que d'en inventer une.
+      banc,
       nbIntitules: lignes.length,
       montrees: lignes.slice(0, NB_FONCTIONS_MONTREES),
       reste: lignes.slice(NB_FONCTIONS_MONTREES),

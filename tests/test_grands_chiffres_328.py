@@ -267,20 +267,29 @@ def test_le_seuil_de_publication_des_textes_se_dit(regles):
 # ── La frise : l'ossature ───────────────────────────────────────────────────
 
 
-def test_les_colonnes_prennent_la_teinte_de_la_frise(feuille):
-    """La couleur fait le lien entre une piste et sa colonne — encore faut-il que
-    ce soit LA MÊME. Le bloc portait un bleu et un bronze à lui, plus saturés,
-    qui se seraient éloignés de la frise au premier ajustement de l'une ou de
-    l'autre. Ce sont désormais les colonnes qui prennent la teinte de la frise."""
-    bloc = _corps(feuille, ".cp-gc {", "\n}")
-    parlement = _corps(feuille, ".cp-fs--parlement {", "\n}")
-    gouvernement = _corps(feuille, ".cp-fs--gouvernement {", "\n}")
-    assert "#3f5166" in parlement and "--parl: #3f5166" in bloc, (
-        "la colonne parlementaire porte exactement la teinte de la piste"
+def test_la_teinte_d_un_banc_est_declaree_une_seule_fois(feuille):
+    """La couleur fait le lien entre une piste, une colonne et un bloc de
+    fonctions — encore faut-il que ce soit LA MÊME.
+
+    Ce test vérifiait que DEUX copies du même bleu n'avaient pas divergé. Une
+    valeur qu'un test doit surveiller pour rester unique est une valeur qui
+    n'aurait pas dû être copiée : les deux teintes sont désormais déclarées une
+    seule fois, sur `.cp-main`, et tous leurs lecteurs les lisent (#328). Le
+    test vérifie donc l'unicité, plus la coïncidence."""
+    fiche = _corps(feuille, ".cp-main {", "\n}")
+    assert "--parl: #3f5166" in fiche and "--gouv: #8a6b4c" in fiche, (
+        "les deux teintes sont déclarées sur la fiche"
     )
-    assert "#8a6b4c" in gouvernement and "--gouv: #8a6b4c" in bloc, (
-        "la colonne gouvernementale porte exactement la teinte de la piste"
+    assert feuille.count("#3f5166") == 1 and feuille.count("#8a6b4c") == 1, (
+        "et une seule fois : une seconde occurrence est une copie qui divergera"
     )
+    for regle, jeton in [
+        (".cp-fs--parlement {", "var(--parl)"),
+        (".cp-fs--gouvernement {", "var(--gouv)"),
+        (".cp-fonctions-bloc--parlement {", "var(--parl)"),
+        (".cp-fonctions-bloc--gouvernement {", "var(--gouv)"),
+    ]:
+        assert jeton in _corps(feuille, regle, "\n}"), f"{regle} lit la déclaration"
 
 
 def test_le_bloc_a_ses_deux_themes(feuille):

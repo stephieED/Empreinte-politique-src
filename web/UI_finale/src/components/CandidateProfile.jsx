@@ -315,8 +315,14 @@ function Fonctions({ fonctions }) {
     <div className="cp-carte cp-fonctions">
       {fonctions.blocs.map((b) => {
         const marquee = b.montrees.some((e) => e.marquee);
+        // Le BANC porte la couleur, pas la catégorie. Neuf catégories auraient
+        // demandé neuf teintes, en concurrence avec la seule grammaire de
+        // couleurs de la fiche — et sur un profil qui a connu les deux bancs,
+        // c'est le banc qu'on aurait perdu. Ce qui sépare une commission d'un
+        // groupe d'amitié est écrit en toutes lettres dans le titre du bloc :
+        // la marque ne le remplace pas.
         return (
-          <div className="cp-fonctions-bloc" key={b.cle}>
+          <div className={`cp-fonctions-bloc cp-fonctions-bloc--${b.banc}`} key={b.cle}>
             {/* Le dénominateur vit dans le titre, pas sous chaque ligne : c'est
                 une constante du profil, et la répéter en faisait un refrain. Il
                 n'apparaît QUE là où une ligne est marquée — c'est elle qui
