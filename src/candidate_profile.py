@@ -2952,6 +2952,69 @@ def _expand_aggregated_amendements_index(
     return expanded
 
 
+def amendements_index_en_cache_utilisable(legislature: str) -> Optional[list[Path]]:
+    """Les tranches d'un cache d'amendements servable, ou `None` s'il faut construire.
+
+    Extrait du court-circuit de `_download_and_build_amendement_index` (#749),
+    qui le garde comme unique condition de cache-hit. Il est exposé parce que
+    `build_amendements_index.py` doit pouvoir DIRE, dans son log, s'il a
+    construit un index ou servi celui du cache : jusqu'ici il imprimait
+    « Construction de l'index amendements » puis un compte d'acteurs pour une
+    exécution de 0,28 s qui ne téléchargeait rien, et ce log est ce qui a rendu
+    invisible pendant 18 jours l'absence totale de reconstruction.
+
+    La liste des acteurs se déduit des NOMS des tranches, sans en ouvrir
+    aucune (#392) — matérialiser leur contenu coûterait des centaines de Mo
+    pour une information dont le seul consommateur fait `len()`.
+
+    `None` couvre trois cas distincts, et c'est voulu qu'ils se rejoignent :
+    cache absent, cache illisible, et cache au format HÉRITÉ (références par
+    `numero` plutôt que par `uid`). Ce dernier doit être reconstruit et non
+    servi : sans ce contrôle, un cache CI restauré à l'ancien format serait un
+    hit ici — donc jamais reconstruit — pendant que
+    `_read_cached_amendements_acteur` le refuserait à la lecture, et les
+    amendements de la législature disparaîtraient silencieusement jusqu'à
+    expiration du cache. Coût du contrôle : l'ouverture d'UNE tranche
+    (~285 Ko).
+    """
+    cache_dir = AMENDEMENTS_CACHE_DIR / legislature
+    amendements_path = cache_dir / AMENDEMENTS_CACHE_AMENDEMENTS_FILENAME
+    index_dir = cache_dir / AMENDEMENTS_CACHE_INDEX_PAR_ACTEUR_DIRNAME
+    if not amendements_path.is_file() or not index_dir.is_dir():
+        return None
+    try:
+        tranches = list(index_dir.glob("*.json"))
+        if _cache_amendements_au_format_uid(tranches):
+            return tranches
+        print(
+            f"  [!] Cache amendements législature {legislature} au format hérité "
+            "(références par 'numero') : reconstruction depuis l'archive AN.",
+            file=sys.stderr,
+        )
+    except OSError:
+        pass  # cache illisible : on reconstruit
+    return None
+
+
+def purger_cache_amendements_legislature(legislature: str) -> bool:
+    """Supprime le cache disque d'une législature, pour forcer sa reconstruction (#749).
+
+    Appelée par `build_amendements_index.py --reconstruire-actives` quand la CI
+    a changé de semaine ISO sans que la clé exacte ait été touchée. Ne vise que
+    les législatures ACTIVES : une législature figée n'a pas de fraîcheur à
+    rafraîchir, et re-matérialiser son index committé chaque semaine coûterait
+    la mémoire décrite dans `docs/decisions/oom-reconstruction-amendements-figees.md`
+    pour une donnée qui ne change plus jamais.
+
+    Retourne True si quelque chose a été supprimé.
+    """
+    cache_dir = AMENDEMENTS_CACHE_DIR / legislature
+    if not cache_dir.is_dir():
+        return False
+    shutil.rmtree(cache_dir)
+    return True
+
+
 def _download_and_build_amendement_index(legislature: str) -> dict[str, list[dict[str, Any]]]:
     """Télécharge l'archive AN et construit (en la mettant en cache sur disque) un
     index acteurRef -> liste d'amendements. Reprend telle quelle la logique réseau
@@ -3008,26 +3071,13 @@ def _download_and_build_amendement_index(legislature: str) -> dict[str, list[dic
         # cette valeur de retour en fait `len()` (build_amendements_index.py),
         # d'où des listes vides en valeurs : matérialiser le contenu coûterait
         # des centaines de Mo pour une information dont personne ne se sert.
-        if amendements_path.is_file() and index_dir.is_dir():
-            # Mais seulement si ce cache est au format `uid` : un cache hérité
-            # (références par `numero`) doit être RECONSTRUIT, pas servi. Sans
-            # ce contrôle, un cache CI restauré à l'ancien format serait
-            # considéré comme un hit ici — donc jamais reconstruit — pendant que
-            # `_read_cached_amendements_acteur` le refuserait à la lecture : les
-            # amendements de la législature disparaîtraient silencieusement
-            # jusqu'à expiration du cache. Coût : l'ouverture d'UNE tranche
-            # (~285 Ko), pas des centaines de Mo d'index.
-            try:
-                tranches = list(index_dir.glob("*.json"))
-                if _cache_amendements_au_format_uid(tranches):
-                    return {p.stem: [] for p in tranches}
-                print(
-                    f"  [!] Cache amendements législature {legislature} au format hérité "
-                    "(références par 'numero') : reconstruction depuis l'archive AN.",
-                    file=sys.stderr,
-                )
-            except OSError:
-                pass  # cache illisible : on reconstruit
+        # #749 — le prédicat est NOMMÉ et partagé avec `build_amendements_index.py`,
+        # qui doit dire dans son log s'il a construit ou servi le cache. Le
+        # dupliquer là-bas aurait laissé les deux dériver, et c'est exactement
+        # un log faux qui a rendu cette panne invisible 18 jours.
+        tranches = amendements_index_en_cache_utilisable(legislature)
+        if tranches is not None:
+            return {p.stem: [] for p in tranches}
 
         if legislature in AN_AMENDEMENTS_LEGISLATURES_FIGEES:
             frozen_index = _load_frozen_amendement_index(legislature)

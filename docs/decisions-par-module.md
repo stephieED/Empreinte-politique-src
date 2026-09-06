@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 228 décisions
+gouverne sans avoir à fouiller les 229 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -221,7 +221,7 @@ Le mentionnent sans le gouverner : [`budget-collecte-interventions`](decisions/b
 | --- | --- |
 | [Job CI dédié `extract-amendements-an` : construction inconditionnelle des 3 index de législature (#251) (2026-08-13)](decisions/amendements-index-job-dedie-ci.md) | `build_all_amendements_index` |
 
-Le mentionnent sans le gouverner : [`amendements-index-cache-only-consumers`](decisions/amendements-index-cache-only-consumers.md), [`cache-amendements-existence-nest-pas-conformite`](decisions/cache-amendements-existence-nest-pas-conformite.md), [`index-amendements-sharde-par-acteur`](decisions/index-amendements-sharde-par-acteur.md), [`oom-lecture-amendements-par-candidat`](decisions/oom-lecture-amendements-par-candidat.md), [`oom-reconstruction-amendements-figees`](decisions/oom-reconstruction-amendements-figees.md), [`pythonunbuffered-generate-data`](decisions/pythonunbuffered-generate-data.md).
+Le mentionnent sans le gouverner : [`amendements-index-cache-only-consumers`](decisions/amendements-index-cache-only-consumers.md), [`cache-amendements-existence-nest-pas-conformite`](decisions/cache-amendements-existence-nest-pas-conformite.md), [`fraicheur-index-amendements-749`](decisions/fraicheur-index-amendements-749.md), [`index-amendements-sharde-par-acteur`](decisions/index-amendements-sharde-par-acteur.md), [`oom-lecture-amendements-par-candidat`](decisions/oom-lecture-amendements-par-candidat.md), [`oom-reconstruction-amendements-figees`](decisions/oom-reconstruction-amendements-figees.md), [`pythonunbuffered-generate-data`](decisions/pythonunbuffered-generate-data.md).
 
 ## `src/build_amendements_index_figees.py`
 
@@ -264,7 +264,7 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 
 ## `src/candidate_profile.py`
 
-78 décision(s) le gouvernent ; le module en cite 12.
+79 décision(s) le gouvernent ; le module en cite 13.
 
 | Décision | Nomme |
 | --- | --- |
@@ -307,6 +307,7 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 | [`meta.warnings[]` déclare son destinataire, dans un jumeau typé et aligné (#642) (2026-08-31)](decisions/destinataire-avertissements-642.md) | `WARNING_PREFIX_INTERVENTIONS_SYCERON_INDISPONIBLES`, `WARNING_PREFIX_VOTES_INTROUVABLES` |
 | [Un amendement retrouve son dossier, et la clé qu'on lui avait retirée (#639, rang 3)](decisions/dossier-des-amendements-639.md) | `fetch_amendements_officiels` |
 | [Un filtre de publication posé avant la fusion ne filtre rien (#641, réouverture) (2026-08-31)](decisions/filtre-publication-apres-fusion-641.md) | `_profession_an` |
+| [La rotation de clé hebdomadaire était toute la politique de fraîcheur, et son propre repli la désamorçait (#749)](decisions/fraicheur-index-amendements-749.md) | `_download_and_build_amendement_index`, `amendements_index_en_cache_utilisable` |
 | [`gouvernement_profile` : `premier_ministre` et `portefeuille` câblés depuis les mandats `MINISTERE` (#398) (2026-08-18)](decisions/gouvernement-premier-ministre-portefeuille.md) | `AN_ACTEURS_HISTORIQUE_ZIP_URL`, `_extract_mandats_officiels` |
 | [`gouvernement_textes.py` : filtre de statut par décision de séance, pas par `codeActe`/`fam_code` seul (#210) (2026-08-14)](decisions/gouvernement-textes-statut.md) | `_build_acteur_textes_portes_index` |
 | [`gouvernement_textes.py` : filtre de statut par décision de séance, pas par `codeActe`/`fam_code` seul (#210) (2026-08-14)](decisions/gouvernement-textes-statut-210-version-initiale.md) | `_build_acteur_textes_portes_index` |

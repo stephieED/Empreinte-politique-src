@@ -82,6 +82,16 @@ la CI ne télécharge que la 17e. Un échec est isolé par législature ; le scr
 sort en 1 si l'une a échoué, et c'est le `continue-on-error` du job, pas le
 script, qui empêche cela de bloquer le run.
 
+**Le job passe `--reconstruire-actives` quand la clé de cache exacte de la
+semaine n'a pas été touchée** (`steps.cache_amendements.outputs.cache-hit !=
+'true'`, vrai sur un `restore-keys` comme sur un cache absent) : le cache des
+législatures **non figées** est alors purgé, ce qui force leur reconstruction —
+une par semaine ISO. Sans ce drapeau, le repli par préfixe restaurait la semaine
+précédente, le cache n'était jamais absent, et la 17e n'était plus reconstruite
+**du tout** : 18 jours mesurés, signalés à chaque run par la §3d du gate
+([fraîcheur de l'index](decisions/fraicheur-index-amendements-749.md)). Le log
+du step dit lequel des deux a eu lieu — construit, ou servi par le cache.
+
 **Consomme** les archives amendements de l'open data AN. **Produit**
 `.cache/amendements_an/` → artifact `amendements-index-an`, et écrit la clé de
 cache `public-data-cache-amendements-<semaine>` (§3).

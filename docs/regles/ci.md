@@ -15,6 +15,22 @@ les charger, ni à les faire grossir. -->
   Watch CLI/function **defaults** pointing into the repo. Test-only deps go in
   `requirements-dev.txt`.
   → `docs/decisions/ci-tests-pytest.md`
+- **A cache key is a freshness policy only until someone adds `restore-keys` (#749).** The
+  amendements index went **18 days** without a single rebuild: #249 made the weekly key the
+  *only* staleness mechanism (§3d's 7-day threshold is documented as aligned on it),
+  #250/#251 rebuild only when the cache is absent or corrupt, #253 **explicitly rejected**
+  an unconditional re-download — and #424 then added a `restore-keys` prefix, for the good
+  reason of avoiding a cold cache at the week boundary. Together, the cache is never absent,
+  so the rebuild never happens. **No module was wrong; the defect lived between two
+  decisions**, and the soft warning built for exactly this case rang every run with no
+  reader. `outputs.cache-hit` is `'true'` on an **exact** primary-key match only, never on a
+  `restore-keys` restore — that is the "new ISO week" signal, and it now arms
+  `--reconstruire-actives`, which purges the **non-frozen** legislatures alone (283 Mo, not
+  1,22 Gio: re-materialising a frozen index costs the RSS of
+  `oom-reconstruction-amendements-figees`). **When a job's log names the loop's intention
+  rather than what happened, a dead job reads as a working one**: « Construction de
+  l'index… 642 acteurs » was printed for a 0,28 s step that downloaded nothing.
+  → `docs/decisions/fraicheur-index-amendements-749.md`
 - **A test reading the developer's `.cache/` passes for the wrong reason, and CI never
   sees it (#721).** The eleven cache constants are `Path(".cache") / …` — **relative to
   the cwd**, i.e. the repo root locally. CI's sparse checkout does not materialise
