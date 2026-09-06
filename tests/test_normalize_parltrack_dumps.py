@@ -67,7 +67,12 @@ def test_make_texte_porte_fields():
     assert tp["titre"] == "Titre test"
     assert tp["date_min"] == "2024-03-15"
     assert tp["source_url"].startswith("https://parltrack.org/dossier/")
-    assert "sort" not in tp  # sort n'appartient pas aux textes_portes
+    # #747 — l'assertion inverse jusqu'ici (« sort n'appartient pas aux
+    # textes_portes ») datait d'avant #743, qui a fait du sort un champ du
+    # texte porté. Le dump ParlTrack n'en porte aucun : l'entrée le DIT, au
+    # lieu de publier une absence sans cause.
+    assert tp["sort"] is None
+    assert tp["sort_non_resolu"] == {"motif": "source_sans_sort"}
     # Champs obligatoires du schéma
     assert "stade_procedural" in tp
     assert "legislature" in tp

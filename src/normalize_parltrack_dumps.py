@@ -55,6 +55,13 @@ def _make_texte_porte(dossier: dict[str, Any]) -> dict[str, Any]:
         "role": "rapporteur",
         "type_rapport": None,
         "stade_procedural": None,
+        # #747 — ce chemin publiait une entrée qui ne disait RIEN du sort : ni
+        # le champ, ni le motif de son absence. #743 n'avait instruit que le
+        # chemin AN, et le contrôle du couple ne voyait pas le cas parce qu'il
+        # ne s'armait que sur un motif NON nul. Le dump ParlTrack ne porte
+        # aucune issue de dossier : l'absence est un fait de la source.
+        "sort": None,
+        "sort_non_resolu": {"motif": "source_sans_sort"},
         "date_min": dossier.get("date"),
         "date_max": dossier.get("date"),
         "legislature": None,

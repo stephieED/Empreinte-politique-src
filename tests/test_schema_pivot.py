@@ -597,7 +597,8 @@ def test_validate_type_rapport_inconnu_est_une_erreur():
 def test_validate_type_rapport_connu_est_valide():
     p = _valid_profil()
     for type_rapport in KNOWN_TYPES_RAPPORT:
-        p["textes_portes"] = [{"titre": "PPL x", "type_rapport": type_rapport}]
+        p["textes_portes"] = [{"titre": "PPL x", "type_rapport": type_rapport,
+                               "sort": "adopte"}]
         assert validate_profil(p) == []
 
 
@@ -611,7 +612,8 @@ def test_validate_stade_procedural_inconnu_est_une_erreur():
 def test_validate_stade_procedural_connu_est_valide():
     p = _valid_profil()
     for stade in KNOWN_STADES_PROCEDURAUX:
-        p["textes_portes"] = [{"titre": "PPL x", "stade_procedural": stade}]
+        p["textes_portes"] = [{"titre": "PPL x", "stade_procedural": stade,
+                               "sort": "adopte"}]
         assert validate_profil(p) == []
 
 
