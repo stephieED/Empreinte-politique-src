@@ -1684,3 +1684,43 @@
   background: var(--pastille, #8b8794); flex: none;
 }
 .cp-ter-fait { font-size: 12px; color: var(--muted, #8b8794); grid-column: 1 / -1; }
+
+/* ── Le sort d'un texte porté, et le 49.3 (#743 dans la fiche) ─────────────
+ *
+ * Le sort est écrit SOUS le titre, en second registre : la pastille de droite
+ * garde le stade. Deux faits distincts, deux places distinctes — les confondre
+ * typographiquement les ferait lire comme un seul.
+ */
+.cp-ter-sort {
+  grid-column: 1 / -1; font-size: 12px; color: var(--muted, #8b8794);
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.cp-ter-sort::before {
+  content: ''; width: 14px; height: 1px; background: var(--border, #e7e4df); flex: none;
+}
+/* Le 49.3 sort de l'encre grise : c'est le seul sort qui n'est pas une issue de
+   vote, et §2 règle 4 veut qu'il se distingue de toutes les autres. Il ne prend
+   pour autant aucune teinte de position (ni vert, ni rouge) — il n'en est pas
+   une. Encre pleine et bordure, comme la marque procédurale de la fiche de
+   gouvernement. */
+.cp-ter-sort--493 { color: var(--ink, #17141f); font-weight: 700; }
+
+.cp-ter-493 {
+  margin: 10px 0 0; font-size: 12.5px; color: var(--muted, #8b8794);
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; max-width: 78ch;
+}
+.cp-ter-493 b { color: var(--ink, #17141f); font-weight: 800; }
+.cp-ter-493-bouton {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 1px solid var(--border, #e7e4df); border-radius: 999px;
+  background: none; color: var(--ink, #17141f); cursor: pointer;
+  font: inherit; font-size: 12.5px; padding: 3px 12px 3px 4px;
+}
+.cp-ter-493-bouton:hover { border-color: var(--ink, #17141f); }
+.cp-ter-493-bouton[aria-pressed='true'] {
+  border-color: var(--ink, #17141f); background: var(--bg, #f7f6f4);
+}
+.cp-ter-493-marque {
+  background: var(--ink, #17141f); color: #fff; border-radius: 999px;
+  font-size: 10.5px; font-weight: 800; letter-spacing: 0.02em; padding: 2px 8px;
+}
