@@ -284,7 +284,7 @@ def _profil_avec_texte(**texte) -> dict:
     profil = make_empty_profil("edouard-philippe", "Édouard Philippe")
     profil["textes_portes"] = [{
         "titre": CETA_TITRE, "dossier_id": CETA, "type_rapport": None,
-        "stade_procedural": "adopte", "date_min": "2019-06-19",
+        "stade_procedural": "adopte", "sort": "adopte", "date_min": "2019-06-19",
         "date_max": "2024-03-21", "legislature": "15", "source_url": None,
         **texte,
     }]

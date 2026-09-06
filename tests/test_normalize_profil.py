@@ -78,6 +78,7 @@ def _raw_depute(extra: dict = None) -> dict:
                 "titre": "Projet de loi de finances 2024",
                 "date_min": "2023-09-01",
                 "date_max": "2023-12-20",
+                "sort": "adopte",
                 "url_source": "https://www.nosdeputes.fr/17/dossier/2023-PLF",
                 "url_institution": "https://www.assemblee-nationale.fr/dyn/17/dossiers/2023-PLF",
             }

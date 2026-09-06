@@ -79,9 +79,14 @@ def test_le_sort_reprend_le_vocabulaire_des_fiches_de_gouvernement():
     assert KNOWN_SORTS_TEXTE_PORTE == KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL
 
 
-def test_les_trois_motifs_ne_se_reparent_pas_au_meme_endroit():
+def test_les_motifs_ne_se_reparent_pas_au_meme_endroit():
+    """#747 ajoute le quatrième : les trois premiers sont ceux de l'archive AN
+    — un trou à combler, un état légitime, une panne — et #743 n'avait instruit
+    que ce chemin. Le dump ParlTrack ne porte AUCUNE issue de dossier : c'est
+    un fait de la source, qui ne se répare nulle part."""
     assert KNOWN_MOTIFS_SORT_NON_RESOLU == {
         "fam_code_inconnu", "sans_decision", "archives_indisponibles",
+        "source_sans_sort",
     }
 
 

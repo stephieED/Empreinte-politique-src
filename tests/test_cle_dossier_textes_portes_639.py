@@ -32,6 +32,7 @@ DOSSIER_REEL = {
     "role": "auteur",
     "type_rapport": None,
     "stade_procedural": "adopte",
+    "sort": "adopte",
     "date_min": "2019-06-19",
     "date_max": "2024-03-21",
     "legislature": "15",
@@ -75,12 +76,20 @@ def test_le_reste_du_texte_porte_est_inchange():
         "stade_procedural", "date_min", "date_max", "legislature", "source_url",
         "sort", "sort_non_resolu",
     }, "clés ajoutées : `nature_texte` (#689), `sort` et `sort_non_resolu` (#743)"
-    # #743 — l'ISSUE se lit à côté de la PROGRESSION, jamais à sa place : un
-    # dossier `adopte` au stade peut n'avoir aucun sort collecté, et un dossier
-    # sans décision de séance en a un motif, pas un sort par défaut.
-    assert normalise["sort"] is None and normalise["sort_non_resolu"] is None, (
-        "le dossier de fixture ne porte pas de sort : la normalisation ne doit "
-        "pas en inventer un depuis `stade_procedural`"
+    # #743 — l'ISSUE se lit à côté de la PROGRESSION, jamais à sa place.
+    # #747 — le sort de la fixture est RECOPIÉ, pas dérivé : la preuve tient au
+    # contre-exemple ci-dessous, où stade et sort divergent, et non à une
+    # entrée qui n'en porterait aucun. Cette fixture-là décrivait le monde
+    # d'avant #743 ; les 423 entrées brutes du corpus portent toutes les deux
+    # clés, et une entrée qui n'en porterait aucune est désormais refusée par
+    # `validate_profil` (absence sans cause, §2 règle 5).
+    assert normalise["sort"] == "adopte"
+    assert normalise["sort_non_resolu"] is None
+    divergent = _normalize_texte_porte(
+        {**DOSSIER_REEL, "stade_procedural": "adopte", "sort": "rejete"}
+    )
+    assert divergent["sort"] == "rejete", (
+        "la normalisation ne doit pas déduire le sort du stade procédural"
     )
 
 

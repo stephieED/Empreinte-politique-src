@@ -315,6 +315,21 @@ toutes les législatures de votes sont résolues, 1 sinon. À lancer avant de se
 fier à la clé : `numero_scrutin` repart à 1 à chaque législature.
 → `docs/decisions/resolution-legislature-votes.md`.
 
+### Un profil de roster porte-t-il une liste que sa collecte déclare écartée ?
+
+```bash
+python3 scripts/purger_textes_portes_roster_747.py --verifier
+python3 scripts/purger_textes_portes_roster_747.py --dry-run
+python3 scripts/purger_textes_portes_roster_747.py
+```
+
+`--verifier` ne modifie rien : sortie 0 si aucun profil de roster ne porte de
+`textes_portes` alors que son `meta.collecte_ecartee` le déclare écarté, 1
+sinon. Sans drapeau, la purge s'applique aux **deux** étages — les slugs cibles
+étant établis sur le pivot, seul étage qui porte `meta.provenance`. Passe de
+corpus, sans réseau, idempotente.
+→ `docs/decisions/purge-textes-portes-roster-747.md`.
+
 ### Volumétrie : ce que pèse le corpus et ce que rapporterait chaque levier
 
 ```bash

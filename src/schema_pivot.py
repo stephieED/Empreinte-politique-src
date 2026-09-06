@@ -901,6 +901,13 @@ KNOWN_MOTIFS_SORT_NON_RESOLU: frozenset[str] = frozenset({
     "fam_code_inconnu",
     "sans_decision",
     "archives_indisponibles",
+    # #747 — les trois motifs ci-dessus sont ceux de l'archive AN, et #743 n'a
+    # instruit que ce chemin. Le dossier ParlTrack, lui, ne porte AUCUNE issue :
+    # `get_dossiers_for_mep` indexe reference, titre, comite, role, date,
+    # source_url, et rien d'autre. Ce n'est ni un trou à combler ni une panne,
+    # c'est ce que la source dit — et le dire est la seule façon de ne pas
+    # publier une absence sans cause (§2 règle 5).
+    "source_sans_sort",
 })
 
 # Stade procédural d'un texte, pour identifier ce qui a été réellement débattu.
@@ -2076,6 +2083,17 @@ def validate_profil(
                 errors.append(
                     f"textes_portes[{i}] porte à la fois sort et sort_non_resolu — "
                     "un sort résolu n'a pas de motif d'absence."
+                )
+            # #747 — l'invariant que ce commentaire promettait sans l'imposer.
+            # 49 entrées ont vécu un mois avec `sort` ET `sort_non_resolu` nuls
+            # : une absence sans cause, que §2 règle 5 refuse, et que ce bloc
+            # laissait passer parce qu'il ne contrôlait `sort_non_resolu` que
+            # lorsqu'il était NON nul. Le contrôle de la contradiction ne
+            # couvrait donc que la moitié bruyante du couple.
+            if sort is None and non_resolu is None:
+                errors.append(
+                    f"textes_portes[{i}] porte `sort: null` sans sort_non_resolu — "
+                    "une absence doit nommer sa cause (AGENTS.md §2 règle 5)."
                 )
             if non_resolu is not None:
                 if not isinstance(non_resolu, dict):
