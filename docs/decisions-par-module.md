@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 226 décisions
+gouverne sans avoir à fouiller les 227 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -263,11 +263,12 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 
 ## `src/candidate_profile.py`
 
-77 décision(s) le gouvernent ; le module en cite 12.
+78 décision(s) le gouvernent ; le module en cite 12.
 
 | Décision | Nomme |
 | --- | --- |
 | [Trois absences publiées comme des faits (#556, #558, #560) (2026-08-29)](decisions/absences-publiees-comme-faits-556-558-560.md) | `AN_SCRUTINS_LEGISLATURES`, `NOM_INDEX_IDENTITE`, `NOM_INDEX_ORGANES`, `WARNING_PREFIX_INTERVENTIONS_SYCERON_AUCUNE`, `WARNING_PREFIX_INTERVENTIONS_SYCERON_INDISPONIBLES`, `WARNING_PREFIX_VOTES_INTROUVABLES`, `_TYPE_ORGANE_NON_MAPPES`, `_champ_identite_an`, `_format_lieu_naissance`, `_format_nom_complet`, `_texte_an` |
+| [La cascade des textes portés entre dans l'UI, et la section s'aligne sur la maquette (#328), 06/09/2026](decisions/alignement-section-propose-ui-328.md) | `_STADE_RANKS` |
 | [Amendements : la clé du store est l'`uid`, jamais le `numero` (préalable à #431) (2026-08-18)](decisions/amendements-cle-uid.md) | `_aggregate_amendements_index`, `_load_frozen_amendement_index`, `_read_cached_amendements_acteur` |
 | [Un amendement cosigné n'est pas N amendements : deux grandeurs, deux noms (#643) (2026-08-31)](decisions/amendements-distincts-et-signatures-643.md) | `_periodes_mandats_assemblee` |
 | [Marqueur disque inter-jobs pour le cache d'échec amendements par législature (#246) (2026-08-13)](decisions/amendements-failed-legislature-marker-inter-jobs.md) | `AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS`, `AMENDEMENTS_DOWNLOAD_READ_TIMEOUT_SECONDS`, `_amendements_failed_legislatures` |
@@ -841,11 +842,12 @@ Le mentionnent sans le gouverner : [`pivot-freshness-timestamps-stables`](decisi
 
 ## `src/schema_pivot.py`
 
-35 décision(s) le gouvernent ; le module en cite 5.
+36 décision(s) le gouvernent ; le module en cite 5.
 
 | Décision | Nomme |
 | --- | --- |
 | [Trois absences publiées comme des faits (#556, #558, #560) (2026-08-29)](decisions/absences-publiees-comme-faits-556-558-560.md) | `validate_profil` |
+| [La cascade des textes portés entre dans l'UI, et la section s'aligne sur la maquette (#328), 06/09/2026](decisions/alignement-section-propose-ui-328.md) | `KNOWN_STADES_PROCEDURAUX` |
 | [Un mandat dit quel référentiel a établi sa catégorie, et l'absence n'accuse personne (#718) (2026-09-03)](decisions/categorie-source-des-mandats-718.md) | `KNOWN_CATEGORIE_SOURCES` |
 | [`chambres` au niveau profil : une liste dérivée, et `chambre` qui n'en est plus que le premier élément (#493) (2026-08-20)](decisions/chambres-profil-derivees.md) | `ChambresDerivees`, `KNOWN_CHAMBRES`, `ORDRE_CHAMBRES`, `appliquer_chambres`, `deriver_chambres`, `validate_profil` |
 | [La civilité et la nomenclature PCS de l'INSEE traversaient le pipeline sans y laisser de trace (#659) (2026-08-31)](decisions/civilite-et-pcs-insee-659.md) | `CHAMPS_IDENTITE_TEXTE_LIBRE`, `validate_profil` |

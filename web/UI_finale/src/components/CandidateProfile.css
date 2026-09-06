@@ -34,6 +34,10 @@
   --gouv-wash: #f6f0e4;
   --gouv-line: #e3d2ab;
   --gouv-pale: #efe4cc;
+  /* La barre de sortie d'une porte de la cascade (#328). Hors rampe d'encre :
+     elle ne marque aucune étape ATTEINTE, elle constate qu'aucun acte au-delà
+     n'est enregistré à la date du corpus. Un gris, donc, et pas un cran. */
+  --ter-sortie: #a9a4b0;
 
   flex: 1;
   min-width: 0;
@@ -1620,3 +1624,63 @@
 /* Le vert du fait acquis : c'est la MÊME encre que « adopté » des positions de
    vote, et pour la même raison — un fait de la source, jamais un jugement. */
 .cp-chute-oui { color: #007a45; font-weight: 800; }
+
+/* ── La cascade procédurale des textes portés (#328) ───────────────────────
+ *
+ * Les rubans portent leur teinte de matière en attribut : la palette est
+ * catégorielle et calculée par `teinteMatiere`, pas déclarée ici. Ce que la
+ * feuille tient, c'est l'ENCRE DES ÉTAPES — une rampe, du plus clair au plus
+ * foncé dans l'ordre que la source publie. Ce n'est pas une échelle de valeur :
+ * un texte promulgué n'est pas « mieux » qu'un texte en commission (§2 règle 1),
+ * la rampe ne fait que rendre les quatre barres distinguables entre elles.
+ */
+.cp-ter { margin-top: 14px; }
+.cp-ter-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.cp-ter-vide, .cp-ter-invite { margin: 10px 0 0; }
+
+.cp-ter-svg path[stroke], .cp-ter-svg rect, .cp-ter-etape { cursor: pointer; }
+.cp-ter-issue { fill: var(--ter-sortie); }
+/* Le voile ÉTEINT ce qui ne croise pas la sélection ; il ne l'efface pas —
+   un texte hors sélection reste un texte tracé. */
+.cp-ter-voile { opacity: 0.22; }
+
+.cp-ter-nom {
+  font-size: 11.5px; fill: var(--ink, #17141f); text-anchor: end;
+  font-family: 'Manrope', system-ui, sans-serif;
+}
+.cp-ter-tirant { fill: none; stroke: var(--border, #e7e4df); stroke-width: 1; }
+.cp-ter-etape {
+  font-size: 11.5px; fill: var(--muted, #8b8794);
+  font-family: 'Manrope', system-ui, sans-serif;
+}
+.cp-ter-etape--fin { text-anchor: end; }
+.cp-ter-etape--issue { font-size: 10.5px; }
+.cp-ter-n { fill: var(--ink, #17141f); font-weight: 800; }
+.cp-ter-etape:hover, .cp-ter-etape:hover .cp-ter-n { fill: var(--ink, #17141f); }
+
+.cp-ter-liste { margin-top: 14px; }
+.cp-ter-liste-tete {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  padding: 10px 0 8px; border-bottom: 1px solid var(--border, #e7e4df); font-size: 12.5px;
+}
+.cp-ter-liste-quoi { font-weight: 800; }
+.cp-ter-liste ul { list-style: none; margin: 0; padding: 0; }
+.cp-ter-liste li {
+  display: grid; grid-template-columns: 1fr auto; gap: 2px 14px;
+  padding: 9px 0; border-bottom: 1px solid var(--border-soft, #f0eeeb);
+}
+.cp-ter-titre { font-weight: 700; font-size: 13px; }
+.cp-ter-titre a {
+  color: inherit; text-decoration: underline; text-decoration-color: var(--border, #e7e4df);
+  text-underline-offset: 2px;
+}
+.cp-ter-titre a:hover { text-decoration-color: currentcolor; }
+.cp-ter-pastille {
+  font-size: 11.5px; color: var(--muted, #8b8794); text-align: right; white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.cp-ter-pastille::before {
+  content: ''; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--pastille, #8b8794); flex: none;
+}
+.cp-ter-fait { font-size: 12px; color: var(--muted, #8b8794); grid-column: 1 / -1; }
