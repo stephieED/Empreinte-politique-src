@@ -69,6 +69,7 @@ from budget_collecte import (
 import correspondance_acteurs_an
 from download_watchdog import download_with_watchdog
 from gouvernement_textes import (
+    _determine_statut,
     DOSSIERS_CACHE_DIR,
     ensure_dossiers_zips_downloaded,
     iter_dossiers_bruts,
@@ -3278,6 +3279,28 @@ def _build_acteur_textes_portes_index() -> dict[str, list[dict[str, Any]]]:
             # ministre. L'information n'était pas perdue à la source : elle
             # était jetée ici.
             nature = nature_texte_depose(dossier)
+            # #743 : l'ISSUE du dossier, lue dans la MÊME archive et par la MÊME
+            # fonction que les fiches de gouvernement — `_determine_statut` ne
+            # dépend pas de l'origine du dossier, c'est `parse_dossier_gouvernemental`
+            # qui filtre l'origine AVANT de l'appeler. Sans elle, `textes_portes[]`
+            # publiait dix champs dont aucun ne disait ce qu'était devenu le texte :
+            # ni rejeté, ni retiré, ni en navette. `stade_procedural` encode une
+            # PROGRESSION, et l'absence du cran suivant est un fait de la source à
+            # sa date, jamais un sort.
+            sort, _sort_49_3, avertissement_sort = _determine_statut(
+                dossier.get("uid"), dossier.get("actesLegislatifs")
+            )
+            # `sort_49_3` est volontairement NON republié ici : `adopte_49_3` et
+            # `rejete_49_3` le portent déjà, et le dupliquer ferait deux faits là
+            # où il n'y en a qu'un.
+            sort_non_resolu = None
+            if sort is None:
+                # Deux absences qui ne se réparent pas au même endroit : un code
+                # que la table ne connaît pas est un trou à combler, un dossier
+                # sans décision de séance est un état légitime.
+                sort_non_resolu = {
+                    "motif": "fam_code_inconnu" if avertissement_sort else "sans_decision"
+                }
             legislature = dossier.get("legislature")
             source_url = (
                 f"https://www.assemblee-nationale.fr/dyn/{legislature}/dossiers/{titre_chemin}"
@@ -3291,6 +3314,8 @@ def _build_acteur_textes_portes_index() -> dict[str, list[dict[str, Any]]]:
                     "nature_texte": nature,
                     "type_rapport": type_rapport,
                     "stade_procedural": stade,
+                    "sort": sort,
+                    "sort_non_resolu": sort_non_resolu,
                     "date_min": date_min,
                     "date_max": date_max,
                     "legislature": legislature,

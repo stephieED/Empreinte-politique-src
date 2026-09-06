@@ -409,6 +409,11 @@ def _normalize_texte_porte(d: dict[str, Any]) -> dict[str, Any]:
         "nature_texte": nature,
         "type_rapport": d.get("type_rapport"),
         "stade_procedural": d.get("stade_procedural"),
+        # #743 — l'ISSUE du dossier, à côté de sa PROGRESSION et jamais à sa
+        # place. Un sort absent s'accompagne toujours de son motif : les deux
+        # traversent ensemble, sinon le pivot publierait une absence sans cause.
+        "sort": d.get("sort"),
+        "sort_non_resolu": d.get("sort_non_resolu"),
         "date_min": d.get("date_min"),
         "date_max": d.get("date_max"),
         "legislature": d.get("legislature"),

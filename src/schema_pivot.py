@@ -272,6 +272,14 @@ Format d'un profil pivot v1 :
             "stade_procedural": null,        # "depose" | "examine_commission" |
                                              # "inscrit_ordre_jour" | "discute_seance" |
                                              # "adopte" | "promulgue" | null
+                                             # PROGRESSION, jamais une issue (#743)
+            "sort": null,                    # l'ISSUE du dossier, cf. KNOWN_SORTS_TEXTE_PORTE.
+                                             # Lu dans `statutConclusion.fam_code` par la même
+                                             # fonction que les fiches de gouvernement (#743).
+                                             # `null` s'accompagne TOUJOURS de sort_non_resolu
+            "sort_non_resolu": {             # présent SEULEMENT si `sort` est null, et il
+                "motif": "sans_decision"     # l'explique. cf. KNOWN_MOTIFS_SORT_NON_RESOLU
+            },
             "date_min": "2022-01-01",
             "date_max": "2022-06-30",
             "legislature": "16",
@@ -864,6 +872,35 @@ KNOWN_MODES_DECLENCHEMENT: frozenset[str] = frozenset({"droit_tirage", "demande_
 KNOWN_TYPES_RAPPORT: frozenset[str] = frozenset({
     "rapporteur_fond", "rapporteur_avis", "rapporteur_special_budget", "mission_information",
     "rapporteur_general",
+})
+
+#: L'ISSUE d'un dossier porté, distincte de son STADE (#743). Le stade encode une
+#: progression — `depose` → … → `promulgue` — et un dossier n'en porte que le cran
+#: le plus avancé atteint ; l'absence du cran suivant est un fait de la source à
+#: sa date, jamais un sort. **« Non adopté » ne devient pas « rejeté »**, et ce
+#: champ ne doit pas permettre de le déduire : il se lit à côté du stade, pas à sa
+#: place.
+#:
+#: Mêmes valeurs que `schema_gouvernement.KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL`,
+#: parce que c'est la MÊME source lue par la MÊME fonction
+#: (`gouvernement_textes._determine_statut`, sur `statutConclusion.fam_code`) —
+#: la duplication est verrouillée par un test, les deux schémas restant par
+#: ailleurs indépendants.
+KNOWN_SORTS_TEXTE_PORTE: frozenset[str] = frozenset({
+    "depose", "navette_en_cours", "adopte", "adopte_49_3", "adopte_cmp",
+    "promulgue", "rejete", "rejete_49_3", "retire",
+})
+
+#: Pourquoi un texte porté ne porte pas son sort (#743). Fermé, et chaque motif
+#: se répare ailleurs : `fam_code_inconnu` est un code que la source a ajouté et
+#: que la table ne connaît pas, `sans_decision` est un dossier qui n'a pas encore
+#: atteint de décision de séance — un état légitime, pas une lacune —, et
+#: `archives_indisponibles` est une panne du run. Les confondre ferait passer un
+#: état normal pour un défaut.
+KNOWN_MOTIFS_SORT_NON_RESOLU: frozenset[str] = frozenset({
+    "fam_code_inconnu",
+    "sans_decision",
+    "archives_indisponibles",
 })
 
 # Stade procédural d'un texte, pour identifier ce qui a été réellement débattu.
@@ -2023,6 +2060,32 @@ def validate_profil(
                     f"textes_portes[{i}].stade_procedural non reconnu : {stade_procedural!r}. "
                     f"Valeurs connues : {sorted(KNOWN_STADES_PROCEDURAUX)}."
                 )
+            # #743 — le sort et son motif d'absence sont deux faces d'une seule
+            # information, et la contradiction est l'erreur qui compte : porter
+            # les deux dirait à la fois « voici son issue » et « voici pourquoi
+            # elle manque ». Un `sort` nul SANS motif serait pire encore : une
+            # absence sans cause, que §2 règle 5 refuse.
+            sort = t.get("sort")
+            non_resolu = t.get("sort_non_resolu")
+            if sort is not None and sort not in KNOWN_SORTS_TEXTE_PORTE:
+                errors.append(
+                    f"textes_portes[{i}].sort non reconnu : {sort!r}. "
+                    f"Valeurs connues : {sorted(KNOWN_SORTS_TEXTE_PORTE)}."
+                )
+            if sort is not None and non_resolu is not None:
+                errors.append(
+                    f"textes_portes[{i}] porte à la fois sort et sort_non_resolu — "
+                    "un sort résolu n'a pas de motif d'absence."
+                )
+            if non_resolu is not None:
+                if not isinstance(non_resolu, dict):
+                    errors.append(f"textes_portes[{i}].sort_non_resolu doit être un dict.")
+                elif non_resolu.get("motif") not in KNOWN_MOTIFS_SORT_NON_RESOLU:
+                    errors.append(
+                        f"textes_portes[{i}].sort_non_resolu.motif inconnu : "
+                        f"{non_resolu.get('motif')!r}. Valeurs connues : "
+                        f"{sorted(KNOWN_MOTIFS_SORT_NON_RESOLU)}."
+                    )
 
     # Depuis #431, `type_deposant`, `sort` et `base_juridique_irrecevabilite` ont
     # migré vers l'index des amendements : leur validation a suivi les champs et
