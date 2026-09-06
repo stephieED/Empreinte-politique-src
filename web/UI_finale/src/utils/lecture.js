@@ -31,6 +31,71 @@
  * corpus (1 sur les 13 candidats déclarés) s'affichaient sans couleur NI
  * libellé — une pastille invisible et un texte vide.
  */
+/*
+ * LE SORT D'UN TEXTE — vocabulaire fermé, et le même des deux côtés.
+ *
+ * Ces neuf valeurs sont `KNOWN_SORTS_TEXTE_PORTE` (`src/schema_pivot.py`) ET
+ * `KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL` (`src/schema_gouvernement.py`) : les
+ * deux frozensets sont identiques par construction, parce que la même fonction
+ * lit la même source (`statutConclusion.fam_code`, #743). Les libellés vivaient
+ * dans `data/pivotAdapter.js`, au service des seules fiches de gouvernement ;
+ * la fiche candidat les lit maintenant aussi, et un vocabulaire écrit deux fois
+ * est un vocabulaire qui divergera.
+ *
+ * LE SORT N'EST PAS LE STADE, ET NE S'EN DÉDUIT JAMAIS. `stade_procedural`
+ * encode une PROGRESSION — le cran le plus avancé réellement atteint — et le
+ * sort une ISSUE. « Discuté en séance et pas adopté » ne veut pas dire
+ * « rejeté » : la source ne le dit pas. Les deux se lisent côte à côte, jamais
+ * l'un à la place de l'autre.
+ *
+ * `depose` et `rejete_49_3` ne sont portés par aucun texte du corpus au commit
+ * de données `acd7f5b7` — ils sont ici quand même : le vocabulaire est celui du
+ * schéma, pas celui des données d'aujourd'hui, et une valeur qui apparaît au
+ * prochain run doit s'afficher, pas tomber dans un repli.
+ */
+export const LIBELLE_SORT_TEXTE = {
+  depose: 'Déposé',
+  navette_en_cours: 'Navette en cours',
+  promulgue: 'Promulgué (publié au Journal officiel)',
+  adopte: 'Adopté',
+  adopte_cmp: 'Adopté (texte de commission mixte paritaire)',
+  adopte_49_3: 'Adopté via 49.3',
+  rejete: 'Rejeté',
+  rejete_49_3: 'Rejeté via 49.3',
+  retire: 'Retiré',
+};
+
+/*
+ * LES DEUX SORTS QUI SONT UN FAIT PROCÉDURAL, PAS UNE POSITION DE VOTE.
+ *
+ * `AGENTS.md` §2 règle 4 : un 49.3 n'est jamais traité comme un vote. Un texte
+ * adopté par engagement de responsabilité l'a été SANS QUE L'ASSEMBLÉE VOTE —
+ * le ranger parmi les adoptions ordinaires effacerait précisément ce qui le
+ * distingue. Il est donc nommé, compté à part, et jamais fondu.
+ */
+export const SORTS_PROCEDURE_49_3 = new Set(['adopte_49_3', 'rejete_49_3']);
+
+/*
+ * POURQUOI UN TEXTE N'A PAS DE SORT — quatre motifs, fermés, et ils ne se
+ * réparent pas au même endroit (`KNOWN_MOTIFS_SORT_NON_RESOLU`, #743/#747).
+ *
+ * Le motif s'affiche À LA PLACE du sort, jamais un sort par défaut : une
+ * absence est un fait, et le §2 règle 5 interdit de la combler. Aucun texte
+ * publié n'en porte au commit de données `acd7f5b7` — la table est là parce
+ * que le schéma l'impose dès qu'un `sort` est nul, pas parce que le cas se
+ * présente aujourd'hui.
+ */
+export const MOTIF_SORT = {
+  sans_decision: 'le dossier n’a pas encore atteint de décision',
+  fam_code_inconnu: 'code de la source non reconnu',
+  archives_indisponibles: 'archives du dossier indisponibles',
+  source_sans_sort: 'la source ne publie pas d’issue',
+};
+
+export function estProcedure49_3(sort) {
+  return SORTS_PROCEDURE_49_3.has(sort);
+}
+
 export const VOTE_STYLE = {
   pour: { label: 'Pour', color: '#007A45', outlined: false },
   contre: { label: 'Contre', color: '#E53420', outlined: false },

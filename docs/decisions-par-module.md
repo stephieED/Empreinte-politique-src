@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 228 décisions
+gouverne sans avoir à fouiller les 229 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -815,7 +815,7 @@ Le mentionnent sans le gouverner : [`purge-doublons-herites-729`](decisions/purg
 
 ## `src/schema_gouvernement.py`
 
-10 décision(s) le gouvernent ; le module en cite 1.
+11 décision(s) le gouvernent ; le module en cite 1.
 
 | Décision | Nomme |
 | --- | --- |
@@ -828,6 +828,7 @@ Le mentionnent sans le gouverner : [`purge-doublons-herites-729`](decisions/purg
 | [`KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL` : ajout de `rejete_49_3` (#208, réouverte) (2026-08-14)](decisions/gouvernement-textes-statut-49-3-rejete.md) | `KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL`, `validate_profil_gouvernement` |
 | [La qualification d'un scrutin et la clé de son dossier étaient lues puis jetées (#639, rangs 1 et 2)](decisions/qualification-scrutins-et-cle-dossier-639.md) | `REQUIRED_TEXTE_KEYS` |
 | [`check_quality_gate.py` : section gouvernements (§5), couverture ministérielle proxy par `portefeuille` (#212) (2026-08-14)](decisions/quality-gate-gouvernements.md) | `validate_profil_gouvernement` |
+| [Le sort d'un texte entre dans la fiche, à côté de son stade et jamais à sa place (#743 dans #328), 07/09/2026](decisions/sort-des-textes-dans-la-fiche-328.md) | `KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL` |
 | [Un texte porté dit ce qu'il est devenu, et son sort ne se déduit jamais de son stade (#743) (2026-09-06)](decisions/sort-des-textes-portes-743.md) | `KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL` |
 
 Le mentionnent sans le gouverner : [`deduplication-entrees-membres`](decisions/deduplication-entrees-membres.md), [`gouvernement-doc-cloture`](decisions/gouvernement-doc-cloture.md), [`gouvernement-premier-ministre-portefeuille`](decisions/gouvernement-premier-ministre-portefeuille.md), [`hors-perimetre`](decisions/hors-perimetre.md), [`pivot-freshness-timestamps-stables`](decisions/pivot-freshness-timestamps-stables.md), [`web-v3-ui`](decisions/web-v3-ui.md).
@@ -852,7 +853,7 @@ Le mentionnent sans le gouverner : [`pivot-freshness-timestamps-stables`](decisi
 
 ## `src/schema_pivot.py`
 
-37 décision(s) le gouvernent ; le module en cite 5.
+38 décision(s) le gouvernent ; le module en cite 5.
 
 | Décision | Nomme |
 | --- | --- |
@@ -890,6 +891,7 @@ Le mentionnent sans le gouverner : [`pivot-freshness-timestamps-stables`](decisi
 | [Restaurer 789 interventions sans revenir sur le reste du schéma (#460) (2026-08-19)](decisions/restauration-interventions.md) | `validate_profil` |
 | [NosDéputés sort du pipeline (#529, lot 5 de l'épic « une seule source AN ») (2026-08-27)](decisions/retrait-nosdeputes-529.md) | `KNOWN_SOURCE_TYPES`, `validate_profil` |
 | [Le Sénat sort du périmètre, et le job qui concluait vert sans rien produire est retiré (#528, lot 3 de l'épic « une seule source AN ») (2026-08-26)](decisions/retrait-senat-528.md) | `KNOWN_CHAMBRES`, `KNOWN_SOURCE_TYPES` |
+| [Le sort d'un texte entre dans la fiche, à côté de son stade et jamais à sa place (#743 dans #328), 07/09/2026](decisions/sort-des-textes-dans-la-fiche-328.md) | `KNOWN_MOTIFS_SORT_NON_RESOLU`, `KNOWN_SORTS_TEXTE_PORTE` |
 | [Un texte porté dit ce qu'il est devenu, et son sort ne se déduit jamais de son stade (#743) (2026-09-06)](decisions/sort-des-textes-portes-743.md) | `KNOWN_SORTS_TEXTE_PORTE`, `KNOWN_STADES_PROCEDURAUX` |
 | [Taxonomie des mandats : exploitation des `typeOrgane` AN non mappés (#382, option « mixte ») (2026-08-17)](decisions/taxonomie-mandats-typeorgane-an.md) | `KNOWN_CATEGORIES`, `validate_profil` |
 | [La trame du profil candidat : l'institution est une colonne, jamais un chapitre (#328)](decisions/trame-profil-candidat-328.md) | `KNOWN_POSITIONS_HEMICYCLE`, `lire_chambres` |
