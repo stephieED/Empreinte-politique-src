@@ -428,6 +428,63 @@ def backfill_mandat_chambre(
     return result
 
 
+def backfill_sort_texte_porte(
+    merged: list[dict[str, Any]],
+    new_list: Optional[list[dict[str, Any]]],
+    key_fn: Callable[[dict[str, Any]], Key],
+) -> list[dict[str, Any]]:
+    """Reporte le sort d'un dossier neuf sur l'entrée ancienne de même clé (#743).
+
+    **Septième occurrence de la même famille** — #492, #639, #641, #696, #710,
+    #718 : un champ ajouté au schéma n'atteint jamais une entrée déjà collectée
+    tout seul. Ni `_dossier_key` (brut) ni `_pivot_texte_key` (pivot) ne
+    contiennent le sort, donc l'entrée neuve qui le porte a la même clé que
+    l'ancienne et serait écartée à chaque régénération.
+
+    **Câblé au BRUT seulement, et c'est une mesure, pas une intuition.** La
+    leçon de #729/#730 — « une correction doit passer les deux étages » — ne
+    s'applique pas ici, parce que `textes_portes` ne se fusionne pas comme les
+    autres listes : `merge_dossier_records` fait gagner l'entrée **neuve** en cas
+    de collision de clé, là où `merge_lists_by_key` fait gagner l'ancienne. Le
+    sort atteint donc le pivot de lui-même. Vérifié par mutation : décâbler ce
+    report du brut fait échouer un test, le décâbler du pivot n'en fait échouer
+    aucun — c'est ce qui a fait retirer le second, qui aurait été du code mort
+    justifié par un raisonnement faux.
+
+    Le report est strictement croissant : il ne remplit qu'un sort **absent**,
+    n'écrase jamais un sort déjà posé, ne touche aucun autre champ et ne
+    réordonne rien. `sort_non_resolu` suit le sort qu'il explique — les deux
+    voyagent ensemble, sinon une entrée porterait un motif sans absence.
+    """
+    if not new_list:
+        return merged
+
+    sorts_neufs: dict[Key, dict[str, Any]] = {}
+    for t in new_list:
+        if not isinstance(t, dict):
+            continue
+        # Une entrée neuve DIT quelque chose du sort dès qu'elle porte l'un des
+        # deux champs : un sort résolu, ou le motif de son absence. Exiger le
+        # seul `sort` laisserait sans explication les dossiers sans décision.
+        if t.get("sort") or t.get("sort_non_resolu"):
+            sorts_neufs.setdefault(key_fn(t), {
+                "sort": t.get("sort"),
+                "sort_non_resolu": t.get("sort_non_resolu"),
+            })
+
+    if not sorts_neufs:
+        return merged
+
+    result: list[dict[str, Any]] = []
+    for t in merged:
+        if isinstance(t, dict) and not t.get("sort") and not t.get("sort_non_resolu"):
+            neufs = sorts_neufs.get(key_fn(t))
+            if neufs:
+                t = {**t, **neufs}
+        result.append(t)
+    return result
+
+
 def backfill_mandat_categorie_source(
     merged: list[dict[str, Any]],
     new_list: Optional[list[dict[str, Any]]],
@@ -1343,8 +1400,12 @@ def merge_raw_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dic
     # `role: "auteur"` sur un projet de loi porté au nom du Gouvernement.
     merged["dossiers_legislatifs"] = sorted(
         (
-            d for d in backfill_dossier_nature(
-                merge_lists_by_key(old.get("dossiers_legislatifs"), new.get("dossiers_legislatifs"), _dossier_key),
+            d for d in backfill_sort_texte_porte(
+                backfill_dossier_nature(
+                    merge_lists_by_key(old.get("dossiers_legislatifs"), new.get("dossiers_legislatifs"), _dossier_key),
+                    new.get("dossiers_legislatifs"),
+                    _dossier_key,
+                ),
                 new.get("dossiers_legislatifs"),
                 _dossier_key,
             )
@@ -2166,6 +2227,12 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
     # elles (#668). Voir sa docstring pour la preuve de non-perte.
     merged["textes_portes"] = sorted(
         (
+            # #743 — PAS de report du sort ici, et c'est mesuré, pas supposé :
+            # `merge_dossier_records` fait gagner l'entrée NEUVE en cas de
+            # collision de clé, contrairement à `merge_lists_by_key` qui régit la
+            # fusion brute. Le sort arrive donc de lui-même à cet étage. Un report
+            # y serait du code mort justifié par un raisonnement faux — celui de
+            # #729/#730 appliqué à une liste qui ne se fusionne pas pareil.
             t for t in clean_stale_textes_portes(
                 merge_dossier_records(
                     old.get("textes_portes"), new.get("textes_portes"), _pivot_texte_key

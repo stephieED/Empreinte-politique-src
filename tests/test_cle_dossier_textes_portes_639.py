@@ -73,7 +73,15 @@ def test_le_reste_du_texte_porte_est_inchange():
     assert set(normalise) == {
         "titre", "dossier_id", "role", "nature_texte", "type_rapport",
         "stade_procedural", "date_min", "date_max", "legislature", "source_url",
-    }, "clé ajoutée par #689 : `nature_texte`"
+        "sort", "sort_non_resolu",
+    }, "clés ajoutées : `nature_texte` (#689), `sort` et `sort_non_resolu` (#743)"
+    # #743 — l'ISSUE se lit à côté de la PROGRESSION, jamais à sa place : un
+    # dossier `adopte` au stade peut n'avoir aucun sort collecté, et un dossier
+    # sans décision de séance en a un motif, pas un sort par défaut.
+    assert normalise["sort"] is None and normalise["sort_non_resolu"] is None, (
+        "le dossier de fixture ne porte pas de sort : la normalisation ne doit "
+        "pas en inventer un depuis `stade_procedural`"
+    )
 
 
 def test_profil_pivot_complet_reste_valide():
