@@ -16,6 +16,7 @@ import '../styles/shell.css';
 import './CandidateProfile.css';
 import { BadgeSource, Interdits, ListeVide, PositionVote } from './Lecture';
 import { teinteMatiere } from '../utils/matiere';
+import { croise, disposerCascade, textesDeLaSelection } from '../utils/cascadeTextes';
 import { Fragment, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -31,8 +32,8 @@ import {
   INSTITUTION_MISSION,
   INSTITUTION_PARLEMENT,
   LIBELLE_PISTE,
+  LIBELLE_STADE,
   POSITION_NON_DECLAREE,
-  SORT_NON_PUBLIE,
   libellePosition,
   motifPosition,
   positionSurAxe,
@@ -698,9 +699,259 @@ function Chute({ chute, mesure, matiere, onMesure, onMatiere }) {
 }
 
 /* ── § 3 — ce qu'il a proposé ────────────────────────────────────────────── */
+
+/*
+ * LA CASCADE PROCÉDURALE — ce que sont devenus les textes qu'il a portés.
+ *
+ * Trois portes, six branches : de la commission on va en séance OU nulle part
+ * ailleurs, de la séance à l'adoption OU nulle part ailleurs, de l'adoption à
+ * la promulgation OU nulle part ailleurs. La mise en page et le vocabulaire
+ * vivent dans `utils/cascadeTextes.js` — ici, on rend.
+ *
+ * LA LARGEUR EST MESURÉE, pas supposée. La chute voisine s'en passe : son
+ * viewBox est fixe et le navigateur la met à l'échelle. La cascade ne le peut
+ * pas — elle décide de la place de ses étiquettes, du mot long ou court, et de
+ * la gouttière des matières d'après la largeur réelle. À viewBox fixe, un
+ * téléphone recevrait la disposition d'un écran large, réduite au tiers.
+ */
+const ENCRE_ETAPE = ['#5b6b82', '#46566d', '#334458', '#17141f'];
+
+function encreDeLEtape(i, fin) {
+  if (!fin) return ENCRE_ETAPE[ENCRE_ETAPE.length - 1];
+  return ENCRE_ETAPE[Math.round((i / fin) * (ENCRE_ETAPE.length - 1))];
+}
+
+function useLargeur() {
+  const ref = useRef(null);
+  const [largeur, setLargeur] = useState(0);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    const obs = new ResizeObserver((entrees) => {
+      setLargeur(Math.round(entrees[0].contentRect.width));
+    });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return [ref, largeur];
+}
+
+function Cascade({ cascade, selection, onSelection }) {
+  const [ref, largeur] = useLargeur();
+  const rang = useMemo(
+    () => new Map((cascade.matieres || []).map((m, i) => [m, i])),
+    [cascade.matieres],
+  );
+  const teinteDe = useMemo(
+    () => (m) => teinteMatiere(m, rang.get(m) ?? 0),
+    [rang],
+  );
+  const vue = useMemo(
+    () => (largeur ? disposerCascade(cascade, largeur, teinteDe) : null),
+    [cascade, largeur, teinteDe],
+  );
+
+  const choisir = (matiere, lo, hi) => {
+    const memeChose = selection
+      && selection.matiere === matiere && selection.lo === lo && selection.hi === hi;
+    onSelection(memeChose ? null : { matiere, lo, hi });
+  };
+
+  return (
+    <div className="cp-ter" ref={ref}>
+      {vue === null ? (
+        <p className="cp-note cp-ter-vide">
+          {cascade.total <= 1
+            ? 'Un seul texte publié : une cascade n’aurait qu’un ruban, et la liste ci-dessous le dit mieux.'
+            : 'Trop peu de textes pour un diagramme de flux — la liste ci-dessous les porte tous.'}
+        </p>
+      ) : (
+        <svg
+          aria-label="Cascade procédurale des textes portés : à chaque étape, ce qui franchit et ce dont le corpus n’enregistre aucun acte au-delà"
+          className="cp-ter-svg"
+          role="img"
+          viewBox={`0 ${vue.y0.toFixed(1)} ${vue.W} ${vue.H}`}
+        >
+          {vue.rubans.map((r) => (
+            <path
+              className={croise(selection, r.matiere, r.lo, r.hi) ? '' : 'cp-ter-voile'}
+              d={r.d}
+              fill="none"
+              key={r.cle}
+              onClick={() => choisir(r.matiere, r.lo, r.hi)}
+              stroke={r.couleur}
+              strokeOpacity={r.sortie ? 0.62 : 0.85}
+              strokeWidth={r.epaisseur.toFixed(1)}
+            >
+              <title>{r.titre}</title>
+            </path>
+          ))}
+          {vue.barres.map((b) => (
+            <rect
+              className={[
+                b.couleur ? 'cp-ter-matiere' : (b.sortie ? 'cp-ter-issue' : 'cp-ter-encre'),
+                croise(selection, b.matiere, b.lo, b.hi) ? '' : 'cp-ter-voile',
+              ].filter(Boolean).join(' ')}
+              fill={b.couleur || (b.sortie ? undefined : encreDeLEtape(b.etape, vue.fin))}
+              height={b.h.toFixed(1)}
+              key={b.cle}
+              onClick={() => choisir(b.matiere, b.lo, b.hi)}
+              rx={b.rx || 0}
+              width={b.w.toFixed(1)}
+              x={b.x.toFixed(1)}
+              y={b.y.toFixed(1)}
+            >
+              <title>{b.titre}</title>
+            </rect>
+          ))}
+          {vue.chiffres.map((c) => (
+            <Fragment key={c.cle}>
+              <text
+                className="cp-ter-etape cp-ter-etape--issue"
+                onClick={() => choisir(null, c.lo, c.hi)}
+                x={c.x.toFixed(1)}
+                y={c.y.toFixed(1)}
+              >
+                <tspan className="cp-ter-n">{formatNumber(c.nombre)}</tspan> {c.haut}
+              </text>
+              <text
+                className="cp-ter-etape cp-ter-etape--issue"
+                onClick={() => choisir(null, c.lo, c.hi)}
+                x={c.xRetrait.toFixed(1)}
+                y={c.yRetrait.toFixed(1)}
+              >
+                {c.bas}
+              </text>
+            </Fragment>
+          ))}
+          {/* Jamais voilée : l'étiquette porte la lecture, et c'est par elle
+              qu'on sélectionne une étape toutes matières confondues. */}
+          {vue.etiquettes.map((e) => (
+            <text
+              className={`cp-ter-etape${e.finie ? ' cp-ter-etape--fin' : ''}${e.sortie ? ' cp-ter-etape--issue' : ''}`}
+              key={e.cle}
+              onClick={() => choisir(null, e.lo, e.hi)}
+              x={e.x.toFixed(1)}
+              y={e.y.toFixed(1)}
+            >
+              <tspan className="cp-ter-n">{formatNumber(e.total)}</tspan> {e.lib}
+            </text>
+          ))}
+          {vue.nomsMatiere.map((n) => (
+            <Fragment key={n.cle}>
+              {n.tirant && <path className="cp-ter-tirant" d={n.tirant} />}
+              <text className="cp-ter-nom" x={n.x.toFixed(1)} y={n.y.toFixed(1)}>
+                {n.court}
+                <title>{n.nom}</title>
+              </text>
+            </Fragment>
+          ))}
+        </svg>
+      )}
+
+      <div className="cp-cles">
+        {vue?.etroit && vue.matieres.map((m) => (
+          <button
+            aria-pressed={selection?.matiere === m}
+            className="cp-cle cp-cle--cliquable"
+            key={m}
+            onClick={() => choisir(m, 0, vue.fin)}
+            type="button"
+          >
+            <i style={{ background: teinteDe(m) }} />
+            {m}
+          </button>
+        ))}
+      </div>
+      <p className="cp-note">
+        <b>Aucun seuil</b> : les {formatNumber(cascade.total)} textes sont tous tracés, du plus
+        gros ruban au trait d’un seul texte. La branche basse dit « non discuté », « non
+        adopté », « non promulgué » — à la date du corpus, aucun acte de l’étape suivante n’est
+        enregistré. <b>Ce n’est ni « rejeté » ni « abandonné »</b> : la source ne publie pas le
+        sort d’un texte, seulement l’étape la plus avancée qu’il a atteinte, et un texte en
+        navette est dedans. La dernière barre n’a pas de sortie : la procédure y est finie.
+        {cascade.sansMatiere > 0 && (
+          <>
+            {' '}
+            <b>{formatNumber(cascade.sansMatiere)}</b> de ces textes n’ont pas de commission
+            saisie au fond dans la table : ils gardent leur place sous « matière non établie ».
+          </>
+        )}
+      </p>
+    </div>
+  );
+}
+
+function ListeCascade({ cascade, selection, onRaz }) {
+  const sel = useMemo(() => textesDeLaSelection(cascade, selection), [cascade, selection]);
+  if (!selection) {
+    return (
+      <p className="cp-note cp-ter-invite">
+        Clique un ruban, une barre ou une étiquette pour lire les textes qui la composent.
+      </p>
+    );
+  }
+  const fin = cascade.stades.length - 1;
+  const nomDe = (i) => LIBELLE_STADE[cascade.stades[i]] || cascade.stades[i];
+  const ou = selection.lo === selection.hi
+    ? (selection.lo === fin ? nomDe(fin) : `${nomDe(selection.lo)}, et non ${nomDe(selection.lo + 1)}`)
+    : (selection.lo === 0 ? 'publiés' : `${nomDe(selection.lo)} ou au-delà`);
+  return (
+    <div className="cp-ter-liste">
+      <div className="cp-ter-liste-tete">
+        <span className="cp-ter-liste-quoi">
+          {selection.matiere || 'toutes matières'} · {ou} — {formatNumber(sel.length)} texte
+          {sel.length > 1 ? 's' : ''}
+        </span>
+        <button className="cp-chute-raz" onClick={onRaz} type="button">Tout afficher</button>
+      </div>
+      <ul>
+        {sel.map((t) => (
+          <li key={`${t.titre}-${t.stadeCle}`}>
+            <span className="cp-ter-titre">
+              {t.url
+                ? <a href={t.url} rel="noreferrer" target="_blank">{t.titre}</a>
+                : t.titre}
+            </span>
+            <span
+              className="cp-ter-pastille"
+              style={{ '--pastille': encreDeLEtape(cascade.stades.indexOf(t.stadeCle), fin) }}
+            >
+              {t.stade}
+            </span>
+            <span className="cp-ter-fait">
+              {t.matiere}{t.an ? ` · ${t.an}` : ''}{t.role ? ` · ${t.role}` : ''}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <p className="cp-note">
+        Le titre ouvre le dossier à l’Assemblée nationale. La pastille donne{' '}
+        <b>l’étape la plus avancée</b> que le corpus enregistre pour ce texte à sa date —{' '}
+        <b>pas son sort</b> : rien ne dit s’il a été repoussé, retiré, ou s’il attend encore.
+      </p>
+    </div>
+  );
+}
+
+/*
+ * L'ORDRE DE LA SECTION EST CELUI DES DEUX POPULATIONS, ET IL S'EMBOÎTE.
+ *
+ * D'abord ce que sont devenus les textes dont il est l'AUTEUR ou le
+ * RAPPORTEUR ; ensuite les amendements qu'il a déposés sur les textes DES
+ * AUTRES. Deux populations distinctes, jamais additionnées, et la première
+ * éclaire la seconde.
+ *
+ * CE QUE CETTE SECTION N'AFFICHE PLUS, ET POURQUOI C'EST DIT ICI. La barre des
+ * sorts d'amendement par législature, qui portait la position déclarée du
+ * groupe, a été retirée : la maquette validée ne la porte pas. Le fait n'est
+ * pas perdu — `amendements.legislatures[].position` reste calculé, et la
+ * remettre est une carte à écrire, pas une donnée à recollecter.
+ */
 function Propositions({ amendements, textes, causeAmendements, causeTextes, voix }) {
   const [mesure, setMesure] = useState('depots');
   const [matiere, setMatiere] = useState(null);
+  const [selTexte, setSelTexte] = useState(null);
   const choisirMatiere = (m) => setMatiere((a) => (a === m ? null : m));
   const dossiersDeLaMatiere = matiere
     ? (amendements.chute?.dossiersParMatiere?.[matiere] || [])
@@ -708,49 +959,84 @@ function Propositions({ amendements, textes, causeAmendements, causeTextes, voix
         .sort((a, b) => b.n - a.n)
     : [];
   const avecAdopte = dossiersDeLaMatiere.filter((d) => d.adoptes > 0).length;
+  // « N dossiers où un amendement a été adopté » : le fait qui compte — au
+  // moins un dépôt entré dans le texte — jamais un rapport (§6).
+  const dossiersAvecAdopte = Object.values(amendements.chute?.dossiersParMatiere || {})
+    .flat()
+    .filter((d) => d.adoptes > 0).length;
 
   return (
     <>
+      {textes.total === 0 ? (
+        <div className="cp-carte">
+          <ListeVide cause={causeTextes} source="Textes portés comme auteur ou rapporteur" />
+        </div>
+      ) : (
+        <div className="cp-carte cp-textes">
+          <div className="cp-gouv-tete">
+            <span className="cp-gouv-nom">Où en sont les textes {voix.quil} a portés</span>
+            <span className="cp-gouv-periode cp-num">
+              {formatNumber(textes.publies.length)} publiés · {formatNumber(textes.promulgues)}{' '}
+              promulgué{textes.promulgues > 1 ? 's' : ''}
+            </span>
+          </div>
+          {textes.cascade.total > 0 && (
+            <>
+              <Cascade
+                cascade={textes.cascade}
+                onSelection={setSelTexte}
+                selection={selTexte}
+              />
+              <ListeCascade
+                cascade={textes.cascade}
+                onRaz={() => setSelTexte(null)}
+                selection={selTexte}
+              />
+            </>
+          )}
+          {textes.ecartes.total > 0 && (
+            <p className="cp-note">
+              <b>
+                {textes.ecartes.total} de ses {textes.total} textes ne sont pas affiché
+                {textes.ecartes.total > 1 ? 's' : ''}
+              </b>{' '}
+              : {textes.ecartes.deposes > 0 &&
+                `${textes.ecartes.deposes} ${textes.ecartes.deposes > 1 ? 'ont' : 'a'} été déposé${textes.ecartes.deposes > 1 ? 's' : ''} sans jamais être examiné${textes.ecartes.deposes > 1 ? 's' : ''} en commission`}
+              {textes.ecartes.deposes > 0 && textes.ecartes.sansStade > 0 && ', '}
+              {textes.ecartes.sansStade > 0 &&
+                `${textes.ecartes.sansStade} ne porte${textes.ecartes.sansStade > 1 ? 'nt' : ''} pas de stade procédural`}
+              .{' '}
+              <em>
+                La règle éditoriale du dépôt ne publie par défaut que les textes ayant atteint
+                l’examen en commission.
+              </em>
+            </p>
+          )}
+          {textes.projetsDeLoi > 0 && (
+            <p className="cp-note">
+              <b>
+                {textes.projetsDeLoi} de ses {textes.total} textes portés sont des projets de loi
+              </b>
+              , c’est-à-dire des textes du gouvernement signés comme ministre. Le corpus les range
+              sous le même rôle « auteur » qu’une proposition déposée comme parlementaire :{' '}
+              <em>la distinction se lit dans l’intitulé officiel, aucun champ ne la porte.</em>
+            </p>
+          )}
+        </div>
+      )}
+
       {amendements.totalAuteur === 0 ? (
         <div className="cp-carte">
           <ListeVide cause={causeAmendements} source="Amendements déposés comme auteur principal" />
         </div>
-      ) : (
-        <div className="cp-carte">
-          {amendements.legislatures.map((leg) => (
-            <div className="cp-ligne" key={leg.legislature}>
-              <div className="cp-ligne-cle">
-                Auteur d’amendements
-                <Position position={leg.position} />
-              </div>
-              <div className="cp-ligne-corps">
-                <p className="cp-ligne-titre">{leg.legislature}<sup>e</sup> législature</p>
-                <Barre
-                  segments={leg.sorts.map((s) => ({
-                    cle: s.cle,
-                    label: s.label,
-                    n: s.n,
-                    color: s.cle === SORT_NON_PUBLIE ? null : OUTCOME_COLOR[s.cle] || null,
-                  }))}
-                  total={leg.total}
-                />
-              </div>
-              <div className="cp-ligne-nombre cp-num">
-                {formatNumber(leg.total)}
-                <span>déposés</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {amendements.chute && (
+      ) : amendements.chute && (
         <div className="cp-carte">
           <div className="cp-gouv-tete">
-            <span className="cp-gouv-nom">Quand {voix.sujet} a déposé, et sur quelle matière</span>
+            <span className="cp-gouv-nom">Ce {voix.quil} a déposé comme auteur principal</span>
             <span className="cp-gouv-periode cp-num">
-              {formatNumber(amendements.chute.totalDepots)} datés ·{' '}
-              {formatNumber(amendements.chute.totalDossiers)} dossiers
+              {formatNumber(amendements.totalAuteur)} amendements ·{' '}
+              {formatNumber(amendements.dossiers?.distincts ?? amendements.chute.totalDossiers)}{' '}
+              dossiers · {formatNumber(dossiersAvecAdopte)} où un amendement a été adopté
             </span>
           </div>
           <Chute
@@ -821,75 +1107,6 @@ function Propositions({ amendements, textes, causeAmendements, causeTextes, voix
               <p className="cp-bloc-texte">{b.explication}</p>
             </div>
           ))}
-        </div>
-      )}
-
-      {textes.total === 0 ? (
-        <div className="cp-carte">
-          <ListeVide cause={causeTextes} source="Textes portés comme auteur ou rapporteur" />
-        </div>
-      ) : (
-        <div className="cp-carte cp-textes">
-          <div className="cp-gouv-tete">
-            <span className="cp-gouv-nom">Où en sont les textes {voix.quil} a portés</span>
-            <span className="cp-gouv-periode cp-num">
-              {formatNumber(textes.publies.length)} publiés · {formatNumber(textes.promulgues)}{' '}
-              promulgué{textes.promulgues > 1 ? 's' : ''}
-            </span>
-          </div>
-          {textes.publies.length > 0 && (
-            <Barre
-              segments={textes.repartition.map((s) => ({
-                cle: s.cle,
-                label: s.label,
-                n: s.n,
-                color: s.cle === 'promulgue' ? '#14151A' : null,
-              }))}
-              total={textes.publies.length}
-            />
-          )}
-          {textes.ecartes.total > 0 && (
-            <p className="cp-note">
-              <b>
-                {textes.ecartes.total} de ses {textes.total} textes ne sont pas affiché
-                {textes.ecartes.total > 1 ? 's' : ''}
-              </b>{' '}
-              : {textes.ecartes.deposes > 0 &&
-                `${textes.ecartes.deposes} ${textes.ecartes.deposes > 1 ? 'ont' : 'a'} été déposé${textes.ecartes.deposes > 1 ? 's' : ''} sans jamais être examiné${textes.ecartes.deposes > 1 ? 's' : ''} en commission`}
-              {textes.ecartes.deposes > 0 && textes.ecartes.sansStade > 0 && ', '}
-              {textes.ecartes.sansStade > 0 &&
-                `${textes.ecartes.sansStade} ne porte${textes.ecartes.sansStade > 1 ? 'nt' : ''} pas de stade procédural`}
-              .{' '}
-              <em>
-                La règle éditoriale du dépôt ne publie par défaut que les textes ayant atteint
-                l’examen en commission.
-              </em>
-            </p>
-          )}
-          <ul className="cp-nommes">
-            {textes.publies.map((t) => (
-              <li className="cp-nomme" key={`${t.titre}-${t.dateMax}`}>
-                <span className="cp-nomme-cle">{t.role}</span>
-                <span>
-                  {t.titre}
-                  {t.projetDeLoi && <span className="cp-marque">projet de loi</span>}
-                </span>
-                <span className="cp-nomme-date cp-num">
-                  {t.stade} · {annee(t.dateMax)}
-                </span>
-              </li>
-            ))}
-          </ul>
-          {textes.projetsDeLoi > 0 && (
-            <p className="cp-note">
-              <b>
-                {textes.projetsDeLoi} de ses {textes.total} textes portés sont des projets de loi
-              </b>
-              , c’est-à-dire des textes du gouvernement signés comme ministre. Le corpus les range
-              sous le même rôle « auteur » qu’une proposition déposée comme parlementaire :{' '}
-              <em>la distinction se lit dans l’intitulé officiel, aucun champ ne la porte.</em>
-            </p>
-          )}
         </div>
       )}
     </>
@@ -1453,11 +1670,13 @@ export default function CandidateProfile({ candidate }) {
         <Gouvernements cause="fait_etabli" gouvernements={c.gouvernements} voix={c.voix} />
       </Section>
 
-      <Section
-        numero="3"
-        titre={c.voix.titres.propose}
-        critere="Une seule liste, quel que soit le banc. La position déclarée du groupe accompagne le chiffre qu’elle explique — un amendement d’opposition et un amendement de majorité ne sont pas le même acte. Rien n’est additionné."
-      >
+      {/* PAS DE CHAPEAU SUR CETTE SECTION. Il annonçait la règle avant qu'on
+          ait rien lu — « une seule liste, quel que soit le banc… » — et faisait
+          lire la consigne à la place du fait. Chaque figure porte désormais sa
+          note SOUS elle : la cascade dit qu'aucun seuil ne s'applique et que la
+          branche basse n'est pas un rejet, la chute dit que l'axe est le
+          calendrier et qu'aucun rapport n'est calculé. */}
+      <Section numero="3" titre={c.voix.titres.propose}>
         <Propositions
           amendements={c.amendements}
           textes={c.textes}

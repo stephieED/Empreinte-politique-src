@@ -423,7 +423,7 @@ export function buildCandidateView(
     positionALaDate,
     commissionDuDossier,
   );
-  const textes = textesPortes(pivot.textes_portes);
+  const textes = textesPortes(pivot.textes_portes, commissionDuDossier);
   const fonctions = fonctionsExercees(mandats);
   const qualite = regimeQualiteOrateur(interventions);
   const questions = directionQuestionsGouvernement(interventions, appartenances);

@@ -1115,7 +1115,20 @@ export function institutionDuTexte(texte) {
   return PROJET_DE_LOI.test(normalizeLabel(texte?.titre)) ? INSTITUTION_GOUVERNEMENT : null;
 }
 
-export function textesPortes(textes) {
+/*
+ * L'ÉCHELLE DE LA CASCADE EST CELLE QUE LE CORPUS REMPLIT.
+ *
+ * Un cran n'existe que si au moins un texte S'Y ARRÊTE. `inscrit_ordre_jour`
+ * est publié par le schéma et porté par AUCUN des 423 textes des 13 candidats
+ * déclarés : le dessiner ouvrirait une colonne que rien ne franchit et que
+ * rien ne quitte. La règle est générale, pas une exception codée en dur — le
+ * jour où un texte s'y arrête, le cran apparaît, et la négation de la porte
+ * précédente devient « non inscrit à l'ordre du jour » toute seule.
+ *
+ * Elle garantit aussi ce dont la mise en page a besoin : les crans vifs
+ * forment un préfixe sans trou, donc aucun lien ne vise un nœud absent.
+ */
+export function textesPortes(textes, commissionDuDossier = () => null) {
   const liste = textes || [];
   const publies = liste.filter((t) => STADES_PUBLIES.includes(t.stade_procedural));
   const ecartes = liste.filter((t) => !STADES_PUBLIES.includes(t.stade_procedural));
@@ -1156,6 +1169,60 @@ export function textesPortes(textes) {
       deposes: ecartes.filter((t) => t.stade_procedural === 'depose').length,
       sansStade: ecartes.filter((t) => !t.stade_procedural).length,
     },
+    cascade: cascadeDesTextes(publies, commissionDuDossier),
+  };
+}
+
+/*
+ * La cascade : un flux par (matière, cran d'arrêt), et la liste des textes qui
+ * le composent. La MATIÈRE est la commission saisie au fond du dossier, la
+ * même table que la chute des amendements — les deux figures doivent colorier
+ * pareil, sinon la section se lit comme deux sections. Son absence en est une
+ * (§2 règle 5) : un texte sans dossier, ou dont le dossier n'a pas de
+ * commission dans la table, tombe sous « matière non établie » — compté,
+ * jamais réparti au prorata ni déduit de l'intitulé.
+ */
+function cascadeDesTextes(publies, commissionDuDossier) {
+  const matiereDuTexte = (t) => {
+    const commission = t.dossier_id ? commissionDuDossier(t.dossier_id) : null;
+    return commission?.sigle || commission?.nom || MATIERE_NON_ETABLIE;
+  };
+  const parStade = new Map();
+  for (const t of publies) parStade.set(t.stade_procedural, (parStade.get(t.stade_procedural) || 0) + 1);
+  const stades = STADES_PUBLIES.filter((s) => (parStade.get(s) || 0) > 0);
+  const flux = new Map();
+  let sansMatiere = 0;
+  const listeTextes = publies.map((t) => {
+    const matiere = matiereDuTexte(t);
+    if (matiere === MATIERE_NON_ETABLIE) sansMatiere += 1;
+    const cle = `${matiere}\u0000${t.stade_procedural}`;
+    flux.set(cle, (flux.get(cle) || 0) + 1);
+    return {
+      titre: t.titre,
+      matiere,
+      stadeCle: t.stade_procedural,
+      stade: LIBELLE_STADE[t.stade_procedural] || t.stade_procedural,
+      role: LIBELLE_ROLE_TEXTE[t.role] || t.role || null,
+      url: t.source_url ?? null,
+      an: t.date_max ? String(t.date_max).slice(0, 4) : null,
+    };
+  });
+  // L'ordre des matières fixe les teintes, et il suit le VOLUME : recalculé
+  // ailleurs, la cascade et la chute cesseraient de colorier pareil.
+  const volume = new Map();
+  for (const t of listeTextes) volume.set(t.matiere, (volume.get(t.matiere) || 0) + 1);
+  const matieres = [...volume.keys()].sort(
+    (a, b) => volume.get(b) - volume.get(a) || a.localeCompare(b, 'fr'),
+  );
+  return {
+    total: publies.length,
+    sansMatiere,
+    stades,
+    matieres,
+    flux: [...flux.entries()]
+      .map(([cle, n]) => [cle.split('\u0000')[0], cle.split('\u0000')[1], n])
+      .sort((a, b) => b[2] - a[2] || String(a[0]).localeCompare(String(b[0]), 'fr')),
+    textes: listeTextes,
   };
 }
 
