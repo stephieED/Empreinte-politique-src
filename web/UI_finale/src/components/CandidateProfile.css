@@ -1568,3 +1568,55 @@
   background: var(--card);
   border: 1.5px dashed var(--gouv);
 }
+
+/* ── La chute : dépôts par année, empilés par matière (#328, section 2) ─────
+ *
+ * Le SVG porte la géométrie, le CSS ne porte que les teintes de l'interface —
+ * la teinte d'une matière vient de `utils/matiere.js`, en attribut `fill`,
+ * parce qu'elle dépend de la donnée et non de l'état de l'interface. */
+.cp-chute { margin-top: 14px; }
+.cp-chute-svg { display: block; width: 100%; height: auto; }
+.cp-chute-grille { stroke: var(--border-soft, #f0eeeb); stroke-width: 1; }
+.cp-chute-palier { stroke: var(--border, #e7e4df); stroke-width: 1; }
+.cp-chute-part { stroke: #fff; stroke-width: 0.5; cursor: pointer; }
+/* Le voile écarte sans effacer : la marche garde sa place dans l'escalier et
+   perd sa teinte. Déclaré après l'attribut `fill`, il gagne. */
+.cp-chute-part--voile { fill: #e9e6e1; }
+.cp-chute-total { fill: #14151a; }
+.cp-chute-axe { font-size: 11px; fill: var(--muted, #8b8794); text-anchor: end; }
+.cp-chute-axe--an { text-anchor: middle; }
+.cp-chute-total-nb { font-size: 11.5px; font-weight: 800; fill: var(--ink, #17141f); text-anchor: middle; }
+.cp-chute-mesure { margin-bottom: 2px; }
+.cp-chute-choix {
+  font: inherit; font-size: 12px; cursor: pointer; border: 1px solid transparent;
+  background: none; color: inherit; border-radius: 999px; padding: 3px 10px;
+}
+.cp-chute-choix:hover { border-color: var(--border, #e7e4df); }
+.cp-chute-choix[aria-pressed='true'] {
+  border-color: var(--ink, #17141f); background: var(--border-soft, #f0eeeb);
+  color: var(--ink, #17141f); font-weight: 700;
+}
+.cp-cle--cliquable { cursor: pointer; border: 1px solid transparent; background: none; font: inherit; }
+.cp-cle--cliquable:hover { border-color: var(--border, #e7e4df); border-radius: 999px; }
+.cp-cle--cliquable[aria-pressed='true'] {
+  border-color: var(--ink, #17141f); background: var(--border-soft, #f0eeeb);
+  border-radius: 999px; font-weight: 700;
+}
+.cp-chute-liste { margin-top: 14px; }
+.cp-chute-liste-tete {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  padding: 10px 0 8px; border-bottom: 1px solid var(--border, #e7e4df); font-size: 12.5px;
+}
+.cp-chute-liste-quoi { font-weight: 800; }
+.cp-chute-raz {
+  border: 1px solid var(--border, #e7e4df); background: none; color: var(--muted, #8b8794);
+  cursor: pointer; font: inherit; font-size: 11.5px; border-radius: 999px; padding: 2px 10px;
+}
+.cp-chute-raz:hover { color: var(--ink, #17141f); border-color: var(--ink, #17141f); }
+.cp-chute-liste ul { list-style: none; margin: 0; padding: 0; }
+.cp-chute-liste li { padding: 9px 0; border-bottom: 1px solid var(--border-soft, #f0eeeb); }
+.cp-chute-titre { font-weight: 700; font-size: 13px; display: block; }
+.cp-chute-fait { font-size: 12px; color: var(--muted, #8b8794); }
+/* Le vert du fait acquis : c'est la MÊME encre que « adopté » des positions de
+   vote, et pour la même raison — un fait de la source, jamais un jugement. */
+.cp-chute-oui { color: #007a45; font-weight: 800; }

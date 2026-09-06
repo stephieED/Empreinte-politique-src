@@ -649,6 +649,12 @@ export const LIBELLE_SORT = {
  */
 export const SORT_NON_PUBLIE = 'non_publie';
 
+/* La matière d'un dépôt est la commission saisie au fond de son dossier. Quand
+ * la source ne la donne pas — pas de dossier, ou pas de commission dans la
+ * table — le dépôt garde sa place sous ce nom, qui dit l'absence au lieu de la
+ * combler (§2 règle 5). */
+export const MATIERE_NON_ETABLIE = 'Matière non établie';
+
 /* ── Règle : ce que la Constitution a écarté avant discussion ────────────────
  *
  * `base_juridique_irrecevabilite` vaut « art. 40 » (dépense nouvelle sans
@@ -746,6 +752,12 @@ export function agregerAmendements(
   const textesSansDossier = new Set();
   let depotsSansDossier = 0;
   let totalAuteur = 0;
+  // Le dépôt daté, par année et par dossier : la matière d'un dépôt est celle
+  // de SON dossier, et elle ne se connaît qu'une fois la table des commissions
+  // consultée — ce qui ne peut pas se faire dans la boucle sans la ralentir.
+  const parAnnee = new Map();
+  let depotsSansDate = 0;
+  let adoptesTotal = 0;
 
   for (const a of amendementsJoints) {
     if (a.role_signataire !== 'auteur_principal') continue;
@@ -757,11 +769,32 @@ export function agregerAmendements(
     bloc.total += 1;
     const sort = a.sort || SORT_NON_PUBLIE;
     bloc.sorts.set(sort, (bloc.sorts.get(sort) || 0) + 1);
+    // Le compte d'adoptés porte sur TOUS les dépôts, y compris ceux qu'aucun
+    // dossier ne rattache : la somme par dossier en perdrait 6 chez Jérôme
+    // Guedj et 25 chez Laurent Wauquiez.
+    if (sort === 'adopté') adoptesTotal += 1;
     if (a.date) bloc.dates.push(a.date);
 
     if (a.base_juridique_irrecevabilite) {
       const base = a.base_juridique_irrecevabilite;
       parBase.set(base, (parBase.get(base) || 0) + 1);
+    }
+
+    // L'ANNÉE DU DÉPÔT, retenue ici et nulle part ailleurs : `joinAmendements`
+    // est un générateur, il ne se relit pas (#431), et une seconde passe
+    // reconstruirait exactement ce que cette contrainte supprime.
+    if (a.date) {
+      const an = a.date.slice(0, 4);
+      if (!parAnnee.has(an)) parAnnee.set(an, new Map());
+      // La matière n'est connue qu'après la boucle — la commission se lit par
+      // dossier. On empile donc par dossier, et on la résout ensuite. La clé
+      // est `dossier_id` SEUL, jamais un repli sur `texte_vise` : le défaut de
+      // clé `a or b` de #668 vaut ici comme ailleurs, et un dépôt sans dossier
+      // se range sous `null`, qui deviendra « matière non établie ».
+      const parCle = parAnnee.get(an);
+      parCle.set(a.dossier_id ?? null, (parCle.get(a.dossier_id ?? null) || 0) + 1);
+    } else {
+      depotsSansDate += 1;
     }
 
     if (a.dossier_id) {
@@ -770,9 +803,14 @@ export function agregerAmendements(
           cle: a.dossier_id,
           nom: nomDeDossier(a.dossier_titre, a.texte_vise),
           n: 0,
+          adoptes: 0,
+          dateMin: null,
         });
       }
-      parDossier.get(a.dossier_id).n += 1;
+      const d = parDossier.get(a.dossier_id);
+      d.n += 1;
+      if (sort === 'adopté') d.adoptes += 1;
+      if (a.date && (d.dateMin === null || a.date < d.dateMin)) d.dateMin = a.date;
     } else {
       depotsSansDossier += 1;
       if (a.texte_vise) textesSansDossier.add(a.texte_vise);
@@ -831,6 +869,90 @@ export function agregerAmendements(
     (a, b) => b.n - a.n || a.sigle.localeCompare(b.sigle, 'fr'),
   );
 
+  /* ── LA CHUTE : comment le total s'est construit, année par année ─────────
+   *
+   * Une marche par année CIVILE, découpée par matière, et une barre de total
+   * qui repart du sol. L'axe est le calendrier : une année sans dépôt garde sa
+   * place et son palier — « il n'a rien déposé en 2019 » n'est pas « 2019
+   * n'existe pas ».
+   *
+   * DEUX MESURES, PARCE QU'ELLES NE SE DÉDUISENT PAS L'UNE DE L'AUTRE. Le
+   * nombre d'amendements et le nombre de dossiers amendés répondent à deux
+   * questions — 2 831 dépôts sur 25 dossiers chez Jean-Luc Mélenchon. Les deux
+   * sont publiés côte à côte plutôt qu'en rapport : §6 interdit le taux.
+   *
+   * LE DOMAINE EST L'UNION DES DEUX, jamais recalculé à la bascule : les dépôts
+   * de Laurent Wauquiez commencent en 2012, ses dossiers datés en 2024, et un
+   * axe qui bouge cesse d'être comparable.
+   *
+   * LA MATIÈRE EST CELLE DU DOSSIER, et l'absence en est une (§2 règle 5) : un
+   * dépôt qu'aucun dossier ne rattache, ou dont le dossier n'a pas de
+   * commission saisie au fond dans la table, tombe dans « matière non
+   * établie » — compté, jamais réparti au prorata ni deviné depuis l'intitulé.
+   */
+  const matiereDuDossier = (cle) => {
+    if (!cle) return null;
+    const commission = commissionDuDossier(cle);
+    return commission?.sigle || commission?.nom || null;
+  };
+  const totauxDepots = new Map();
+  const totauxDossiers = new Map();
+  const chuteParAnnee = new Map();
+  for (const [an, parCle] of parAnnee) {
+    const bloc = new Map();
+    for (const [cle, n] of parCle) {
+      const m = matiereDuDossier(cle) || MATIERE_NON_ETABLIE;
+      bloc.set(m, (bloc.get(m) || 0) + n);
+      totauxDepots.set(m, (totauxDepots.get(m) || 0) + n);
+    }
+    chuteParAnnee.set(an, bloc);
+  }
+  // Le dossier compte UNE fois, l'année de son premier dépôt — jamais une fois
+  // par année où il reçoit un amendement, qui gonflerait le total.
+  const dossiersParAnnee = new Map();
+  for (const d of parDossier.values()) {
+    if (!d.dateMin) continue;
+    const an = d.dateMin.slice(0, 4);
+    const m = matiereDuDossier(d.cle) || MATIERE_NON_ETABLIE;
+    if (!dossiersParAnnee.has(an)) dossiersParAnnee.set(an, new Map());
+    const bloc = dossiersParAnnee.get(an);
+    bloc.set(m, (bloc.get(m) || 0) + 1);
+    totauxDossiers.set(m, (totauxDossiers.get(m) || 0) + 1);
+  }
+
+  const annees = [...new Set([...chuteParAnnee.keys(), ...dossiersParAnnee.keys()])].sort();
+  const chute = annees.length
+    ? {
+        // L'ordre des matières — donc les teintes — est fixé une fois par le
+        // volume de DÉPÔTS : recalculé à chaque mesure, le bouton rebattrait
+        // les couleurs et deux lectures cesseraient de se comparer.
+        matieres: [...new Set([...totauxDepots.keys(), ...totauxDossiers.keys()])].sort(
+          (a, b) => (totauxDepots.get(b) || 0) - (totauxDepots.get(a) || 0)
+            || a.localeCompare(b, 'fr'),
+        ),
+        annees: anneesPleines(annees),
+        depots: serieParAnnee(anneesPleines(annees), chuteParAnnee),
+        dossiers: serieParAnnee(anneesPleines(annees), dossiersParAnnee),
+        totauxDepots: Object.fromEntries(totauxDepots),
+        totauxDossiers: Object.fromEntries(totauxDossiers),
+        totalDepots: [...totauxDepots.values()].reduce((s2, v) => s2 + v, 0),
+        totalDossiers: [...totauxDossiers.values()].reduce((s2, v) => s2 + v, 0),
+        // La borne se déclare : un dépôt sans date ne figure sur aucune marche.
+        sansDate: depotsSansDate,
+        // Les dossiers derrière chaque matière, pour que le clic réponde
+        // « lesquels » et pas seulement « combien ». `adoptes` porte le fait
+        // qui compte — au moins un amendement entré dans le texte — et jamais
+        // un rapport à autre chose (§6).
+        dossiersParMatiere: [...parDossier.values()].reduce((acc, d) => {
+          const m = matiereDuDossier(d.cle) || MATIERE_NON_ETABLIE;
+          (acc[m] = acc[m] || []).push({
+            cle: d.cle, nom: d.nom, n: d.n, adoptes: d.adoptes, annee: d.dateMin?.slice(0, 4) ?? null,
+          });
+          return acc;
+        }, {}),
+      }
+    : null;
+
   const dossiers = classes.length || depotsSansDossier
     ? {
         distincts: classes.length,
@@ -848,7 +970,25 @@ export function agregerAmendements(
       }
     : null;
 
-  return { totalAuteur, legislatures, irrecevabilites, dossiers };
+  return { totalAuteur, adoptes: adoptesTotal, legislatures, irrecevabilites, dossiers, chute };
+}
+
+/* Les années civiles d'un bout à l'autre, trous compris : c'est la seule façon
+ * de distinguer « rien déposé cette année-là » de « cette année n'existe pas ». */
+export function anneesPleines(annees) {
+  if (!annees.length) return [];
+  const a0 = Number(annees[0]);
+  const a1 = Number(annees[annees.length - 1]);
+  const pleines = [];
+  for (let a = a0; a <= a1; a += 1) pleines.push(String(a));
+  return pleines;
+}
+
+function serieParAnnee(annees, parAnnee) {
+  return annees.map((an) => ({
+    annee: an,
+    parts: [...(parAnnee.get(an) || new Map()).entries()].map(([matiere, n]) => ({ matiere, n })),
+  }));
 }
 
 /* ── Règle : un texte porté n'est publié qu'à partir de l'examen en commission

@@ -15,7 +15,8 @@
 import '../styles/shell.css';
 import './CandidateProfile.css';
 import { BadgeSource, Interdits, ListeVide, PositionVote } from './Lecture';
-import { Fragment, useLayoutEffect, useRef, useState } from 'react';
+import { teinteMatiere } from '../utils/matiere';
+import { Fragment, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   LAST_READING_LABEL,
@@ -514,8 +515,200 @@ function Gouvernements({ gouvernements, cause, voix }) {
   );
 }
 
+/* ── La chute : comment le total des dépôts s'est construit ────────────────
+ *
+ * Une marche par année civile, découpée par matière, et une barre de total qui
+ * repart du sol : le lecteur suit le chemin, et la dernière barre est son
+ * arrivée, pas un agrégat de plus.
+ *
+ * UN ESCALIER EST ADDITIF, et cette contrainte décide de la géométrie : le haut
+ * d'une marche est le bas de la suivante. On ne peut donc pas donner de hauteur
+ * minimale à une petite marche sans fausser le cumul — 1 dépôt sur 2 831 fait
+ * 0,15 px et le restera. Ce qui garantit qu'aucune année ne disparaît, c'est le
+ * PALIER, tracé à la hauteur exacte du cumul même quand la marche est
+ * invisible. Aucun seuil n'est appliqué nulle part.
+ *
+ * DEUX MESURES SANS RAPPORT ENTRE ELLES. Le bouton échange dépôts et dossiers
+ * amendés ; l'axe ne bouge pas d'une mesure à l'autre, et aucun rapport n'est
+ * calculé entre les deux (§6).
+ */
+const CHUTE = { h: 300, hautMin: 26, bas: 30, gauche: 54, droite: 26 };
+
+function Chute({ chute, mesure, matiere, onMesure, onMatiere }) {
+  const serie = mesure === 'dossiers' ? chute.dossiers : chute.depots;
+  const total = mesure === 'dossiers' ? chute.totalDossiers : chute.totalDepots;
+  const totaux = mesure === 'dossiers' ? chute.totauxDossiers : chute.totauxDepots;
+  const rang = useMemo(
+    () => new Map(chute.matieres.map((m, i) => [m, i])),
+    [chute.matieres],
+  );
+  if (!total) return null;
+
+  const { h, hautMin, bas, gauche, droite } = CHUTE;
+  const largeurVue = 900;
+  const x0 = gauche;
+  const x1 = largeurVue - droite;
+  const pas = (x1 - x0) / (chute.annees.length + 1);
+  const largeur = Math.max(2, Math.min(pas * 0.62, 34));
+  const y = (v) => h - bas - (v / total) * (h - bas - hautMin);
+
+  const marches = [];
+  const paliers = [];
+  const graduations = [];
+  let cumul = 0;
+  let dernierX = -Infinity;
+  serie.forEach((an, i) => {
+    const cx = x0 + pas * (i + 0.5);
+    const g = cx - largeur / 2;
+    const parts = [...an.parts].sort((p, q) => rang.get(p.matiere) - rang.get(q.matiere));
+    let base = cumul;
+    for (const p of parts) {
+      // Les deux ordonnées sont arrondies AVANT la soustraction : la hauteur
+      // est leur différence, donc l'empilement reste jointif au centième.
+      const haut = Number(y(base + p.n).toFixed(2));
+      const pied = Number(y(base).toFixed(2));
+      const vu = !matiere || matiere === p.matiere;
+      marches.push(
+        <rect
+          className={`cp-chute-part${vu ? '' : ' cp-chute-part--voile'}`}
+          data-matiere={p.matiere}
+          fill={teinteMatiere(p.matiere, rang.get(p.matiere))}
+          height={(pied - haut).toFixed(2)}
+          key={`${an.annee}-${p.matiere}`}
+          onClick={() => onMatiere(p.matiere)}
+          width={largeur.toFixed(1)}
+          x={g.toFixed(1)}
+          y={haut.toFixed(2)}
+        >
+          <title>
+            {`${p.matiere}\n${an.annee}\n${formatNumber(p.n)} ${mesure === 'dossiers' ? 'dossier' : 'amendement'}${p.n > 1 ? 's' : ''}`}
+          </title>
+        </rect>,
+      );
+      base += p.n;
+    }
+    cumul = base;
+    const finPalier = i + 1 < serie.length ? x0 + pas * (i + 1.5) - largeur / 2 : x1 - largeur;
+    paliers.push(
+      <line
+        className="cp-chute-palier"
+        key={`p${an.annee}`}
+        x1={g.toFixed(1)}
+        x2={Math.max(finPalier, g + largeur).toFixed(1)}
+        y1={y(cumul).toFixed(1)}
+        y2={y(cumul).toFixed(1)}
+      />,
+    );
+    graduations.push(
+      <line className="cp-chute-grille" key={`t${an.annee}`} x1={cx.toFixed(1)} x2={cx.toFixed(1)} y1={hautMin} y2={h - bas + 4} />,
+    );
+    // Une graduation sautée reste lisible ; un axe encombré, non.
+    if (cx - dernierX >= 42) {
+      dernierX = cx;
+      graduations.push(
+        <text className="cp-chute-axe cp-chute-axe--an" key={`a${an.annee}`} x={cx.toFixed(1)} y={h - bas + 18}>
+          {an.annee}
+        </text>,
+      );
+    }
+  });
+
+  const cxT = x1 - largeur / 2;
+  const unite = mesure === 'dossiers' ? 'dossiers amendés' : 'amendements déposés';
+  return (
+    <div className="cp-chute">
+      <div className="cp-cles cp-chute-mesure">
+        <span className="cp-cle-quoi">En ordonnée</span>
+        <button
+          aria-pressed={mesure !== 'dossiers'}
+          className="cp-chute-choix"
+          onClick={() => onMesure('depots')}
+          type="button"
+        >
+          amendements déposés
+        </button>
+        <button
+          aria-pressed={mesure === 'dossiers'}
+          className="cp-chute-choix"
+          onClick={() => onMesure('dossiers')}
+          type="button"
+        >
+          dossiers amendés
+        </button>
+      </div>
+      <svg
+        aria-label={`${unite} par année, empilés par matière`}
+        className="cp-chute-svg"
+        role="img"
+        viewBox={`0 0 ${largeurVue} ${h}`}
+      >
+        {[0, 0.25, 0.5, 0.75, 1].map((f) => (
+          <g key={f}>
+            <line className="cp-chute-grille" x1={x0} x2={x1} y1={y(total * f).toFixed(1)} y2={y(total * f).toFixed(1)} />
+            <text className="cp-chute-axe" x={x0 - 8} y={(y(total * f) + 4).toFixed(1)}>
+              {formatNumber(Math.round(total * f))}
+            </text>
+          </g>
+        ))}
+        {graduations}
+        {marches}
+        {paliers}
+        <rect className="cp-chute-total" height={(y(0) - y(total)).toFixed(1)} width={largeur.toFixed(1)} x={(cxT - largeur / 2).toFixed(1)} y={y(total).toFixed(1)}>
+          <title>{`Total\n${formatNumber(total)} ${unite}`}</title>
+        </rect>
+        <text className="cp-chute-axe cp-chute-axe--an" x={cxT.toFixed(1)} y={h - bas + 18}>total</text>
+        <text className="cp-chute-total-nb" x={cxT.toFixed(1)} y={(y(total) - 7).toFixed(1)}>{formatNumber(total)}</text>
+      </svg>
+      <div className="cp-cles">
+        <span className="cp-cle-quoi">Matière</span>
+        {chute.matieres
+          .filter((m) => (totaux[m] || 0) > 0)
+          .map((m) => (
+            <button
+              aria-pressed={matiere === m}
+              className="cp-cle cp-cle--cliquable"
+              key={m}
+              onClick={() => onMatiere(m)}
+              type="button"
+            >
+              <i style={{ background: teinteMatiere(m, rang.get(m)) }} />
+              {m} <b className="cp-num">{formatNumber(totaux[m])}</b>
+            </button>
+          ))}
+      </div>
+      <p className="cp-note">
+        <b>L'axe est le calendrier</b> — une année sans dépôt garde sa place et son palier, et le
+        domaine ne change pas d'une mesure à l'autre. Un escalier est additif : aucune hauteur
+        minimale n'est appliquée, et c'est le palier, tracé à la hauteur exacte du cumul, qui
+        marque une année dont la marche est trop mince pour se voir. <b>Aucun seuil</b>, et aucun
+        rapport n'est calculé entre les deux mesures.
+        {chute.sansDate > 0 && (
+          <>
+            {' '}
+            <b>{formatNumber(chute.sansDate)}</b> de ses dépôts ne portent pas de date et ne
+            figurent sur aucune marche.
+          </>
+        )}
+        {' '}La matière est la commission saisie au fond du dossier. Quand la source ne la donne
+        pas, le dépôt garde sa place sous « matière non établie » — jamais réparti au prorata ni
+        déduit de l'intitulé.
+      </p>
+    </div>
+  );
+}
+
 /* ── § 3 — ce qu'il a proposé ────────────────────────────────────────────── */
 function Propositions({ amendements, textes, causeAmendements, causeTextes, voix }) {
+  const [mesure, setMesure] = useState('depots');
+  const [matiere, setMatiere] = useState(null);
+  const choisirMatiere = (m) => setMatiere((a) => (a === m ? null : m));
+  const dossiersDeLaMatiere = matiere
+    ? (amendements.chute?.dossiersParMatiere?.[matiere] || [])
+        .slice()
+        .sort((a, b) => b.n - a.n)
+    : [];
+  const avecAdopte = dossiersDeLaMatiere.filter((d) => d.adoptes > 0).length;
+
   return (
     <>
       {amendements.totalAuteur === 0 ? (
@@ -551,8 +744,76 @@ function Propositions({ amendements, textes, causeAmendements, causeTextes, voix
         </div>
       )}
 
-      {amendements.irrecevabilites.length > 0 && (
+      {amendements.chute && (
+        <div className="cp-carte">
+          <div className="cp-gouv-tete">
+            <span className="cp-gouv-nom">Quand {voix.sujet} a déposé, et sur quelle matière</span>
+            <span className="cp-gouv-periode cp-num">
+              {formatNumber(amendements.chute.totalDepots)} datés ·{' '}
+              {formatNumber(amendements.chute.totalDossiers)} dossiers
+            </span>
+          </div>
+          <Chute
+            chute={amendements.chute}
+            matiere={matiere}
+            mesure={mesure}
+            onMatiere={choisirMatiere}
+            onMesure={setMesure}
+          />
+          {matiere && (
+            <div className="cp-chute-liste">
+              <div className="cp-chute-liste-tete">
+                <span className="cp-chute-liste-quoi">
+                  {matiere} — {formatNumber(dossiersDeLaMatiere.length)} dossier
+                  {dossiersDeLaMatiere.length > 1 ? 's' : ''}
+                </span>
+                <button className="cp-chute-raz" onClick={() => setMatiere(null)} type="button">
+                  Tout afficher
+                </button>
+              </div>
+              <ul>
+                {dossiersDeLaMatiere.map((d) => (
+                  <li key={d.cle}>
+                    <span className="cp-chute-titre">{d.nom || 'Dossier non nommé par la source'}</span>
+                    <span className="cp-chute-fait">
+                      {formatNumber(d.n)} amendement{d.n > 1 ? 's' : ''} déposé{d.n > 1 ? 's' : ''}
+                      {d.adoptes > 0 ? (
+                        <>
+                          , <b className="cp-chute-oui">{formatNumber(d.adoptes)} adopté{d.adoptes > 1 ? 's' : ''}</b>
+                        </>
+                      ) : (
+                        ', aucun adopté'
+                      )}
+                      {d.annee ? ` · ${d.annee}` : ''}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <p className="cp-note">
+                La liste est celle de la <b>matière</b>, pas de l'année : un dossier ne porte que la
+                date de son premier dépôt, et rien ne dit combien de ses amendements sont tombés
+                telle année. Un amendement <b>adopté</b> est entré dans le texte à ce stade ;{' '}
+                {avecAdopte === 0
+                  ? 'aucun des dossiers listés n’en compte'
+                  : avecAdopte === dossiersDeLaMatiere.length
+                    ? 'tous les dossiers listés en comptent au moins un'
+                    : `${formatNumber(avecAdopte)} des ${formatNumber(dossiersDeLaMatiere.length)} dossiers listés en compte${avecAdopte > 1 ? 'nt' : ''} au moins un`}
+                .
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {(amendements.adoptes > 0 || amendements.irrecevabilites.length > 0) && (
         <div className="cp-blocs">
+          {amendements.adoptes > 0 && (
+            <div className="cp-carte cp-bloc">
+              <b className="cp-bloc-nombre cp-num">{formatNumber(amendements.adoptes)}</b>
+              <p className="cp-bloc-cle">amendements adoptés</p>
+              <p className="cp-bloc-texte">Entrés dans le texte à ce stade.</p>
+            </div>
+          )}
           {amendements.irrecevabilites.map((b) => (
             <div className="cp-carte cp-bloc" key={b.base}>
               <b className="cp-bloc-nombre cp-num">{formatNumber(b.n)}</b>
