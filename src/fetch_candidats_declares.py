@@ -70,23 +70,40 @@ et nommée** (`LIGNE_ILLISIBLE`), comme `ROSTER_SANS_SLUG` le fait des membres
 sans slug (#527). Un run ne meurt pas parce qu'une ligne a changé de forme ; il
 meurt quand il ne sait plus ce qu'il lit.
 
-## L'écriture est additive, et un nouveau candidat entre SANS slug
+## L'écriture est additive, et le slug se fabrique quand un identifiant le porte
 
 Trois interdits, tous déjà écrits ailleurs dans le dépôt :
 
   - **une entrée existante n'est jamais supprimée ni réécrite.** Un `slug`
     publié est immuable (#460/#470) et renommer un fichier publié est une
-    suppression qu'`audit_diff_profils` bloque ;
+    suppression qu'`audit_diff_profils` bloque. La **seule** écriture sur une
+    entrée existante est le comblement d'un `slug: null` — remplir un trou,
+    jamais remplacer une valeur ;
   - **un déclaré qui n'est plus déclaré est SIGNALÉ, jamais modifié.** Le
     script lit la section des déclarés ; il ne peut donc pas distinguer un
     retrait d'un déplacement de section, et trancher à sa place serait inventer
     une cause (§2 règle 5) ;
-  - **un nouveau candidat entre avec `slug: null`.** C'est ce qui le tient hors
-    de la matrice `extract-an` (`prepare-an-matrix` ne retient que les slugs
-    résolvables), donc hors collecte et hors publication, tant que sa
-    correspondance slug ↔ acteur AN n'a pas été **relue à la main** : la §5b du
-    portail qualité est un hard fail à seuil 0, et fabriquer le slug ici ferait
-    échouer le premier run qui publierait le profil (#525).
+  - **un slug ne se fabrique que si un identifiant externe le corrobore**
+    (`--resoudre-identifiants`, #757). Sans lui, l'entrée entre avec
+    `slug: null`, ce qui la tient hors de la matrice `extract-an` — donc hors
+    collecte et hors publication — jusqu'à ce qu'une main tranche.
+
+## Pourquoi le slug se fabrique ici, et ce qu'il déclenche (#757)
+
+`slug: null` était le régime de #753, et il ne tient pas un périmètre à jour :
+sans slug, pas de shard, donc pas de collecte, donc un périmètre qui n'avance
+que lorsqu'une main y pense. D'ici avril 2027 la liste bougera des dizaines de
+fois.
+
+Le slug vient donc de `text_utils.slugify(nom)` — la seule fabrique de slugs du
+dépôt (#487, #708) — **à condition** que `identifiants_wikidata` ait résolu un
+acteur AN par identifiant externe, ou établi que la personne n'en a pas. Le nom
+ne sert jamais de clé de rapprochement : voir le module, qui dit pourquoi.
+
+**Les deux populations passent par la même chaîne** : les déclarés que le
+fichier ignore, et ceux qu'il porte déjà **sans slug**. Oublier la seconde
+laisserait les entrées créées avant la boucle bloquées pour toujours, ce qui est
+l'immobilité que #539 a payée.
 
 `famille_politique` et `date_declaration` restent `null` : le tableau des
 déclarés ne les porte pas, et une absence se publie en absence (§2 règle 5).
@@ -111,6 +128,8 @@ from bs4 import BeautifulSoup, Tag
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import gha  # noqa: E402
+import identifiants_wikidata as iw  # noqa: E402
+from text_utils import slugify  # noqa: E402
 
 #: L'article qui porte la liste. L'article de l'élection ne fait que la
 #: transclure, et le viser rendait « Conditions de candidature » (#753).
@@ -433,35 +452,140 @@ def comparer(
 # ---------------------------------------------------------------------------
 
 
-def nouvelle_entree(candidat: CandidatDeclare, le_jour: str) -> dict[str, Any]:
+#: Motifs de refus d'un slug. Fermés et nommés, comme `MOTIFS_SLUG_NON_ATTRIBUE`
+#: de `an_roster` (#708) : un slug non attribué doit dire pourquoi, sinon il se
+#: lit comme « personne n'a regardé ».
+MOTIF_SLUG_VIDE = "slug_vide"
+MOTIF_SLUG_DEJA_PRIS = "slug_deja_pris"
+MOTIF_IDENTIFIANT_INDETERMINE = "identifiant_indetermine"
+
+
+def attribuer_slugs(
+    absents: list[CandidatDeclare],
+    resolutions: dict[str, iw.Resolution],
+    slugs_pris: dict[str, Optional[str]],
+) -> tuple[dict[str, str], list[str]]:
+    """`nom → slug` pour les déclarés qui peuvent en recevoir un, et les refus.
+
+    Le slug vient de `text_utils.slugify`, **la seule fabrique de slugs du
+    dépôt** (#487, #708) — jamais d'un identifiant de source.
+
+    Trois refus, et aucun n'est un seuil :
+
+    1. `slug_vide` — le nom ne rend aucun slug ;
+    2. `slug_deja_pris` — le slug visé appartient à **quelqu'un d'autre**. Un
+       slug déjà porté par la **même** personne n'est pas une collision : c'est
+       le cas des candidats déjà collectés comme membres de roster, et c'est
+       l'`acteur_ref` qui tranche, jamais le nom ;
+    3. `identifiant_indetermine` — Wikidata ne décrit pas cette personne, donc
+       rien ne corroborera son acteur AN hors ligne. Lui fabriquer un slug la
+       ferait collecter puis publier, et la §5b bloquerait le run entier sur
+       une entrée que la passe hors ligne ne peut pas écrire.
+
+    Args:
+        slugs_pris: `slug → acteur_ref` déjà attribués (entrées du fichier et
+            table de correspondance confondues). `None` en valeur signifie
+            « porté par quelqu'un dont on ne connaît pas l'acteur ».
+    """
+    attribues: dict[str, str] = {}
+    refus: list[str] = []
+
+    for candidat in absents:
+        resolution = resolutions.get(candidat.nom)
+        if resolution is None or resolution.issue is iw.Issue.INDETERMINE:
+            refus.append(
+                f"{MOTIF_IDENTIFIANT_INDETERMINE} — « {candidat.nom} » : aucun "
+                "élément Wikidata ne décrit cette personne, donc aucun "
+                "identifiant AN à corroborer. Entrée créée sans slug, à relire."
+            )
+            continue
+
+        slug = slugify(candidat.nom)
+        if not slug:
+            refus.append(f"{MOTIF_SLUG_VIDE} — « {candidat.nom} » ne rend aucun slug.")
+            continue
+
+        if slug in slugs_pris or slug in attribues.values():
+            porteur = slugs_pris.get(slug)
+            if porteur is not None and porteur == resolution.acteur_ref:
+                # Même acteur AN : c'est la même personne, déjà collectée par la
+                # voie du roster. Le slug est le sien, on le reprend.
+                attribues[candidat.nom] = slug
+                continue
+            refus.append(
+                f"{MOTIF_SLUG_DEJA_PRIS} — « {candidat.nom} » vise le slug "
+                f"{slug!r}, déjà porté par {porteur or 'une entrée sans acteur AN'} "
+                f"(cette personne-ci : {resolution.acteur_ref or 'aucun acteur AN'}). "
+                "Entrée créée sans slug, à arbitrer."
+            )
+            continue
+
+        attribues[candidat.nom] = slug
+
+    return attribues, refus
+
+
+def nouvelle_entree(
+    candidat: CandidatDeclare, le_jour: str, slug: Optional[str] = None
+) -> dict[str, Any]:
     """L'entrée créée pour un déclaré absent du fichier.
 
-    `slug` vaut `null` **exprès** : c'est ce qui tient le candidat hors de la
-    matrice `extract-an` tant que sa correspondance slug ↔ acteur AN n'a pas
-    été relue (portail §5b, #525).
+    `slug` vaut `null` quand la chaîne d'identifiants n'a rien pu corroborer :
+    c'est ce qui tient le candidat hors de la matrice `extract-an`, donc hors
+    collecte et hors publication, tant qu'une main n'a pas tranché. Avec un
+    slug, il entre dans le périmètre du run suivant, et sa correspondance est
+    écrite hors ligne par `build_correspondance_acteurs_an.py`.
     """
     origine = "déclaré dans le cadre d'une primaire" if candidat.primaire else "déclaré"
+    if slug:
+        notes = (
+            f"Ajouté le {le_jour} par src/fetch_candidats_declares.py ({origine}). "
+            "Slug fabriqué depuis le nom ; l'acteur AN est résolu par identifiant "
+            "externe et corroboré hors ligne (#757). Famille politique, date et "
+            "source primaire de la déclaration restent à compléter."
+        )
+    else:
+        notes = (
+            f"Ajouté le {le_jour} par src/fetch_candidats_declares.py ({origine}). "
+            "Sans slug : la chaîne d'identifiants n'a rien pu corroborer, donc ce "
+            "candidat n'a pas de shard extract-an et n'est pas publié. À relire — "
+            "slug, famille politique, date et source primaire (#753, #757)."
+        )
     return {
         "nom": candidat.nom,
-        "slug": None,
+        "slug": slug,
         "parti": candidat.parti,
         "famille_politique": None,
         "statut": STATUT_DECLARE,
         "date_declaration": None,
         "source": candidat.url or url_section(),
-        "notes": (
-            f"Ajouté le {le_jour} par src/fetch_candidats_declares.py ({origine}). "
-            "À relire avant collecte : slug, famille politique, date et source "
-            "primaire de la déclaration. Sans slug, ce candidat n'a pas de shard "
-            "extract-an et n'est pas publié (#753)."
-        ),
+        "notes": notes,
     }
+
+
+def slugs_pris(
+    document: dict[str, Any], table: Optional[dict[str, Any]] = None
+) -> dict[str, Optional[str]]:
+    """`slug → acteur_ref` de tout ce qui porte déjà un slug.
+
+    Les deux sources sont réunies exprès : `candidats.json` dit ce que la liste
+    éditoriale a déjà attribué, la table de correspondance dit ce que le corpus
+    publié porte — un membre de roster n'est dans que la seconde.
+    """
+    pris: dict[str, Optional[str]] = {}
+    for entree in document.get("candidats") or []:
+        if entree.get("slug"):
+            pris[entree["slug"]] = None
+    for slug, entree in (table or {}).items():
+        pris[slug] = (entree.get("identifiants") or {}).get("an") or entree.get("acteur_ref")
+    return pris
 
 
 def appliquer(
     document: dict[str, Any],
     absents: list[CandidatDeclare],
     le_jour: str,
+    slugs: Optional[dict[str, str]] = None,
 ) -> dict[str, Any]:
     """Rend le document mis à jour — additif, aucune entrée existante touchée.
 
@@ -471,9 +595,37 @@ def appliquer(
     """
     mis_a_jour = json.loads(json.dumps(document))
     mis_a_jour.setdefault("candidats", [])
-    mis_a_jour["candidats"].extend(nouvelle_entree(c, le_jour) for c in absents)
+
+    # Le comblement d'un `slug: null` est la SEULE modification qu'une entrée
+    # existante subisse ici, et c'en est une par nature additive : on remplit un
+    # trou, on ne réécrit pas une valeur. Un slug déjà posé n'est jamais touché
+    # — il est immuable une fois publié (#460/#470).
+    for entree in mis_a_jour["candidats"]:
+        if entree.get("slug"):
+            continue
+        slug = (slugs or {}).get(entree.get("nom"))
+        if slug:
+            entree["slug"] = slug
+
+    mis_a_jour["candidats"].extend(
+        nouvelle_entree(c, le_jour, (slugs or {}).get(c.nom)) for c in absents
+    )
     mis_a_jour.setdefault("_meta", {})["derniere_verification"] = le_jour
     return mis_a_jour
+
+
+def _charger_table(chemin: Path) -> dict[str, Any]:
+    """La table de correspondance, ou `{}` si elle est absente ou illisible.
+
+    Absente, elle ne bloque rien ici : elle sert à savoir quels slugs sont déjà
+    pris, et son absence rend la vérification moins informée, pas fausse — la
+    §5b reste le contrôle qui refuse un slug sans entrée.
+    """
+    try:
+        with open(chemin, encoding="utf-8") as fichier:
+            return json.load(fichier).get("correspondances") or {}
+    except (OSError, json.JSONDecodeError):
+        return {}
 
 
 def charger(chemin: Path) -> dict[str, Any]:
@@ -513,6 +665,7 @@ def rendre_rapport(
     ecarts: Ecarts,
     anomalies: list[str],
     ecrit: bool,
+    slugs: Optional[dict[str, str]] = None,
 ) -> str:
     """Le rapport de relecture, sur la sortie standard."""
     lignes = [
@@ -526,9 +679,23 @@ def rendre_rapport(
         lignes.append(f"[{len(ecarts.absents_du_fichier)} DÉCLARÉS {verbe}]")
         for candidat in ecarts.absents_du_fichier:
             marque = " · primaire" if candidat.primaire else ""
-            lignes.append(f"  + {candidat.nom} ({candidat.parti or 'parti inconnu'}{marque})")
+            slug = (slugs or {}).get(candidat.nom)
+            identite = f" → {slug}" if slug else " → SANS SLUG"
+            lignes.append(
+                f"  + {candidat.nom} ({candidat.parti or 'parti inconnu'}{marque}){identite}"
+            )
     else:
         lignes.append("✓ Aucun déclaré manquant dans raw_data/candidats.json.")
+
+    combles = {
+        nom: slug
+        for nom, slug in (slugs or {}).items()
+        if nom not in {c.nom for c in ecarts.absents_du_fichier}
+    }
+    if combles:
+        verbe = "COMBLÉS" if ecrit else "À COMBLER (relance avec --ecrire)"
+        lignes += ["", f"[{len(combles)} SLUGS {verbe} sur des entrées existantes]"]
+        lignes += [f"  = {nom} → {slug}" for nom, slug in sorted(combles.items())]
 
     if ecarts.plus_declares:
         lignes += [
@@ -596,6 +763,26 @@ def _construire_parseur() -> argparse.ArgumentParser:
         action="store_true",
         help=f"Sort en {EXIT_ECART} si la source et le fichier diffèrent.",
     )
+    parseur.add_argument(
+        "--resoudre-identifiants",
+        action="store_true",
+        help=(
+            "Résout l'acteur AN de chaque déclaré neuf par identifiant externe "
+            "(Wikidata P4123) et lui fabrique un slug quand la chaîne aboutit (#757)."
+        ),
+    )
+    parseur.add_argument(
+        "--resolutions-out",
+        help=(
+            "Écrit les résolutions dans ce fichier, que la passe hors ligne de "
+            "merge-and-pivot relit. Implique --resoudre-identifiants."
+        ),
+    )
+    parseur.add_argument(
+        "--correspondance",
+        default="raw_data/correspondance_acteurs_an.json",
+        help="Table slug ↔ acteur AN, lue pour savoir quels slugs sont déjà pris.",
+    )
     return parseur
 
 
@@ -626,6 +813,51 @@ def main(argv: Optional[list[str]] = None) -> int:
     locaux = document.get("candidats") or []
     ecarts = comparer(declares, locaux)
 
+    slugs: dict[str, str] = {}
+    refus_slug: list[str] = []
+    resolutions: dict[str, iw.Resolution] = {}
+    if args.resoudre_identifiants or args.resolutions_out:
+        # Deux populations, la même chaîne : les déclarés que le fichier ignore,
+        # et ceux qu'il porte DÉJÀ sans slug. Oublier la seconde laisserait les
+        # entrées créées avant la boucle bloquées pour toujours — c'est
+        # exactement l'immobilité que #539 a payée.
+        a_resoudre = [
+            {"nom": c.nom, "source": c.url or url_section()}
+            for c in ecarts.absents_du_fichier
+        ] + [
+            {"nom": e["nom"], "source": e.get("source")}
+            for e in locaux
+            if not e.get("slug") and e.get("statut") == STATUT_DECLARE
+        ]
+        if a_resoudre:
+            try:
+                resolutions = iw.resoudre(a_resoudre)
+            except iw.ResolutionIndisponible as exc:
+                # Une panne d'identifiants n'est pas un fait négatif : on n'écrit
+                # aucun slug plutôt que d'en fabriquer sans corroboration (#511).
+                gha.annoter("error", f"CANDIDATS_RESOLUTION_INDISPONIBLE — {exc}")
+                print(f"[!] {exc}", file=sys.stderr)
+                print(f"[!] {chemin} n'a pas été modifié.", file=sys.stderr)
+                return EXIT_COLLECTE_INCOMPLETE
+
+            table = _charger_table(Path(args.correspondance))
+            a_slugger = list(ecarts.absents_du_fichier) + [
+                CandidatDeclare(nom=e["nom"], parti=e.get("parti"), url=e.get("source"))
+                for e in locaux
+                if not e.get("slug") and e.get("statut") == STATUT_DECLARE
+            ]
+            slugs, refus = attribuer_slugs(
+                a_slugger, resolutions, slugs_pris(document, table)
+            )
+            for message in refus:
+                gha.annoter("warning", f"CANDIDATS_SANS_SLUG — {message}")
+            refus_slug = refus
+
+            if args.resolutions_out:
+                iw.ecrire_resolutions(
+                    Path(args.resolutions_out), resolutions, date.today().isoformat()
+                )
+
     for anomalie in anomalies:
         gha.annoter("warning", anomalie)
     for entree in ecarts.plus_declares:
@@ -636,8 +868,11 @@ def main(argv: Optional[list[str]] = None) -> int:
             "déclarés ; entrée laissée telle quelle, à relire.",
         )
 
-    if args.ecrire and ecarts.absents_du_fichier:
-        ecrire(chemin, appliquer(document, ecarts.absents_du_fichier, date.today().isoformat()))
+    if args.ecrire and (ecarts.absents_du_fichier or slugs):
+        ecrire(
+            chemin,
+            appliquer(document, ecarts.absents_du_fichier, date.today().isoformat(), slugs),
+        )
 
     if args.json_output:
         json.dump(
@@ -655,6 +890,11 @@ def main(argv: Optional[list[str]] = None) -> int:
                 "plus_declares": [e.get("nom") for e in ecarts.plus_declares],
                 "communs": ecarts.communs,
                 "lignes_non_lues": anomalies,
+                "slugs_fabriques": slugs,
+                "sans_slug": refus_slug,
+                "resolutions": {
+                    nom: r.en_dict() for nom, r in sorted(resolutions.items())
+                },
                 "ecrit": bool(args.ecrire and ecarts.absents_du_fichier),
             },
             sys.stdout,
@@ -663,7 +903,11 @@ def main(argv: Optional[list[str]] = None) -> int:
         )
         print()
     else:
-        print(rendre_rapport(declares, ecarts, anomalies, ecrit=args.ecrire))
+        print(
+            rendre_rapport(
+                declares, ecarts, anomalies + refus_slug, ecrit=args.ecrire, slugs=slugs
+            )
+        )
 
     if args.echouer_si_ecart and ecarts:
         return EXIT_ECART

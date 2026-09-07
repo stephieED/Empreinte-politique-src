@@ -144,15 +144,28 @@ les charger, ni à les faire grossir. -->
   never its first link — two declared candidates have no article, and their first link is
   the **party**. **Writing is additive**: an existing entry is never removed or modified,
   and one that is no longer declared is **named, never rewritten** — the declared section
-  alone cannot tell a withdrawal from a moved section. **A new candidate gets
-  `slug: null`**, which keeps it out of `prepare-an-matrix`, hence out of collection and
-  publication, until its slug ↔ AN actor correspondence is reviewed by hand: minting the
-  slug would trip gate §5b's threshold-0 hard fail instead (#525). #715's derived-entry
-  pass does **not** rescue them — `slugs_fabriques()` reads `rosters_bruts.json` alone,
-  and 16 of the 19 sit in no configured group roster — and **extending it would be
-  wrong**: a candidate's slug comes from `slugify(nom)`, not from an AMO30 actor, so the
-  entry is a *rapprochement* to review, never a derivation (#715 §2). Three
+  alone cannot tell a withdrawal from a moved section. **A new candidate's slug is minted only when an
+  external identifier backs it (#757)** — Wikidata `P4123`, the AN actor id, resolved by
+  the run's head job and validated 13/13 against the hand-reviewed table. Without one, the
+  entry stays `slug: null`, which keeps it out of `prepare-an-matrix`, hence out of
+  collection and publication, and it is **named**. #715's derived-entry pass does not
+  rescue candidates — `slugs_fabriques()` reads `rosters_bruts.json` alone — and it must
+  not: a candidate's slug comes from `slugify(nom)`, not from an AMO30 actor, so the entry
+  is a *rapprochement*, `origine: "sourcee"`, never a derivation (#715 §2). Three
   anomalies block the write and none is a numeric threshold — unreadable page, missing
   « Candidats déclarés » heading, zero candidate extracted (#511). **Wikidata is out**:
   `P3602` returns 1 person for the 2027 election against 30 declared.
   → `docs/decisions/liste-candidats-declares-753.md`
+- **The perimeter is a loop, and it closes inside the run (#757).** `rafraichir-candidats`
+  has no `needs:`, refreshes `raw_data/candidats.json`, resolves each declared candidate's
+  AN actor by external identifier, and publishes both files in the `candidats-a-jour`
+  artifact; `prepare-an-matrix` sizes its matrix from that artifact, and `merge-and-pivot`
+  writes the `origine: "sourcee"` correspondence entries **offline** before the gate, then
+  commits the list with the data. **The network lives in the head job and nowhere else** —
+  a third-party outage must never cost the commit of a run whose data is good (#524), and
+  the head job never pushes: `GENERATION_CODE_CHANGED_DURING_RUN` would cancel the commit
+  if `raw_data/*.json` moved on the branch mid-run. **An entry is written only when the
+  external identifier and the published profile agree**; a negative fact (`hors_an`)
+  requires *both* sources to be silent, and any disagreement writes nothing, names the
+  slug, and lets §5b block.
+  → `docs/decisions/boucle-perimetre-candidats-757.md`

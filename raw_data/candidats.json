@@ -150,7 +150,7 @@
     },
     {
       "nom": "François Asselineau",
-      "slug": null,
+      "slug": "francois-asselineau",
       "parti": "Union populaire républicaine",
       "famille_politique": null,
       "statut": "declare",
@@ -160,7 +160,7 @@
     },
     {
       "nom": "Delphine Batho",
-      "slug": null,
+      "slug": "delphine-batho",
       "parti": "Génération écologie",
       "famille_politique": null,
       "statut": "declare",
@@ -170,7 +170,7 @@
     },
     {
       "nom": "Karim Bouamrane",
-      "slug": null,
+      "slug": "karim-bouamrane",
       "parti": "Parti socialiste",
       "famille_politique": null,
       "statut": "declare",
@@ -180,7 +180,7 @@
     },
     {
       "nom": "Bernard Cazeneuve",
-      "slug": null,
+      "slug": "bernard-cazeneuve",
       "parti": "La Convention",
       "famille_politique": null,
       "statut": "declare",
@@ -190,7 +190,7 @@
     },
     {
       "nom": "Nicolas Dupont-Aignan",
-      "slug": null,
+      "slug": "nicolas-dupont-aignan",
       "parti": "Debout la France",
       "famille_politique": null,
       "statut": "declare",
@@ -200,7 +200,7 @@
     },
     {
       "nom": "Sylvain Durif",
-      "slug": null,
+      "slug": "sylvain-durif",
       "parti": "Elvita",
       "famille_politique": null,
       "statut": "declare",
@@ -210,7 +210,7 @@
     },
     {
       "nom": "Anasse Kazib",
-      "slug": null,
+      "slug": "anasse-kazib",
       "parti": "Révolution permanente",
       "famille_politique": null,
       "statut": "declare",
@@ -230,7 +230,7 @@
     },
     {
       "nom": "Francis Lalanne",
-      "slug": null,
+      "slug": "francis-lalanne",
       "parti": "France Libre",
       "famille_politique": null,
       "statut": "declare",
@@ -250,7 +250,7 @@
     },
     {
       "nom": "Florian Philippot",
-      "slug": null,
+      "slug": "florian-philippot",
       "parti": "Les Patriotes",
       "famille_politique": null,
       "statut": "declare",
@@ -260,7 +260,7 @@
     },
     {
       "nom": "Fabien Roussel",
-      "slug": null,
+      "slug": "fabien-roussel",
       "parti": "Parti communiste français",
       "famille_politique": null,
       "statut": "declare",
@@ -270,7 +270,7 @@
     },
     {
       "nom": "Lydie Massard",
-      "slug": null,
+      "slug": "lydie-massard",
       "parti": "Union démocratique bretonne",
       "famille_politique": null,
       "statut": "declare",
@@ -280,7 +280,7 @@
     },
     {
       "nom": "François Ruffin",
-      "slug": null,
+      "slug": "francois-ruffin",
       "parti": "Debout !",
       "famille_politique": null,
       "statut": "declare",
@@ -290,7 +290,7 @@
     },
     {
       "nom": "Philippe Brun",
-      "slug": null,
+      "slug": "philippe-brun",
       "parti": "Parti socialiste",
       "famille_politique": null,
       "statut": "declare",
@@ -300,7 +300,7 @@
     },
     {
       "nom": "Olivier Faure",
-      "slug": null,
+      "slug": "olivier-faure",
       "parti": "Parti socialiste",
       "famille_politique": null,
       "statut": "declare",
@@ -310,7 +310,7 @@
     },
     {
       "nom": "Raphaël Glucksmann",
-      "slug": null,
+      "slug": "raphael-glucksmann",
       "parti": "Place publique",
       "famille_politique": null,
       "statut": "declare",
@@ -320,7 +320,7 @@
     },
     {
       "nom": "Emmanuel Maurel",
-      "slug": null,
+      "slug": "emmanuel-maurel",
       "parti": "Gauche républicaine et socialiste",
       "famille_politique": null,
       "statut": "declare",

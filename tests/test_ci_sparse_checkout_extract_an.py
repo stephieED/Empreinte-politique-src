@@ -52,7 +52,9 @@ _LITTERAL_PLAT = re.compile(r'"raw_data/([\w./-]+)"?')
 #: Les jobs de ce workflow qui portent une liste blanche. Deux au 31/08/2026 :
 #: `extract-an`, et `prepare-an-matrix` que la première application du lot avait
 #: oublié — la cause n'est pas propre à un job, c'est le poids de l'arbre.
-JOBS_AVEC_LISTE_BLANCHE = ("prepare-an-matrix", "extract-an")
+#: Trois depuis #757 : `rafraichir-candidats` lit la liste éditoriale et la table
+#: de correspondance, et il est au budget le plus serré du premier étage.
+JOBS_AVEC_LISTE_BLANCHE = ("rafraichir-candidats", "prepare-an-matrix", "extract-an")
 
 
 def _tranche_du_job(job: str) -> str:

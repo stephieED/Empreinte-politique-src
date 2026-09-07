@@ -211,7 +211,106 @@ jobs:
   # generate_all_profiles.py), donc exclu du matrix plutôt que de générer un
   # shard qui n'écrirait jamais de fichier.
   # ──────────────────────────────────────────────────────────────────────────
+  # RAFRAICHIR-CANDIDATS (#757) — la liste qui décide du périmètre du run.
+  #
+  # Sans ce job, `raw_data/candidats.json` n'avançait que lorsqu'une main y
+  # pensait : mesuré à 51 jours de retard et 19 déclarés absents le 07/09/2026.
+  # D'ici avril 2027 la liste bougera des dizaines de fois.
+  #
+  # POURQUOI EN TÊTE, ET PAS DANS `merge-and-pivot` : c'est ce job qui
+  # dimensionne la matrice `extract-an`, donc il doit conclure AVANT elle. La
+  # forme est celle de `prepare-roster-matrix` (#518) — une construction par
+  # run, publiée en artifact — et pour la même raison : deux lectures de la même
+  # liste à deux moments du run divergent, et un candidat collecté par l'une
+  # sans être normalisé par l'autre ne fait échouer aucune étape.
+  #
+  # POURQUOI IL NE POUSSE RIEN : `merge-and-pivot` annule le commit si
+  # `raw_data/*.json` a bougé sur la branche PENDANT le run
+  # (GENERATION_CODE_CHANGED_DURING_RUN, #390/#413). Le fichier voyage donc dans
+  # l'artifact et il est committé à la fin, AVEC les données qu'il a produites.
+  #
+  # LE RÉSEAU EST ICI, ET NULLE PART AILLEURS : la résolution d'identifiants
+  # (Wikidata P4123) a lieu dans ce job, et son résultat voyage en artifact. La
+  # passe qui écrit les entrées de correspondance, elle, est hors ligne — une
+  # panne de source tierce ne doit pas coûter le commit d'un run dont la donnée
+  # est bonne (#524, et c'est la forme que #715 s'est donnée).
+  #
+  # PAS DE `continue-on-error` : il masquerait un échec en le rendant vert. Le
+  # repli est explicite, dans le shell, et il est NOMMÉ — sur une source
+  # injoignable, le run continue avec la liste COMMITTÉE, qui est un état connu,
+  # jamais avec une liste vide (AGENTS.md §2 règle 5, le patron de #511).
+  # ──────────────────────────────────────────────────────────────────────────
+  rafraichir-candidats:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            .github
+            src
+            requirements.txt
+            raw_data/candidats.json
+            raw_data/correspondance_acteurs_an.json
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - run: pip install -r requirements.txt
+
+      # Le code 1 dit « collecte incomplète, RIEN n'a été écrit » : le fichier
+      # committé est intact, on le publie tel quel et le run garde le périmètre
+      # d'hier. Le code 3 n'est pas demandé ici (`--echouer-si-ecart` est absent) :
+      # un écart est ce que ce job vient corriger, pas une anomalie.
+      - name: Rafraîchir la liste des candidats déclarés
+        id: liste
+        run: |
+          set -uo pipefail
+          python3 src/fetch_candidats_declares.py \
+            --ecrire \
+            --resoudre-identifiants \
+            --resolutions-out raw_data/resolutions_candidats.json
+          code=$?
+          if [ "$code" -eq 0 ]; then
+            echo "rafraichie=true" >> "$GITHUB_OUTPUT"
+          elif [ "$code" -eq 1 ]; then
+            echo "::warning::CANDIDATS_SOURCE_INJOIGNABLE — la liste n'a pas pu être rafraîchie ; le run garde la liste committée. Le fichier n'a pas été modifié."
+            echo "rafraichie=false" >> "$GITHUB_OUTPUT"
+            # Un fichier de résolutions VIDE et non absent : la passe hors ligne
+            # doit pouvoir distinguer « rien à ajouter » de « fichier manquant ».
+            printf '{"schema_version":"resolutions-candidats-v1","resolutions":{}}\n' \
+              > raw_data/resolutions_candidats.json
+          else
+            echo "::error::CANDIDATS_ECHEC_INATTENDU — code $code."
+            exit "$code"
+          fi
+
+      # Les deux fichiers voyagent ENSEMBLE, dans un seul artifact : la liste
+      # dit qui collecter, les résolutions disent quel acteur AN chacun porte.
+      # Séparés, un run pourrait collecter d'après l'une sans pouvoir écrire les
+      # correspondances de l'autre — c'est la divergence que #518 a supprimée
+      # côté roster.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidats-a-jour
+          path: |
+            raw_data/candidats.json
+            raw_data/resolutions_candidats.json
+          if-no-files-found: error
+          retention-days: 1
+
+  # ──────────────────────────────────────────────────────────────────────────
   prepare-an-matrix:
+    needs: rafraichir-candidats
+    # `!cancelled()` et non `always()` : si `rafraichir-candidats` échoue, ce job
+    # tourne quand même et retombe sur la liste committée — le périmètre d'hier
+    # vaut mieux qu'un run sans aucun candidat. Un job amont *skipped* ne doit
+    # pas rendre celui-ci skipped à son tour (#412 §2.1).
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -239,6 +338,25 @@ jobs:
           sparse-checkout: |
             .github
             raw_data/candidats.json
+
+      # La liste du jour ÉCRASE la liste committée, et son absence n'est pas une
+      # erreur : `continue-on-error` sur le download ferait retomber le job sur
+      # le fichier du checkout, qui est un état connu (#757). Ce qui serait une
+      # erreur, c'est de ne pas le dire — d'où le log ci-dessous.
+      - uses: actions/download-artifact@v4
+        id: liste_a_jour
+        continue-on-error: true
+        with:
+          name: candidats-a-jour
+          path: raw_data/
+
+      - name: Périmètre de ce run
+        run: |
+          if [ "${{ steps.liste_a_jour.outcome }}" = "success" ]; then
+            echo "Liste du jour (artifact candidats-a-jour)."
+          else
+            echo "::warning::CANDIDATS_ARTIFACT_ABSENT — la matrice est construite sur la liste COMMITTÉE, pas sur celle du jour."
+          fi
 
       # set -euo pipefail (#412 §2.1) : sans lui, un python3 en échec
       # (candidats.json illisible/malformé) laissait SLUGS_JSON vide, écrivait
@@ -2321,6 +2439,29 @@ jobs:
       # retiré avec le Sénat. Un répertoire absent est un no-op pour
       # `merge_raw_dirs`, mais le laisser listé aurait fait croire à une source
       # muette là où il n'y a plus de source du tout.
+      # LA LISTE DU JOUR (#757). Elle écrase `raw_data/candidats.json` du
+      # checkout : c'est elle qu'a servi `extract-an`, et c'est donc elle que la
+      # première passe pivot doit normaliser. Les deux divergeraient sinon —
+      # exactement le défaut que #518 a supprimé côté roster.
+      #
+      # Son absence n'échoue pas : le fichier committé reste en place, le run
+      # publie le périmètre d'hier, et le warning le dit.
+      - name: Liste des candidats du run — artifact (optionnel)
+        id: candidats_artifact
+        uses: actions/download-artifact@v7
+        continue-on-error: true
+        with:
+          name: candidats-a-jour
+          path: raw_data
+
+      - name: Périmètre publié par ce run
+        run: |
+          if [ "${{ steps.candidats_artifact.outcome }}" = "failure" ]; then
+            echo "::warning::CANDIDATS_ARTIFACT_ABSENT — merge-and-pivot normalise la liste COMMITTÉE. Le périmètre publié est celui d'hier (#757)."
+          else
+            python3 -c "import json;d=json.load(open('raw_data/candidats.json'));c=d['candidats'];print(f\"Liste du jour : {len(c)} entrées, {sum(1 for x in c if x.get('slug'))} à slug résolvable.\")"
+          fi
+
       - name: Fusion des profils bruts (AN + UE + roster)
         run: |
           python3 src/merge_profile.py \
@@ -2636,6 +2777,22 @@ jobs:
           python3 src/build_correspondance_acteurs_an.py \
             --completer-derivees \
             --rosters-bruts raw_data/rosters_bruts.json \
+            --profiles-dir pivot_data/profiles
+
+      # Sa jumelle pour les candidats déclarés (#757). Mêmes propriétés —
+      # additive, hors ligne, disjointe — et même conditionnement sur le
+      # FICHIER : sans résolutions, aucun slug n'a été fabriqué, donc il n'y a
+      # rien à écrire et la branche est sautée sans que rien n'échoue.
+      #
+      # Code 1 = un refus nommé : l'identifiant externe et le profil publié ne
+      # disent pas la même chose. On ne le rattrape pas — la §5b bloquerait
+      # trois steps plus bas, et échouer ici nomme la cause.
+      - name: Correspondance — entrées sourcées des candidats déclarés (#757)
+        if: ${{ hashFiles('raw_data/resolutions_candidats.json') != '' }}
+        run: |
+          python3 src/build_correspondance_acteurs_an.py \
+            --completer-candidats \
+            --resolutions raw_data/resolutions_candidats.json \
             --profiles-dir pivot_data/profiles
 
       # inputs.incomplete_read_threshold appliqué dans tous les modes (y compris cold_start=true).
@@ -3110,7 +3267,14 @@ jobs:
           # dans le `git add`, l'entrée dérivée serait réécrite à chaque run et
           # le gel du slug qu'elle est censée produire n'existerait pas — même
           # classe de panne que les index partagés absents du commit (AGENTS §3a).
-          git add raw_data/profiles raw_data/correspondance_acteurs_an.json pivot_data/profiles pivot_data/partis pivot_data/groupes pivot_data/gouvernements pivot_data/scrutins.json pivot_data/amendements
+          # `raw_data/candidats.json` (#757) : la liste est rafraîchie par le job
+          # de tête et voyage en artifact ; sans elle dans le `git add`, le
+          # périmètre serait recalculé à chaque run sans jamais être conservé,
+          # et les slugs fabriqués seraient refabriqués — donc jamais gelés.
+          # `resolutions_candidats.json` N'entre PAS : c'est un intermédiaire de
+          # run, comme `rosters_bruts.json`, et le committer ferait bouger un
+          # fichier à chaque exécution sans que personne ne le lise.
+          git add raw_data/candidats.json raw_data/profiles raw_data/correspondance_acteurs_an.json pivot_data/profiles pivot_data/partis pivot_data/groupes pivot_data/gouvernements pivot_data/scrutins.json pivot_data/amendements
           # Table des commissions saisies au fond (#328), ajoutée seulement si
           # elle existe : `git add` sur un chemin absent échoue, et le step qui
           # la produit est non bloquant. Un run sans archive lisible ne doit pas

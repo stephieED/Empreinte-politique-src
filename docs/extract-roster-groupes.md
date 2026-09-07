@@ -1,6 +1,6 @@
 # extract-roster-groupes
 
-**Le point d'entrée des huit jobs est
+**Le point d'entrée des neuf jobs est
 [`workflow-generate-data.md`](./workflow-generate-data.md) §1** — ce que chacun
 fait, consomme, produit, et les décisions derrière sa forme. Ce fichier-ci est
 le seul job d'extraction à garder une page à lui, parce qu'il a de la

@@ -150,7 +150,14 @@ ECARTS_CONNUS = frozenset({
 #:   qu'elle apporte n'est pas une preuve, c'est le **gel** de l'identifiant —
 #:   sans elle, un changement de nom d'usage déplacerait le slug au run suivant
 #:   et publierait la même personne deux fois (#487, #668).
-ORIGINES_CORRESPONDANCE = frozenset({"relue", "derivee"})
+#: - `sourcee` — le rapprochement est porté par un **identifiant externe**
+#:   (Wikidata `P4123`, #757), pas par un arbitrage humain et pas par une
+#:   dérivation. Régime des candidats déclarés : leur slug vient de
+#:   `slugify(nom)`, un nom saisi dans un fichier éditorial, donc l'entrée
+#:   établit bien quelque chose — contrairement à `derivee` — mais ce quelque
+#:   chose est **sourcé et daté**, pas relu. La `preuve` est l'URL de l'élément,
+#:   et l'entrée n'est écrite que si le profil publié la corrobore.
+ORIGINES_CORRESPONDANCE = frozenset({"relue", "derivee", "sourcee"})
 
 #: Origine d'une entrée qui n'en déclare pas. Ce n'est pas un défaut choisi par
 #: commodité : une entrée écrite **avant** ce lot ne peut venir que de la passe

@@ -11,7 +11,7 @@ Trois voisins, et ce qui les sépare :
   est une règle qu'on manque ;
 - **le pourquoi** vit dans `docs/decisions/`, un fichier par décision, indexé
   par `docs/technical_decisions.md` ;
-- **ce que fait un run** — les huit jobs, le formulaire, les caches, les
+- **ce que fait un run** — les neuf jobs, le formulaire, les caches, les
   artifacts, les budgets, le push, la relance automatique — vit dans
   [`workflow-generate-data.md`](./workflow-generate-data.md). Ce fichier-ci n'en
   redit rien : il décrit ce qui est écrit, pas comment le run l'écrit.
