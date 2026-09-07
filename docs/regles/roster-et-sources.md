@@ -134,3 +134,21 @@ les charger, ni à les faire grossir. -->
   would shrink a published denominator on missing data), and "no elective mandate at all"
   stays distinct from "elective mandates, none in this chamber".
   → `docs/decisions/chambre-par-mandat-electif.md`
+- **The declared-candidate list is collected, and a new candidate enters without a slug
+  (#753).** `raw_data/candidats.json` decides who gets a page — it sizes the `extract-an`
+  matrix and carries the first pivot pass — and it was hand-kept, 51 days stale, missing
+  **19 of 30** declared candidates while carrying **2** who had declined.
+  `fetch_candidats_declares.py` reads the **rendered HTML** of the dedicated
+  *Candidatures* article: the primaries are transcluded (`{{#section-h:}}`), so wikitext
+  alone loses four people we already publish. The name is read from the cell's **text**,
+  never its first link — two declared candidates have no article, and their first link is
+  the **party**. **Writing is additive**: an existing entry is never removed or modified,
+  and one that is no longer declared is **named, never rewritten** — the declared section
+  alone cannot tell a withdrawal from a moved section. **A new candidate gets
+  `slug: null`**, which keeps it out of `prepare-an-matrix`, hence out of collection and
+  publication, until its slug ↔ AN actor correspondence is reviewed by hand: minting the
+  slug would trip gate §5b's threshold-0 hard fail on every run instead (#525). Three
+  anomalies block the write and none is a numeric threshold — unreadable page, missing
+  « Candidats déclarés » heading, zero candidate extracted (#511). **Wikidata is out**:
+  `P3602` returns 1 person for the 2027 election against 30 declared.
+  → `docs/decisions/liste-candidats-declares-753.md`

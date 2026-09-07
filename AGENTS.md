@@ -140,8 +140,8 @@ Full rationale: `web/old/v3/methodologie.html` — do not duplicate prose here.
 | Parltrack (JSON dumps) | Yes | ODbL v1.0 | **Share-alike** if republished as downloadable dataset |
 | European Parliament (data.europarl.europa.eu, www.europarl.europa.eu) | Yes | EP Legal Notice (reuse policy, attribution-based) | Attribution only |
 | NosDeputes.fr / NosSenateurs.fr | **No** since #528/#529 — but published fields still derive from it | ODbL v1.0 | **Share-alike** if published as downloadable dataset |
-| French Wikipedia | Yes | CC BY-SA 4.0 | Verbatim quotes only (not current use) |
-| Wikidata | Yes | CC0 1.0 | No restriction |
+| French Wikipedia | Yes — the declared-candidate list only (#753) | CC BY-SA 4.0 | **Facts only** (names, party labels) into `raw_data/candidats.json`, never verbatim prose. It reaches no `sources[]`, so it moves no `meta.licence_donnees` |
+| Wikidata | **No** since #753 — `P3602` returns 1 person for the 2027 election, against 30 declared | CC0 1.0 | No restriction |
 
 **"No French source is collected from Regards Citoyens any more" does not mean "the corpus
 is under Licence Ouverte" (#530).** Share-alike survives on two counts: Parltrack is a

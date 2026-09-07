@@ -209,16 +209,37 @@ Affiche le profil sur la sortie standard (`--out` pour écrire un fichier). Le
 premier appel télécharge de gros dumps dans `.cache/parltrack/` :
 `--show-cache-date` dit de quand ils datent.
 
-### Le suivi des candidatures (Wikipédia / Wikidata)
+### La liste des candidats déclarés
 
 ```bash
-python3 src/fetch_wikipedia_candidates.py
-python3 src/fetch_wikipedia_candidates.py --source wikidata --json
+python3 src/fetch_candidats_declares.py
+python3 src/fetch_candidats_declares.py --ecrire
+python3 src/fetch_candidats_declares.py --html capture.html --json
 ```
 
-Produit : un résumé de relecture sur la sortie standard. Ce script **ne modifie
-jamais** `raw_data/candidats.json` — la mise à jour de la liste reste une
-décision éditoriale, prise à la main.
+Produit : un rapport de relecture sur la sortie standard, et **rien d'autre**
+tant que `--ecrire` n'est pas posé.
+
+| Option | Ce qu'elle fait |
+| --- | --- |
+| `--ecrire` | ajoute dans `raw_data/candidats.json` les déclarés qui n'y sont pas. **Additif** : aucune entrée existante n'est supprimée ni modifiée |
+| `--html` | rejoue une capture locale du HTML rendu au lieu d'interroger le réseau |
+| `--json` | rend les deux sens de l'écart en JSON |
+| `--echouer-si-ecart` | sort en 3 si la source et le fichier diffèrent — pour un futur job de CI |
+| `--article` | change l'article Wikipédia lu (défaut : celui des candidatures) |
+| `--candidats` | change le fichier écrit (défaut : `raw_data/candidats.json`) |
+
+Un candidat ajouté entre **sans `slug`** : il n'a donc pas de shard `extract-an`
+et n'est pas publié tant que sa correspondance slug ↔ acteur AN n'a pas été
+relue à la main dans `raw_data/correspondance_acteurs_an.json` (portail §5b).
+`famille_politique`, `date_declaration` et la source primaire de la déclaration
+sont à compléter de même. Une entrée qui n'est **plus** déclarée est signalée et
+jamais modifiée : la cause — retrait, candidature déclinée, déplacement de
+section — n'est pas lisible depuis la seule section des déclarés.
+
+Rien n'est écrit si la collecte échoue : page illisible, section
+« Candidats déclarés » introuvable, ou zéro candidat extrait font sortir en 1
+sans toucher au fichier.
 
 ---
 
