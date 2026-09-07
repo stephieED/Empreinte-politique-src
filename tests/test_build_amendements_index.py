@@ -2,7 +2,13 @@
 sous-issue 3/6 de #248) : construit sans condition les index amendements des
 3 législatures de `AN_AMENDEMENTS_PATH`, sans dépendre d'une liste de
 candidats, avec isolation par législature (un échec n'empêche pas les
-autres, aucune exception non gérée ne doit remonter à l'appelant CI)."""
+autres, aucune exception non gérée ne doit remonter à l'appelant CI).
+
+#749 — ces tests patchent AUSSI `amendements_index_en_cache_utilisable`, pour
+la même raison qu'ils patchaient déjà `amendements_index_deja_figee` : sans
+cela ils dépendraient silencieusement de l'état réel du cache disque de la
+machine qui les exécute, et passeraient ou non selon qu'elle a déjà collecté.
+`return_value=None` signifie « aucun cache servable », donc « construis »."""
 
 import sys
 from pathlib import Path
@@ -23,6 +29,7 @@ def test_build_all_amendements_index_calls_all_three_legislatures():
 
     with (
         patch("build_amendements_index._download_and_build_amendement_index", side_effect=fake_index),
+        patch("build_amendements_index.amendements_index_en_cache_utilisable", return_value=None),
         patch("build_amendements_index.amendements_index_deja_figee", return_value=False),
     ):
         ok = build_all_amendements_index()
@@ -45,6 +52,7 @@ def test_build_all_amendements_index_partial_failure_does_not_stop_others():
 
     with (
         patch("build_amendements_index._download_and_build_amendement_index", side_effect=fake_index),
+        patch("build_amendements_index.amendements_index_en_cache_utilisable", return_value=None),
         patch("build_amendements_index.amendements_index_deja_figee", return_value=False),
     ):
         ok = build_all_amendements_index()
@@ -56,6 +64,7 @@ def test_build_all_amendements_index_partial_failure_does_not_stop_others():
 def test_build_all_amendements_index_all_succeed_returns_true():
     with (
         patch("build_amendements_index._download_and_build_amendement_index", return_value={"PA1": []}),
+        patch("build_amendements_index.amendements_index_en_cache_utilisable", return_value=None),
         patch("build_amendements_index.amendements_index_deja_figee", return_value=False),
     ):
         assert build_all_amendements_index() is True
@@ -67,6 +76,7 @@ def test_build_all_amendements_index_all_fail_returns_false_without_raising():
             "build_amendements_index._download_and_build_amendement_index",
             side_effect=AmendementsIndexError("échec (simulé)"),
         ),
+        patch("build_amendements_index.amendements_index_en_cache_utilisable", return_value=None),
         patch("build_amendements_index.amendements_index_deja_figee", return_value=False),
     ):
         assert build_all_amendements_index() is False
@@ -87,6 +97,7 @@ def test_build_all_amendements_index_skips_already_frozen_legislature():
 
     with (
         patch("build_amendements_index._download_and_build_amendement_index", side_effect=fake_index),
+        patch("build_amendements_index.amendements_index_en_cache_utilisable", return_value=None),
         patch("build_amendements_index.amendements_index_deja_figee", side_effect=fake_deja_figee),
     ):
         ok = build_all_amendements_index()
@@ -104,14 +115,16 @@ def test_main_returns_exit_code_1_on_partial_failure():
 
     with (
         patch("build_amendements_index._download_and_build_amendement_index", side_effect=fake_index),
+        patch("build_amendements_index.amendements_index_en_cache_utilisable", return_value=None),
         patch("build_amendements_index.amendements_index_deja_figee", return_value=False),
     ):
-        assert main() == 1
+        assert main([]) == 1
 
 
 def test_main_returns_exit_code_0_when_all_succeed():
     with (
         patch("build_amendements_index._download_and_build_amendement_index", return_value={}),
+        patch("build_amendements_index.amendements_index_en_cache_utilisable", return_value=None),
         patch("build_amendements_index.amendements_index_deja_figee", return_value=False),
     ):
-        assert main() == 0
+        assert main([]) == 0
