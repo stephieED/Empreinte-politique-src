@@ -26,7 +26,10 @@ export default function StaticPage({ eyebrow, title, tagline, updated, sections 
 
           <div className="static-sections">
             {sections.map((section) => (
-              <section className="static-card" key={section.heading}>
+              // `id` optionnel : il rend une section ATTEIGNABLE depuis une
+              // fiche (`/methodologie#votes`). Sans lui, un renvoi posé sous une
+              // figure dépose le lecteur en haut d'une page de dix sections.
+              <section className="static-card" key={section.heading} id={section.id}>
                 <h2>{section.heading}</h2>
                 {section.body}
               </section>

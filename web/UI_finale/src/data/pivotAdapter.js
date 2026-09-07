@@ -52,6 +52,12 @@ import {
   troncatureTags,
 } from '../utils/groupe';
 import { LIBELLE_SORT_TEXTE, OUTCOME_COLOR } from '../utils/lecture';
+import {
+  couvertureDesReperes,
+  periodesDeVote,
+  porteeCommune,
+  qualifierVotes,
+} from '../utils/votesParPeriode';
 
 // Libellés des catégories de mandats_agreges (group_profile.MANDATS_AGREGES_CATEGORIES).
 // Périmètre élargi par #382/#386 : avant cette taxonomie, commissions
@@ -381,6 +387,8 @@ export function buildCandidateView(
   fichesGroupe = null,
   gouvernements = null,
   commissionsDossiers = null,
+  scrutinsDossiers = null,
+  tousLesGouvernements = null,
 ) {
   const mandats = pivot.mandats || [];
   const votes = joinVotes(pivot.votes || [], scrutinsIndex);
@@ -426,6 +434,22 @@ export function buildCandidateView(
     scrutinsIndex,
   );
   const ecarts = ecartsAvecLeGroupe(votes, fichesGroupe);
+
+  /* « Ce qu'il a voté » : les positions de dernière lecture, rangées par
+   * période politique (#328). Elles partent de `lectureVotes.retenus` — la
+   * MÊME sélection que le décompte au-dessus, pas une seconde : le repli sur la
+   * dernière lecture n'a qu'une implémentation, dans `utils/lecture.js` (#711).
+   *
+   * `tousLesGouvernements` est la chronologie entière, pas les seuls
+   * gouvernements dont la personne fut membre : ce qui découpe la carrière est
+   * le gouvernement EN PLACE, pas son appartenance. */
+  const votesQualifies = qualifierVotes(lectureVotes.retenus, {
+    roles: roles.filter((r) => r.institution === INSTITUTION_PARLEMENT),
+    gouvernements: tousLesGouvernements || [],
+    scrutinsDossiers,
+    commissionDuDossier,
+  });
+  const periodesDeVotes = periodesDeVote(votesQualifies);
 
   return {
     id: manifestEntry.slug,
@@ -476,7 +500,22 @@ export function buildCandidateView(
       qualite,
       questions,
     },
-    votes: lectureVotes,
+    votes: {
+      ...lectureVotes,
+      // La liste qualifiée ne remonte PAS jusqu'au composant sous cette clé :
+      // ce sont les périodes qui sont l'unité d'affichage. Le total qualifié
+      // reste publié pour que la couverture ci-dessous ait un dénominateur.
+      qualifies: votesQualifies.length,
+      periodes: periodesDeVotes,
+      portee: porteeCommune(periodesDeVotes),
+      // Ce que la section sait de ses propres trous — publié, jamais deviné à
+      // la soustraction par le lecteur (§2 règles 5 et 7).
+      reperes: couvertureDesReperes(votesQualifies),
+      // L'index scrutin → dossier n'a pas pu être lu : la matière et le statut
+      // manquent pour TOUS les votes, ce qui n'est pas la même chose que « ces
+      // textes n'ont pas de commission saisie au fond ».
+      rattachementDisponible: scrutinsDossiers !== null,
+    },
     ecarts,
 
     // La cause d'un vide, par liste : `ListeVide` (lot 1) la rend en phrase.

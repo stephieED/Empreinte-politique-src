@@ -107,6 +107,33 @@ function loadCommissionsDossiers() {
 }
 
 /**
+ * Dossier législatif d'un scrutin, statut du texte et 49.3 (#758).
+ *
+ * Un scrutin ne porte AUCUNE référence législative — mesuré : 0 des 18 311
+ * scrutins de l'archive portent `objet.referenceLegislative`. La jointure se
+ * fait donc dans l'autre sens, depuis les `voteRefs` des actes du dossier, et
+ * `src/build_scrutins_dossiers.py` la fige dans ce fichier : 715 scrutins vers
+ * 561 dossiers, 72 Ko.
+ *
+ * Sans lui, « ce qu'il a voté » perd la matière du texte et son statut final ;
+ * elle ne les remplace pas — une matière déduite d'un intitulé serait une
+ * classification construite ici (§2 règle 1).
+ *
+ * Non bloquant et mémoïsé, comme les autres index partagés.
+ */
+let scrutinsDossiersPromise = null;
+
+function loadScrutinsDossiers() {
+  if (!scrutinsDossiersPromise) {
+    scrutinsDossiersPromise = fetch('/data/scrutins_dossiers.json')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => (d ? { scrutins: d.scrutins || {}, dossiers: d.dossiers || {} } : null))
+      .catch(() => null);
+  }
+  return scrutinsDossiersPromise;
+}
+
+/**
  * Charge les seules législatures que le mapping du profil référence, et rend
  * `{ legislature: { id: amendement } }`.
  *
@@ -188,13 +215,15 @@ export async function getCandidateProfile(id) {
   const manifest = await loadManifest();
   const entry = manifest.candidates.find((c) => c.slug === id);
   if (!entry) return null;
-  const [pivot, scrutins, fichesGroupe, gouvernements, commissions] = await Promise.all([
-    fetchJson(`/data/profiles/${entry.slug}.pivot.json`),
-    loadScrutins(),
-    loadFichesGroupe(manifest, entry),
-    loadGouvernements(manifest, entry.slug),
-    loadCommissionsDossiers(),
-  ]);
+  const [pivot, scrutins, fichesGroupe, gouvernements, commissions, scrutinsDossiers] =
+    await Promise.all([
+      fetchJson(`/data/profiles/${entry.slug}.pivot.json`),
+      loadScrutins(),
+      loadFichesGroupe(manifest, entry),
+      loadGouvernements(manifest, entry.slug),
+      loadCommissionsDossiers(),
+      loadScrutinsDossiers(),
+    ]);
   if (!pivot) return null;
   // L'index des amendements se charge APRÈS le profil : ce sont les
   // identifiants du mapping qui disent quelles législatures aller chercher.
@@ -207,6 +236,12 @@ export async function getCandidateProfile(id) {
     fichesGroupe.filter(Boolean),
     gouvernements.filter(Boolean),
     commissions,
+    scrutinsDossiers,
+    // TOUS les gouvernements, pas les seuls dont la personne fut membre : « ce
+    // qu'il a voté » découpe la carrière par gouvernement en place, ce qui
+    // demande la chronologie entière. Les dates vivent déjà dans le manifeste,
+    // aucune fiche supplémentaire n'est téléchargée.
+    manifest.gouvernements || [],
   );
 }
 

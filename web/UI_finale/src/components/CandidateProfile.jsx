@@ -21,14 +21,15 @@ import { Fragment, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   LAST_READING_LABEL,
+  LAST_READING_RULE,
   LIBELLE_SORT_TEXTE,
   MOTIF_SORT,
-  LAST_READING_RULE,
   OUTCOME_COLOR,
   WHOLE_TEXT_VOTE_BOUND,
   estProcedure49_3,
   formatNumber,
 } from '../utils/lecture';
+import VotesParPeriode from './VotesParPeriode';
 import {
   CAS_RIEN_A_MONTRER,
   INSTITUTION_GOUVERNEMENT,
@@ -1298,16 +1299,11 @@ function Votes({ votes, cause, voix }) {
           />
         </div>
       ) : (
-        <div className="cp-carte cp-bloc">
-          <div className="cp-votes-barre">
-            {votes.positions.map((p) => (
-              <div className="cp-votes-seg" key={p.position} style={{ flex: p.n }}>
-                <PositionVote position={p.position} />
-                <b className="cp-num">{formatNumber(p.n)}</b>
-              </div>
-            ))}
-          </div>
-          <div className="cp-regles">
+        <>
+          {/* Les dénominateurs du repli restent AU-DESSUS de la figure : ils
+              disent de quoi les périodes sont tirées, et un ratio sans son
+              dénominateur n'est pas vérifiable (§2 règle 7). */}
+          <div className="cp-regles cp-regles--votes">
             <span className="cp-regle">
               {formatNumber(votes.textes)} textes — {LAST_READING_LABEL}
             </span>
@@ -1318,16 +1314,35 @@ function Votes({ votes, cause, voix }) {
             <span className="cp-regle">absences jamais publiées</span>
             <span className="cp-regle">un plancher, pas un relevé exhaustif</span>
           </div>
-        </div>
+
+          {/* DEUX PHRASES, ET PLUS DEUX PARAGRAPHES (#328).
+              Le « pourquoi » des deux règles — quatre lectures d'un même texte,
+              un code de scrutin qui ne sépare pas l'ensemble de l'article —
+              est passé dans la page de méthodologie, où le renvoi sous la
+              figure mène. Trois pages de raisonnement sous un graphique font
+              lire la légende à la place du fait.
+              Ce qui NE PART PAS : les deux phrases elles-mêmes. #711 les veut
+              à côté du chiffre, pas seulement dans la méthodologie — qui
+              annonçait déjà la règle à l'époque où rien ne l'appliquait. */}
+          <p className="cp-note">
+            <b>{LAST_READING_RULE.phrase}</b> {WHOLE_TEXT_VOTE_BOUND.phrase}
+          </p>
+          {votes.periodes?.length ? (
+            <VotesParPeriode
+              periodes={votes.periodes}
+              portee={votes.portee}
+              reperes={votes.reperes}
+            />
+          ) : (
+            <div className="cp-carte">
+              <ListeVide
+                cause="non_collecte"
+                motif="Aucune de ses positions de dernière lecture ne porte de date exploitable : sans date, ni le banc ni le gouvernement en place ne peuvent être lus, et une période politique ne se construit pas."
+              />
+            </div>
+          )}
+        </>
       )}
-
-      <p className="cp-note">
-        <b>{LAST_READING_RULE.phrase}</b> {LAST_READING_RULE.pourquoi}
-      </p>
-
-      <p className="cp-note">
-        <b>{WHOLE_TEXT_VOTE_BOUND.phrase}</b> {WHOLE_TEXT_VOTE_BOUND.pourquoi}
-      </p>
     </>
   );
 }

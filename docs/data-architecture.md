@@ -772,11 +772,12 @@ graph TD
     SCR["pivot_data/scrutins.json"] --> SYNC
     AMD["pivot_data/amendements/"] --> SYNC
     COM["pivot_data/commissions_dossiers.json"] --> SYNC
+    SDO["pivot_data/scrutins_dossiers.json"] --> SYNC
     CAND["raw_data/candidats.json"] --> SYNC
     PAR["pivot_data/partis/<br/>NON copié — pas d'onglet Partis"]
 
     SYNC --> MAN["public/data/manifest.json<br/>candidates + groupes + gouvernements<br/>(+ groupIds[] par candidat)"]
-    SYNC --> PUB["public/data/ — profiles · groupes · gouvernements<br/>+ scrutins.json + amendements/ + commissions_dossiers.json"]
+    SYNC --> PUB["public/data/ — profiles · groupes · gouvernements<br/>+ scrutins.json + amendements/ + commissions_dossiers.json<br/>+ scrutins_dossiers.json"]
 
     MAN --> IDX["src/data/index.js<br/>getCandidateProfile / getGroupProfile / …"]
     PUB --> IDX
@@ -788,12 +789,17 @@ graph TD
 
 - `sync-data.mjs` copie les artefacts vers `public/data/` (Vite ne sert pas de
   fichiers situés hors du dossier du projet) et génère `manifest.json`. Il
-  **signale** l'absence de `scrutins.json`, de `pivot_data/amendements/` ou de
-  `commissions_dossiers.json` au lieu de la taire : sans les deux premiers, les
-  votes et les amendements s'afficheraient vides ; sans le troisième,
-  « L'essentiel » de la fiche candidat n'affiche pas la répartition des dossiers
-  amendés par commission saisie au fond — et ne la déduit surtout pas d'un
-  intitulé de dossier (§2 règle 1).
+  **signale** l'absence de `scrutins.json`, de `pivot_data/amendements/`, de
+  `commissions_dossiers.json` ou de `scrutins_dossiers.json` au lieu de la
+  taire : sans les deux premiers, les votes et les amendements s'afficheraient
+  vides ; sans le troisième, « L'essentiel » de la fiche candidat n'affiche pas
+  la répartition des dossiers amendés par commission saisie au fond ; sans le
+  quatrième, « Ce qu'il a voté » n'affiche ni la matière ni le sort final des
+  textes votés (#328). Aucun des quatre n'est déduit d'un intitulé de dossier
+  (§2 règle 1), et l'index illisible se distingue de l'entrée absente —
+  `rattachementDisponible` dit « le fichier n'a pas pu être lu », ce qui n'est
+  pas « ce texte n'a pas de commission saisie au fond » (même distinction que
+  #510).
 - Le manifeste liste les candidats **déclarés** de `raw_data/candidats.json`,
   filtrés sur l'existence d'un profil sur disque — ne pas fabriquer la promesse
   d'une page absente. `groupIds[]` est rattaché par candidat pour permettre le
