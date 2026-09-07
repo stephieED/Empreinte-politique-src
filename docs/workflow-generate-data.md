@@ -314,7 +314,7 @@ additive des profils bruts des trois familles d'artifacts
 `roster_candidats.json` du run ; profils de parti ; **la table des commissions
 saisies au fond** (`build_commissions_dossiers.py`, #328 — non bloquante, elle
 dérive du référentiel et non du corpus) ; profils de groupe parlementaire réel,
-de gouvernement ; `check_quality_gate.py` ; les **quatre contrôles** de la §8 ;
+de gouvernement ; `check_quality_gate. Une seconde étape marche **le même arbre sur les mêmes archives** pour publier le **rattachement des scrutins à leur dossier** (`build_scrutins_dossiers.py`, #758) — un scrutin AN ne nomme pas le texte qu'il tranche, et sans cette table la section « Ce qu'il a voté » ne peut dire ni sur quoi porte un texte voté ni ce qu'il est devenu. Non bloquante et additive comme la première ; le `git add` du push la protège par un test d'existence, l'étape étant `continue-on-error`.py` ; les **quatre contrôles** de la §8 ;
 la vérification que `src/` et `raw_data/*.json` n'ont pas bougé sur la branche
 pendant le run ; le commit et le push ; **le signal disant si ce commit
 déclenchera `tests.yml`** (#685, §6) ; la fenêtre de rétention de l'historique

@@ -1,6 +1,18 @@
 #!/usr/bin/env python3
 """scrutins_index.py — Liste dédupliquée des scrutins, partagée (#432).
 
+CE QUI GOUVERNE CE MODULE, si vous n'en lisez que trois choses :
+  - `docs/decisions/qualification-scrutins-et-cle-dossier-639.md` — la
+    qualification d'un scrutin et la clé de son dossier étaient lues puis
+    jetées à la fusion ; `merge_scrutins_index` est écrit contre ça.
+  - `docs/decisions/rattachement-scrutin-dossier-758.md` — un scrutin AN ne
+    nomme PAS le texte qu'il tranche (0/18 311 scrutins bruts). Le lien
+    n'existe qu'en sens inverse, et il vit désormais dans
+    `pivot_data/scrutins_dossiers.json` — pas ici, et surtout pas dans
+    `texte_lie_id`, réservé aux motions de censure.
+  - `docs/decisions/audit-champs-deplaces-726.md` — un consommateur qui lit un
+    champ déplacé ne se tait pas ; `cohesion_votes[].date` vit ici depuis #432.
+
 Un scrutin est **identique pour tous ses votants** : `texte`, `date`, `sort`,
 `type_vote`, `source_url`… Seule la `position` est propre au membre. Le titre
 d'un scrutin était donc recopié jusqu'à 74 fois, et le méta complet autant.
