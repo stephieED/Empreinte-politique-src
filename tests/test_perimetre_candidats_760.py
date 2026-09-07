@@ -111,17 +111,18 @@ def test_les_deux_candidatures_declinees_sortent_du_perimetre():
     assert all(any(c["nom"] and c["slug"] == slug for c in candidats) for slug in geles)
 
 
-def test_le_gel_ne_supprime_aucun_profil_publie():
-    """Le profil reste publié avec les données de sa dernière collecte.
+def test_le_gel_ne_retire_personne_du_fichier():
+    """Geler retire du périmètre ; ça ne supprime pas l'entrée.
 
-    C'est le régime des deux fiches de groupe Sénat de #528 — gardées, gelées,
-    déclarées — et supprimer un fichier publié est une disparition
-    qu'`audit_diff_profils` bloque (#460/#470).
+    Le pendant côté corpus — le profil pivot reste sur disque — n'est PAS
+    vérifié ici : aucun test ne lit le corpus vivant (AGENTS.md §3b). Ce que le
+    gel ne touche pas, il ne le touche pas *par construction* — ce module ne
+    connaît que la liste éditoriale et n'a aucun accès à `pivot_data/`.
     """
-    profils = Path("pivot_data/profiles")
-    if not profils.is_dir():
-        pytest.skip("pivot_data/profiles absent de ce checkout")
-    for slug in ("laurent-wauquiez", "jordan-bardella"):
-        assert (profils / f"{slug}.pivot.json").is_file(), (
-            f"{slug} : le gel de la collecte ne doit jamais retirer le profil publié"
-        )
+    candidats = [_candidat("a"), _candidat("b", "decline")]
+    avant = [dict(c) for c in candidats]
+
+    perimetre.slugs_a_collecter(candidats)
+    perimetre.slugs_geles(candidats)
+
+    assert candidats == avant, "le prédicat ne doit rien muter"
