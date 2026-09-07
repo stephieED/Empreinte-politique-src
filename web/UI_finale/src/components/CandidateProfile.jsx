@@ -21,9 +21,12 @@ import { Fragment, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   LAST_READING_LABEL,
+  LIBELLE_SORT_TEXTE,
+  MOTIF_SORT,
   LAST_READING_RULE,
   OUTCOME_COLOR,
   WHOLE_TEXT_VOTE_BOUND,
+  estProcedure49_3,
   formatNumber,
 } from '../utils/lecture';
 import {
@@ -878,6 +881,32 @@ function Cascade({ cascade, selection, onSelection }) {
           </>
         )}
       </p>
+      {/* LE 49.3 EST DIT ICI PARCE QUE LA FIGURE NE PEUT PAS LE PORTER.
+          Son axe est le STADE — jusqu'où le texte est allé — et un texte adopté
+          par engagement de responsabilité s'y range comme les autres : quatre
+          de Gabriel Attal se fondent dans la barre « promulgué », un d'Édouard
+          Philippe tombe dans une barre « non adopté » qui le contredit. Le fait
+          est donc nommé à côté de la figure, jamais dedans, et jamais compté
+          comme une adoption ordinaire (§2 règle 4). */}
+      {cascade.procedure493 > 0 && (
+        <p className="cp-ter-493">
+          <button
+            aria-pressed={Boolean(selection?.procedure493)}
+            className="cp-ter-493-bouton"
+            onClick={() => onSelection(selection?.procedure493 ? null : { procedure493: true })}
+            type="button"
+          >
+            <span className="cp-ter-493-marque">49.3</span>
+            <b>{formatNumber(cascade.procedure493)}</b> de ces textes
+            {cascade.procedure493 > 1 ? ' ont été adoptés' : ' a été adopté'} sans vote
+          </button>
+          <span>
+            — engagement de la responsabilité du Gouvernement. C’est un{' '}
+            <b>fait procédural</b>, jamais une position de vote : l’Assemblée ne s’est pas
+            prononcée. La cascade a le <b>stade</b> pour axe et ne peut pas le montrer.
+          </span>
+        </p>
+      )}
     </div>
   );
 }
@@ -893,14 +922,17 @@ function ListeCascade({ cascade, selection, onRaz }) {
   }
   const fin = cascade.stades.length - 1;
   const nomDe = (i) => LIBELLE_STADE[cascade.stades[i]] || cascade.stades[i];
-  const ou = selection.lo === selection.hi
+  const ou = selection.procedure493
+    ? 'adoptés sans vote, par engagement de responsabilité'
+    : selection.lo === selection.hi
     ? (selection.lo === fin ? nomDe(fin) : `${nomDe(selection.lo)}, et non ${nomDe(selection.lo + 1)}`)
     : (selection.lo === 0 ? 'publiés' : `${nomDe(selection.lo)} ou au-delà`);
   return (
     <div className="cp-ter-liste">
       <div className="cp-ter-liste-tete">
         <span className="cp-ter-liste-quoi">
-          {selection.matiere || 'toutes matières'} · {ou} — {formatNumber(sel.length)} texte
+          {selection.procedure493 ? 'Article 49.3' : selection.matiere || 'toutes matières'} ·{' '}
+          {ou} — {formatNumber(sel.length)} texte
           {sel.length > 1 ? 's' : ''}
         </span>
         <button className="cp-chute-raz" onClick={onRaz} type="button">Tout afficher</button>
@@ -922,13 +954,26 @@ function ListeCascade({ cascade, selection, onRaz }) {
             <span className="cp-ter-fait">
               {t.matiere}{t.an ? ` · ${t.an}` : ''}{t.role ? ` · ${t.role}` : ''}
             </span>
+            {/* LE SORT À CÔTÉ DU STADE, JAMAIS À SA PLACE. La pastille du haut
+                dit jusqu'où le texte est allé, celle-ci ce qu'il est devenu, et
+                l'un ne se déduit pas de l'autre : « discuté en séance et pas
+                adopté » ne veut pas dire « rejeté ». Un sort absent affiche son
+                MOTIF, jamais un sort par défaut (§2 règle 5). */}
+            <span className={`cp-ter-sort${estProcedure49_3(t.sortCle) ? ' cp-ter-sort--493' : ''}`}>
+              {t.sortCle
+                ? LIBELLE_SORT_TEXTE[t.sortCle] || t.sortCle
+                : `Sort non résolu${t.sortMotif ? ` — ${MOTIF_SORT[t.sortMotif] || t.sortMotif}` : ''}`}
+            </span>
           </li>
         ))}
       </ul>
       <p className="cp-note">
-        Le titre ouvre le dossier à l’Assemblée nationale. La pastille donne{' '}
-        <b>l’étape la plus avancée</b> que le corpus enregistre pour ce texte à sa date —{' '}
-        <b>pas son sort</b> : rien ne dit s’il a été repoussé, retiré, ou s’il attend encore.
+        Le titre ouvre le dossier à l’Assemblée nationale. Chaque texte porte{' '}
+        <b>deux faits distincts</b> : la pastille de droite donne l’<b>étape la plus avancée</b>{' '}
+        que le corpus enregistre à sa date, la ligne du dessous son <b>sort</b> — ce qu’il est
+        devenu. L’un ne se déduit pas de l’autre : « discuté en séance et pas adopté » ne veut
+        pas dire « rejeté », et un texte <b>adopté via 49.3</b> l’a été sans que l’Assemblée
+        vote.
       </p>
     </div>
   );

@@ -51,7 +51,7 @@ import {
   siegeEtPasse,
   troncatureTags,
 } from '../utils/groupe';
-import { OUTCOME_COLOR } from '../utils/lecture';
+import { LIBELLE_SORT_TEXTE, OUTCOME_COLOR } from '../utils/lecture';
 
 // Libellés des catégories de mandats_agreges (group_profile.MANDATS_AGREGES_CATEGORIES).
 // Périmètre élargi par #382/#386 : avant cette taxonomie, commissions
@@ -102,17 +102,6 @@ const GOVERNMENT_STATUT_LABELS = {
   rejete_49_3: { singular: 'rejeté via 49.3', plural: 'rejetés via 49.3' },
   navette_en_cours: { singular: 'en navette', plural: 'en navette' },
   depose: { singular: 'déposé', plural: 'déposés' },
-};
-const GOVERNMENT_TEXTE_STATUT_LABELS = {
-  depose: 'Déposé',
-  navette_en_cours: 'Navette en cours',
-  promulgue: 'Promulgué (publié au Journal officiel)',
-  adopte: 'Adopté',
-  adopte_cmp: 'Adopté (texte de commission mixte paritaire)',
-  adopte_49_3: 'Adopté via 49.3',
-  rejete: 'Rejeté',
-  rejete_49_3: 'Rejeté via 49.3',
-  retire: 'Retiré',
 };
 
 // Périmètre réellement couvert par les archives de dossiers législatifs
@@ -799,7 +788,7 @@ export function buildGovernmentView(gouvernement) {
     .map((t) => ({
       dossierId: t.dossier_id,
       titre: t.titre,
-      statutLabel: GOVERNMENT_TEXTE_STATUT_LABELS[t.statut] || t.statut,
+      statutLabel: LIBELLE_SORT_TEXTE[t.statut] || t.statut,
       chambre: t.chambre_depot_initial === 'AN' ? 'Assemblée nationale' : 'Sénat',
       sort493: t.sort_49_3 === true,
       meta: formatFrDate(t.date_depot) || 'Date de dépôt non renseignée',

@@ -21,6 +21,7 @@
  */
 
 import {
+  SORTS_PROCEDURE_49_3,
   formatNumber,
   isWholeTextVote,
   normalizeLabel,
@@ -1202,6 +1203,12 @@ function cascadeDesTextes(publies, commissionDuDossier) {
       matiere,
       stadeCle: t.stade_procedural,
       stade: LIBELLE_STADE[t.stade_procedural] || t.stade_procedural,
+      // Le SORT à côté du STADE, jamais à sa place (#743). Le stade dit jusqu'où
+      // le texte est allé, le sort ce qu'il est devenu, et l'un ne se déduit pas
+      // de l'autre. `null` porte toujours son motif, qui s'affiche à sa place —
+      // un sort par défaut serait une invention (§2 règle 5).
+      sortCle: t.sort ?? null,
+      sortMotif: t.sort_non_resolu?.motif ?? null,
       role: LIBELLE_ROLE_TEXTE[t.role] || t.role || null,
       url: t.source_url ?? null,
       an: t.date_max ? String(t.date_max).slice(0, 4) : null,
@@ -1214,9 +1221,23 @@ function cascadeDesTextes(publies, commissionDuDossier) {
   const matieres = [...volume.keys()].sort(
     (a, b) => volume.get(b) - volume.get(a) || a.localeCompare(b, 'fr'),
   );
+  /* LE 49.3 SE COMPTE À PART, PARCE QU'IL NE SE VOIT NULLE PART AILLEURS.
+   *
+   * Un texte adopté par engagement de responsabilité se range, dans la
+   * cascade, là où son STADE le met — et son stade ne dit rien du 49.3. Sur
+   * les 423 textes portés publiés, les cinq concernés sont invisibles : quatre
+   * de Gabriel Attal fondus dans la barre « promulgué », un d'Édouard Philippe
+   * dans une barre « non adopté » qui le contredit. La figure a le stade pour
+   * axe et ne peut pas porter ce fait ; il est donc compté, nommé et publié à
+   * côté d'elle (§2 règle 4 : jamais un vote, toujours un fait procédural). */
+  const procedure493 = listeTextes.filter((t) => SORTS_PROCEDURE_49_3.has(t.sortCle)).length;
+  const parSort = new Map();
+  for (const t of listeTextes) parSort.set(t.sortCle, (parSort.get(t.sortCle) || 0) + 1);
   return {
     total: publies.length,
     sansMatiere,
+    procedure493,
+    parSort: Object.fromEntries(parSort),
     stades,
     matieres,
     flux: [...flux.entries()]

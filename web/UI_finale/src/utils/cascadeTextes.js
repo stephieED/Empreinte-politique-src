@@ -48,6 +48,7 @@
  */
 import { sankey, sankeyLeft, sankeyLinkHorizontal } from 'd3-sankey';
 import { LIBELLE_STADE } from './profilCandidat';
+import { SORTS_PROCEDURE_49_3 } from './lecture';
 
 /* Le mot court d'une étape, et la négation courte de l'étape SUIVANTE. Deux
  * tables plutôt que deux tableaux parallèles : l'échelle des stades peut
@@ -380,6 +381,15 @@ export function disposerCascade(cascade, largeur, teinteDe) {
  */
 export function croise(selection, matiere, lo, hi) {
   if (!selection) return true;
+  /* UNE SÉLECTION PAR SORT NE VOILE RIEN, ET C'EST VOULU.
+   *
+   * Le voile éteint ce qui ne croise pas la sélection, segment par segment.
+   * Or un segment agrège (matière × porte) : les cinq textes adoptés par 49.3
+   * y sont mêlés à des voisins qui ne le sont pas. Éteindre le segment entier
+   * dirait « ces textes-là sont des 49.3 », ce qui est faux pour la plupart.
+   * La sélection par sort filtre donc la LISTE, où chaque texte répond de
+   * lui-même, et laisse la figure intacte. */
+  if (selection.procedure493) return true;
   return (!selection.matiere || selection.matiere === matiere)
     && lo <= selection.hi && selection.lo <= hi;
 }
@@ -387,8 +397,12 @@ export function croise(selection, matiere, lo, hi) {
 export function textesDeLaSelection(cascade, selection) {
   if (!selection) return [];
   const rang = (cle) => cascade.stades.indexOf(cle);
+  const tri = (a, b) => rang(b.stadeCle) - rang(a.stadeCle) || a.titre.localeCompare(b.titre, 'fr');
+  if (selection.procedure493) {
+    return (cascade.textes || []).filter((t) => SORTS_PROCEDURE_49_3.has(t.sortCle)).sort(tri);
+  }
   return (cascade.textes || [])
     .filter((t) => (!selection.matiere || t.matiere === selection.matiere)
       && rang(t.stadeCle) >= selection.lo && rang(t.stadeCle) <= selection.hi)
-    .sort((a, b) => rang(b.stadeCle) - rang(a.stadeCle) || a.titre.localeCompare(b.titre, 'fr'));
+    .sort(tri);
 }
