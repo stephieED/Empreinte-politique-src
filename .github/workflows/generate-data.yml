@@ -288,6 +288,16 @@ jobs:
             echo "::error::CANDIDATS_ECHEC_INATTENDU — code $code."
             exit "$code"
           fi
+          # Le fichier de résolutions DOIT exister à ce point, quel que soit le
+          # chemin pris (#771). Son absence est ce qui a coûté le run
+          # `34160985529` : l'artifact n'en portait qu'un, `hashFiles()` était
+          # vide dans merge-and-pivot, la passe hors ligne fut sautée, et 8
+          # profils sont partis en publication sans entrée de correspondance.
+          # Échouer ICI nomme la cause ; échouer trois jobs plus loin la cache.
+          if [ ! -f raw_data/resolutions_candidats.json ]; then
+            echo "::error::CANDIDATS_RESOLUTIONS_ABSENTES — le fichier de résolutions n'a pas été écrit ; la passe hors ligne de merge-and-pivot serait sautée et le portail refuserait le commit."
+            exit 1
+          fi
 
       # Les deux fichiers voyagent ENSEMBLE, dans un seul artifact : la liste
       # dit qui collecter, les résolutions disent quel acteur AN chacun porte.

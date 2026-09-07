@@ -601,6 +601,56 @@ MOTIF_SLUG_DEJA_PRIS = "slug_deja_pris"
 MOTIF_IDENTIFIANT_INDETERMINE = "identifiant_indetermine"
 
 
+def a_resoudre_identifiants(
+    absents: list[CandidatDeclare],
+    locaux: list[dict[str, Any]],
+    table: dict[str, Any],
+    url_repli: str,
+) -> list[dict[str, Any]]:
+    """Les entrées dont la passe hors ligne aura besoin d'une résolution (#771).
+
+    **La population n'est pas « ce qui est neuf », c'est « ce que la table ne
+    couvre pas ».** Les deux ont coïncidé exactement une fois : au premier run.
+    Elles divergent dès qu'un slug est écrit dans un run et son entrée dans le
+    suivant — ou, comme au run `34160985529`, dès qu'une main écrit des slugs
+    entre deux runs.
+
+    Ce jour-là, les 32 entrées avaient toutes leur slug, donc « rien de neuf »,
+    donc aucune résolution, donc la passe hors ligne fut sautée et **8 profils
+    ont été publiés sans entrée de correspondance** : la §5b a refusé le commit
+    après 1 h 18 de collecte. C'est le défaut de #715 reproduit un cran plus
+    loin, par le même geste — borner une population à ce qu'on avait sous les
+    yeux en l'écrivant.
+
+    Trois familles, réunies ici :
+
+    1. les déclarés **absents du fichier** — ils n'ont ni slug ni entrée ;
+    2. les entrées **sans slug** — la chaîne n'a rien pu corroborer jusqu'ici ;
+    3. les entrées **à slug mais sans entrée de table** — invisibles au critère
+       « neuf », et ce sont elles qui ont coûté le run.
+
+    Une entrée déjà dans la table n'est pas résolue : la table passe devant, et
+    la re-résoudre coûterait un appel réseau pour un résultat qu'on n'écrira
+    pas.
+    """
+    a_resoudre = [
+        {"nom": c.nom, "source": c.url or url_repli} for c in absents
+    ]
+    connus = {c.nom for c in absents}
+    for entree in locaux:
+        nom = entree.get("nom")
+        if not nom or nom in connus:
+            continue
+        if entree.get("statut") != STATUT_DECLARE:
+            continue
+        slug = entree.get("slug")
+        if slug and slug in table:
+            continue
+        a_resoudre.append({"nom": nom, "source": entree.get("source")})
+        connus.add(nom)
+    return a_resoudre
+
+
 def attribuer_slugs(
     absents: list[CandidatDeclare],
     resolutions: dict[str, iw.Resolution],
@@ -1008,18 +1058,10 @@ def main(argv: Optional[list[str]] = None) -> int:
     refus_slug: list[str] = []
     resolutions: dict[str, iw.Resolution] = {}
     if args.resoudre_identifiants or args.resolutions_out:
-        # Deux populations, la même chaîne : les déclarés que le fichier ignore,
-        # et ceux qu'il porte DÉJÀ sans slug. Oublier la seconde laisserait les
-        # entrées créées avant la boucle bloquées pour toujours — c'est
-        # exactement l'immobilité que #539 a payée.
-        a_resoudre = [
-            {"nom": c.nom, "source": c.url or url_section()}
-            for c in ecarts.absents_du_fichier
-        ] + [
-            {"nom": e["nom"], "source": e.get("source")}
-            for e in locaux
-            if not e.get("slug") and e.get("statut") == STATUT_DECLARE
-        ]
+        table = _charger_table(Path(args.correspondance))
+        a_resoudre = a_resoudre_identifiants(
+            ecarts.absents_du_fichier, locaux, table, url_section()
+        )
         if a_resoudre:
             try:
                 resolutions = iw.resoudre(a_resoudre)
@@ -1035,7 +1077,6 @@ def main(argv: Optional[list[str]] = None) -> int:
                 print(f"[!] {chemin} n'a pas été modifié.", file=sys.stderr)
                 return EXIT_COLLECTE_INCOMPLETE
 
-            table = _charger_table(Path(args.correspondance))
             a_slugger = list(ecarts.absents_du_fichier) + [
                 CandidatDeclare(nom=e["nom"], parti=e.get("parti"), url=e.get("source"))
                 for e in locaux
@@ -1048,10 +1089,21 @@ def main(argv: Optional[list[str]] = None) -> int:
                 _annoter("warning", f"CANDIDATS_SANS_SLUG — {message}", json_output=args.json_output)
             refus_slug = refus
 
-            if args.resolutions_out:
-                iw.ecrire_resolutions(
-                    Path(args.resolutions_out), resolutions, date.today().isoformat()
-                )
+
+        if args.resolutions_out:
+            # ÉCRIT MÊME VIDE, et hors du bloc « il y a quelque chose à
+            # résoudre » (#771). Le run `34160985529` n'a rien eu à résoudre —
+            # toutes les entrées avaient déjà leur slug — donc aucun fichier,
+            # donc l'artifact n'en portait qu'un, donc `hashFiles()` vide, donc
+            # la passe hors ligne SKIPPÉE, donc 8 profils publiés sans entrée de
+            # table et le commit refusé après 1 h 18 de collecte.
+            #
+            # Un fichier absent et un fichier vide ne disent pas la même chose,
+            # et c'est le conditionnement sur la PRÉSENCE qui a transformé
+            # « rien à ajouter » en « ne fais rien ».
+            iw.ecrire_resolutions(
+                Path(args.resolutions_out), resolutions, date.today().isoformat()
+            )
 
     for anomalie in anomalies:
         _annoter("warning", anomalie, json_output=args.json_output)

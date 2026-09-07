@@ -199,3 +199,33 @@ def test_le_gel_est_nomme_la_ou_le_perimetre_est_calcule():
     bloc = _sans_commentaires(_bloc_job("prepare-an-matrix"))
     assert "CANDIDAT_GELE" in bloc
     assert "slugs_geles" in bloc
+
+
+def test_le_job_de_tete_verifie_que_les_resolutions_existent():
+    """Échouer ICI nomme la cause ; échouer trois jobs plus loin la cache (#771).
+
+    Le run `34160985529` a perdu 1 h 18 de collecte parce qu'un fichier absent
+    s'est propagé en silence : artifact incomplet, `hashFiles()` vide, passe
+    hors ligne sautée, portail qui refuse. Le job de tête refuse désormais de
+    publier un artifact amputé.
+    """
+    bloc = _sans_commentaires(_bloc_job("rafraichir-candidats"))
+    assert "CANDIDATS_RESOLUTIONS_ABSENTES" in bloc
+    assert "! -f raw_data/resolutions_candidats.json" in bloc
+
+
+def test_le_gel_nest_annote_quune_fois_par_run():
+    """`prepare-an-matrix` annote ; `generate_all_profiles` se contente
+    d'imprimer.
+
+    Le run `34160985529` a produit 60 avertissements `CANDIDAT_GELE` — deux
+    candidats × trente shards. Un avertissement répété trente fois est un
+    avertissement qu'on filtre.
+    """
+    src = (RACINE / "src" / "generate_all_profiles.py").read_text(encoding="utf-8")
+    bloc = re.search(r"geles = perimetre\.slugs_geles\(candidats\)(.*?)\n    if args\.only",
+                     src, re.DOTALL)
+    assert bloc, "le bloc de gel a changé de forme"
+    assert "_annoter_github" not in bloc.group(1), (
+        "le gel ne doit pas être annoté depuis un shard : la matrice le fait déjà"
+    )
