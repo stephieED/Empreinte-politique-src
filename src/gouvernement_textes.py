@@ -173,7 +173,11 @@ from schema_gouvernement import KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL
 # (#399), qui n'a aucune dépendance réseau et peut donc être importé par
 # l'audit et le quality gate pour en déduire la borne de couverture
 # temporelle. Ré-exporté ici, où le reste du dépôt le référence déjà.
-from couverture_dossiers import AN_DOSSIERS_ARCHIVES, AN_OPENDATA_BASE  # noqa: F401
+from couverture_dossiers import (  # noqa: F401
+    AN_DOSSIERS_ARCHIVES,
+    AN_DOSSIERS_LEGISLATURES_ACTIVES,
+    AN_OPENDATA_BASE,
+)
 
 # Législature dont l'archive garde le nom de cache historique `dossiers.zip` :
 # la renommer invaliderait le cache CI existant et forcerait un
@@ -358,6 +362,36 @@ def ensure_dossiers_zip_downloaded(
                   f"(législature {legislature}) : {exc}")
             return None
         return zip_path
+
+
+def rafraichir_dossiers_actifs() -> list[int]:
+    """Retélécharge les archives des législatures ENCORE EN COURS, et elles seules.
+
+    POURQUOI CETTE FONCTION EXISTE (#762). `ensure_dossiers_zip_downloaded`
+    court-circuite sur `zip_path.is_file()` : une archive déjà en cache n'est
+    jamais reprise. En CI, `.cache/dossiers_an` porte une clé HEBDOMADAIRE
+    doublée d'un `restore-keys` de préfixe — au changement de semaine, la clé
+    exacte manque, le préfixe restaure le répertoire de la semaine précédente,
+    le test d'existence passe, et le répertoire inchangé est resauvegardé sous
+    la clé neuve. **La rotation se désamorce elle-même**, exactement comme dans
+    #749 pour l'index des amendements.
+
+    ET ELLES SEULES, PARCE QUE LES AUTRES NE PEUVENT PLUS CHANGER. Une
+    législature dissoute ne produit plus d'acte : reprendre `dossiers_15.zip`
+    (14,5 Mo) et `dossiers_16.zip` (8,7 Mo) chaque semaine serait 23 Mo de
+    téléchargement pour un contenu identique. Seule la 17e est vivante — 9,8 Mo.
+    La liste vient de `AN_DOSSIERS_LEGISLATURES_ACTIVES`, dérivée des archives
+    déclarées : rien à tenir en double.
+
+    Non-fatal : une archive qui échoue est omise, le run continue sur ce qu'il a
+    — un rafraîchissement raté vaut mieux qu'un run perdu, et la donnée déjà en
+    cache reste exploitable. Retourne les législatures effectivement reprises.
+    """
+    reprises: list[int] = []
+    for legislature in sorted(AN_DOSSIERS_LEGISLATURES_ACTIVES):
+        if ensure_dossiers_zip_downloaded(legislature, force_download=True):
+            reprises.append(legislature)
+    return reprises
 
 
 def ensure_dossiers_zips_downloaded(
