@@ -75,6 +75,29 @@ AN_DOSSIERS_ARCHIVES: dict[int, str] = {
     17: f"{AN_OPENDATA_BASE}/17/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip",
 }
 
+# ── Quelles archives peuvent encore changer (#762) ───────────────────────────
+#
+# Une législature DISSOUTE ne produit plus d'acte : son archive de dossiers est
+# définitivement close et la retélécharger est un coût pur. La 17e, elle, est en
+# cours — un texte adopté cette semaine n'apparaît que dans une archive fraîche.
+#
+# Cet ensemble est déclaré ICI, à côté des archives dont il parle, et non
+# emprunté à `AN_SCRUTINS_LEGISLATURES_FIGEES` : les deux disent aujourd'hui la
+# même chose, mais ils répondent à deux questions (quelles archives de SCRUTINS
+# sont committées sous `raw_data/scrutins_an_figes/`, quelles archives de
+# DOSSIERS ne bougent plus) et rien ne garantit qu'ils resteront alignés.
+#
+# À l'ouverture de la 18e : ajouter 17 ici, et son URL au dictionnaire ci-dessus.
+# C'est la seule édition à faire — le reste s'en déduit.
+AN_DOSSIERS_LEGISLATURES_FIGEES: frozenset[int] = frozenset({15, 16})
+
+#: Les archives qu'un run doit pouvoir rafraîchir. Dérivé, jamais écrit à la
+#: main : une liste tenue en double se désaligne au premier changement.
+AN_DOSSIERS_LEGISLATURES_ACTIVES: frozenset[int] = frozenset(
+    AN_DOSSIERS_ARCHIVES
+) - AN_DOSSIERS_LEGISLATURES_FIGEES
+
+
 # Date de première séance de chaque législature ingérée — borne basse de ce
 # que son archive couvre. Dates d'ouverture officielles de l'Assemblée
 # nationale, déjà utilisées ailleurs dans le dépôt pour la XVI

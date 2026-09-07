@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 232 décisions
+gouverne sans avoir à fouiller les 233 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -268,7 +268,7 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 
 ## `src/candidate_profile.py`
 
-79 décision(s) le gouvernent ; le module en cite 13.
+80 décision(s) le gouvernent ; le module en cite 13.
 
 | Décision | Nomme |
 | --- | --- |
@@ -311,6 +311,7 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 | [`meta.warnings[]` déclare son destinataire, dans un jumeau typé et aligné (#642) (2026-08-31)](decisions/destinataire-avertissements-642.md) | `WARNING_PREFIX_INTERVENTIONS_SYCERON_INDISPONIBLES`, `WARNING_PREFIX_VOTES_INTROUVABLES` |
 | [Un amendement retrouve son dossier, et la clé qu'on lui avait retirée (#639, rang 3)](decisions/dossier-des-amendements-639.md) | `fetch_amendements_officiels` |
 | [Un filtre de publication posé avant la fusion ne filtre rien (#641, réouverture) (2026-08-31)](decisions/filtre-publication-apres-fusion-641.md) | `_profession_an` |
+| [L'archive vivante se reprend au changement de semaine, les mortes jamais (#762), 07/09/2026](decisions/fraicheur-dossiers-762.md) | `AN_SCRUTINS_LEGISLATURES_FIGEES` |
 | [La rotation de clé hebdomadaire était toute la politique de fraîcheur, et son propre repli la désamorçait (#749)](decisions/fraicheur-index-amendements-749.md) | `_download_and_build_amendement_index`, `amendements_index_en_cache_utilisable` |
 | [`gouvernement_profile` : `premier_ministre` et `portefeuille` câblés depuis les mandats `MINISTERE` (#398) (2026-08-18)](decisions/gouvernement-premier-ministre-portefeuille.md) | `AN_ACTEURS_HISTORIQUE_ZIP_URL`, `_extract_mandats_officiels` |
 | [`gouvernement_textes.py` : filtre de statut par décision de séance, pas par `codeActe`/`fam_code` seul (#210) (2026-08-14)](decisions/gouvernement-textes-statut.md) | `_build_acteur_textes_portes_index` |
@@ -397,7 +398,7 @@ Le mentionnent sans le gouverner : [`civilite-et-pcs-insee-659`](decisions/civil
 
 ## `src/couverture_dossiers.py`
 
-6 décision(s) le gouvernent ; le module en cite 3.
+7 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
@@ -405,6 +406,7 @@ Le mentionnent sans le gouverner : [`civilite-et-pcs-insee-659`](decisions/civil
 | [Ce qu'une liste vide veut dire : les quatre états de couverture (#539) (2026-08-28)](decisions/couverture-listes-539.md) | `AN_DOSSIERS_ARCHIVES` |
 | [Un amendement retrouve son dossier, et la clé qu'on lui avait retirée (#639, rang 3)](decisions/dossier-des-amendements-639.md) | `AN_DOSSIERS_ARCHIVES` |
 | [Dossiers législatifs : ingestion multi-archives, origine par document déposé, statut `promulgue` (#400) (2026-08-18)](decisions/dossiers-multi-archives-origine-document.md) | `AN_DOSSIERS_ARCHIVES` |
+| [L'archive vivante se reprend au changement de semaine, les mortes jamais (#762), 07/09/2026](decisions/fraicheur-dossiers-762.md) | `AN_DOSSIERS_ARCHIVES`, `AN_DOSSIERS_LEGISLATURES_ACTIVES`, `AN_DOSSIERS_LEGISLATURES_FIGEES` |
 | [Profils de gouvernement : ne jamais réécrire sur une collecte incomplète, et cache dossiers dédié (#427) (2026-08-18)](decisions/gouvernement-textes-non-ecrasement.md) | `legislatures_ingerees` |
 | [Résoudre la `legislature` d'un vote : deux mécanismes, pas un seul (#432) (2026-08-19)](decisions/resolution-legislature-deux-mecanismes-432.md) | `LEGISLATURES_DEBUT` |
 
@@ -555,11 +557,12 @@ Le mentionnent sans le gouverner : [`gouvernement-ci-integration`](decisions/gou
 
 ## `src/gouvernement_textes.py`
 
-13 décision(s) le gouvernent ; le module en cite 5.
+14 décision(s) le gouvernent ; le module en cite 5.
 
 | Décision | Nomme |
 | --- | --- |
 | [Dossiers législatifs : ingestion multi-archives, origine par document déposé, statut `promulgue` (#400) (2026-08-18)](decisions/dossiers-multi-archives-origine-document.md) | `iter_dossiers_bruts` |
+| [L'archive vivante se reprend au changement de semaine, les mortes jamais (#762), 07/09/2026](decisions/fraicheur-dossiers-762.md) | `ensure_dossiers_zip_downloaded`, `rafraichir_dossiers_actifs` |
 | [`gouvernement_textes` : 3 derniers `fam_code` mappés ; `TSORTF02` tranché sur données réelles (#402) (2026-08-18)](decisions/gouvernement-textes-fam-codes-archives.md) | `_FAM_CODE_STATUT_MAP`, `_STATUTS_CORRIGES_PAR_PROMULGATION` |
 | [`gouvernement_textes` : 3 `fam_code` manquants excluaient 42 % des textes ; `adopte_cmp` ajouté à la nomenclature (#397) (2026-08-18)](decisions/gouvernement-textes-fam-codes-manquants.md) | `_FAM_CODE_STATUT_MAP` |
 | [Profils de gouvernement : le lien ministre → texte (#435) (2026-08-18)](decisions/gouvernement-textes-initiateurs.md) | `parse_dossier_gouvernemental` |
@@ -815,6 +818,10 @@ Le mentionnent sans le gouverner : [`absences-publiees-comme-faits-556-558-560`]
 
 Le mentionnent sans le gouverner : [`categorie-source-des-mandats-718`](decisions/categorie-source-des-mandats-718.md), [`collecte-vs-publie-545`](decisions/collecte-vs-publie-545.md), [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`point-de-sauvegarde-dans-les-profils-518`](decisions/point-de-sauvegarde-dans-les-profils-518.md).
 
+## `src/rafraichir_dossiers_actifs.py`
+
+Le mentionnent sans le gouverner : [`fraicheur-dossiers-762`](decisions/fraicheur-dossiers-762.md).
+
 ## `src/reprise_mandats_gouvernementaux.py`
 
 Le mentionnent sans le gouverner : [`purge-doublons-herites-729`](decisions/purge-doublons-herites-729.md).
@@ -955,7 +962,7 @@ Le mentionnent sans le gouverner : [`slug-fabrique-membre-de-roster-708`](decisi
 
 ## `src/textes_dossiers_an.py`
 
-Le mentionnent sans le gouverner : [`dossier-des-amendements-639`](decisions/dossier-des-amendements-639.md).
+Le mentionnent sans le gouverner : [`dossier-des-amendements-639`](decisions/dossier-des-amendements-639.md), [`fraicheur-dossiers-762`](decisions/fraicheur-dossiers-762.md).
 
 ## `src/textes_vises_figes.py`
 
