@@ -924,12 +924,39 @@ jobs:
       # répertoire de dossiers vide. D'où la restauration seule côté roster
       # (#505) et le garde-fou tests/test_ci_cache_producteur_ecrivain.py.
       - uses: actions/cache@v5
+        id: cache_dossiers_extract_an
         if: ${{ !inputs.cold_start }}
         with:
           path: .cache/dossiers_an
           key: public-data-cache-dossiers-${{ steps.week.outputs.week }}
           restore-keys: |
             public-data-cache-dossiers-
+
+      # #762 — REPRENDRE L'ARCHIVE VIVANTE QUAND LA SEMAINE A CHANGÉ.
+      #
+      # La clé de ce cache est hebdomadaire, mais le `restore-keys` de préfixe
+      # la désamorce : au changement de semaine, la clé exacte manque, le
+      # préfixe restaure le répertoire de la semaine d'avant, et
+      # `ensure_dossiers_zip_downloaded` court-circuite sur `is_file()` — rien
+      # n'est retéléchargé, et le répertoire inchangé repart sous la clé neuve.
+      # C'est #749, appliqué aux dossiers.
+      #
+      # `cache-hit == 'true'` UNIQUEMENT sur correspondance exacte de la clé
+      # primaire ; 'false' quand la restauration vient d'un `restore-keys` —
+      # exactement le signal « on a changé de semaine ».
+      #
+      # Seules les législatures EN COURS sont reprises (9,8 Mo). Les dissoutes
+      # ne produisent plus d'acte : les reprendre coûterait 23 Mo par semaine
+      # pour un contenu identique.
+      #
+      # `!inputs.cold_start` COMME LE BLOC DE CACHE CI-DESSUS, et pour une
+      # raison concrète : sur un démarrage à froid, le `rm -rf .cache` qui suit
+      # effacerait ce que cette étape vient de télécharger. Rien à rafraîchir
+      # là où tout est purgé puis repris.
+      - name: Reprendre les archives de dossiers vivantes (semaine nouvelle)
+        if: ${{ !inputs.cold_start && steps.cache_dossiers_extract_an.outputs.cache-hit != 'true' }}
+        continue-on-error: true
+        run: python3 src/rafraichir_dossiers_actifs.py
 
       # cold_start=true → purge des caches de téléchargement avant extraction.
       # `cold_start` purge les CACHES DE TÉLÉCHARGEMENT, et rien d'autre
@@ -1976,12 +2003,39 @@ jobs:
       # correction dans extract-an et
       # docs/decisions/cache-mode-interventions-505.md.
       - uses: actions/cache/restore@v5
+        id: cache_dossiers_roster
         if: ${{ !inputs.cold_start }}
         with:
           path: .cache/dossiers_an
           key: public-data-cache-dossiers-${{ steps.week.outputs.week }}
           restore-keys: |
             public-data-cache-dossiers-
+
+      # #762 — REPRENDRE L'ARCHIVE VIVANTE QUAND LA SEMAINE A CHANGÉ.
+      #
+      # La clé de ce cache est hebdomadaire, mais le `restore-keys` de préfixe
+      # la désamorce : au changement de semaine, la clé exacte manque, le
+      # préfixe restaure le répertoire de la semaine d'avant, et
+      # `ensure_dossiers_zip_downloaded` court-circuite sur `is_file()` — rien
+      # n'est retéléchargé, et le répertoire inchangé repart sous la clé neuve.
+      # C'est #749, appliqué aux dossiers.
+      #
+      # `cache-hit == 'true'` UNIQUEMENT sur correspondance exacte de la clé
+      # primaire ; 'false' quand la restauration vient d'un `restore-keys` —
+      # exactement le signal « on a changé de semaine ».
+      #
+      # Seules les législatures EN COURS sont reprises (9,8 Mo). Les dissoutes
+      # ne produisent plus d'acte : les reprendre coûterait 23 Mo par semaine
+      # pour un contenu identique.
+      #
+      # `!inputs.cold_start` COMME LE BLOC DE CACHE CI-DESSUS, et pour une
+      # raison concrète : sur un démarrage à froid, le `rm -rf .cache` qui suit
+      # effacerait ce que cette étape vient de télécharger. Rien à rafraîchir
+      # là où tout est purgé puis repris.
+      - name: Reprendre les archives de dossiers vivantes (semaine nouvelle)
+        if: ${{ !inputs.cold_start && steps.cache_dossiers_roster.outputs.cache-hit != 'true' }}
+        continue-on-error: true
+        run: python3 src/rafraichir_dossiers_actifs.py
 
       # `cold_start` purge les CACHES DE TÉLÉCHARGEMENT, et rien d'autre
       # (#578). Il supprimait aussi `raw_data/profiles/*.json`, ce qui est une
@@ -2360,11 +2414,38 @@ jobs:
         run: echo "week=$(date +%G-W%V)" >> "$GITHUB_OUTPUT"
 
       - uses: actions/cache@v5
+        id: cache_dossiers_merge
         with:
           path: .cache/dossiers_an
           key: public-data-cache-dossiers-${{ steps.week.outputs.week }}
           restore-keys: |
             public-data-cache-dossiers-
+
+      # #762 — REPRENDRE L'ARCHIVE VIVANTE QUAND LA SEMAINE A CHANGÉ.
+      #
+      # La clé de ce cache est hebdomadaire, mais le `restore-keys` de préfixe
+      # la désamorce : au changement de semaine, la clé exacte manque, le
+      # préfixe restaure le répertoire de la semaine d'avant, et
+      # `ensure_dossiers_zip_downloaded` court-circuite sur `is_file()` — rien
+      # n'est retéléchargé, et le répertoire inchangé repart sous la clé neuve.
+      # C'est #749, appliqué aux dossiers.
+      #
+      # `cache-hit == 'true'` UNIQUEMENT sur correspondance exacte de la clé
+      # primaire ; 'false' quand la restauration vient d'un `restore-keys` —
+      # exactement le signal « on a changé de semaine ».
+      #
+      # Seules les législatures EN COURS sont reprises (9,8 Mo). Les dissoutes
+      # ne produisent plus d'acte : les reprendre coûterait 23 Mo par semaine
+      # pour un contenu identique.
+      #
+      # `!inputs.cold_start` COMME LE BLOC DE CACHE CI-DESSUS, et pour une
+      # raison concrète : sur un démarrage à froid, le `rm -rf .cache` qui suit
+      # effacerait ce que cette étape vient de télécharger. Rien à rafraîchir
+      # là où tout est purgé puis repris.
+      - name: Reprendre les archives de dossiers vivantes (semaine nouvelle)
+        if: ${{ !inputs.cold_start && steps.cache_dossiers_merge.outputs.cache-hit != 'true' }}
+        continue-on-error: true
+        run: python3 src/rafraichir_dossiers_actifs.py
 
       # ── Téléchargement des artifacts d'extraction ─────────────────────────
       # Chaque source arrive dans son propre sous-répertoire pour éviter les conflits.
@@ -2638,6 +2719,23 @@ jobs:
       - name: Construire la table des commissions saisies au fond
         continue-on-error: true
         run: python3 src/build_commissions_dossiers.py
+
+      # Le rattachement d'un scrutin à son dossier (#758). Même source, même
+      # arbre `actesLegislatifs`, mêmes archives déjà téléchargées par l'étape
+      # ci-dessus : c'est le troisième usage du même parcours, et il tient dans
+      # le même cache.
+      #
+      # Un scrutin AN ne nomme pas le texte qu'il tranche — `objet.
+      # referenceLegislative` est nul sur 0/18 311 scrutins bruts. Le lien
+      # n'existe qu'en sens inverse, dans `voteRefs`. Sans cette table, la
+      # section « Ce qu'il a voté » ne peut dire ni sur quoi porte un texte
+      # voté, ni ce qu'il est devenu.
+      #
+      # Non bloquant, et fusion additive : un run sans archive lisible conserve
+      # la table publiée au lieu de la vider (AGENTS.md §3a).
+      - name: Construire le rattachement des scrutins aux dossiers
+        continue-on-error: true
+        run: python3 src/build_scrutins_dossiers.py
 
       # existing_profiles=overwrite → recréation complète des groupes.
       # Sinon → --merge-existing : membres absents du roster live réintégrés
@@ -3289,6 +3387,11 @@ jobs:
           # coûter le commit des profils, qui sont corrects.
           if [ -f pivot_data/commissions_dossiers.json ]; then
             git add pivot_data/commissions_dossiers.json
+          fi
+          # Même garde pour le rattachement scrutin → dossier (#758) : l'étape
+          # qui le construit est `continue-on-error`, le fichier peut manquer.
+          if [ -f pivot_data/scrutins_dossiers.json ]; then
+            git add pivot_data/scrutins_dossiers.json
           fi
           if git diff --cached --quiet; then
             echo "Aucun changement de données à committer."

@@ -6,7 +6,7 @@
   "scripts": {
     "sync-data": "node scripts/sync-data.mjs",
     "dev": "npm run sync-data && vite",
-    "build": "npm run sync-data && vite build",
+    "build": "npm run sync-data && vite build && node scripts/spa-fallback.mjs",
     "lint": "oxlint",
     "preview": "vite preview"
   },
