@@ -220,16 +220,46 @@ Affiche le profil sur la sortie standard (`--out` pour écrire un fichier). Le
 premier appel télécharge de gros dumps dans `.cache/parltrack/` :
 `--show-cache-date` dit de quand ils datent.
 
-### Le suivi des candidatures (Wikipédia / Wikidata)
+### La liste des candidats déclarés
 
 ```bash
-python3 src/fetch_wikipedia_candidates.py
-python3 src/fetch_wikipedia_candidates.py --source wikidata --json
+python3 src/fetch_candidats_declares.py
+python3 src/fetch_candidats_declares.py --ecrire --resoudre-identifiants
+python3 src/fetch_candidats_declares.py --html capture.html --json
 ```
 
-Produit : un résumé de relecture sur la sortie standard. Ce script **ne modifie
-jamais** `raw_data/candidats.json` — la mise à jour de la liste reste une
-décision éditoriale, prise à la main.
+Produit : un rapport de relecture sur la sortie standard, et **rien d'autre**
+tant que `--ecrire` n'est pas posé.
+
+| Option | Ce qu'elle fait |
+| --- | --- |
+| `--ecrire` | ajoute dans `raw_data/candidats.json` les déclarés qui n'y sont pas. **Additif** : aucune entrée existante n'est supprimée ni modifiée |
+| `--html` | rejoue une capture locale du HTML rendu au lieu d'interroger le réseau |
+| `--json` | rend les deux sens de l'écart en JSON |
+| `--echouer-si-ecart` | sort en 3 si la source et le fichier diffèrent |
+| `--resoudre-identifiants` | résout l'acteur AN de chaque déclaré par identifiant externe (Wikidata `P4123`) et lui **fabrique un slug** quand la chaîne aboutit (#757) |
+| `--resolutions-out` | écrit les résolutions dans un fichier, que la passe hors ligne de `merge-and-pivot` relit. Implique `--resoudre-identifiants` |
+| `--correspondance` | table slug ↔ acteur AN, lue pour savoir quels slugs sont déjà pris |
+| `--article` | change l'article Wikipédia lu (défaut : celui des candidatures) |
+| `--candidats` | change le fichier écrit (défaut : `raw_data/candidats.json`) |
+
+Avec `--resoudre-identifiants`, un candidat ajouté **reçoit son slug** dès que
+Wikidata porte son identifiant AN (ou établit qu'il n'en a pas) : il entre alors
+dans le périmètre du run suivant, et sa correspondance est écrite hors ligne par
+`build_correspondance_acteurs_an.py --completer-candidats`. Sans identifiant
+résolvable, il entre **sans `slug`** — donc sans shard `extract-an` et sans
+publication — et il est **nommé** dans le rapport.
+`famille_politique`, `date_declaration` et la source primaire de la déclaration
+restent à compléter à la main dans tous les cas. Une entrée que la source range sous « Candidatures retirées » ou « Candidats
+pressentis ayant décliné » reçoit `statut: decline` (#763) — c'est un fait lu, et
+la note cite la section à la lettre. Celle qui disparaît des déclarés **sans**
+qu'aucune de ces sections ne la nomme est signalée et **jamais modifiée** :
+déplacement, renommage, cause inconnue. Un statut `officiel` ne bascule jamais —
+il viendra du Conseil constitutionnel.
+
+Rien n'est écrit si la collecte échoue : page illisible, section
+« Candidats déclarés » introuvable, ou zéro candidat extrait font sortir en 1
+sans toucher au fichier.
 
 ---
 
@@ -474,6 +504,24 @@ ne réécrit aucune entrée relue, et refuse en nommant le slug si le profil pub
 ne porte pas exactement l'acteur que le roster déclare.
 → `docs/decisions/correspondance-acteurs-an-525.md`,
 `docs/decisions/entree-derivee-correspondance-715.md`.
+
+```bash
+python3 src/build_correspondance_acteurs_an.py \
+  --completer-candidats --resolutions raw_data/resolutions_candidats.json
+```
+
+Sa **jumelle pour les candidats déclarés** (#757), aux mêmes propriétés —
+additive, hors ligne, disjointe. Elle ajoute une entrée `origine: "sourcee"`
+pour les slugs dont l'acteur AN a été résolu par **identifiant externe**
+(Wikidata `P4123`, au job de tête du run) — un rapprochement, donc, mais
+**sourcé et daté** plutôt que relu.
+
+Elle n'écrit que si le profil publié **corrobore** la résolution : l'acteur
+déclaré doit être celui que le profil porte, et le fait négatif
+(`ecart: "hors_an"`) exige que les **deux** sources se taisent — pas de `P4123`,
+et aucun acteur dans le profil qu'AMO30 a produit. En désaccord, aucune entrée :
+le slug est nommé, la §5b bloquera, et un humain arbitre.
+→ `docs/decisions/boucle-perimetre-candidats-757.md`.
 
 ### Régénérer la table « ce module → ces décisions »
 

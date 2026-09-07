@@ -134,3 +134,60 @@ les charger, ni à les faire grossir. -->
   would shrink a published denominator on missing data), and "no elective mandate at all"
   stays distinct from "elective mandates, none in this chamber".
   → `docs/decisions/chambre-par-mandat-electif.md`
+- **The declared-candidate list is collected, and a new candidate enters without a slug
+  (#753).** `raw_data/candidats.json` decides who gets a page — it sizes the `extract-an`
+  matrix and carries the first pivot pass — and it was hand-kept, 51 days stale, missing
+  **19 of 30** declared candidates while carrying **2** who had declined.
+  `fetch_candidats_declares.py` reads the **rendered HTML** of the dedicated
+  *Candidatures* article: the primaries are transcluded (`{{#section-h:}}`), so wikitext
+  alone loses four people we already publish. The name is read from the cell's **text**,
+  never its first link — two declared candidates have no article, and their first link is
+  the **party**. **Writing is additive**: an existing entry is never removed or modified,
+  and one that is no longer declared is **named, never rewritten** — the declared section
+  alone cannot tell a withdrawal from a moved section. **A new candidate's slug is minted only when an
+  external identifier backs it (#757)** — Wikidata `P4123`, the AN actor id, resolved by
+  the run's head job and validated 13/13 against the hand-reviewed table. Without one, the
+  entry stays `slug: null`, which keeps it out of `prepare-an-matrix`, hence out of
+  collection and publication, and it is **named**. #715's derived-entry pass does not
+  rescue candidates — `slugs_fabriques()` reads `rosters_bruts.json` alone — and it must
+  not: a candidate's slug comes from `slugify(nom)`, not from an AMO30 actor, so the entry
+  is a *rapprochement*, `origine: "sourcee"`, never a derivation (#715 §2). Three
+  anomalies block the write and none is a numeric threshold — unreadable page, missing
+  « Candidats déclarés » heading, zero candidate extracted (#511). **Wikidata is out**:
+  `P3602` returns 1 person for the 2027 election against 30 declared.
+  → `docs/decisions/liste-candidats-declares-753.md`
+- **The perimeter is a loop, and it closes inside the run (#757).** `rafraichir-candidats`
+  has no `needs:`, refreshes `raw_data/candidats.json`, resolves each declared candidate's
+  AN actor by external identifier, and publishes both files in the `candidats-a-jour`
+  artifact; `prepare-an-matrix` sizes its matrix from that artifact, and `merge-and-pivot`
+  writes the `origine: "sourcee"` correspondence entries **offline** before the gate, then
+  commits the list with the data. **The network lives in the head job and nowhere else** —
+  a third-party outage must never cost the commit of a run whose data is good (#524), and
+  the head job never pushes: `GENERATION_CODE_CHANGED_DURING_RUN` would cancel the commit
+  if `raw_data/*.json` moved on the branch mid-run. **An entry is written only when the
+  external identifier and the published profile agree**; a negative fact (`hors_an`)
+  requires *both* sources to be silent, and any disagreement writes nothing, names the
+  slug, and lets §5b block.
+  → `docs/decisions/boucle-perimetre-candidats-757.md`
+- **A declined candidacy leaves the collection perimeter; its published sheet stays (#760).**
+  `src/perimetre_candidats.py` is the **single** predicate, used by both `prepare-an-matrix`
+  and `generate_all_profiles` — the filter lived inline in the YAML, and a second copy would
+  have diverged without failing anything. **Freezing is not deleting**: the profile stays
+  published with its last collection (the frozen Senate group sheets of #528), and nothing is
+  lost at merge time — not collecting produces no collection, not an *empty* one. The freeze
+  **lifts itself** when the person re-declares, through #757's head job. **An unknown status is
+  collected**: `STATUTS_GELES` is the only closed set, because over-collecting costs one shard
+  and shows, while a candidate dropped by a status value added elsewhere vanishes silently
+  (#510). The freeze is **named where the perimeter is computed** — `CANDIDAT_GELE`, with slug
+  and status, never a bare count.
+  → `docs/decisions/perimetre-collecte-candidatures-declinees-760.md`
+- **A candidacy leaves only when the source names why (#763).** The script reads the two
+  exit sections — « Candidatures retirées », « Candidats pressentis ayant décliné » — and
+  writes `statut: decline` on the entries they name; the note quotes the section title
+  **verbatim**. Vanishing from the declared section names no cause and changes nothing —
+  that second half is what stops a renamed heading from declining everyone at once. Three
+  guards: an exit section never **creates** an entry, `officiel` never flips (it will come
+  from the Conseil constitutionnel, and an encyclopaedia does not overturn an act published
+  in the JO), and an already-`decline` entry is not rewritten. A named exit is a **fact**:
+  `::notice::`, never `::warning::`.
+  → `docs/decisions/sortie-nommee-par-la-source-763.md`

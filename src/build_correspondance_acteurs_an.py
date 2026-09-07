@@ -62,11 +62,29 @@ l'`identifiants.an` de ce profil.
     python src/build_correspondance_acteurs_an.py --verifier # ne réécrit rien
     python src/build_correspondance_acteurs_an.py \
         --completer-derivees --rosters-bruts raw_data/rosters_bruts.json
+    python src/build_correspondance_acteurs_an.py \
+        --completer-candidats --resolutions raw_data/resolutions_candidats.json
 
 Le référentiel AMO30 est téléchargé (ou relu depuis `.cache/`) par
 `candidate_profile` : ce script sort donc sur le réseau, comme tous les
 scripts de collecte, et n'est jamais appelé depuis un test — sauf
-`--completer-derivees`, qui n'y touche pas.
+`--completer-derivees` et `--completer-candidats`, qui n'y touchent pas.
+
+## La passe sourcée, jumelle de la précédente (#757)
+
+`--completer-candidats` fait pour les **candidats déclarés** ce que la passe
+dérivée fait pour les membres de roster, avec la même forme — disjointe,
+additive, hors ligne — et une différence de fond : le slug d'un candidat sort de
+`slugify(nom)`, un nom saisi dans un fichier éditorial, donc l'entrée établit
+bien un rapprochement. Ce rapprochement n'est ni relu ni dérivé : il est
+**sourcé** par un identifiant externe (Wikidata `P4123`), résolu au job de tête
+et transporté par l'artifact, d'où `origine: "sourcee"`.
+
+L'entrée n'est écrite que si le profil publié **corrobore** la résolution :
+l'acteur déclaré doit être celui que le profil porte, et le fait négatif
+(`ecart: "hors_an"`) exige que les deux sources se taisent — pas de `P4123`, et
+aucun acteur dans le profil qu'AMO30 a produit. En désaccord, aucune entrée : la
+§5b bloquera en nommant le slug, et un humain arbitrera.
 """
 
 from __future__ import annotations
@@ -87,6 +105,7 @@ from correspondance_acteurs_an import (  # noqa: E402
     SCHEMA_VERSION,
     charger_correspondance,
 )
+from text_utils import slugify as _slugify  # noqa: E402
 
 SUFFIXE_PIVOT = ".pivot.json"
 
@@ -331,6 +350,185 @@ def _ecrire_document(chemin: Path, document: dict[str, Any]) -> None:
         f.write("\n")
 
 
+def resolutions_candidats(chemin: Path) -> dict[str, dict[str, Any]]:
+    """`slug → résolution` depuis le fichier écrit par le job de tête (#757).
+
+    Le fichier est indexé par **nom**, parce que c'est ce que la source rend ;
+    la table, elle, est indexée par slug. La conversion se fait ici, par
+    `slugify`, la même fabrique que celle qui a posé le slug dans
+    `candidats.json` — jamais par une seconde règle.
+    """
+    with open(chemin, encoding="utf-8") as f:
+        document = json.load(f)
+    resolutions: dict[str, dict[str, Any]] = {}
+    for nom, resolution in (document.get("resolutions") or {}).items():
+        slug = _slugify(nom)
+        if slug:
+            resolutions[slug] = resolution
+    return resolutions
+
+
+def entrees_sourcees(
+    profiles_dir: Path,
+    resolutions: dict[str, dict[str, Any]],
+    table_existante: dict[str, dict[str, Any]],
+    verifie_le: str,
+) -> tuple[dict[str, dict[str, Any]], list[str]]:
+    """Renvoie `(entrées à ajouter, refus nommés)` pour les candidats déclarés.
+
+    Même forme que `entrees_derivees`, et les mêmes trois filtres — la table
+    passe devant, le profil doit être publié, le recoupement doit tomber juste
+    (#715 §5). Ce qui change est **ce que le recoupement compare** : là-bas, le
+    roster déclarait l'acteur d'où le slug avait été fabriqué ; ici, un
+    identifiant externe déclare l'acteur, et le profil publié — dont l'identité
+    vient d'AMO30 par un tout autre chemin — doit dire la même chose.
+
+    Le fait négatif obéit à la même exigence, en miroir : `hors_an` n'est écrit
+    que si **Wikidata ne connaît aucun mandat AN** à cette personne **et** que
+    le profil qu'AMO30 a produit ne porte aucun acteur. Deux sources
+    indépendantes qui se taisent, ce qui est le raisonnement que #539 a écrit à
+    la main pour Arthaud, Tondelier et Lisnard.
+
+    En désaccord — l'une dit un acteur, l'autre en dit un autre ou n'en dit
+    aucun — **aucune entrée** : la §5b bloquera en nommant le slug, et un humain
+    arbitrera. Un désaccord entre deux sources n'est pas une donnée manquante.
+    """
+    entrees: dict[str, dict[str, Any]] = {}
+    refus: list[str] = []
+
+    for slug, resolution in sorted(resolutions.items()):
+        if slug in table_existante:
+            continue
+        chemin = profiles_dir / f"{slug}{SUFFIXE_PIVOT}"
+        if not chemin.is_file():
+            continue
+
+        issue = resolution.get("issue")
+        attendu = resolution.get("acteur_ref")
+        preuve = resolution.get("preuve")
+        if issue == "indetermine" or not preuve:
+            # Le job de tête n'a rien résolu : il n'a donc pas fabriqué de slug
+            # non plus. Un profil publié sous ce slug vient d'ailleurs.
+            refus.append(
+                f"{slug} : aucune résolution d'identifiant, et pourtant un "
+                "profil est publié sous ce slug — entrée à écrire à la main."
+            )
+            continue
+
+        projection = _projection_profil(chemin)
+        publie = projection["acteur_ref"]
+
+        if issue == "acteur":
+            if publie != attendu:
+                refus.append(
+                    f"{slug} : l'identifiant externe déclare {attendu}, le "
+                    f"profil publié porte {publie or 'aucun acteur'}. Aucune "
+                    "entrée n'est écrite — deux sources en désaccord "
+                    "s'arbitrent, elles ne se moyennent pas."
+                )
+                continue
+            ecart, motif = None, None
+        elif issue == "hors_an":
+            if publie is not None:
+                refus.append(
+                    f"{slug} : l'identifiant externe ne connaît aucun mandat "
+                    f"AN à cette personne, mais le profil publié porte "
+                    f"{publie}. Le fait négatif n'est pas corroboré."
+                )
+                continue
+            attendu = None
+            ecart = "hors_an"
+            motif = (
+                "Fait négatif corroboré par deux sources indépendantes le "
+                f"{verifie_le} : l'élément Wikidata de cette personne ne porte "
+                "pas la propriété P4123 (identifiant Assemblée nationale), et "
+                "le profil collecté depuis le référentiel AMO30 ne rend aucun "
+                "acteur. Entrée SOURCÉE et non relue : ni le Sénat ni le "
+                "Parlement européen ne sont couverts par cette déclaration."
+            )
+        else:
+            refus.append(f"{slug} : issue de résolution inconnue {issue!r}.")
+            continue
+
+        entrees[slug] = {
+            "identifiants": {
+                "an": attendu,
+                "senat": None,
+                "europarl": None,
+                "hatvp": projection["uri_hatvp"],
+            },
+            "etat_civil": {
+                "civilite": projection["civilite"],
+                "prenom": None,
+                "nom": None,
+                "nom_complet": projection["nom_complet"],
+                "date_naissance": projection["date_naissance"],
+            },
+            "ecart": ecart,
+            "motif": motif,
+            "preuve": preuve,
+            "verifie_le": verifie_le,
+            "origine": "sourcee",
+        }
+
+    return entrees, refus
+
+
+def completer_candidats(args: argparse.Namespace) -> int:
+    """Passe `--completer-candidats` : additive, hors ligne, ou rien du tout.
+
+    Jumelle de `completer_derivees`, et pour les mêmes raisons de forme : elle
+    ne réécrit aucune entrée existante, reconduit le document brut, ne touche
+    pas au fichier quand il n'y a rien à ajouter, et **ne sort jamais sur le
+    réseau** — la résolution d'identifiants a eu lieu au job de tête, et son
+    résultat voyage dans l'artifact. Un téléchargement ici ferait qu'une panne
+    de source tierce coûte le commit d'un run dont la donnée est bonne (#524).
+    """
+    if args.resolutions is None:
+        print(
+            "  [X] --completer-candidats exige --resolutions : c'est le "
+            "fichier du job de tête qui porte l'identifiant, et rien d'autre.",
+            file=sys.stderr,
+        )
+        return 2
+
+    try:
+        table_existante = charger_correspondance(args.sortie)
+        with open(args.sortie, encoding="utf-8") as f:
+            document = json.load(f)
+        resolutions = resolutions_candidats(Path(args.resolutions))
+    except Exception as exc:
+        print(
+            f"  [X] Entrée illisible ({exc}) : la passe sourcée est additive, "
+            "elle ne repart pas de zéro.",
+            file=sys.stderr,
+        )
+        return 2
+
+    entrees, refus = entrees_sourcees(
+        args.profiles_dir, resolutions, table_existante, args.verifie_le
+    )
+
+    for message in refus:
+        print(f"  [X] {message}", file=sys.stderr)
+
+    print(
+        f"-> {len(resolutions)} résolution(s) de candidat ; "
+        f"{len(entrees)} entrée(s) sourcée(s) ajoutée(s) ; "
+        f"{len(refus)} refus."
+    )
+    if refus:
+        return 1
+    if not entrees:
+        print("-> Rien à ajouter : la table est déjà à jour, elle n'est pas réécrite.")
+        return 0
+
+    document["correspondances"].update(entrees)
+    _ecrire_document(args.sortie, document)
+    print(f"-> Écrit : {args.sortie} ({len(document['correspondances'])} entrées)")
+    return 0
+
+
 def completer_derivees(args: argparse.Namespace) -> int:
     """Passe `--completer-derivees` : additive, hors ligne, ou rien du tout."""
     if args.rosters_bruts is None:
@@ -416,6 +614,19 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         default=None,
         help="raw_data/rosters_bruts.json du run — exigé par --completer-derivees.",
     )
+    parser.add_argument(
+        "--completer-candidats",
+        action="store_true",
+        help=(
+            "Ajoute les entrées SOURCÉES des candidats déclarés, depuis les "
+            "résolutions d'identifiant du job de tête. Additive et hors ligne (#757)."
+        ),
+    )
+    parser.add_argument(
+        "--resolutions",
+        type=Path,
+        help="Fichier de résolutions d'identifiants — exigé par --completer-candidats.",
+    )
     return parser
 
 
@@ -426,6 +637,9 @@ def main() -> int:
     # ce soit ne touche au réseau ou aux entrées relues.
     if args.completer_derivees:
         return completer_derivees(args)
+
+    if args.completer_candidats:
+        return completer_candidats(args)
 
     try:
         table_existante = charger_correspondance(args.sortie)
