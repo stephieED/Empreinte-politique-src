@@ -2490,6 +2490,23 @@ jobs:
         continue-on-error: true
         run: python3 src/build_commissions_dossiers.py
 
+      # Le rattachement d'un scrutin à son dossier (#758). Même source, même
+      # arbre `actesLegislatifs`, mêmes archives déjà téléchargées par l'étape
+      # ci-dessus : c'est le troisième usage du même parcours, et il tient dans
+      # le même cache.
+      #
+      # Un scrutin AN ne nomme pas le texte qu'il tranche — `objet.
+      # referenceLegislative` est nul sur 0/18 311 scrutins bruts. Le lien
+      # n'existe qu'en sens inverse, dans `voteRefs`. Sans cette table, la
+      # section « Ce qu'il a voté » ne peut dire ni sur quoi porte un texte
+      # voté, ni ce qu'il est devenu.
+      #
+      # Non bloquant, et fusion additive : un run sans archive lisible conserve
+      # la table publiée au lieu de la vider (AGENTS.md §3a).
+      - name: Construire le rattachement des scrutins aux dossiers
+        continue-on-error: true
+        run: python3 src/build_scrutins_dossiers.py
+
       # existing_profiles=overwrite → recréation complète des groupes.
       # Sinon → --merge-existing : membres absents du roster live réintégrés
       #         depuis le fichier précédent (résilience réseau).
@@ -3117,6 +3134,11 @@ jobs:
           # coûter le commit des profils, qui sont corrects.
           if [ -f pivot_data/commissions_dossiers.json ]; then
             git add pivot_data/commissions_dossiers.json
+          fi
+          # Même garde pour le rattachement scrutin → dossier (#758) : l'étape
+          # qui le construit est `continue-on-error`, le fichier peut manquer.
+          if [ -f pivot_data/scrutins_dossiers.json ]; then
+            git add pivot_data/scrutins_dossiers.json
           fi
           if git diff --cached --quiet; then
             echo "Aucun changement de données à committer."

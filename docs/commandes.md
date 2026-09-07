@@ -183,6 +183,12 @@ interne, pas affichés comme onglet dans `web/UI_finale`.
 ```bash
 python3 src/build_commissions_dossiers.py
 python3 src/build_commissions_dossiers.py --no-merge
+
+# Le rattachement d'un scrutin à son dossier, et l'issue de ce dossier (#758).
+# Mêmes archives, même parcours : un scrutin AN ne nomme pas le texte qu'il
+# tranche, le lien n'existe qu'en sens inverse dans `voteRefs`.
+python3 src/build_scrutins_dossiers.py
+python3 src/build_scrutins_dossiers.py --no-merge
 ```
 
 Produit : `pivot_data/commissions_dossiers.json` — par dossier législatif, la
