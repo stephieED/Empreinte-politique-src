@@ -120,6 +120,79 @@ trancher à sa place serait inventer une cause. Il annote (`::warning::`), il
 n'écrit pas. Et il ne supprime jamais — un `slug` publié est immuable
 (#460/#470).
 
+### `decline` entre dans `statuts_possibles`, et l'entrée est conservée
+
+Wauquiez et Bardella avaient décliné, et le fichier n'avait **aucune valeur pour
+le dire** : `statuts_possibles` ne portait que `declare`, `pressenti` et
+`officiel`. Ils sont donc restés `declare` et `pressenti` pendant 51 jours,
+c'est-à-dire faux.
+
+`decline` nomme une candidature explicitement abandonnée par une personne que
+nous portions comme déclarée ou pressentie. **L'entrée est conservée, jamais
+supprimée** : son slug est publié, et retirer un fichier publié est une
+disparition qu'`audit_diff_profils` bloque (#460/#470). Le champ reste
+descriptif — où en est la candidature — et jamais un jugement sur elle
+(§2 règle 1).
+
+**Le script ne pose jamais cette valeur.** Il ne lit que la section des
+déclarés, où l'absence d'une personne ne distingue pas un retrait d'un
+déplacement de section : il signale, un humain tranche avec sa source. C'est la
+même frontière que partout ailleurs dans le dépôt — une cause non résolue se
+déclare, elle ne se devine pas (§2 règle 5).
+
+Conséquence à connaître : `generate_all_profiles` dérive
+`meta.provenance = "candidat_declare"` de **tout** statut autre que
+`roster_groupe`. Une entrée `decline` reste donc un profil publié, et sa fiche
+reste en ligne. Si elle ne doit plus l'être, c'est une décision éditoriale
+distincte, et elle n'est pas prise ici.
+
+Une contrainte que rien ne tenait devient un test :
+`test_tout_statut_publie_est_dans_statuts_possibles` confronte le fichier à sa
+propre liste de valeurs, ce que personne ne faisait.
+
+## Le coût, mesuré
+
+**Aujourd'hui, il est nul.** Les 19 entrées neuves sont sans slug :
+`prepare-an-matrix` en retient toujours **13**, et le run du 06/09/2026
+(`34053322456`) reste la référence — 13 shards, **606 s cumulés**, de 27 s
+(Bardella) à 69 s (Mélenchon), moyenne **46,6 s**.
+
+**Le coût arrive quand les slugs seront écrits**, un par un, et il est
+dissymétrique :
+
+| | Nombre | Ce que ça coûte |
+| --- | --- | --- |
+| Déjà collectés comme membres de roster (Ruffin, Brun, Faure) | **3** | **rien de neuf** — le profil brut est déjà versionné ; le slug ne fait que basculer `meta.provenance` |
+| À collecter de zéro | **16** | un shard `extract-an` chacun, et un profil brut de plus |
+
+**CI.** `extract-an` est en `max-parallel: 1` : les shards s'exécutent **en
+série**, et chacun paie ses propres frais fixes de `actions/checkout`. À 32
+shards, `prepare-an-matrix` franchit son seuil d'avertissement de 16 (#498).
+Dans le régime observé, +19 shards ≈ **+15 min** de chemin critique ; le
+plafond dur est 19 × `timeout-minutes: 5` = **+95 min** (et le double si
+`collect_interventions` est coché, le timeout passant à 10). Les 606 s mesurés
+le sont sur un `existing_profiles=refresh` de profils **déjà collectés** : une
+première collecte est plus chère, et c'est précisément ce qu'un slug neuf
+déclenche.
+
+**Dépôt.** L'arbre porte **9,0 Go** de `raw_data/profiles` et 947 Mo de
+`pivot_data/profiles`, pour un pack git de **2,95 Gio**. Les 13 candidats
+déclarés pèsent 92,3 Mo bruts (Le Pen 25,6 ; cinq à 0, faute de mandat AN) ; les
+628 membres de roster, 9 470,9 Mo, **médiane 10,8 Mo**, p90 34,5, max 61,3.
+
+Le coût des 16 dépend donc entièrement de **combien ont une carrière à
+l'Assemblée**, ce que dira la table de correspondance au moment où elle sera
+écrite — c'est la même relecture humaine qui débloque le slug. Les bornes :
+**0 Mo** si aucun n'est passé par l'AN (le cas des cinq déclarés déjà à zéro),
+**~173 Mo bruts** si les seize l'étaient tous, à la médiane du roster. Le pivot
+en représente 10 à 30 % selon la part d'amendements.
+
+Deux issues ouvertes portent ce terrain et ce lot les charge un peu plus :
+**#678** (le poids total du dépôt n'est surveillé par personne) et **#691** (les
+tranches d'amendements recopient 4,58 Gio déjà versionnés en 38 Mo pour les
+législatures 14/15/16). Tant que #691 n'a pas atterri, chaque nouveau profil à
+carrière AN paie cette duplication.
+
 ## Ce que la décision ne fait pas
 
 **Wikidata sort du dispositif.** Corrigée de sa classe d'élection, la requête

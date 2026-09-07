@@ -333,3 +333,49 @@ def test_sortie_json_porte_les_deux_sens(fichier_candidats, capsys):
     ]
     assert rendu["plus_declares"] == ["Jordan BARDELLA"]
     assert rendu["ecrit"] is False
+
+
+# ---------------------------------------------------------------------------
+# Le fichier réel : la cohérence que rien ne contrôlait
+# ---------------------------------------------------------------------------
+
+
+def _corpus() -> dict:
+    source = Path("raw_data/candidats.json")
+    if not source.exists():  # checkout partiel d'un job qui ne prend pas raw_data/
+        pytest.skip("raw_data/candidats.json absent de ce checkout")
+    return json.loads(source.read_text(encoding="utf-8"))
+
+
+def test_tout_statut_publie_est_dans_statuts_possibles():
+    """`statuts_possibles` était une liste que personne ne confrontait au fichier.
+
+    `decline` y est entré avec #753 : une candidature abandonnée n'avait aucune
+    valeur pour se dire, et deux entrées ont porté `declare` / `pressenti`
+    pendant 51 jours après avoir été déclinées.
+    """
+    document = _corpus()
+    connus = set(document["_meta"]["statuts_possibles"])
+
+    inconnus = {
+        c["nom"]: c["statut"] for c in document["candidats"] if c["statut"] not in connus
+    }
+    assert inconnus == {}, f"statuts hors de statuts_possibles : {inconnus}"
+
+
+def test_une_entree_sans_slug_ne_recoit_jamais_de_famille_ni_de_date_inventees():
+    """Ce que la source ne porte pas reste `null` jusqu'à relecture (§2 règle 5)."""
+    for candidat in _corpus()["candidats"]:
+        if candidat["slug"] is not None:
+            continue
+        assert candidat["nom"], "une entrée sans slug doit au moins porter son nom"
+        assert candidat["notes"], "une entrée non relue doit dire ce qui manque"
+
+
+def test_aucun_doublon_de_nom_ni_de_slug():
+    document = _corpus()
+    cles = [fcd.cle_nom(c["nom"]) for c in document["candidats"]]
+    slugs = [c["slug"] for c in document["candidats"] if c["slug"]]
+
+    assert len(cles) == len(set(cles))
+    assert len(slugs) == len(set(slugs))

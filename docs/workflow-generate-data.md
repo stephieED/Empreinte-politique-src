@@ -270,7 +270,8 @@ adossée à la table [slug ↔ acteur AN](decisions/correspondance-acteurs-an-52
 
 La même chaîne de collecte qu'`extract-an`, mais pilotée par la **composition
 réelle** des groupes parlementaires (~750 membres) plutôt que par la liste
-éditoriale `raw_data/candidats.json` (~8 personnes), et en **mode léger** :
+éditoriale `raw_data/candidats.json` (**32 entrées, dont 13 à slug résolvable**
+depuis #753 — seules celles-là ont un shard), et en **mode léger** :
 `--skip-dossiers-legislatifs` est toujours posé ici. Les interventions, elles,
 suivent `collect_interventions` **depuis #657**, sous une forme réduite —
 `--interventions-theme-seul` collecte les débats Syceron sans leur verbatim et

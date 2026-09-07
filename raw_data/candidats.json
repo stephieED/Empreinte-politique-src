@@ -4,6 +4,7 @@
     "statuts_possibles": [
       "declare",
       "pressenti",
+      "decline",
       "officiel"
     ],
     "derniere_verification": "2026-09-07",
@@ -13,7 +14,8 @@
       "https://fr.wikipedia.org/wiki/%C3%89lection_pr%C3%A9sidentielle_fran%C3%A7aise_de_2027"
     ],
     "avertissement": "Statuts et alliances très mouvants à ce stade (plus d'un an avant le scrutin). Vérifier chaque entrée avant usage public.",
-    "regle_slug": "slug = identifiant du profil, et donc nom de son fichier (pivot_data/profiles/<slug>.pivot.json) — jamais un identifiant de source (#487, #539). Il vient de slugify(nom) et il est FABRIQUÉ UNE SEULE FOIS, à la première publication : une fois écrit ici il est immuable, jamais re-dérivé, parce que renommer un fichier publié est une suppression que audit_diff_profils bloque (#460/#470). En cas d'homonymie, suffixe numérique attribué au second (alexandra-martin / alexandra-martin-1), jamais réattribué ni recalculé. Il valait null pour cinq candidats jusqu'à #539 — l'ancienne règle le liait à la présence sur nosdeputes.fr/nossenateurs.fr, plateformes hors pipeline depuis #529, et ce null les rendait invisibles du matrix extract-an comme du manifeste de l'interface."
+    "regle_slug": "slug = identifiant du profil, et donc nom de son fichier (pivot_data/profiles/<slug>.pivot.json) — jamais un identifiant de source (#487, #539). Il vient de slugify(nom) et il est FABRIQUÉ UNE SEULE FOIS, à la première publication : une fois écrit ici il est immuable, jamais re-dérivé, parce que renommer un fichier publié est une suppression que audit_diff_profils bloque (#460/#470). En cas d'homonymie, suffixe numérique attribué au second (alexandra-martin / alexandra-martin-1), jamais réattribué ni recalculé. Il valait null pour cinq candidats jusqu'à #539 — l'ancienne règle le liait à la présence sur nosdeputes.fr/nossenateurs.fr, plateformes hors pipeline depuis #529, et ce null les rendait invisibles du matrix extract-an comme du manifeste de l'interface.",
+    "regle_statut": "statut = où en est la candidature, jamais un jugement sur elle. « decline » nomme une candidature explicitement abandonnée ou jamais engagée par une personne que nous portions comme declare/pressenti : l'entrée est CONSERVÉE et non supprimée, parce que son slug est publié et que retirer un fichier publié est une disparition qu'audit_diff_profils bloque (#460/#470). src/fetch_candidats_declares.py ne pose jamais cette valeur lui-même : il ne lit que la section des déclarés, où l'absence d'une personne ne distingue pas un retrait d'un déplacement de section — il signale, un humain tranche avec sa source (#753)."
   },
   "candidats": [
     {
@@ -111,10 +113,10 @@
       "slug": "laurent-wauquiez",
       "parti": "Les Républicains (LR)",
       "famille_politique": "droite",
-      "statut": "declare",
+      "statut": "decline",
       "date_declaration": "2025-03",
-      "source": "https://election-presidentielle-francaise-2027.fr/les-candidats-declares-pour-lelection-de-2027/",
-      "notes": "ATTENTION - à vérifier : une source plus récente (JDD) évoque un possible ralliement à Édouard Philippe, statut de candidature incertain mi-2026."
+      "source": "https://fr.wikipedia.org/wiki/Candidatures_%C3%A0_l%27%C3%A9lection_pr%C3%A9sidentielle_fran%C3%A7aise_de_2027#Candidats_d%C3%A9clar%C3%A9s",
+      "notes": "Candidature déclinée : figure sous « Candidats pressentis ayant décliné » de l'article des candidatures, en soutien à Bruno Retailleau. Statut passé de declare à decline le 2026-09-07 (#753) ; le doute était déjà noté ici depuis mi-2026. Entrée conservée : son slug est publié."
     },
     {
       "nom": "David Lisnard",
@@ -141,10 +143,10 @@
       "slug": "jordan-bardella",
       "parti": "Rassemblement National (RN)",
       "famille_politique": "extrême droite",
-      "statut": "pressenti",
+      "statut": "decline",
       "date_declaration": null,
-      "source": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-deja-en-lice-et-des-pretendants-436373",
-      "notes": "Candidat de substitution pressenti si Marine Le Pen ne pouvait pas se présenter."
+      "source": "https://fr.wikipedia.org/wiki/Candidatures_%C3%A0_l%27%C3%A9lection_pr%C3%A9sidentielle_fran%C3%A7aise_de_2027#Candidats_d%C3%A9clar%C3%A9s",
+      "notes": "Candidature déclinée : figure sous « Candidats pressentis ayant décliné » de l'article des candidatures, en soutien à Marine Le Pen. Statut passé de pressenti à decline le 2026-09-07 (#753). Il restait le candidat de substitution pressenti si Marine Le Pen ne pouvait pas se présenter. Entrée conservée : son slug est publié."
     },
     {
       "nom": "François Asselineau",
