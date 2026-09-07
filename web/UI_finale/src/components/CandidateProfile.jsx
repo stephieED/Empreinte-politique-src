@@ -622,7 +622,7 @@ function Chute({ chute, mesure, matiere, onMesure, onMatiere }) {
   return (
     <div className="cp-chute">
       <div className="cp-cles cp-chute-mesure">
-        <span className="cp-cle-quoi">En ordonnée</span>
+        <span className="cp-cle-quoi">Ce qu’on compte</span>
         <button
           aria-pressed={mesure !== 'dossiers'}
           className="cp-chute-choix"
@@ -680,23 +680,6 @@ function Chute({ chute, mesure, matiere, onMesure, onMatiere }) {
             </button>
           ))}
       </div>
-      <p className="cp-note">
-        <b>L'axe est le calendrier</b> — une année sans dépôt garde sa place et son palier, et le
-        domaine ne change pas d'une mesure à l'autre. Un escalier est additif : aucune hauteur
-        minimale n'est appliquée, et c'est le palier, tracé à la hauteur exacte du cumul, qui
-        marque une année dont la marche est trop mince pour se voir. <b>Aucun seuil</b>, et aucun
-        rapport n'est calculé entre les deux mesures.
-        {chute.sansDate > 0 && (
-          <>
-            {' '}
-            <b>{formatNumber(chute.sansDate)}</b> de ses dépôts ne portent pas de date et ne
-            figurent sur aucune marche.
-          </>
-        )}
-        {' '}La matière est la commission saisie au fond du dossier. Quand la source ne la donne
-        pas, le dépôt garde sa place sous « matière non établie » — jamais réparti au prorata ni
-        déduit de l'intitulé.
-      </p>
     </div>
   );
 }
@@ -866,21 +849,6 @@ function Cascade({ cascade, selection, onSelection }) {
           </button>
         ))}
       </div>
-      <p className="cp-note">
-        <b>Aucun seuil</b> : les {formatNumber(cascade.total)} textes sont tous tracés, du plus
-        gros ruban au trait d’un seul texte. La branche basse dit « non discuté », « non
-        adopté », « non promulgué » — à la date du corpus, aucun acte de l’étape suivante n’est
-        enregistré. <b>Ce n’est ni « rejeté » ni « abandonné »</b> : la source ne publie pas le
-        sort d’un texte, seulement l’étape la plus avancée qu’il a atteinte, et un texte en
-        navette est dedans. La dernière barre n’a pas de sortie : la procédure y est finie.
-        {cascade.sansMatiere > 0 && (
-          <>
-            {' '}
-            <b>{formatNumber(cascade.sansMatiere)}</b> de ces textes n’ont pas de commission
-            saisie au fond dans la table : ils gardent leur place sous « matière non établie ».
-          </>
-        )}
-      </p>
       {/* LE 49.3 EST DIT ICI PARCE QUE LA FIGURE NE PEUT PAS LE PORTER.
           Son axe est le STADE — jusqu'où le texte est allé — et un texte adopté
           par engagement de responsabilité s'y range comme les autres : quatre
@@ -1019,7 +987,7 @@ function Propositions({ amendements, textes, causeAmendements, causeTextes, voix
       ) : (
         <div className="cp-carte cp-textes">
           <div className="cp-gouv-tete">
-            <span className="cp-gouv-nom">Où en sont les textes {voix.quil} a portés</span>
+            <span className="cp-gouv-nom">Les textes {voix.quil} a portés</span>
             <span className="cp-gouv-periode cp-num">
               {formatNumber(textes.publies.length)} publiés · {formatNumber(textes.promulgues)}{' '}
               promulgué{textes.promulgues > 1 ? 's' : ''}
@@ -1038,24 +1006,6 @@ function Propositions({ amendements, textes, causeAmendements, causeTextes, voix
                 selection={selTexte}
               />
             </>
-          )}
-          {textes.ecartes.total > 0 && (
-            <p className="cp-note">
-              <b>
-                {textes.ecartes.total} de ses {textes.total} textes ne sont pas affiché
-                {textes.ecartes.total > 1 ? 's' : ''}
-              </b>{' '}
-              : {textes.ecartes.deposes > 0 &&
-                `${textes.ecartes.deposes} ${textes.ecartes.deposes > 1 ? 'ont' : 'a'} été déposé${textes.ecartes.deposes > 1 ? 's' : ''} sans jamais être examiné${textes.ecartes.deposes > 1 ? 's' : ''} en commission`}
-              {textes.ecartes.deposes > 0 && textes.ecartes.sansStade > 0 && ', '}
-              {textes.ecartes.sansStade > 0 &&
-                `${textes.ecartes.sansStade} ne porte${textes.ecartes.sansStade > 1 ? 'nt' : ''} pas de stade procédural`}
-              .{' '}
-              <em>
-                La règle éditoriale du dépôt ne publie par défaut que les textes ayant atteint
-                l’examen en commission.
-              </em>
-            </p>
           )}
           {textes.projetsDeLoi > 0 && (
             <p className="cp-note">
@@ -1077,7 +1027,7 @@ function Propositions({ amendements, textes, causeAmendements, causeTextes, voix
       ) : amendements.chute && (
         <div className="cp-carte">
           <div className="cp-gouv-tete">
-            <span className="cp-gouv-nom">Ce {voix.quil} a déposé comme auteur principal</span>
+            <span className="cp-gouv-nom">Les amendements dont {voix.sujet} est l’auteur</span>
             <span className="cp-gouv-periode cp-num">
               {formatNumber(amendements.totalAuteur)} amendements ·{' '}
               {formatNumber(amendements.dossiers?.distincts ?? amendements.chute.totalDossiers)}{' '}
