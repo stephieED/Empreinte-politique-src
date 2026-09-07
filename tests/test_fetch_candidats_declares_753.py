@@ -407,3 +407,22 @@ def test_aucun_doublon_de_nom_ni_de_slug():
 
     assert len(cles) == len(set(cles))
     assert len(slugs) == len(set(slugs))
+
+
+def test_la_sortie_json_reste_lisible_en_CI(fichier_candidats, capsys, monkeypatch):
+    """`gha.annoter` écrit sur STDOUT, et seulement quand `GITHUB_ACTIONS` vaut
+    « true » — donc en CI et jamais en local.
+
+    Sans ce test, la suite passait en local et échouait en CI : les annotations
+    s'intercalaient avant le document et `json.loads` mourait sur le premier
+    `::notice::`. C'est le patron de #726 — un banc qui décrit le monde tel que
+    le code l'imagine ne peut pas révéler que le monde a bougé —, ici appliqué
+    à l'environnement plutôt qu'aux données.
+    """
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+
+    fcd.main(["--candidats", str(fichier_candidats), "--html", str(FIXTURE), "--json"])
+
+    sortie = capsys.readouterr().out
+    assert "::" not in sortie, "une commande de workflow a été émise en mode --json"
+    json.loads(sortie)  # ne doit pas lever

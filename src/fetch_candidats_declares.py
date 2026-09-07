@@ -219,6 +219,25 @@ EXIT_COLLECTE_INCOMPLETE = 1
 EXIT_ECART = 3
 
 
+def _annoter(niveau: str, message: str, *, json_output: bool = False) -> None:
+    """Annote, sauf en sortie `--json`.
+
+    `gha.annoter` écrit sur **stdout**, parce que GitHub n'y lit les commandes
+    de workflow que là (voir `gha.py`). En CI — et seulement en CI, puisque
+    `gha.actif()` teste `GITHUB_ACTIONS` — ces lignes s'intercalent donc AVANT
+    le document JSON et le rendent illisible : `json.loads` échoue sur le
+    premier `::notice::`. Le défaut ne se voyait pas en local, où `gha.actif()`
+    est faux ; il est tombé en CI, sur `test_sortie_json_porte_les_deux_sens`.
+
+    En `--json`, l'appelant a **la même information dans la charge utile** —
+    `lignes_non_lues`, `sans_slug`, `sorties_nommees` — et structurée. Une
+    annotation redondante ne vaut pas un document cassé.
+    """
+    if json_output:
+        return
+    gha.annoter(niveau, message)
+
+
 class CollecteIncomplete(Exception):
     """Une anomalie qui interdit d'écrire. Porte le message de l'annotation."""
 
@@ -1007,7 +1026,11 @@ def main(argv: Optional[list[str]] = None) -> int:
             except iw.ResolutionIndisponible as exc:
                 # Une panne d'identifiants n'est pas un fait négatif : on n'écrit
                 # aucun slug plutôt que d'en fabriquer sans corroboration (#511).
-                gha.annoter("error", f"CANDIDATS_RESOLUTION_INDISPONIBLE — {exc}")
+                _annoter(
+                    "error",
+                    f"CANDIDATS_RESOLUTION_INDISPONIBLE — {exc}",
+                    json_output=args.json_output,
+                )
                 print(f"[!] {exc}", file=sys.stderr)
                 print(f"[!] {chemin} n'a pas été modifié.", file=sys.stderr)
                 return EXIT_COLLECTE_INCOMPLETE
@@ -1022,7 +1045,7 @@ def main(argv: Optional[list[str]] = None) -> int:
                 a_slugger, resolutions, slugs_pris(document, table)
             )
             for message in refus:
-                gha.annoter("warning", f"CANDIDATS_SANS_SLUG — {message}")
+                _annoter("warning", f"CANDIDATS_SANS_SLUG — {message}", json_output=args.json_output)
             refus_slug = refus
 
             if args.resolutions_out:
@@ -1031,13 +1054,14 @@ def main(argv: Optional[list[str]] = None) -> int:
                 )
 
     for anomalie in anomalies:
-        gha.annoter("warning", anomalie)
+        _annoter("warning", anomalie, json_output=args.json_output)
     noms_transitionnes = {e.get("nom") for e, _, _ in transitions}
     for entree, titre, _ in transitions:
-        gha.annoter(
+        _annoter(
             "notice",
             f"{NOTICE_SORTIE} — « {entree.get('nom')} » : figure sous "
             f"« {titre} » ; statut passé à {STATUT_DECLINE}.",
+            json_output=args.json_output,
         )
     for entree in ecarts.plus_declares:
         if cle_nom(entree.get("nom") or "") in sorties:
@@ -1045,12 +1069,13 @@ def main(argv: Optional[list[str]] = None) -> int:
             # changer ou qu'il soit déjà à jour. Demander une relecture ici
             # demanderait un travail déjà fait.
             continue
-        gha.annoter(
+        _annoter(
             "warning",
             f"{AVERTISSEMENT_PLUS_DECLARE} — « {entree.get('nom')} » "
             f"(statut: {entree.get('statut')}) n'est plus dans la section des "
             "déclarés, et aucune section de sortie ne le nomme ; entrée laissée "
             "telle quelle, à relire.",
+            json_output=args.json_output,
         )
 
     if args.ecrire and (ecarts.absents_du_fichier or slugs or transitions):
