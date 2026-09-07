@@ -29,6 +29,7 @@ from pathlib import Path
 from typing import Any
 
 import audit_gouvernement_dataset
+import audit_rattachements
 import audit_groupe_dataset
 import audit_pivot_dataset
 
@@ -37,6 +38,7 @@ def compute_vue_ensemble(
     rapport_profils: dict[str, Any],
     rapport_groupes: dict[str, Any],
     rapport_gouvernements: dict[str, Any],
+    rapport_rattachements: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Compile une vue d'ensemble à partir des trois rapports d'audit déjà assemblés.
 
@@ -110,11 +112,14 @@ def build_report(
     rapport_profils: dict[str, Any],
     rapport_groupes: dict[str, Any],
     rapport_gouvernements: dict[str, Any],
+    rapport_rattachements: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Assemble les rapports profils, groupes et gouvernements en un rapport combiné unique.
 
     Args:
         rapport_profils: sortie de `audit_pivot_dataset.build_report`.
+        rapport_rattachements: sortie d'`audit_rattachements.audit_rattachements`,
+            calculée par l'appelant. Absente, la section est simplement vide.
         rapport_groupes: sortie de `audit_groupe_dataset.build_report`.
         rapport_gouvernements: sortie de `audit_gouvernement_dataset.build_report`.
 
@@ -135,6 +140,17 @@ def build_report(
         "audit_profils": rapport_profils,
         "audit_groupes": rapport_groupes,
         "audit_gouvernements": rapport_gouvernements,
+        # Les rattachements que le dépôt a dû ÉTABLIR lui-même : aucun n'est
+        # donné par la source, et c'est pour ça qu'ils méritent d'être suivis.
+        # Jamais bloquant — voir l'en-tête d'`audit_rattachements`.
+        #
+        # PASSÉ EN ARGUMENT, JAMAIS CALCULÉ ICI. `build_report` assemble et ne
+        # recalcule rien — c'est son contrat, écrit dans sa docstring. L'appeler
+        # sans argument le faisait lire le corpus vivant, ce qu'AGENTS.md §3b
+        # interdit aux tests : les trois appels de `test_audit_pipeline.py`
+        # scannaient 509 744 amendements chacun, et la suite passait de 60 s à
+        # 185 s. Le calcul appartient au CLI.
+        "audit_rattachements": rapport_rattachements or {},
     }
 
 
@@ -200,6 +216,49 @@ def _md_section_vue_ensemble(vue: dict[str, Any]) -> str:
     )
 
 
+def _md_section_rattachements(audit: dict[str, Any]) -> str:
+    """Les jointures reconstruites, chacune avec SA population.
+
+    Le taux n'est jamais publié seul : le même rattachement vaut 4 % ou 61 %
+    selon le dénominateur, et un taux sans sa population est une erreur, pas une
+    approximation (AGENTS.md §9 ; §2 règle 7 pour le couple numérateur/
+    dénominateur).
+    """
+    lignes = [
+        [
+            j["quoi"],
+            j["population"],
+            f"{j['resolus']} / {j['total']}",
+            "—" if j["taux"] is None else f"{j['taux']} %",
+            j["note"] or "",
+        ]
+        for j in audit.get("jointures") or []
+    ]
+    corps = _md_table(
+        ["Rattachement", "Population", "Résolus", "Taux", "Note"],
+        lignes,
+        "_Aucune jointure mesurée._",
+    )
+    absents = audit.get("fichiers_absents") or []
+    manque = (
+        "\n**Fichiers absents, donc jointures non mesurées :** "
+        + ", ".join(f"`{f}`" for f in absents)
+        + "\n"
+        if absents
+        else ""
+    )
+    return (
+        "## Rattachements reconstruits\n\n"
+        "Aucun de ces liens n'est donné par la source : le dépôt les établit, "
+        "et un taux qui décroche d'un run à l'autre est le signal. "
+        "**Cette section ne bloque jamais** — un taux bas y est le plus souvent "
+        "le silence de la source, pas une faute. Les références orphelines, "
+        "elles, sont un bug et vivent dans `audit_integrite_referentielle`.\n\n"
+        + corps
+        + manque
+    )
+
+
 def generate_markdown_report(rapport: dict[str, Any]) -> str:
     """Génère un rapport Markdown lisible par un humain à partir du dict `build_report`.
 
@@ -226,6 +285,7 @@ def generate_markdown_report(rapport: dict[str, Any]) -> str:
     return "\n".join([
         entete,
         _md_section_vue_ensemble(rapport["vue_ensemble"]),
+        _md_section_rattachements(rapport.get("audit_rattachements") or {}),
         "---\n\n" + audit_pivot_dataset.generate_markdown_report(rapport["audit_profils"]),
         "---\n\n" + audit_groupe_dataset.generate_markdown_report(rapport["audit_groupes"]),
         "---\n\n" + audit_gouvernement_dataset.generate_markdown_report(rapport["audit_gouvernements"]),
@@ -390,7 +450,18 @@ def main(argv: list[str] | None = None) -> int:
         file=sys.stderr,
     )
 
-    rapport = build_report(rapport_profils, rapport_groupes, rapport_gouvernements)
+    # Les rattachements sont mesurés ICI, dans le CLI, et passés à
+    # `build_report` : lui les calculer le ferait lire le corpus vivant depuis
+    # les tests (AGENTS.md §3b).
+    rapport = build_report(
+        rapport_profils,
+        rapport_groupes,
+        rapport_gouvernements,
+        # Le dossier pivot est DÉRIVÉ de l'option existante : l'audit lit
+        # `pivot_data/`, et un CLI pointé sur des fixtures doit lire les
+        # fixtures — jamais le corpus vivant (§3b).
+        audit_rattachements.audit_rattachements(profiles_dir.parent),
+    )
     output_json = json.dumps(rapport, ensure_ascii=False, indent=2)
 
     if output_json_path:
