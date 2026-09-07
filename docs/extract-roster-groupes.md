@@ -54,6 +54,21 @@ besoin que d'identité minimale + mandats + votes + amendements pour les agréga
 de groupe (§4, `build_groupe_profile()`, #349). `dossiers_legislatifs` et
 `questions_officielles` ne sont donc jamais extraits par ce job.
 
+**Ce que ce mode implique du corpus, et qu'il a fallu rattraper (#747).** Un
+profil produit ici publie `textes_portes: []` et le déclare, dans
+`meta.collecte_ecartee` — « cette liste n'a pas été demandée » n'est pas « cette
+personne n'a rien porté » (§2 règle 5). Mais les profils collectés **avant** ce
+mode gardaient leurs entrées : la fusion étant additive, une liste neuve **vide**
+n'écrase rien, et 49 entrées ont survécu sur 15 profils pendant trois semaines,
+sur des fichiers qui déclaraient par ailleurs ne pas porter cette liste. Elles
+échappaient du même coup aux reports nommés de #689 et #743, qui n'avaient
+aucune clé sur quoi se poser. Purgées sur les deux étages ; les 628 membres de
+roster publient désormais tous une liste vide.
+**Le critère de la purge, lui, ne traversait pas les étages** : `meta.provenance`
+est un champ du pivot, et `meta.collecte_ecartee` seul ne discrimine rien
+puisqu'un candidat déclaré est aussi un membre de roster dont ce job réécrit le
+`meta`. Voir `docs/decisions/purge-textes-portes-roster-747.md`.
+
 **Les interventions ont quitté ce mode (#657).** L'affirmation « non consommées
 par les agrégats de groupe » était **fausse** : `tags_thematiques` en dérive
 intégralement, et `tags_thematiques_agreges` de chaque fiche de groupe en dérive
