@@ -250,19 +250,47 @@ def test_un_nouveau_candidat_entre_sans_slug(html):
     assert "2026-09-07" in entree["notes"]
 
 
-def test_une_entree_qui_nest_plus_declaree_est_signalee_jamais_modifiee(
-    html, fichier_candidats, capsys
+def test_une_sortie_SANS_cause_nommee_est_signalee_jamais_modifiee(
+    fichier_candidats, capsys
 ):
+    """L'invariant de #753, restreint par #763 à ce qui reste vrai.
+
+    Une entrée que la source range sous « Candidatures retirées » ou
+    « Candidats pressentis ayant décliné » transitionne désormais (#763) — c'est
+    un fait lu. Celle qui disparaît des déclarés SANS qu'aucune section ne la
+    nomme reste intouchée : déplacement, renommage, cause inconnue, et trancher
+    à sa place serait inventer une cause (§2 règle 5).
+
+    Jordan BARDELLA ne convient plus pour ce test : la fixture le nomme sous
+    « ayant décliné ». On prend donc quelqu'un qu'aucune section ne mentionne.
+    """
+    document = json.loads(fichier_candidats.read_text(encoding="utf-8"))
+    document["candidats"].append(
+        {
+            "nom": "Personne Sans Cause",
+            "slug": "personne-sans-cause",
+            "parti": "Un parti",
+            "famille_politique": None,
+            "statut": "declare",
+            "date_declaration": None,
+            "source": None,
+            "notes": None,
+        }
+    )
+    fichier_candidats.write_text(
+        json.dumps(document, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+
     code = fcd.main(
         ["--candidats", str(fichier_candidats), "--html", str(FIXTURE), "--ecrire"]
     )
     apres = json.loads(fichier_candidats.read_text(encoding="utf-8"))
-    bardella = [c for c in apres["candidats"] if c["nom"] == "Jordan BARDELLA"][0]
+    sans_cause = [c for c in apres["candidats"] if c["nom"] == "Personne Sans Cause"][0]
 
     assert code == fcd.EXIT_OK
-    assert bardella["statut"] == "pressenti", "le script ne tranche pas la cause"
-    assert bardella["slug"] == "jordan-bardella"
-    assert "Jordan BARDELLA" in capsys.readouterr().out
+    assert sans_cause["statut"] == "declare", "le script ne tranche pas une cause absente"
+    assert sans_cause["slug"] == "personne-sans-cause"
+    assert "Personne Sans Cause" in capsys.readouterr().out
 
 
 def test_sans_ecrire_le_fichier_ne_bouge_pas(fichier_candidats):

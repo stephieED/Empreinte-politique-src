@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 234 décisions
+gouverne sans avoir à fouiller les 235 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -51,6 +51,7 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 | `src/avertissements.py` | 1 |
 | `src/build_amendements_index.py` | 1 |
 | `src/candidate_profile_ue.py` | 1 |
+| `src/fetch_candidats_declares.py` | 1 |
 | `src/identifiants_wikidata.py` | 1 |
 | `src/json_io.py` | 1 |
 | `src/licences.py` | 1 |
@@ -435,6 +436,12 @@ Le mentionnent sans le gouverner : [`couverture-remplacee-par-liste-602`](decisi
 Le mentionnent sans le gouverner : [`budget-collecte-interventions`](decisions/budget-collecte-interventions.md).
 
 ## `src/fetch_candidats_declares.py`
+
+1 décision(s) le gouvernent ; le module en cite 0.
+
+| Décision | Nomme |
+| --- | --- |
+| [Le script pose `decline` quand la source nomme la cause (#763)](decisions/sortie-nommee-par-la-source-763.md) | `note_de_sortie` |
 
 Le mentionnent sans le gouverner : [`liste-candidats-declares-753`](decisions/liste-candidats-declares-753.md).
 

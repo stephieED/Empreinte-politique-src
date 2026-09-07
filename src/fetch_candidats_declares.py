@@ -79,14 +79,39 @@ Trois interdits, tous déjà écrits ailleurs dans le dépôt :
     suppression qu'`audit_diff_profils` bloque. La **seule** écriture sur une
     entrée existante est le comblement d'un `slug: null` — remplir un trou,
     jamais remplacer une valeur ;
-  - **un déclaré qui n'est plus déclaré est SIGNALÉ, jamais modifié.** Le
-    script lit la section des déclarés ; il ne peut donc pas distinguer un
-    retrait d'un déplacement de section, et trancher à sa place serait inventer
-    une cause (§2 règle 5) ;
+  - **une sortie est écrite SEULEMENT si la source la nomme (#763).** Le
+    script lit aussi « Candidatures retirées » et « Candidats pressentis ayant
+    décliné » : y figurer est un **fait lu**, et il pose `decline`. Disparaître
+    de la section des déclarés **sans** y figurer ne dit rien — déplacement,
+    renommage, cause inconnue — et reste signalé sans que rien ne bouge
+    (§2 règle 5) ;
   - **un slug ne se fabrique que si un identifiant externe le corrobore**
     (`--resoudre-identifiants`, #757). Sans lui, l'entrée entre avec
     `slug: null`, ce qui la tient hors de la matrice `extract-an` — donc hors
     collecte et hors publication — jusqu'à ce qu'une main tranche.
+
+## La sortie du périmètre, et pourquoi elle a le droit d'écrire (#763)
+
+Trois lots consomment `decline` — le périmètre de collecte (#760), le masquage
+de la fiche (#761), et le rapport d'ici — et jusqu'à #763 **aucun ne le
+posait** : les deux valeurs du fichier avaient été écrites à la main. Trois
+consommateurs automatiques d'une valeur que seule une main pouvait produire.
+
+Ce qui autorise l'écriture est la **cause nommée par la source**, et rien
+d'autre. Les deux sections de sortie disent pourquoi quelqu'un n'est plus
+candidat ; l'absence de la section des déclarés, elle, ne dit rien. C'est la
+même frontière que partout ailleurs : un fait lu s'écrit, une déduction se
+signale.
+
+Trois garde-fous, chacun contre une manière d'écrire une bêtise :
+
+1. **on ne crée jamais une entrée depuis une section de sortie** — publier
+   quelqu'un pour dire qu'il renonce serait absurde ;
+2. **`officiel` ne bascule pas** — il viendra de la décision du Conseil
+   constitutionnel, et un article encyclopédique ne renverse pas un acte publié
+   au Journal officiel ;
+3. **idempotence** — une entrée déjà `decline` n'est pas réécrite, sinon chaque
+   run ferait bouger le fichier sans rien dire de neuf.
 
 ## Pourquoi le slug se fabrique ici, et ce qu'il déclenche (#757)
 
@@ -158,12 +183,36 @@ DEFAULT_CANDIDATS_PATH = "raw_data/candidats.json"
 #: des déclarés : il n'a aucun moyen d'écrire autre chose.
 STATUT_DECLARE = "declare"
 
+#: Le statut posé quand la source range quelqu'un dans une section de sortie.
+STATUT_DECLINE = "decline"
+
+#: Les deux sections qui **nomment la cause** d'une sortie, et le motif que
+#: chacune écrit dans les notes. Elles sont la seule chose qui autorise ce
+#: script à modifier le statut d'une entrée existante : « ne figure plus parmi
+#: les déclarés » ne distingue pas un retrait d'un déplacement de section, mais
+#: « figure sous *Candidats pressentis ayant décliné* » est un fait lu.
+SECTIONS_SORTIE = {
+    "Candidatures retirées": "candidature retirée",
+    "Candidats pressentis ayant décliné": "candidature déclinée",
+}
+
+#: Les statuts qu'une section de sortie peut faire basculer. `officiel` n'y est
+#: PAS : il viendra de la décision du Conseil constitutionnel, seule autorité en
+#: la matière, et un article encyclopédique ne renverse pas un acte publié au
+#: Journal officiel. Une candidature officielle qui se retire se corrigera à la
+#: main, sur sa source.
+STATUTS_TRANSITIONNABLES = frozenset({"declare", "pressenti"})
+
 #: Préfixes d'anomalie, repris tels quels dans les annotations GitHub Actions.
 ANOMALIE_PAGE = "CANDIDATS_PAGE_ILLISIBLE"
 ANOMALIE_SECTION = "CANDIDATS_SECTION_INTROUVABLE"
 ANOMALIE_VIDE = "CANDIDATS_AUCUN_DECLARE"
 AVERTISSEMENT_LIGNE = "CANDIDATS_LIGNE_ILLISIBLE"
 AVERTISSEMENT_PLUS_DECLARE = "CANDIDATS_PLUS_DECLARE"
+#: Une sortie nommée par la source est un FAIT, pas une anomalie : elle part
+#: en `notice`, là où « plus dans les déclarés, cause inconnue » reste un
+#: `warning` qui demande une relecture.
+NOTICE_SORTIE = "CANDIDATS_SORTIE_NOMMEE"
 
 EXIT_OK = 0
 EXIT_COLLECTE_INCOMPLETE = 1
@@ -332,6 +381,79 @@ def _ligne_en_candidat(cellule: Tag, primaire: bool) -> Optional[CandidatDeclare
     return CandidatDeclare(
         nom=nom, parti=parti, url=_lien_personne(cellule), primaire=primaire
     )
+
+
+def extraire_sorties(html: str) -> dict[str, tuple[str, Optional[str]]]:
+    """`clé de nom → (motif, URL de la personne)` pour les sections de sortie.
+
+    Les deux sections sont des listes à puces, pas des tableaux, et la personne
+    y est le **premier lien** de sa puce — le reste de la ligne lie son parti,
+    son mandat et, souvent, le candidat qu'elle soutient désormais.
+
+    Une section absente n'est pas une anomalie : l'article peut cesser d'en
+    porter une (plus aucun retrait à recenser). C'est un dictionnaire vide pour
+    cette section-là, et aucune transition n'est proposée — l'absence de preuve
+    n'est pas une preuve d'absence.
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    sorties: dict[str, tuple[str, Optional[str]]] = {}
+
+    for titre, motif in SECTIONS_SORTIE.items():
+        depart = _enveloppe_du_titre(soup, titre)
+        if depart is None:
+            continue
+        bloc = depart.find_next_sibling()
+        while bloc is not None:
+            if isinstance(bloc, Tag):
+                if _est_titre(bloc, 2):
+                    break
+                for puce in bloc.find_all("li"):
+                    ancre = puce.find("a")
+                    if ancre is None or not ancre.get("title"):
+                        continue
+                    href = ancre.get("href") or ""
+                    if not href.startswith("/wiki/"):
+                        continue
+                    nom = " ".join(ancre.get_text(" ", strip=True).split())
+                    if not nom:
+                        continue
+                    # Première mention gagnante : une personne cotée dans deux
+                    # sections l'est parce qu'elle a d'abord décliné puis
+                    # retiré, ou l'inverse — les deux disent « plus candidate ».
+                    # Le TITRE de la section, pas sa paraphrase : c'est lui
+                    # que la note citera, et il doit être vérifiable à la
+                    # lettre dans l'article.
+                    sorties.setdefault(
+                        cle_nom(nom), (titre, f"https://fr.wikipedia.org{href}")
+                    )
+            bloc = bloc.find_next_sibling()
+
+    return sorties
+
+
+def transitions_de_sortie(
+    locaux: list[dict[str, Any]], sorties: dict[str, tuple[str, Optional[str]]]
+) -> list[tuple[dict[str, Any], str, Optional[str]]]:
+    """`(entrée, motif, preuve)` pour les entrées que la source dit sorties.
+
+    Trois conditions, et la troisième est celle qui protège :
+
+    1. l'entrée est **chez nous** — on ne crée jamais une entrée depuis une
+       section de sortie, ce serait publier quelqu'un pour dire qu'il renonce ;
+    2. son statut est **transitionnable** — `officiel` ne l'est pas ;
+    3. elle n'est pas **déjà** `decline` — sans quoi chaque run réécrirait les
+       mêmes notes et ferait bouger le fichier sans rien dire de neuf.
+    """
+    transitions = []
+    for entree in locaux:
+        cle = cle_nom(entree.get("nom") or "")
+        sortie = sorties.get(cle)
+        if sortie is None:
+            continue
+        if entree.get("statut") not in STATUTS_TRANSITIONNABLES:
+            continue
+        transitions.append((entree, sortie[0], sortie[1]))
+    return transitions
 
 
 def extraire_declares(html: str) -> tuple[list[CandidatDeclare], list[str]]:
@@ -581,11 +703,29 @@ def slugs_pris(
     return pris
 
 
+def note_de_sortie(titre: str, statut_avant: str, le_jour: str, preuve: Optional[str]) -> str:
+    """Ce qu'on écrit dans les notes en posant `decline`.
+
+    Elle porte les quatre choses qu'une relectrice voudra six mois plus tard :
+    la section **telle qu'elle s'appelle dans l'article** — vérifiable à la
+    lettre —, l'état d'avant, la date, et le lien vers la personne.
+    """
+    motif = SECTIONS_SORTIE.get(titre, "sortie")
+    lien = f" Source : {preuve}." if preuve else ""
+    return (
+        f"{motif.capitalize()} : figure sous « {titre} » de l'article des "
+        f"candidatures. Statut passé de {statut_avant} à {STATUT_DECLINE} le "
+        f"{le_jour} par src/fetch_candidats_declares.py (#763). Entrée "
+        f"conservée : son slug est publié.{lien}"
+    )
+
+
 def appliquer(
     document: dict[str, Any],
     absents: list[CandidatDeclare],
     le_jour: str,
     slugs: Optional[dict[str, str]] = None,
+    sorties: Optional[dict[str, tuple[str, Optional[str]]]] = None,
 ) -> dict[str, Any]:
     """Rend le document mis à jour — additif, aucune entrée existante touchée.
 
@@ -606,6 +746,17 @@ def appliquer(
         slug = (slugs or {}).get(entree.get("nom"))
         if slug:
             entree["slug"] = slug
+
+    # La transition de statut : la SECONDE écriture qu'une entrée existante
+    # subit, et la seule qui change une valeur au lieu de combler un trou. Elle
+    # n'est autorisée que par une section qui NOMME la cause (#763) — l'absence
+    # de la section des déclarés, elle, ne dit rien et ne change rien.
+    for entree, titre, preuve in transitions_de_sortie(
+        mis_a_jour["candidats"], sorties or {}
+    ):
+        avant = entree.get("statut")
+        entree["statut"] = STATUT_DECLINE
+        entree["notes"] = note_de_sortie(titre, avant, le_jour, preuve)
 
     mis_a_jour["candidats"].extend(
         nouvelle_entree(c, le_jour, (slugs or {}).get(c.nom)) for c in absents
@@ -666,6 +817,8 @@ def rendre_rapport(
     anomalies: list[str],
     ecrit: bool,
     slugs: Optional[dict[str, str]] = None,
+    transitions: Optional[list[tuple[dict[str, Any], str, Optional[str]]]] = None,
+    sorties: Optional[dict[str, tuple[str, Optional[str]]]] = None,
 ) -> str:
     """Le rapport de relecture, sur la sortie standard."""
     lignes = [
@@ -697,15 +850,32 @@ def rendre_rapport(
         lignes += ["", f"[{len(combles)} SLUGS {verbe} sur des entrées existantes]"]
         lignes += [f"  = {nom} → {slug}" for nom, slug in sorted(combles.items())]
 
-    if ecarts.plus_declares:
+    transitions = transitions or []
+    if transitions:
+        verbe = "POSÉES" if ecrit else "À POSER (relance avec --ecrire)"
+        lignes += ["", f"[{len(transitions)} SORTIES NOMMÉES PAR LA SOURCE — {verbe}]"]
+        for entree, titre, _ in transitions:
+            lignes.append(
+                f"  ! {entree.get('nom')} : {entree.get('statut')} → "
+                f"{STATUT_DECLINE} ({SECTIONS_SORTIE.get(titre, titre)})"
+            )
+
+    # Une entrée nommée par une section de sortie n'a rien à faire ici, qu'elle
+    # vienne de transitionner ou qu'elle soit déjà à jour : son statut le dit
+    # déjà. Ne restent que les sorties SANS cause lisible.
+    nommees = set(sorties or {})
+    restants = [
+        e for e in ecarts.plus_declares if cle_nom(e.get("nom") or "") not in nommees
+    ]
+    if restants:
         lignes += [
             "",
-            f"[{len(ecarts.plus_declares)} ENTRÉES QUI NE SONT PLUS DÉCLARÉES — "
+            f"[{len(restants)} ENTRÉES QUI NE SONT PLUS DÉCLARÉES — "
             "signalées, jamais modifiées]",
-            "  (retrait, candidature déclinée, ou déplacement de section : la "
-            "cause n'est pas lisible ici)",
+            "  (aucune section de sortie ne les nomme : déplacement de section, "
+            "ou renommage — la cause n'est pas lisible ici)",
         ]
-        for entree in ecarts.plus_declares:
+        for entree in restants:
             lignes.append(
                 f"  ? {entree.get('nom')} (statut: {entree.get('statut')}, "
                 f"slug: {entree.get('slug')})"
@@ -812,6 +982,8 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     locaux = document.get("candidats") or []
     ecarts = comparer(declares, locaux)
+    sorties = extraire_sorties(html)
+    transitions = transitions_de_sortie(locaux, sorties)
 
     slugs: dict[str, str] = {}
     refus_slug: list[str] = []
@@ -860,18 +1032,37 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     for anomalie in anomalies:
         gha.annoter("warning", anomalie)
+    noms_transitionnes = {e.get("nom") for e, _, _ in transitions}
+    for entree, titre, _ in transitions:
+        gha.annoter(
+            "notice",
+            f"{NOTICE_SORTIE} — « {entree.get('nom')} » : figure sous "
+            f"« {titre} » ; statut passé à {STATUT_DECLINE}.",
+        )
     for entree in ecarts.plus_declares:
+        if cle_nom(entree.get("nom") or "") in sorties:
+            # Sa cause est nommée par la source — que le statut vienne de
+            # changer ou qu'il soit déjà à jour. Demander une relecture ici
+            # demanderait un travail déjà fait.
+            continue
         gha.annoter(
             "warning",
             f"{AVERTISSEMENT_PLUS_DECLARE} — « {entree.get('nom')} » "
             f"(statut: {entree.get('statut')}) n'est plus dans la section des "
-            "déclarés ; entrée laissée telle quelle, à relire.",
+            "déclarés, et aucune section de sortie ne le nomme ; entrée laissée "
+            "telle quelle, à relire.",
         )
 
-    if args.ecrire and (ecarts.absents_du_fichier or slugs):
+    if args.ecrire and (ecarts.absents_du_fichier or slugs or transitions):
         ecrire(
             chemin,
-            appliquer(document, ecarts.absents_du_fichier, date.today().isoformat(), slugs),
+            appliquer(
+                document,
+                ecarts.absents_du_fichier,
+                date.today().isoformat(),
+                slugs,
+                sorties,
+            ),
         )
 
     if args.json_output:
@@ -888,6 +1079,10 @@ def main(argv: Optional[list[str]] = None) -> int:
                 ],
                 "absents_du_fichier": [c.nom for c in ecarts.absents_du_fichier],
                 "plus_declares": [e.get("nom") for e in ecarts.plus_declares],
+                "sorties_nommees": [
+                    {"nom": e.get("nom"), "section": titre, "preuve": preuve}
+                    for e, titre, preuve in transitions
+                ],
                 "communs": ecarts.communs,
                 "lignes_non_lues": anomalies,
                 "slugs_fabriques": slugs,
@@ -905,7 +1100,13 @@ def main(argv: Optional[list[str]] = None) -> int:
     else:
         print(
             rendre_rapport(
-                declares, ecarts, anomalies + refus_slug, ecrit=args.ecrire, slugs=slugs
+                declares,
+                ecarts,
+                anomalies + refus_slug,
+                ecrit=args.ecrire,
+                slugs=slugs,
+                transitions=transitions,
+                sorties=sorties,
             )
         )
 

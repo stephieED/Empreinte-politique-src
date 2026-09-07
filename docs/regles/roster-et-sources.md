@@ -181,3 +181,13 @@ les charger, ni à les faire grossir. -->
   (#510). The freeze is **named where the perimeter is computed** — `CANDIDAT_GELE`, with slug
   and status, never a bare count.
   → `docs/decisions/perimetre-collecte-candidatures-declinees-760.md`
+- **A candidacy leaves only when the source names why (#763).** The script reads the two
+  exit sections — « Candidatures retirées », « Candidats pressentis ayant décliné » — and
+  writes `statut: decline` on the entries they name; the note quotes the section title
+  **verbatim**. Vanishing from the declared section names no cause and changes nothing —
+  that second half is what stops a renamed heading from declining everyone at once. Three
+  guards: an exit section never **creates** an entry, `officiel` never flips (it will come
+  from the Conseil constitutionnel, and an encyclopaedia does not overturn an act published
+  in the JO), and an already-`decline` entry is not rewritten. A named exit is a **fact**:
+  `::notice::`, never `::warning::`.
+  → `docs/decisions/sortie-nommee-par-la-source-763.md`

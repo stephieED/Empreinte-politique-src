@@ -239,9 +239,12 @@ dans le périmètre du run suivant, et sa correspondance est écrite hors ligne 
 résolvable, il entre **sans `slug`** — donc sans shard `extract-an` et sans
 publication — et il est **nommé** dans le rapport.
 `famille_politique`, `date_declaration` et la source primaire de la déclaration
-restent à compléter à la main dans tous les cas. Une entrée qui n'est **plus** déclarée est signalée et
-jamais modifiée : la cause — retrait, candidature déclinée, déplacement de
-section — n'est pas lisible depuis la seule section des déclarés.
+restent à compléter à la main dans tous les cas. Une entrée que la source range sous « Candidatures retirées » ou « Candidats
+pressentis ayant décliné » reçoit `statut: decline` (#763) — c'est un fait lu, et
+la note cite la section à la lettre. Celle qui disparaît des déclarés **sans**
+qu'aucune de ces sections ne la nomme est signalée et **jamais modifiée** :
+déplacement, renommage, cause inconnue. Un statut `officiel` ne bascule jamais —
+il viendra du Conseil constitutionnel.
 
 Rien n'est écrit si la collecte échoue : page illisible, section
 « Candidats déclarés » introuvable, ou zéro candidat extrait font sortir en 1
