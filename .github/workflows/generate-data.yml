@@ -337,6 +337,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             .github
+            src/perimetre_candidats.py
             raw_data/candidats.json
 
       # La liste du jour ÉCRASE la liste committée, et son absence n'est pas une
@@ -383,10 +384,17 @@ jobs:
         run: |
           set -euo pipefail
           SLUGS_JSON=$(python3 - <<'EOF'
-          import json
+          import json, sys
+          sys.path.insert(0, "src")
+          from perimetre_candidats import slugs_a_collecter, slugs_geles
           data = json.load(open("raw_data/candidats.json", encoding="utf-8"))
-          slugs = [c["slug"] for c in data["candidats"] if c.get("slug")]
-          print(json.dumps(slugs))
+          candidats = data["candidats"]
+          # Le gel se DÉCLARE : un candidat qui sort du périmètre est nommé ici,
+          # là où le périmètre est calculé (#760). Sur stderr, pour ne pas
+          # polluer la sortie que le shell capture.
+          for slug, statut in slugs_geles(candidats):
+              print(f"::notice::CANDIDAT_GELE — {slug} (statut: {statut}) : collecte gelée, profil publié conservé tel quel (#760).", file=sys.stderr)
+          print(json.dumps(slugs_a_collecter(candidats)))
           EOF
           )
           COUNT=$(SLUGS_JSON="$SLUGS_JSON" python3 -c 'import json, os; print(len(json.loads(os.environ["SLUGS_JSON"])))')

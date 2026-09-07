@@ -169,3 +169,15 @@ les charger, ni à les faire grossir. -->
   requires *both* sources to be silent, and any disagreement writes nothing, names the
   slug, and lets §5b block.
   → `docs/decisions/boucle-perimetre-candidats-757.md`
+- **A declined candidacy leaves the collection perimeter; its published sheet stays (#760).**
+  `src/perimetre_candidats.py` is the **single** predicate, used by both `prepare-an-matrix`
+  and `generate_all_profiles` — the filter lived inline in the YAML, and a second copy would
+  have diverged without failing anything. **Freezing is not deleting**: the profile stays
+  published with its last collection (the frozen Senate group sheets of #528), and nothing is
+  lost at merge time — not collecting produces no collection, not an *empty* one. The freeze
+  **lifts itself** when the person re-declares, through #757's head job. **An unknown status is
+  collected**: `STATUTS_GELES` is the only closed set, because over-collecting costs one shard
+  and shows, while a candidate dropped by a status value added elsewhere vanishes silently
+  (#510). The freeze is **named where the perimeter is computed** — `CANDIDAT_GELE`, with slug
+  and status, never a bare count.
+  → `docs/decisions/perimetre-collecte-candidatures-declinees-760.md`

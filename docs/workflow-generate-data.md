@@ -90,8 +90,11 @@ checkout complet : le run `33414042623` l'a vu tué à 5 min 00, donc matrice
 jamais publiée, donc `extract-an` **skippé** alors qu'il venait d'être réparé.
 La règle vaut pour tout job au budget serré, et un test la fait respecter.
 
-publie comme matrice d'`extract-an` — **un shard par candidat**. Il ne collecte
-rien. Il porte aussi deux garde-fous de lancement : un avertissement au-delà de
+publie comme matrice d'`extract-an` — **un shard par candidat du périmètre**. Il
+ne collecte rien. Le périmètre vient de `src/perimetre_candidats.py`, partagé
+avec `generate_all_profiles` : un candidat à `statut: decline` **n'a pas de
+shard**, sa fiche restant publiée telle quelle, et il est **nommé**
+(`::notice::CANDIDAT_GELE`) là où le périmètre est calculé (#760). Il porte aussi deux garde-fous de lancement : un avertissement au-delà de
 16 shards (ils s'exécutent en série, donc 16 shards = 16 fois le timeout d'un
 shard), et le décompte chiffré des interventions qu'un run
 `existing_profiles=overwrite` sans `collect_interventions` effacerait.

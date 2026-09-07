@@ -168,3 +168,34 @@ def test_merge_and_pivot_normalise_la_liste_du_run():
     assert _indice("merge-and-pivot", "candidats-a-jour") < _indice(
         "merge-and-pivot", "--pivot-only"
     )
+
+
+# ---------------------------------------------------------------------------
+# Le périmètre : geler la collecte d'une candidature déclinée (#760)
+# ---------------------------------------------------------------------------
+
+
+def test_la_matrice_utilise_le_predicat_partage():
+    """Une seule définition du périmètre, jamais deux.
+
+    Le filtre `if c.get("slug")` vivait en dur dans le YAML ; recopié, il aurait
+    divergé du jour où `generate_all_profiles` a appliqué le même gel.
+    """
+    bloc = _sans_commentaires(_bloc_job("prepare-an-matrix"))
+    assert "from perimetre_candidats import" in bloc
+    assert "slugs_a_collecter" in bloc
+    assert 'if c.get("slug")' not in bloc, "le filtre en dur a été réintroduit"
+
+
+def test_le_module_du_perimetre_est_dans_la_liste_blanche():
+    """Un chemin lu mais absent du sparse-checkout ne fait pas échouer le
+    checkout : il rend un fichier absent, et la collecte se replie en silence."""
+    bloc = _bloc_job("prepare-an-matrix")
+    assert "src/perimetre_candidats.py" in bloc
+
+
+def test_le_gel_est_nomme_la_ou_le_perimetre_est_calcule():
+    """Un trou muet se lit comme un constat (#510, #501)."""
+    bloc = _sans_commentaires(_bloc_job("prepare-an-matrix"))
+    assert "CANDIDAT_GELE" in bloc
+    assert "slugs_geles" in bloc
