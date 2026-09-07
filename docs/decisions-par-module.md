@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 233 décisions
+gouverne sans avoir à fouiller les 234 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -38,11 +38,11 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 | Module | Décisions qui le gouvernent |
 | --- | ---: |
 | `src/normalize_parltrack_dumps.py` | 4 |
+| `src/audit_pipeline.py` | 3 |
 | `src/budget_collecte.py` | 3 |
 | `src/parse_syceron.py` | 3 |
 | `src/profil_brut.py` | 3 |
 | `src/audit_gouvernement_dataset.py` | 2 |
-| `src/audit_pipeline.py` | 2 |
 | `src/build_correspondance_acteurs_an.py` | 2 |
 | `src/gouvernement_profile.py` | 2 |
 | `src/purge_mandats_dupliques.py` | 2 |
@@ -142,7 +142,7 @@ Le mentionnent sans le gouverner : [`audit-pipeline-gouvernement`](decisions/aud
 
 ## `src/audit_integrite_referentielle.py`
 
-Le mentionnent sans le gouverner : [`collecte-non-publiee`](decisions/collecte-non-publiee.md), [`collecte-vs-publie-545`](decisions/collecte-vs-publie-545.md), [`dossier-des-amendements-639`](decisions/dossier-des-amendements-639.md), [`perimetre-controle-perte`](decisions/perimetre-controle-perte.md), [`purge-textes-portes-roster-747`](decisions/purge-textes-portes-roster-747.md), [`qualification-perdue-a-la-fusion-639`](decisions/qualification-perdue-a-la-fusion-639.md), [`qualification-scrutins-et-cle-dossier-639`](decisions/qualification-scrutins-et-cle-dossier-639.md), [`retrait-senat-528`](decisions/retrait-senat-528.md).
+Le mentionnent sans le gouverner : [`audit-des-rattachements`](decisions/audit-des-rattachements.md), [`collecte-non-publiee`](decisions/collecte-non-publiee.md), [`collecte-vs-publie-545`](decisions/collecte-vs-publie-545.md), [`dossier-des-amendements-639`](decisions/dossier-des-amendements-639.md), [`perimetre-controle-perte`](decisions/perimetre-controle-perte.md), [`purge-textes-portes-roster-747`](decisions/purge-textes-portes-roster-747.md), [`qualification-perdue-a-la-fusion-639`](decisions/qualification-perdue-a-la-fusion-639.md), [`qualification-scrutins-et-cle-dossier-639`](decisions/qualification-scrutins-et-cle-dossier-639.md), [`retrait-senat-528`](decisions/retrait-senat-528.md).
 
 ## `src/audit_legislature_votes.py`
 
@@ -150,10 +150,11 @@ Le mentionnent sans le gouverner : [`partition-profils-legislature-580`](decisio
 
 ## `src/audit_pipeline.py`
 
-2 décision(s) le gouvernent ; le module en cite 0.
+3 décision(s) le gouvernent ; le module en cite 0.
 
 | Décision | Nomme |
 | --- | --- |
+| [Un taux de rattachement se publie avec sa population, et ne bloque jamais, 07/09/2026](decisions/audit-des-rattachements.md) | `_md_section_rattachements` |
 | [`audit_pipeline.py` : intégration du rapport gouvernement (#321, sous-issue 5/6 de #316) (2026-08-15)](decisions/audit-pipeline-gouvernement.md) | `compute_vue_ensemble` |
 | [Épic #316 — tableaux croisés des plages temporelles (#317/#318/#320/#321) : bilan et décisions transverses (2026-08-15)](decisions/audit-plages-temporelles.md) | `compute_vue_ensemble` |
 
@@ -179,6 +180,10 @@ Le mentionnent sans le gouverner : [`audit-champs-deplaces-726`](decisions/audit
 | [NosDéputés sort du pipeline (#529, lot 5 de l'épic « une seule source AN ») (2026-08-27)](decisions/retrait-nosdeputes-529.md) | `MAPPING_CHAMBRE_SOURCES`, `compute_agregation_warnings` |
 
 Le mentionnent sans le gouverner : [`audit-599-projection-blocs-lus-628`](decisions/audit-599-projection-blocs-lus-628.md), [`audit-pipeline-gouvernement`](decisions/audit-pipeline-gouvernement.md), [`destinataire-avertissements-642`](decisions/destinataire-avertissements-642.md), [`plage-dates-groupes`](decisions/plage-dates-groupes.md), [`populations-profils-portees-par-les-outils-630`](decisions/populations-profils-portees-par-les-outils-630.md), [`quality-gate-gouvernements`](decisions/quality-gate-gouvernements.md), [`retrait-senat-528`](decisions/retrait-senat-528.md).
+
+## `src/audit_rattachements.py`
+
+Le mentionnent sans le gouverner : [`audit-des-rattachements`](decisions/audit-des-rattachements.md).
 
 ## `src/audit_volumetrie_profils.py`
 
