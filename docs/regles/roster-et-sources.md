@@ -147,7 +147,11 @@ les charger, ni à les faire grossir. -->
   alone cannot tell a withdrawal from a moved section. **A new candidate gets
   `slug: null`**, which keeps it out of `prepare-an-matrix`, hence out of collection and
   publication, until its slug ↔ AN actor correspondence is reviewed by hand: minting the
-  slug would trip gate §5b's threshold-0 hard fail on every run instead (#525). Three
+  slug would trip gate §5b's threshold-0 hard fail instead (#525). #715's derived-entry
+  pass does **not** rescue them — `slugs_fabriques()` reads `rosters_bruts.json` alone,
+  and 16 of the 19 sit in no configured group roster — and **extending it would be
+  wrong**: a candidate's slug comes from `slugify(nom)`, not from an AMO30 actor, so the
+  entry is a *rapprochement* to review, never a derivation (#715 §2). Three
   anomalies block the write and none is a numeric threshold — unreadable page, missing
   « Candidats déclarés » heading, zero candidate extracted (#511). **Wikidata is out**:
   `P3602` returns 1 person for the 2027 election against 30 declared.

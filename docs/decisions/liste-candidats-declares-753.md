@@ -99,9 +99,32 @@ ignorer est un avertissement perdu.
 C'est le point qui décide de tout le reste. Fabriquer le slug ferait entrer le
 candidat dans la matrice `extract-an`, donc dans la collecte, donc dans la
 publication — et la **§5b du portail qualité est un hard fail à seuil 0** sur
-tout profil publié sans correspondance slug ↔ acteur AN relue (#525). Dix-neuf
-slugs fabriqués, c'est dix-neuf runs bloqués jusqu'à ce qu'une main écrive dix-neuf
-entrées de correspondance.
+tout profil publié sans correspondance slug ↔ acteur AN relue (#525).
+
+**Ce blocage a déjà été levé une fois, et pas pour cette population.** #715 a
+traité l'incident du run `33613535746` — 160 profils collectés, commit refusé —
+et ses profils **ont bien été committés** après correctif : `70626a02`, le
+02/09/2026, ajoute 160 profils pivot et les 160 entrées `origine: derivee` que
+porte la table aujourd'hui (641 entrées, dont 481 sans clé `origine`, d'avant le
+lot). L'incident était un défaut, il est réparé, et il ne doit pas servir
+d'épouvantail.
+
+Le correctif est **borné à sa population**, et de deux façons.
+`build_correspondance_acteurs_an.slugs_fabriques()` lit
+`raw_data/rosters_bruts.json` et rien d'autre, et le step de CI est conditionné
+à `hashFiles('raw_data/rosters_bruts.json')`. Or `raw_data/groupes_reels.json`
+ne configure que **cinq groupes par législature** — REN/EPR, SOC, RN, LFI,
+LR/DR : ni Écologistes, ni GDR, ni LIOT, ni MoDem, ni Horizons. C'est pourquoi
+**3** des 19 entrées neuves ont déjà un profil (Ruffin, Brun, Faure, membres de
+roster) et **16** n'en ont aucun : aucune des seize n'entrerait dans la passe
+dérivée, et chacune bloquerait la §5b.
+
+Et ce n'est pas qu'une affaire d'implémentation : **l'étendre serait faux.**
+#715 §2 tranche que l'entrée dérivée n'établit rien parce que le slug d'un
+membre de roster **sort de son acteur AMO30**. Le slug d'un candidat, lui, sort
+de `slugify(nom)` — un nom tapé à la main dans un fichier éditorial. Établir
+quel `PA######` lui correspond reste un **rapprochement**, c'est-à-dire
+exactement ce que #525 exige de relire.
 
 `slug: null` est exactement l'inverse : `prepare-an-matrix` ne retient que les
 slugs résolvables, donc pas de shard, pas de collecte, pas de publication, pas
@@ -234,8 +257,9 @@ jamais écrire**, ce que sa ligne de `docs/commandes.md` disait en gras. Garder
 le nom d'un script qui fait l'inverse de ce qui est écrit de lui coûte plus
 qu'un fichier neuf.
 
-**Fabriquer le slug à l'entrée, et laisser la §5b faire barrage.** C'est ce que
-fait `an_roster.resoudre_slugs` pour les membres de roster (#708), et ça marche
-là-bas parce que le portail bloque la **publication** d'un profil, pas le run.
-Ici, les profils seraient collectés puis publiés dans la foulée : le premier run
-échouerait, dix-neuf fois.
+**Fabriquer le slug à l'entrée, comme #708 le fait pour les membres de
+roster.** Là-bas, la passe dérivée de #715 rattrape le slug fabriqué dans le
+même run et le commit passe — c'est mesuré, `70626a02` a committé les 160.
+Ici, aucune des 16 entrées à collecter n'est dans un roster configuré, donc
+aucune n'est rattrapée ; et l'y rattraper serait faire dire à une entrée dérivée
+ce qu'elle ne dit pas, puisque le slug d'un candidat ne sort pas de son acteur.

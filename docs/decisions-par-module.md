@@ -40,11 +40,11 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 | `src/normalize_parltrack_dumps.py` | 4 |
 | `src/scrutins_index.py` | 4 |
 | `src/budget_collecte.py` | 3 |
+| `src/build_correspondance_acteurs_an.py` | 3 |
 | `src/parse_syceron.py` | 3 |
 | `src/profil_brut.py` | 3 |
 | `src/audit_gouvernement_dataset.py` | 2 |
 | `src/audit_pipeline.py` | 2 |
-| `src/build_correspondance_acteurs_an.py` | 2 |
 | `src/gouvernement_profile.py` | 2 |
 | `src/purge_mandats_dupliques.py` | 2 |
 | `src/avertissements.py` | 1 |
@@ -72,7 +72,7 @@ Le mentionnent sans le gouverner : [`lectures-pipeline-par-projection-635`](deci
 
 ## `src/an_roster.py`
 
-10 décision(s) le gouvernent ; le module en cite 3.
+9 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
@@ -80,7 +80,6 @@ Le mentionnent sans le gouverner : [`lectures-pipeline-par-projection-635`](deci
 | [`debut_dans_groupe` se lit sur le mandat de groupe, plus sur le premier mandat électif (#653) (2026-08-31)](decisions/dates-appartenance-groupe-653.md) | `deriver_membres_organes`, `organes_du_groupe` |
 | [L'effectif d'un groupe dans le temps : `min_historique` et `max_historique` portent leur date (#702) — 01/09/2026](decisions/effectif-du-groupe-dans-le-temps-702.md) | `_fusionner_periodes` |
 | [Une entrée dérivée gèle un slug fabriqué, elle ne prouve plus rien (#715) (2026-09-02)](decisions/entree-derivee-correspondance-715.md) | `resoudre_slugs` |
-| [La liste des candidats se collecte, et un déclaré entre sans slug (#753)](decisions/liste-candidats-declares-753.md) | `resoudre_slugs` |
 | [La position politique d'un groupe est celle que l'Assemblée déclare, lue dans une table committée (#686) (2026-09-01)](decisions/position-politique-groupes-686.md) | `VERSION_INDEX_GP` |
 | [NosDéputés sort du pipeline (#529, lot 5 de l'épic « une seule source AN ») (2026-08-27)](decisions/retrait-nosdeputes-529.md) | `AN_ROSTER_ACTIF`, `RosterAnInactif` |
 | [Le Sénat sort du périmètre, et le job qui concluait vert sans rien produire est retiré (#528, lot 3 de l'épic « une seule source AN ») (2026-08-26)](decisions/retrait-senat-528.md) | `AN_ROSTER_ACTIF` |
@@ -238,11 +237,12 @@ Le mentionnent sans le gouverner : [`mise-en-oeuvre-des-grands-chiffres-328`](de
 
 ## `src/build_correspondance_acteurs_an.py`
 
-2 décision(s) le gouvernent ; le module en cite 0.
+3 décision(s) le gouvernent ; le module en cite 0.
 
 | Décision | Nomme |
 | --- | --- |
 | [Une entrée dérivée gèle un slug fabriqué, elle ne prouve plus rien (#715) (2026-09-02)](decisions/entree-derivee-correspondance-715.md) | `_slugs_publies` |
+| [La liste des candidats se collecte, et un déclaré entre sans slug (#753)](decisions/liste-candidats-declares-753.md) | `slugs_fabriques` |
 | [Un membre de roster sans correspondance relue reçoit un slug, et la collision reste un refus (#708) (2026-09-02)](decisions/slug-fabrique-membre-de-roster-708.md) | `_slugs_publies` |
 
 Le mentionnent sans le gouverner : [`bascule-roster-an-amo30-527`](decisions/bascule-roster-an-amo30-527.md), [`correspondance-acteurs-an-525`](decisions/correspondance-acteurs-an-525.md), [`fiches-groupe-17e-legislature-700`](decisions/fiches-groupe-17e-legislature-700.md).
