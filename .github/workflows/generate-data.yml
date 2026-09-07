@@ -294,7 +294,7 @@ jobs:
       # Séparés, un run pourrait collecter d'après l'une sans pouvoir écrire les
       # correspondances de l'autre — c'est la divergence que #518 a supprimée
       # côté roster.
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: candidats-a-jour
           path: |
@@ -344,7 +344,7 @@ jobs:
       # erreur : `continue-on-error` sur le download ferait retomber le job sur
       # le fichier du checkout, qui est un état connu (#757). Ce qui serait une
       # erreur, c'est de ne pas le dire — d'où le log ci-dessous.
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         id: liste_a_jour
         continue-on-error: true
         with:
