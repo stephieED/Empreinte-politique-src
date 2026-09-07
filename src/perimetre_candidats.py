@@ -1,0 +1,97 @@
+#!/usr/bin/env python3
+"""
+perimetre_candidats.py — Qui le run collecte, et qui il a cessé de collecter (#760).
+
+## Le défaut
+
+`prepare-an-matrix` retenait tout candidat **à slug résolvable**, et rien
+d'autre : `[c["slug"] for c in data["candidats"] if c.get("slug")]`. Une
+candidature déclinée gardait donc son shard. Au 07/09/2026 c'était 2 shards sur
+29 — Wauquiez et Bardella, passés `decline` par #753 — et cette part ne fait que
+croître : l'article des candidatures compte déjà **24** personnes sous
+« Candidats pressentis ayant décliné », et la campagne les multipliera à mesure
+qu'elle tranche.
+
+Collecter quelqu'un qui a renoncé, c'est payer un shard en série
+(`max-parallel: 1`) pour rafraîchir une fiche que plus rien ne fait bouger.
+
+## Ce que « geler » veut dire, et ce que ça ne veut pas dire
+
+**Le profil n'est pas supprimé.** Il reste publié, avec les données de sa
+dernière collecte. Supprimer un fichier publié est une disparition
+qu'`audit_diff_profils` bloque (#460/#470), et ce n'est pas ce qu'on cherche :
+ce que la personne a fait au Parlement reste vrai, seule sa candidature a cessé.
+C'est le régime des deux fiches de groupe Sénat de #528 — gardées, gelées,
+déclarées.
+
+**Rien n'est perdu à la fusion non plus** : ne pas collecter ne produit pas une
+collecte vide, ça ne produit *aucune* collecte. La fusion additive n'a rien à
+écraser, le contrôle de perte ne voit aucune perte, et la §5b garde son entrée de
+correspondance intacte.
+
+**Le gel se lève tout seul.** Si la personne redéclare, `statut` repasse à
+`declare` au job de tête et son shard revient au run suivant. Aucune intervention.
+
+## Un statut inconnu est COLLECTÉ, jamais écarté
+
+`STATUTS_GELES` est fermé, et c'est le seul ensemble fermé ici :
+`est_a_collecter` rend vrai pour tout ce qui n'y est pas, y compris une valeur
+que ce module ne connaît pas encore. Le défaut penche donc vers **collecter de
+trop** plutôt que vers **écarter en silence** — parce que les deux erreurs ne
+coûtent pas la même chose. Une collecte en trop coûte un shard ; un candidat
+écarté par une valeur de statut ajoutée ailleurs disparaît du périmètre sans que
+rien ne le dise, et c'est le patron de #510.
+
+## Le gel se DÉCLARE
+
+`slugs_geles()` existe pour ça, et ses appelants l'impriment : un candidat qui
+sort du périmètre doit être nommé à l'endroit où le périmètre est calculé. Un
+trou muet se lit comme un constat (#510, #501).
+"""
+
+from __future__ import annotations
+
+from typing import Any, Iterable
+
+#: Les statuts dont la collecte est **gelée**. Fermé, et volontairement petit :
+#: tout le reste est collecté. `decline` est entré avec #753, quand le fichier a
+#: reçu de quoi dire qu'une candidature est abandonnée.
+STATUTS_GELES = frozenset({"decline"})
+
+
+def est_a_collecter(candidat: Any) -> bool:
+    """Vrai si ce candidat doit recevoir un shard de collecte.
+
+    Deux conditions, et une seule est un filtre de périmètre :
+
+    1. il a un **slug** — sans lui il n'y a pas de profil à écrire, c'est la
+       règle de `prepare-an-matrix` depuis #344 et elle ne change pas ;
+    2. son statut n'est **pas gelé**.
+    """
+    if not isinstance(candidat, dict):
+        return False
+    slug = candidat.get("slug")
+    if not isinstance(slug, str) or not slug:
+        return False
+    return candidat.get("statut") not in STATUTS_GELES
+
+
+def slugs_a_collecter(candidats: Iterable[Any]) -> list[str]:
+    """Les slugs du périmètre de collecte, dans l'ordre du fichier."""
+    return [c["slug"] for c in candidats if est_a_collecter(c)]
+
+
+def slugs_geles(candidats: Iterable[Any]) -> list[tuple[str, str]]:
+    """`(slug, statut)` des candidats à slug dont la collecte est gelée.
+
+    Rendu pour être **imprimé**, pas seulement compté : c'est ce qui distingue
+    un périmètre réduit d'un périmètre amputé.
+    """
+    return [
+        (c["slug"], c.get("statut"))
+        for c in candidats
+        if isinstance(c, dict)
+        and isinstance(c.get("slug"), str)
+        and c["slug"]
+        and c.get("statut") in STATUTS_GELES
+    ]

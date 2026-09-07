@@ -9,11 +9,12 @@ formulaire de lancement, le push, et la relance automatique. Ce que devient la
 Ce fichier existe pour être lu **avant** d'ouvrir
 `.github/workflows/generate-data.yml`, qui fait ~3 200 lignes.
 
-## 1. Les huit jobs, dans l'ordre
+## 1. Les neuf jobs, dans l'ordre
 
 | Job | `needs:` | Consomme | Produit |
 |---|---|---|---|
-| `prepare-an-matrix` | — | `raw_data/candidats.json` | la matrice `extract-an` (un shard par candidat à slug résolvable, #344) |
+| `rafraichir-candidats` | — | l'article Wikipédia des candidatures, Wikidata (`P4123`) | `raw_data/candidats.json` à jour + `raw_data/resolutions_candidats.json` → artifact `candidats-a-jour` (#757) |
+| `prepare-an-matrix` | `rafraichir-candidats` | l'artifact `candidats-a-jour`, à défaut `raw_data/candidats.json` | la matrice `extract-an` (un shard par candidat à slug résolvable, #344) |
 | `extract-amendements-an` | — | AN open data (dumps amendements) | artifact `amendements-index-an` + cache `public-data-cache-amendements-<semaine>` |
 | `extract-ue-officiel` | — | Europarl Open Data | artifact `raw-profiles-ue-officiel`, cache `public-data-cache-ue-<semaine>` |
 | `extract-parltrack` | — | dumps ParlTrack | artifact `parltrack-dumps`, cache `public-data-cache-parltrack-<semaine>` |
@@ -22,7 +23,7 @@ Ce fichier existe pour être lu **avant** d'ouvrir
 | `extract-roster-groupes` | les quatre `extract-*` + `prepare-roster-matrix` | l'artifact `roster-candidats`, les mêmes sources | un artifact `raw-profiles-roster-groupes-<shard>` par shard |
 | `merge-and-pivot` | `extract-an`, `extract-ue-officiel`, `extract-parltrack`, `extract-roster-groupes` | tous les artifacts ci-dessus | la fusion, les deux passes pivot, les quatre contrôles, le commit et le push |
 
-Cinq jobs n'ont aucun `needs:` et démarrent ensemble. Le **chemin critique réel,
+Cinq jobs n'ont aucun `needs:` et démarrent ensemble (`rafraichir-candidats` en fait partie depuis #757 ; `prepare-an-matrix` l'attend désormais). Le **chemin critique réel,
 ce sont les deux matrices en série** (`extract-an` en `max-parallel: 1`, puis la
 matrice roster en `max-parallel: 4`), pas le nombre de jobs.
 
@@ -43,6 +44,43 @@ touche, et les deux ou trois décisions qui expliquent sa forme. Le reste du
 « pourquoi » vit dans `docs/decisions/` — chaque job y a des dizaines de
 fichiers, et ceux cités ici sont les structurants, pas la liste.
 
+#### `rafraichir-candidats`
+
+Le job qui **décide du périmètre du run** (#757). Il lit l'article Wikipédia des
+candidatures, en tire les candidats déclarés, résout l'acteur AN de chacun par
+identifiant externe (Wikidata `P4123`), fabrique le slug quand la chaîne aboutit,
+et écrit `raw_data/candidats.json` **et** `raw_data/resolutions_candidats.json`.
+
+**Le réseau est ici et nulle part ailleurs.** La passe qui écrit les entrées de
+correspondance tourne dans `merge-and-pivot` et reste **hors ligne** : une panne
+de source tierce ne doit pas coûter le commit d'un run dont la donnée est bonne
+(#524, c'est la forme que #715 s'est donnée).
+
+**Il ne pousse rien.** `merge-and-pivot` annule le commit si `raw_data/*.json` a
+bougé sur la branche *pendant* le run (`GENERATION_CODE_CHANGED_DURING_RUN`,
+#390/#413) : le fichier voyage donc dans l'artifact et il est committé à la fin,
+avec les données qu'il a produites.
+
+**Consomme** `fr.wikipedia.org` et `query.wikidata.org`. **Produit** l'artifact
+`candidats-a-jour` (les deux fichiers ensemble — séparés, un run collecterait
+d'après l'un sans pouvoir écrire les correspondances de l'autre).
+
+**Ni `continue-on-error`, ni `if:`** : le repli est **explicite, dans le shell**.
+Sur un code 1 — collecte incomplète, rien écrit — le run garde la liste
+**committée**, qui est un état connu, et l'annonce en `::warning::`. Jamais une
+liste vide (AGENTS.md §2 règle 5, le patron de #511).
+
+**Pourquoi comme ça** : la liste était tenue à la main et avait **51 jours** de
+retard pour **19 déclarés absents** au 07/09/2026 ; d'ici avril 2027 elle bougera
+des dizaines de fois, et un périmètre qui n'avance que lorsqu'une main y pense
+est un périmètre en retard
+([la boucle du périmètre](decisions/boucle-perimetre-candidats-757.md)). La forme
+— une construction par run, publiée en artifact — est celle de
+`prepare-roster-matrix`, et pour la raison de
+[un roster par run](decisions/roster-unique-par-run-518.md) : deux lectures de la
+même liste à deux moments d'un run divergent, et un candidat collecté par l'une
+sans être normalisé par l'autre ne fait échouer aucune étape.
+
 #### `prepare-an-matrix`
 
 Lit `raw_data/candidats.json`, en tire la liste des slugs résolvables et la
@@ -52,15 +90,22 @@ checkout complet : le run `33414042623` l'a vu tué à 5 min 00, donc matrice
 jamais publiée, donc `extract-an` **skippé** alors qu'il venait d'être réparé.
 La règle vaut pour tout job au budget serré, et un test la fait respecter.
 
-publie comme matrice d'`extract-an` — **un shard par candidat**. Il ne collecte
-rien. Il porte aussi deux garde-fous de lancement : un avertissement au-delà de
+publie comme matrice d'`extract-an` — **un shard par candidat du périmètre**. Il
+ne collecte rien. Le périmètre vient de `src/perimetre_candidats.py`, partagé
+avec `generate_all_profiles` : un candidat à `statut: decline` **n'a pas de
+shard**, sa fiche restant publiée telle quelle, et il est **nommé**
+(`::notice::CANDIDAT_GELE`) là où le périmètre est calculé (#760). Il porte aussi deux garde-fous de lancement : un avertissement au-delà de
 16 shards (ils s'exécutent en série, donc 16 shards = 16 fois le timeout d'un
 shard), et le décompte chiffré des interventions qu'un run
 `existing_profiles=overwrite` sans `collect_interventions` effacerait.
 
-**Consomme** `raw_data/candidats.json`. **Produit** la sortie `slugs`.
-**Ni `continue-on-error`, ni `if:`** : un `candidats.json` illisible doit
-échouer *ici*, lisiblement. Une matrice vide fait *skipper* `extract-an`, et un
+**Consomme** l'artifact `candidats-a-jour`, et à défaut le
+`raw_data/candidats.json` de son checkout — un artifact absent est **nommé**
+(`CANDIDATS_ARTIFACT_ABSENT`), jamais avalé. **Produit** la sortie `slugs`.
+**Pas de `continue-on-error`** : un `candidats.json` illisible doit échouer
+*ici*, lisiblement. Il porte en revanche un `if: !cancelled()` depuis #757, pour
+tourner même quand `rafraichir-candidats` a échoué : le périmètre d'hier vaut
+mieux qu'un run sans aucun candidat. Une matrice vide fait *skipper* `extract-an`, et un
 job sauté n'est pas un job en échec — `continue-on-error` ne le rattrape pas.
 
 **Pourquoi comme ça** : un runner GitHub peut recevoir un `shutdown signal`
@@ -270,7 +315,8 @@ adossée à la table [slug ↔ acteur AN](decisions/correspondance-acteurs-an-52
 
 La même chaîne de collecte qu'`extract-an`, mais pilotée par la **composition
 réelle** des groupes parlementaires (~750 membres) plutôt que par la liste
-éditoriale `raw_data/candidats.json` (~8 personnes), et en **mode léger** :
+éditoriale `raw_data/candidats.json` (**32 entrées, dont 13 à slug résolvable**
+depuis #753 — seules celles-là ont un shard), et en **mode léger** :
 `--skip-dossiers-legislatifs` est toujours posé ici. Les interventions, elles,
 suivent `collect_interventions` **depuis #657**, sous une forme réduite —
 `--interventions-theme-seul` collecte les débats Syceron sans leur verbatim et

@@ -3,7 +3,7 @@
 // manifest listant les candidats et groupes réellement disponibles. Exécuté
 // avant `dev`/`build` (voir package.json) car Vite ne sert pas de fichiers
 // situés hors du dossier du projet.
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, cpSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, cpSync, existsSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { cleLegislature, construireComparaisons } from './comparaison-groupes.mjs';
@@ -80,12 +80,48 @@ if (existsSync(commissionsPath)) {
 cpSync(candidatsPath, path.join(outDir, 'candidats.json'));
 const candidats = JSON.parse(readFileSync(candidatsPath, 'utf-8')).candidats;
 
+// Statuts dont la fiche n'est PAS publiée par l'interface (#761).
+//
+// Une candidature déclinée cesse d'être une candidature : sa fiche sort de
+// l'onglet Candidats, et son profil n'est même pas copié — un fichier servi que
+// rien ne référence est du poids mort, et une URL qui répond ferait de la fiche
+// masquée une page encore atteignable.
+//
+// Ce que le masquage NE fait PAS : supprimer quoi que ce soit de `pivot_data/`.
+// Le profil reste publié dans le dépôt — ce que la personne a fait au Parlement
+// reste vrai, seule sa candidature a cessé — et supprimer un fichier publié est
+// une disparition qu'`audit_diff_profils` bloque (#460/#470). Elle reste aussi
+// membre de son groupe : les fiches de groupe sont bâties sur `membres[]` et ne
+// passent pas par cette liste.
+//
+// MÊME ENSEMBLE que `STATUTS_GELES` de `src/perimetre_candidats.py`, qui décide
+// du périmètre de COLLECTE (#760), et `tests/test_fiches_masquees_761.py` fait
+// échouer la suite s'ils divergent. Les deux disent la même chose — « cette
+// personne n'est plus candidate » — et les séparer un jour devra être une
+// décision écrite, pas une dérive.
+export const STATUTS_MASQUES = new Set(['decline']);
+
+const estMasque = (c) => STATUTS_MASQUES.has(c.statut);
+const slugsMasques = new Set(candidats.filter(estMasque).map((c) => c.slug));
+
 // --- profils pivot individuels ---
 const profileFiles = readdirSync(pivotProfilesDir).filter((f) => f.endsWith('.pivot.json'));
 for (const file of profileFiles) {
-  cpSync(path.join(pivotProfilesDir, file), path.join(outDir, 'profiles', file));
+  const cible = path.join(outDir, 'profiles', file);
+  if (slugsMasques.has(file.replace(/\.pivot\.json$/, ''))) {
+    // Ce script ne nettoie pas son dossier de sortie : sans cette suppression,
+    // le profil copié par une exécution PRÉCÉDENTE resterait servi à son URL, et
+    // la fiche « masquée » serait encore atteignable.
+    if (existsSync(cible)) rmSync(cible);
+    continue;
+  }
+  cpSync(path.join(pivotProfilesDir, file), cible);
 }
-const availableSlugs = new Set(profileFiles.map((f) => f.replace(/\.pivot\.json$/, '')));
+const availableSlugs = new Set(
+  profileFiles
+    .map((f) => f.replace(/\.pivot\.json$/, ''))
+    .filter((slug) => !slugsMasques.has(slug)),
+);
 
 // `c.slug &&` est retiré (#539) : il datait du jour où un slug valait
 // « référencé sur nosdeputes.fr », plateforme hors pipeline depuis #529. Le
@@ -98,7 +134,7 @@ const availableSlugs = new Set(profileFiles.map((f) => f.replace(/\.pivot\.json$
 // un lien qui casse au clic. Le rendu d'un candidat déclaré sans page relève
 // du lot UI #324/#328 ; ici on ne fabrique pas la promesse d'une page absente.
 const manifestCandidates = candidats
-  .filter((c) => availableSlugs.has(c.slug))
+  .filter((c) => !estMasque(c) && availableSlugs.has(c.slug))
   .map((c) => ({
     slug: c.slug,
     nom: c.nom,
@@ -190,3 +226,8 @@ writeFileSync(
 );
 
 console.log(`sync-data : ${manifestCandidates.length} candidat(s), ${manifestGroupes.length} groupe(s), ${manifestGouvernements.length} gouvernement(s) copiés vers public/data/.`);
+if (slugsMasques.size) {
+  // Nommés, jamais seulement comptés : une fiche retirée de l'interface doit se
+  // distinguer d'une fiche qu'on a oublié de produire (#510).
+  console.log(`sync-data : ${slugsMasques.size} fiche(s) masquée(s) — ${[...slugsMasques].join(', ')} (statut masqué, profil conservé dans pivot_data/).`);
+}

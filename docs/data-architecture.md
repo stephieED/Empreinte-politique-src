@@ -11,7 +11,7 @@ Trois voisins, et ce qui les sépare :
   est une règle qu'on manque ;
 - **le pourquoi** vit dans `docs/decisions/`, un fichier par décision, indexé
   par `docs/technical_decisions.md` ;
-- **ce que fait un run** — les huit jobs, le formulaire, les caches, les
+- **ce que fait un run** — les neuf jobs, le formulaire, les caches, les
   artifacts, les budgets, le push, la relance automatique — vit dans
   [`workflow-generate-data.md`](./workflow-generate-data.md). Ce fichier-ci n'en
   redit rien : il décrit ce qui est écrit, pas comment le run l'écrit.
@@ -37,7 +37,7 @@ ligne à ligne : son format ne porte aucun sens (voir *Format d'écriture JSON*)
 |---|---|---|
 | Open data de l'**Assemblée nationale** — référentiel acteurs AMO30, scrutins, amendements, dossiers législatifs, comptes rendus Syceron | tout le volet français : identité, mandats, votes, amendements, textes portés, interventions, roster de groupe, textes gouvernementaux | **source française unique depuis #529** |
 | **Open Data Portal du Parlement européen** (+ dumps **ParlTrack** en enrichissement) | `mandat_europeen` du profil brut, normalisé par `normalize_europarl.py` | volet UE |
-| **Wikipedia / Wikidata** (`fetch_wikipedia_candidates.py`) | un signalement d'écart sur la liste des candidats | **ne modifie jamais** `raw_data/candidats.json`, qui reste éditorial |
+| **Wikipédia** — article « Candidatures à l'élection présidentielle française de 2027 » (`fetch_candidats_declares.py`) | la liste des **candidats déclarés**, écrite dans `raw_data/candidats.json` | ajout **additif** seul : une entrée existante n'est jamais modifiée, et un candidat ajouté entre **sans slug**, donc hors collecte, jusqu'à relecture de sa correspondance AN (#753) |
 
 Deux sources ont été **retirées**, et ce fichier les nomme pour que personne ne
 les recherche :
@@ -63,7 +63,7 @@ graph TD
     %% ── SOURCES ──────────────────────────────────────────────
     SAN["Open data Assemblée nationale<br/>AMO30 acteurs · Scrutins · Amendements<br/>Dossiers législatifs · Syceron"]
     SUE["Parlement européen (Open Data Portal)<br/>+ dumps ParlTrack"]
-    SWK["Wikipedia / Wikidata"]
+    SWK["Wikipédia — article des candidatures"]
 
     %% ── ENTRÉES ÉDITORIALES ─────────────────────────────────
     CAND["raw_data/candidats.json<br/>(éditorial, tenu à la main)"]
@@ -71,8 +71,9 @@ graph TD
     GRPC["raw_data/groupes_reels.json"]
     GOUC["raw_data/gouvernements_reels.json"]
 
-    SWK --> WIKI["fetch_wikipedia_candidates.py<br/>signale un écart, n'écrit jamais"]
-    WIKI -.->|revue humaine| CAND
+    SWK --> WIKI["fetch_candidats_declares.py<br/>ajoute les déclarés, slug: null"]
+    WIKI -->|ajout additif| CAND
+    CAND -.->|slug + correspondance AN,<br/>relus à la main| CAND
     GRPC --> ROST
 
     %% ── COLLECTE ────────────────────────────────────────────

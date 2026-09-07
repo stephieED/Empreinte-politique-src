@@ -45,7 +45,7 @@ Three files carry what this section deliberately does not. **Why** a rule
 exists: one file per decision under `docs/decisions/`, indexed by
 `docs/technical_decisions.md`. **What the data becomes** — flow, files, schemas,
 volumetry: `docs/data-architecture.md` — the seven outputs of `pivot_data/`,
-rewritten from the code on 30/08/2026 (#606). **What a run does** — the eight
+rewritten from the code on 30/08/2026 (#606). **What a run does** — the nine
 jobs, caches, artifacts, budgets, the launch form, the push, the automatic
 retry: `docs/workflow-generate-data.md`. **The rules stay here**, because a rule
 behind a link is a rule that gets missed.
@@ -140,8 +140,8 @@ Full rationale: `web/old/v3/methodologie.html` — do not duplicate prose here.
 | Parltrack (JSON dumps) | Yes | ODbL v1.0 | **Share-alike** if republished as downloadable dataset |
 | European Parliament (data.europarl.europa.eu, www.europarl.europa.eu) | Yes | EP Legal Notice (reuse policy, attribution-based) | Attribution only |
 | NosDeputes.fr / NosSenateurs.fr | **No** since #528/#529 — but published fields still derive from it | ODbL v1.0 | **Share-alike** if published as downloadable dataset |
-| French Wikipedia | Yes | CC BY-SA 4.0 | Verbatim quotes only (not current use) |
-| Wikidata | Yes | CC0 1.0 | No restriction |
+| French Wikipedia | Yes — the declared-candidate list only (#753) | CC BY-SA 4.0 | **Facts only** (names, party labels) into `raw_data/candidats.json`, never verbatim prose. It reaches no `sources[]`, so it moves no `meta.licence_donnees` |
+| Wikidata | **Yes since #757 — one property, `P4123`** (the AN actor id), to resolve a declared candidate's actor. **Not** for discovering candidates: `P3602` returns 1 person for the 2027 election against 30 declared (#753) | CC0 1.0 | No restriction |
 
 **"No French source is collected from Regards Citoyens any more" does not mean "the corpus
 is under Licence Ouverte" (#530).** Share-alike survives on two counts: Parltrack is a
@@ -174,7 +174,7 @@ Before finishing a task, update only what actually changed — skip a file if no
 | `README.md` | **The front door, one page.** A new setup step, a change to the editorial line or to a coverage limit, a doc that becomes an entry point. Never a command — that is the row below. |
 | `docs/commandes.md` | **An option is added or removed, a script is renamed or retired, a command's output moves.** Not when the pipeline changes: the file says what to type, never how the run works. `tests/test_commandes_documentees.py` fails on a script or a long option that no longer exists. |
 | `docs/data-architecture.md` | A file under `pivot_data/`/`raw_data/` appears or changes shape, a schema changes, a source is added or removed, a normalisation or aggregation step moves. |
-| `docs/workflow-generate-data.md` | **The entry point for all eight jobs** (§1: what each one does, consumes, produces, and its structuring decisions). Update when a job is added or removed, when what a job does or touches changes, when a form input, cache key or artifact name changes, when a budget is re-measured, or when the retry contract is touched. |
+| `docs/workflow-generate-data.md` | **The entry point for all nine jobs** (§1: what each one does, consumes, produces, and its structuring decisions). Update when a job is added or removed, when what a job does or touches changes, when a form input, cache key or artifact name changes, when a budget is re-measured, or when the retry contract is touched. |
 | `docs/extract-roster-groupes.md` | The only extraction job with a page of its own — it has depth a block cannot hold (rollout, regenerating existing profiles, the roster's three exit codes). A new job does **not** get a file: it gets a block in `docs/workflow-generate-data.md` §1. Eight files drift independently; one is reread in a single pass. |
 | `docs/sources/` | **External-source references — the only docs that drift with their provider, not with our code.** Update when the provider moves a dataset, a URL pattern or a field, never because our pipeline changed. Each file states its own status in its header (`an-opendata.md`: live, the pipeline's single source; `nosdeputes/`: historical, not queried since #529) — the directory names the category, the header names the status. |
 | `docs/decisions-par-module.md` | **Never by hand — it is generated.** Run `python3 scripts/generer_decisions_par_module.py` whenever a decision is added or edited, a `src/` module is added, renamed or removed, or a top-level function/constant a decision names is renamed. `tests/test_decisions_par_module.py` fails when the committed file has drifted, and when a module governed by 5 or more decisions cites none. |
@@ -313,7 +313,7 @@ When something does need deciding, five parts, in this order:
   dossiers déposés à l'AN et **0** des 174 déposés au Sénat : le référentiel est
   celui de l'AN, et le Sénat est hors périmètre (#528) — une absence de cause
   connue, à déclarer et non à combler.
-- `docs/workflow-generate-data.md`: what a run does — the eight jobs one by one, the
+- `docs/workflow-generate-data.md`: what a run does — the nine jobs one by one, the
   form, caches, artifacts, budgets, push, automatic retry. **Start here for "what was
   that job again, and why like that".**
 - HATVP lobby-register: out of scope, and **there is no file for it** — this

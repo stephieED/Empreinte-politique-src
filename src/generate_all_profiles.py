@@ -111,6 +111,7 @@ from candidate_profile import (
 from candidate_profile_ue import build_profile_ue
 import correspondance_acteurs_an
 import couverture_profil
+import perimetre_candidats as perimetre
 from groupes_config import (
     CHEMIN_CONFIG_GROUPES,
     index_membres_de_groupes_suspendus,
@@ -1706,6 +1707,23 @@ def main() -> None:
         pivot_dir.mkdir(parents=True, exist_ok=True)
 
     candidats = load_candidats(args.candidats)
+
+    # Le périmètre de collecte, et le gel qu'il déclare (#760). Appliqué AVANT
+    # `--only` et avant le partitionnement : un candidat gelé n'est pas un
+    # candidat qu'on saute plus loin, c'est un candidat qui n'est pas dans le
+    # périmètre.
+    geles = perimetre.slugs_geles(candidats)
+    if geles:
+        for slug, statut in geles:
+            message = (
+                f"CANDIDAT_GELE — {slug} (statut: {statut}) : collecte gelée, "
+                "profil publié conservé tel quel (#760)."
+            )
+            print(f"  — {message}")
+            _annoter_github(message)
+        geles_slugs = {slug for slug, _ in geles}
+        candidats = [c for c in candidats if c.get("slug") not in geles_slugs]
+
     if args.only:
         candidats = [c for c in candidats if (c.get("slug") or _slugify(c.get("nom") or "")) == args.only]
         if not candidats:
