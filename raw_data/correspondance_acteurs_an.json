@@ -12341,6 +12341,66 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841947",
       "verifie_le": "2026-09-02",
       "origine": "derivee"
+    },
+    "selma-labib": {
+      "identifiants": {
+        "an": null,
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": null,
+        "prenom": "Selma",
+        "nom": "Labib",
+        "nom_complet": "Selma Labib",
+        "date_naissance": null
+      },
+      "ecart": "hors_an",
+      "motif": "Candidate déclarée à la présidentielle de 2027 (NPA – Révolutionnaires), cette personne n'a jamais été élue à l'Assemblée nationale : le référentiel historique AMO30 a été lu EN ENTIER le 2026-09-07 (3 114 noms distincts) et aucune entrée ne porte ce nom. Aucun acteur ne porte ce patronyme. Fait négatif VÉRIFIÉ, pas une correspondance manquante. La portée de l'affirmation est celle du référentiel : AMO30 ne garantit la présence d'un acteur qu'à partir de la XIIe législature. Le Sénat et le Parlement européen ne sont PAS couverts par cette déclaration. Elle n'a pas d'article Wikipédia, donc aucun élément Wikidata ne pouvait la corroborer (#757) : c'est ce qui la laissait sans slug jusqu'ici.",
+      "preuve": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "verifie_le": "2026-09-07",
+      "origine": "relue"
+    },
+    "benoit-mathieu": {
+      "identifiants": {
+        "an": null,
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": null,
+        "prenom": "Benoît",
+        "nom": "Mathieu",
+        "nom_complet": "Benoît Mathieu",
+        "date_naissance": null
+      },
+      "ecart": "hors_an",
+      "motif": "Candidat déclaré à la présidentielle de 2027 (sans étiquette), cette personne n'a jamais été élue à l'Assemblée nationale : le référentiel historique AMO30 a été lu EN ENTIER le 2026-09-07 (3 114 noms distincts) et aucune entrée ne porte ce nom. Les quatre voisins portent « Mathieu » comme PRÉNOM (Mathieu Darnaud, Mathieu Hanotin, Mathieu Lefèvre) ou sont une autre personne (Frédéric Mathieu). Fait négatif VÉRIFIÉ, pas une correspondance manquante. La portée de l'affirmation est celle du référentiel : AMO30 ne garantit la présence d'un acteur qu'à partir de la XIIe législature. Le Sénat et le Parlement européen ne sont PAS couverts par cette déclaration. Elle n'a pas d'article Wikipédia, donc aucun élément Wikidata ne pouvait la corroborer (#757) : c'est ce qui la laissait sans slug jusqu'ici.",
+      "preuve": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "verifie_le": "2026-09-07",
+      "origine": "relue"
+    },
+    "fabien-verdier": {
+      "identifiants": {
+        "an": null,
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": null,
+        "prenom": "Fabien",
+        "nom": "Verdier",
+        "nom_complet": "Fabien Verdier",
+        "date_naissance": null
+      },
+      "ecart": "hors_an",
+      "motif": "Candidat déclaré à la présidentielle de 2027 dans le cadre d'une primaire (divers gauche), cette personne n'a jamais été élue à l'Assemblée nationale : le référentiel historique AMO30 a été lu EN ENTIER le 2026-09-07 (3 114 noms distincts) et aucune entrée ne porte ce nom. Le seul voisin proche est « Fabrice Verdier », une AUTRE personne — un prénom différent d'une lettre, et c'est précisément le rapprochement qu'il ne faut pas faire. Fait négatif VÉRIFIÉ, pas une correspondance manquante. La portée de l'affirmation est celle du référentiel : AMO30 ne garantit la présence d'un acteur qu'à partir de la XIIe législature. Le Sénat et le Parlement européen ne sont PAS couverts par cette déclaration. Elle n'a pas d'article Wikipédia, donc aucun élément Wikidata ne pouvait la corroborer (#757) : c'est ce qui la laissait sans slug jusqu'ici.",
+      "preuve": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "verifie_le": "2026-09-07",
+      "origine": "relue"
     }
   },
   "sources_referentiels": {

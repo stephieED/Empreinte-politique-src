@@ -220,13 +220,13 @@
     },
     {
       "nom": "Selma Labib",
-      "slug": null,
+      "slug": "selma-labib",
       "parti": "NPA – Révolutionnaires",
       "famille_politique": null,
       "statut": "declare",
       "date_declaration": null,
       "source": "https://fr.wikipedia.org/wiki/Candidatures_%C3%A0_l%27%C3%A9lection_pr%C3%A9sidentielle_fran%C3%A7aise_de_2027#Candidats_d%C3%A9clar%C3%A9s",
-      "notes": "Ajouté le 2026-09-07 par src/fetch_candidats_declares.py (déclaré). À relire avant collecte : slug, famille politique, date et source primaire de la déclaration. Sans slug, ce candidat n'a pas de shard extract-an et n'est pas publié (#753)."
+      "notes": "Relu à la main le 2026-09-07 : aucun acteur AMO30 ne porte ce nom, donc entrée hors_an dans raw_data/correspondance_acteurs_an.json. Slug posé à ce moment-là et désormais immuable (#460/#470). Famille politique, date et source primaire de la déclaration restent à compléter."
     },
     {
       "nom": "Francis Lalanne",
@@ -240,13 +240,13 @@
     },
     {
       "nom": "Benoît Mathieu",
-      "slug": null,
+      "slug": "benoit-mathieu",
       "parti": "Sans étiquette",
       "famille_politique": null,
       "statut": "declare",
       "date_declaration": null,
       "source": "https://fr.wikipedia.org/wiki/Candidatures_%C3%A0_l%27%C3%A9lection_pr%C3%A9sidentielle_fran%C3%A7aise_de_2027#Candidats_d%C3%A9clar%C3%A9s",
-      "notes": "Ajouté le 2026-09-07 par src/fetch_candidats_declares.py (déclaré). À relire avant collecte : slug, famille politique, date et source primaire de la déclaration. Sans slug, ce candidat n'a pas de shard extract-an et n'est pas publié (#753)."
+      "notes": "Relu à la main le 2026-09-07 : aucun acteur AMO30 ne porte ce nom, donc entrée hors_an dans raw_data/correspondance_acteurs_an.json. Slug posé à ce moment-là et désormais immuable (#460/#470). Famille politique, date et source primaire de la déclaration restent à compléter."
     },
     {
       "nom": "Florian Philippot",
@@ -330,13 +330,13 @@
     },
     {
       "nom": "Fabien Verdier",
-      "slug": null,
+      "slug": "fabien-verdier",
       "parti": "Divers gauche",
       "famille_politique": null,
       "statut": "declare",
       "date_declaration": null,
       "source": "https://fr.wikipedia.org/wiki/Candidatures_%C3%A0_l%27%C3%A9lection_pr%C3%A9sidentielle_fran%C3%A7aise_de_2027#Candidats_d%C3%A9clar%C3%A9s",
-      "notes": "Ajouté le 2026-09-07 par src/fetch_candidats_declares.py (déclaré dans le cadre d'une primaire). À relire avant collecte : slug, famille politique, date et source primaire de la déclaration. Sans slug, ce candidat n'a pas de shard extract-an et n'est pas publié (#753)."
+      "notes": "Relu à la main le 2026-09-07 : aucun acteur AMO30 ne porte ce nom, donc entrée hors_an dans raw_data/correspondance_acteurs_an.json. Slug posé à ce moment-là et désormais immuable (#460/#470). Famille politique, date et source primaire de la déclaration restent à compléter."
     }
   ]
 }
