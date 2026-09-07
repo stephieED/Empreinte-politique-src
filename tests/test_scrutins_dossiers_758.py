@@ -168,7 +168,51 @@ def test_la_construction_est_additive_et_ne_vide_jamais_le_publie(monkeypatch, t
 
 
 # ---------------------------------------------------------------------------
-# 6. `texte_lie_id` garde son sens
+# 6. Aucun cache disque : la leçon de #749
+# ---------------------------------------------------------------------------
+
+def test_la_collecte_n_ecrit_rien_a_cote_des_archives(monkeypatch, tmp_path):
+    """`.cache/dossiers_an` est RESTAURÉ ENTRE RUNS en CI.
+
+    Y poser l'index dérivé le ferait servir depuis le cache de la semaine
+    précédente et il ne se reconstruirait jamais — exactement le défaut de
+    #749, où un repli de cache désamorçait la rotation qu'il devait servir. Le
+    parcours complet coûte 1,7 s : le cache disque achèterait ces 1,7 s au prix
+    d'une donnée qui vieillit en silence.
+    """
+    dossier = _dossier("D1", {"acte": {"voteRefs": "VTANR5L17V960"}})
+    monkeypatch.setattr(sd, "ensure_dossiers_zips_downloaded", lambda: [(17, tmp_path)])
+    monkeypatch.setattr(sd, "iter_dossiers_bruts", lambda a: [(17, dossier)])
+    monkeypatch.setattr(sd, "_determine_statut", lambda uid, actes: ("adopte", False, None))
+
+    avant = set(tmp_path.rglob("*"))
+    table = sd.charger_table(cache_dir=tmp_path)
+    assert table["scrutins"] == {"an:17:960": "D1"}
+    assert set(tmp_path.rglob("*")) == avant, (
+        "la collecte a écrit un fichier à côté des archives : ce cache serait "
+        "restauré entre runs et la table ne se reconstruirait plus (#749)"
+    )
+
+
+def test_le_memo_evite_le_double_parcours_dans_un_meme_process(monkeypatch, tmp_path):
+    """Le mémo est en process — il ne survit pas au run, donc ne périme rien."""
+    appels = []
+    monkeypatch.setattr(sd, "ensure_dossiers_zips_downloaded", lambda: [(17, tmp_path)])
+    monkeypatch.setattr(
+        sd, "iter_dossiers_bruts",
+        lambda a: appels.append(1) or [(17, _dossier("D1", {"acte": {"voteRefs": "VTANR5L17V960"}}))],
+    )
+    monkeypatch.setattr(sd, "_determine_statut", lambda uid, actes: ("adopte", False, None))
+    sd.charger_table(cache_dir=tmp_path)
+    sd.charger_table(cache_dir=tmp_path)
+    assert len(appels) == 1, "le parcours a été refait dans le même process"
+    sd.vider_memo()
+    sd.charger_table(cache_dir=tmp_path)
+    assert len(appels) == 2, "`vider_memo` ne relance pas le parcours"
+
+
+# ---------------------------------------------------------------------------
+# 7. `texte_lie_id` garde son sens
 # ---------------------------------------------------------------------------
 
 def test_la_cle_neuve_ne_touche_pas_au_texte_lie_des_motions():

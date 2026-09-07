@@ -45,7 +45,6 @@ from pathlib import Path
 from typing import Any, Optional
 
 from gouvernement_textes import (
-    DOSSIERS_CACHE_DIR,
     _determine_statut,
     ensure_dossiers_zips_downloaded,
     iter_dossiers_bruts,
@@ -54,10 +53,19 @@ from scrutins_index import SOURCE_AN, cle_scrutin
 
 SCHEMA_VERSION = "scrutins-dossiers-v1"
 
-#: Cache disque de la collecte, à côté des archives dont elle dérive — même
-#: règle que `commissions_dossiers_an.NOM_CACHE`.
-NOM_CACHE = "index_scrutin_dossier_v1.json"
-
+#: PAS DE CACHE DISQUE, ET C'EST LA LEÇON DE #749.
+#:
+#: Le réflexe était d'écrire l'index dérivé à côté des archives dont il dérive,
+#: comme le fait `commissions_dossiers_an.NOM_CACHE`. Or `.cache/dossiers_an`
+#: est RESTAURÉ ENTRE RUNS en CI (`actions/cache`, clé hebdomadaire avec
+#: `restore-keys`) : un index posé là serait servi depuis le cache de la
+#: semaine précédente et ne se reconstruirait jamais — exactement le défaut de
+#: #749, où un repli de cache désamorçait la rotation qu'il devait servir.
+#:
+#: Le parcours complet des trois archives coûte **1,7 s** (mesuré le
+#: 07/09/2026, 10 967 dossiers). Un cache disque achèterait ces 1,7 s au prix
+#: d'une donnée qui vieillit en silence. Le mémo en process reste, lui : il
+#: protège du cas où trois consommateurs du même run refont le parcours.
 _MEMO: dict[str, dict[str, Any]] = {}
 _LOCK = threading.Lock()
 
@@ -154,45 +162,22 @@ def charger_table(
 
     Retourne `{"scrutins": {}, "dossiers": {}}` — **jamais une exception** — si
     les archives sont indisponibles : l'appelant en fait une absence comptée, et
-    surtout jamais une suppression de ce qui est déjà publié (§3a, #465). Même
-    contrat que `commissions_dossiers_an.charger_table`, dont ce module reprend
-    le mémo et le cache disque : la collecte marche 10 967 dossiers, et trois
-    consommateurs dans le même process ne doivent pas la refaire trois fois.
-    """
-    repertoire = Path(cache_dir) if cache_dir is not None else DOSSIERS_CACHE_DIR
-    chemin = repertoire / NOM_CACHE
-    cle = str(chemin.resolve() if chemin.parent.exists() else chemin)
+    surtout jamais une suppression de ce qui est déjà publié (§3a, #465).
 
+    Le mémo est en PROCESS et rien n'est écrit sur disque — voir `_MEMO`.
+    """
+    del cache_dir  # accepté pour la symétrie d'appel ; aucun cache disque ici
     with _LOCK:
-        memo = _MEMO.get(cle)
+        memo = _MEMO.get("table")
         if memo is not None:
             return memo
-
-        if chemin.is_file():
-            try:
-                with open(chemin, encoding="utf-8") as f:
-                    table = json.load(f)
-                if isinstance(table, dict) and "scrutins" in table:
-                    _MEMO[cle] = table
-                    return table
-            except (json.JSONDecodeError, OSError):
-                pass  # cache corrompu : on reconstruit
-
         if not telecharger:
             return {"scrutins": {}, "dossiers": {}}
-
         archives = ensure_dossiers_zips_downloaded()
         if not archives:
             return {"scrutins": {}, "dossiers": {}}
-
         table = construire_table(archives)
-        try:
-            chemin.parent.mkdir(parents=True, exist_ok=True)
-            with open(chemin, "w", encoding="utf-8") as f:
-                json.dump(table, f, ensure_ascii=False)
-        except OSError:
-            pass
-        _MEMO[cle] = table
+        _MEMO["table"] = table
         return table
 
 
@@ -204,7 +189,6 @@ def vider_memo() -> None:
 
 __all__ = [
     "DEFAULT_TABLE_PATH",
-    "NOM_CACHE",
     "SCHEMA_VERSION",
     "SOURCE_AN",
     "charger_table",

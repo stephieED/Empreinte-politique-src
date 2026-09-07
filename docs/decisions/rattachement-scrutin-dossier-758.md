@@ -55,6 +55,17 @@ dossiers tranchés par un scrutin débordent ce périmètre. Les deux sortent de
 `_determine_statut()`, **la même fonction** sur le même arbre : il n'y a qu'un
 calcul, donc pas de divergence possible.
 
+**Aucun cache disque, et c'est la leçon de #749.** Le réflexe était d'écrire
+l'index dérivé à côté des archives dont il dérive, comme le fait
+`commissions_dossiers_an.py`. Or `.cache/dossiers_an` est **restauré entre
+runs** en CI — `actions/cache`, clé hebdomadaire avec `restore-keys`. Un index
+posé là serait servi depuis le cache de la semaine précédente et **ne se
+reconstruirait jamais** : exactement le défaut de #749, où un repli de cache
+désamorçait la rotation qu'il devait servir. Le parcours complet des trois
+archives coûte **1,7 s** (mesuré, 10 967 dossiers) ; un cache disque
+achèterait ces 1,7 s au prix d'une donnée qui vieillit en silence. Seul un mémo
+**en process** subsiste, qui ne survit pas au run et ne périme donc rien.
+
 **Un fichier à part, pas un champ sur `scrutins.json`.** Les deux tables ne se
 collectent pas au même endroit — les scrutins viennent de `Scrutins.json.zip`,
 le rattachement de `dossiers*.zip`. Poser le champ sur le scrutin coupleait
