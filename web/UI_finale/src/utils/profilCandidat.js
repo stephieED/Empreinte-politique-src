@@ -668,13 +668,11 @@ export const MATIERE_NON_ETABLIE = 'Matière non établie';
 export const BASES_IRRECEVABILITE = {
   'art. 40': {
     titre: "écartés au titre de l'article 40",
-    explication:
-      "La Constitution interdit à un·e parlementaire de proposer une dépense nouvelle sans la compenser. Ces propositions ont été écartées avant d'être discutées, parce qu'elles coûtaient de l'argent public.",
+    explication: 'Dépense publique non compensée.',
   },
   'art. 45': {
     titre: "écartés au titre de l'article 45",
-    explication:
-      "Un amendement doit avoir un lien avec le texte discuté. Ces propositions ont été jugées étrangères au sujet du moment.",
+    explication: 'Amendement hors du sujet du texte.',
   },
 };
 

@@ -203,8 +203,12 @@ def test_les_textes_portes_viennent_avant_les_amendements(composant):
     bloc = re.search(r"function Propositions\((.*?)\n\}\n", composant, re.DOTALL)
     assert bloc, "`Propositions` n'est plus déclarée"
     corps = bloc.group(1)
-    place_textes = corps.index("Où en sont les textes")
-    place_amdts = corps.index("a déposé comme auteur principal")
+    # L'ancrage est STRUCTUREL, pas sur le libellé : les titres de carte sont
+    # de la copie et ils changent (« Où en sont les textes… » est devenu « Les
+    # textes qu'il a portés » le 07/09). Un test calé sur une phrase casse au
+    # premier mot réécrit et ne dit rien de l'ordre qu'il prétend garder.
+    place_textes = corps.index("<Cascade")
+    place_amdts = corps.index("<Chute")
     assert place_textes < place_amdts, (
         "la carte des textes portés doit ouvrir la section, avant les "
         "amendements déposés sur les textes des autres"
