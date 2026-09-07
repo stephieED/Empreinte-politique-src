@@ -32,6 +32,7 @@ const SECTIONS = [
     ),
   },
   {
+    id: 'votes',
     heading: 'Votes de texte',
     body: (
       <>
@@ -50,6 +51,45 @@ const SECTIONS = [
         <p>
           Le choix de ne pas se limiter aux seuls scrutins solennels évite d'écarter des votes publics sur
           des textes entiers.
+        </p>
+        <h3>Pourquoi ces positions sont découpées en périodes</h3>
+        <p>
+          Un même vote ne dit pas la même chose selon d'où il est émis : depuis la majorité, voter contre
+          n'arrive presque jamais ; depuis l'opposition, c'est le vote pour qui se remarque. La fiche ne
+          totalise donc pas une carrière entière, elle la découpe en <strong>périodes politiques</strong> —
+          une nouvelle dès que le banc ou le gouvernement en place change.
+        </p>
+        <p>
+          Les deux repères sont <strong>déclarés, jamais déduits</strong>, et ils se complètent. Le banc
+          vient de <code>position_dans_hemicycle</code>, que la validation du pivot refuse sans{' '}
+          <code>source_url</code> ; le gouvernement vient des dates des fiches de gouvernement. De 2012 à
+          2017, l'Assemblée publie le banc mais le corpus ne porte aucune fiche de gouvernement ; depuis
+          2024, c'est l'inverse. Sur les 1 160 positions de dernière lecture des candidats déclarés, le banc
+          seul en couvre 719 et le gouvernement seul 916 — <strong>le banc ou le gouvernement les couvre
+          toutes les 1 160</strong>. Une période sans aucun des deux serait affichée comme telle, jamais
+          rattachée à sa voisine.
+        </p>
+        <h3>D'où viennent la matière et l'origine d'un texte</h3>
+        <p>
+          La <strong>matière</strong> est la commission saisie au fond du dossier législatif, lue dans
+          l'archive de l'Assemblée. Un scrutin ne porte aucune référence législative : le rattachement se
+          fait dans l'autre sens, depuis les actes du dossier qui nomment les scrutins tenus. Il aboutit
+          pour 711 des 1 160 positions. Les autres restent en « matière non établie » : c'est une absence
+          de source, jamais une absence de commission, et elle n'est jamais comblée en devinant la matière
+          depuis l'intitulé du scrutin.
+        </p>
+        <p>
+          L'<strong>origine</strong> — texte du gouvernement ou du Parlement — est lue dans l'intitulé
+          officiel du scrutin, qui nomme lui-même la catégorie juridique : « projet de loi » pour un texte
+          du gouvernement, « proposition de loi » ou « proposition de résolution » pour un texte du
+          Parlement. Ce n'est pas un rapprochement entre deux corpus, c'est un mot que la source pose ; il
+          est reconnu sur les 1 160 positions.
+        </p>
+        <p>
+          Le <strong>sort final du texte</strong> est celui du dossier, et il n'est pas dérivé du vote
+          affiché : un texte peut être adopté en dernière lecture puis rejeté au terme de la navette. Il
+          est publié pour 722 des 1 160 positions, et un texte adopté par engagement de responsabilité est
+          nommé comme tel, jamais fondu dans les adoptions ordinaires.
         </p>
       </>
     ),

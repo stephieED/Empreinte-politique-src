@@ -76,6 +76,22 @@ if (existsSync(commissionsPath)) {
   );
 }
 
+// --- scrutins_dossiers.json (scrutin → dossier, statut, 49.3 — #758) ---
+// Un scrutin ne porte aucune référence législative : la jointure vient des
+// `voteRefs` des actes du dossier, figée par `src/build_scrutins_dossiers.py`.
+// Absent, « ce qu'il a voté » n'affiche ni matière ni statut du texte — et ne
+// les déduit surtout pas de l'intitulé du scrutin (AGENTS.md §2 règle 1).
+const scrutinsDossiersPath = path.join(repoRoot, 'pivot_data', 'scrutins_dossiers.json');
+if (existsSync(scrutinsDossiersPath)) {
+  cpSync(scrutinsDossiersPath, path.join(outDir, 'scrutins_dossiers.json'));
+} else {
+  console.warn(
+    `sync-data : ${scrutinsDossiersPath} absent — « ce qu'il a voté » n'affichera ni `
+    + 'matière ni statut du texte (#758). Construire l\'index : '
+    + 'python3 src/build_scrutins_dossiers.py',
+  );
+}
+
 // --- candidats.json (roster brut : nom, parti, statut) ---
 cpSync(candidatsPath, path.join(outDir, 'candidats.json'));
 const candidats = JSON.parse(readFileSync(candidatsPath, 'utf-8')).candidats;

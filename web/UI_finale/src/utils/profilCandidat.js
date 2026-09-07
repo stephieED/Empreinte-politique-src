@@ -1483,6 +1483,12 @@ export function votesDuProfil(
     surEnsemble: surEnsemble.length,
     derniereLectureDisponible: dernieresLectures !== null,
     textes: retenus.length,
+    // Les votes RETENUS eux-mêmes, et non leur seul décompte : « ce qu'il a
+    // voté » les range ensuite par période politique (`utils/votesParPeriode`).
+    // Les rendre ici garantit que le repli sur la dernière lecture n'est
+    // calculé QU'UNE FOIS, et qu'aucune vue n'en écrit une seconde version
+    // (AGENTS.md §6 : la sélection vit dans `utils/lecture.js`, #711).
+    retenus,
     // Ce que le repli a retiré, nommé plutôt que laissé à la soustraction. Il
     // ne dit RIEN d'une absence : il compte des positions bien réelles de la
     // personne, sur des lectures qu'un scrutin plus tardif a suivies.
