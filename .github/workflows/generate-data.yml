@@ -1299,9 +1299,16 @@ jobs:
       # réellement — il n'écrit que sous .cache/amendements_an/.
       #
       # cold_start=true → pas de restore : le job repart de zéro et retélécharge
-      # les 3 archives, sans étape de purge dédiée (ce répertoire est absent par
-      # construction sur un checkout neuf quand aucun cache n'est restauré).
+      # l'archive de la législature active, sans étape de purge dédiée (ce
+      # répertoire est absent par construction sur un checkout neuf quand aucun
+      # cache n'est restauré).
+      #
+      # `id` (#749) : `outputs.cache-hit` vaut 'true' UNIQUEMENT sur
+      # correspondance exacte de la clé primaire, et 'false' quand la
+      # restauration vient d'un `restore-keys`. C'est donc précisément le signal
+      # « on a changé de semaine ISO », et c'est lui qui manquait.
       - uses: actions/cache@v5
+        id: cache_amendements
         if: ${{ !inputs.cold_start }}
         with:
           path: .cache/amendements_an
@@ -1309,8 +1316,38 @@ jobs:
           restore-keys: |
             public-data-cache-amendements-
 
-      - name: Construction des index amendements (législatures 17/16/15)
-        run: python3 src/build_amendements_index.py
+      # #749 — LA ROTATION DE CLÉ ÉTAIT TOUTE LA POLITIQUE DE FRAÎCHEUR, et son
+      # propre repli la désamorçait. #249 a choisi la clé hebdomadaire comme
+      # seul mécanisme de péremption (le seuil de 7 jours de la §3d du gate est
+      # documenté comme « aligné sur la granularité de cache hebdomadaire »), et
+      # #253 a explicitement REJETÉ le retéléchargement inconditionnel. Mais
+      # `restore-keys` restaure la semaine précédente quand la clé exacte
+      # manque : le cache n'est donc jamais absent, le court-circuit de
+      # `_download_and_build_amendement_index` voit toujours un index valide, et
+      # la 17e n'a plus été reconstruite pendant 18 jours — le gate le criait à
+      # chaque run.
+      #
+      # Retirer `restore-keys` aurait vidé le cache ENTIER chaque semaine, donc
+      # re-matérialisé les législatures figées depuis leurs archives committées
+      # — voir docs/decisions/oom-reconstruction-amendements-figees.md. Or #249
+      # l'écrivait déjà : « Seule la 17e législature est concernée par la mise à
+      # jour quotidienne ; les 16e et 15e sont des législatures archivées dont
+      # les archives ne changeront plus jamais. » On purge donc les seules
+      # actives, une fois par semaine ISO : 283 Mo, pas 1,22 Gio.
+      #
+      # Traitement du drapeau en bash, comme GATE_THRESHOLD plus bas : une
+      # expression ternaire dans `run:` rendrait la condition illisible.
+      - name: Construction des index amendements (législatures 17/16/15/14)
+        env:
+          CLE_SEMAINE_TOUCHEE: ${{ steps.cache_amendements.outputs.cache-hit }}
+        run: |
+          ARGS=()
+          if [[ "$CLE_SEMAINE_TOUCHEE" != "true" ]]; then
+            echo "Clé de cache exacte non touchée (semaine ISO nouvelle, ou aucun cache) :"
+            echo "reconstruction forcée des législatures actives (#749)."
+            ARGS+=(--reconstruire-actives)
+          fi
+          python3 src/build_amendements_index.py "${ARGS[@]}"
 
       - name: Upload artifact amendements AN
         if: always()

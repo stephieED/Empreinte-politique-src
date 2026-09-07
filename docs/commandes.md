@@ -611,7 +611,7 @@ raison de les taper :
 | `src/group_roster.py`, `src/an_roster.py` | la composition réelle d'un groupe, lue par les générateurs ; leur CLI est une vue de débogage |
 | `src/merge_profile.py` | la fusion additive, appelée à chaque régénération |
 | `src/build_scrutins_index.py`, `src/build_amendements_index_pivot.py` | les deux index partagés — `generate_all_profiles.py --pivot` les reconstruit au bon moment, et l'ordre compte |
-| `src/build_amendements_index.py` | le point d'entrée du job CI `extract-amendements-an`, sans option |
+| `src/build_amendements_index.py` | le point d'entrée du job CI `extract-amendements-an`. Son unique drapeau force la reconstruction des législatures non figées au changement de semaine ISO, et le job l'arme seul depuis la sortie de son `actions/cache` — jamais à taper (`docs/decisions/fraicheur-index-amendements-749.md`) |
 | `src/build_scrutins_index_figes.py`, `src/build_amendements_index_figees.py` | les législatures closes (14/15/16) : construites **une fois**, hors ligne, puis committées sous `raw_data/`. La procédure complète et ses modes de défaillance sont dans `docs/decisions/amendements-legislatures-figees.md` et `docs/decisions/votes-multi-legislature.md` |
 | `src/cache_an_fraicheur.py`, `src/cache_an_empreinte.py` | la mécanique de cache des jobs CI, sans usage local |
 
