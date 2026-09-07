@@ -1714,13 +1714,16 @@ def main() -> None:
     # périmètre.
     geles = perimetre.slugs_geles(candidats)
     if geles:
+        # Imprimé, jamais annoté (#771). `prepare-an-matrix` émet déjà UNE
+        # annotation par candidat gelé, là où le périmètre est calculé ; la
+        # rejouer ici la multiplie par le nombre de shards — le run
+        # `34160985529` en a produit 60 pour 2 candidats. Un avertissement
+        # répété trente fois est un avertissement qu'on filtre.
         for slug, statut in geles:
-            message = (
-                f"CANDIDAT_GELE — {slug} (statut: {statut}) : collecte gelée, "
+            print(
+                f"  — CANDIDAT_GELE — {slug} (statut: {statut}) : collecte gelée, "
                 "profil publié conservé tel quel (#760)."
             )
-            print(f"  — {message}")
-            _annoter_github(message)
         geles_slugs = {slug for slug, _ in geles}
         candidats = [c for c in candidats if c.get("slug") not in geles_slugs]
 
