@@ -8,6 +8,29 @@ les charger, ni à les faire grossir. -->
 
 ### 3b. CI: jobs, caches, artifacts
 
+- **An artifact that was published and did not arrive is a failure, not an absent source
+  (#786).** Run `34241352524` is **green and collected nobody**: its four extraction
+  downloads left within the same second and all took a **403 "secondary rate limit"** on
+  `ListArtifacts`, which `download-artifact` declares *non-retryable*. The four steps carry
+  `continue-on-error: true` — correctly, since a source that produced nothing must not block
+  the others — so the merge saw empty directories and wrote **0 profiles** where the previous
+  run, same code, wrote **636**. The 40 AN and 8 roster artifacts were published and
+  unexpired. **No existing guard could see it**: they all measure collection *after* the
+  merge, and with no raw profile there is no loss to report (#460) and nothing
+  collected-not-published to flag (#511). Hence `src/verifier_transport_artifacts.py`,
+  between the downloads and the merge — the only point of the run holding **both** terms, the
+  run's artifact **inventory** and the **disk**. Three outcomes, and they must stay named
+  apart: nothing published → silence (#412 §2.1's fallback holds), published and arrived →
+  nothing to say, published and missing → **failure**, retried through `gh run download` and
+  then blocking. The retry deliberately takes the **other path** (`gh` goes through the repo
+  REST API where the action queries `results-receiver`, the one that returned the 403), and
+  flattens what `gh` files per sub-directory. Two asymmetries hold: `parltrack-dumps` is
+  retried but never blocking (declared fallback, gate §5), and an **unreadable inventory does
+  not fail** — "I cannot check" is not "there is nothing" (§2 rule 5), which is why
+  `inventaire()` returns `None` and never an empty list. The token comes from `github.token`,
+  never `secrets.GITHUB_TOKEN`: this job gets **one** identity under `secrets.`, the deploy
+  key that pushes (#508).
+  → `docs/decisions/transport-artifacts-panne-ou-absence-786.md`
 - **No test may read `pivot_data/` or `raw_data/profiles/`, write anywhere under
   `pivot_data/`/`raw_data/`, or hit the network (#473).** Acceptance tests use frozen
   fixtures; `tests/conftest.py` cuts `requests.Session.send` and fails loudly, naming the

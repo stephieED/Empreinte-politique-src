@@ -2579,6 +2579,35 @@ jobs:
             python3 -c "import json;d=json.load(open('raw_data/candidats.json'));c=d['candidats'];print(f\"Liste du jour : {len(c)} entrées, {sum(1 for x in c if x.get('slug'))} à slug résolvable.\")"
           fi
 
+      # ── Une panne de transport n'est pas une source absente (#786) ────────
+      #
+      # Le run `34241352524` est vert et n'a collecté personne. Les quatre
+      # téléchargements ci-dessus sont partis dans la même seconde et ont tous
+      # reçu un 403 « secondary rate limit » sur `ListArtifacts`, que
+      # `download-artifact` déclare non-retryable ; `continue-on-error: true` a
+      # fait le reste. `merge_raw_dirs` a vu des répertoires vides et écrit
+      # `0 profil(s)` là où le run d'avant en écrivait 636 — 40 artifacts AN et
+      # 8 artifacts roster étaient pourtant publiés et non expirés.
+      #
+      # POURQUOI ICI, ET PAS DANS UN GARDE-FOU EXISTANT : les autres mesurent la
+      # collecte APRÈS la fusion, et sans profil brut il n'y a ni perte à
+      # constater (#460) ni collecté-non-publié à signaler (#511). Ce step est
+      # le seul point du run à tenir les deux termes de la comparaison —
+      # l'inventaire de ce que les jobs ont publié, et le disque.
+      #
+      # Il ne remplace pas les `continue-on-error` ci-dessus : ils restent la
+      # bonne conduite pour une source qui n'a rien produit. Il sépare ce cas de
+      # celui où la collecte a eu lieu et n'arrive pas.
+      # `github.token`, PAS `secrets.GITHUB_TOKEN` : ce job n'a droit qu'à une
+      # seule identité venue de `secrets.`, la clé de déploiement qui pousse
+      # (#508), et un second nom sous ce préfixe rendrait le ruleset ambigu.
+      # Ce step ne pousse rien — il lit l'inventaire du run, que
+      # `permissions: actions: write` autorise déjà.
+      - name: Artifacts d'extraction — panne de transport ou source absente
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 src/verifier_transport_artifacts.py
+
       - name: Fusion des profils bruts (AN + UE + roster)
         run: |
           python3 src/merge_profile.py \

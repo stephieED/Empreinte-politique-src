@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 245 décisions
+gouverne sans avoir à fouiller les 246 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -58,6 +58,7 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 | `src/scrutins_dossiers_an.py` | 1 |
 | `src/scrutins_legislature.py` | 1 |
 | `src/textes_vises_figes.py` | 1 |
+| `src/verifier_transport_artifacts.py` | 1 |
 
 ---
 
@@ -694,7 +695,7 @@ Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambr
 
 ## `src/merge_profile.py`
 
-55 décision(s) le gouvernent ; le module en cite 5.
+56 décision(s) le gouvernent ; le module en cite 5.
 
 | Décision | Nomme |
 | --- | --- |
@@ -750,6 +751,7 @@ Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambr
 | [Un texte porté dit ce qu'il est devenu, et son sort ne se déduit jamais de son stade (#743) (2026-09-06)](decisions/sort-des-textes-portes-743.md) | `_dossier_key`, `merge_dossier_records`, `merge_lists_by_key` |
 | [`synchro_sources` publie la dernière récupération réussie, et pas son origine (#600) (2026-08-30)](decisions/synchro-sources-derniere-recuperation-600.md) | `merge_raw_profile` |
 | [Régénérer l'existant : `--refresh-existing`, l'inverse de `--skip-existing` (#445) (2026-08-19)](decisions/telechargement-an-trois-modes-defaillance.md) | `merge_raw_dirs` |
+| [Une panne de transport n'est pas une source absente (#786)](decisions/transport-artifacts-panne-ou-absence-786.md) | `merge_raw_dirs` |
 | [L'union des avertissements peut ressusciter un démenti, et deux familles Syceron s'éteignent (#600) (2026-08-30)](decisions/union-warnings-extinction-600.md) | `_defaut_collecte_dementi_par_les_donnees`, `merge_pivot_profile`, `merge_raw_profile` |
 | [Vérification de bout en bout des législatures figées 15/16 (#273, clôture de l'epic #268) (2026-08-17)](decisions/verification-bout-en-bout-legislatures-figees.md) | `_amendement_key`, `_prune_stale_warnings` |
 | [Votes : agrégation des législatures 14 à 17, index dédupliqué, 14/15/16 figées (#403) (2026-08-18)](decisions/votes-multi-legislature.md) | `merge_lists_by_key` |
@@ -1013,3 +1015,11 @@ Le mentionnent sans le gouverner : [`dossier-des-amendements-639`](decisions/dos
 ## `src/verifier_archivage_swh.py`
 
 Le mentionnent sans le gouverner : [`donnees-versionnees-integrite`](decisions/donnees-versionnees-integrite.md), [`fenetre-recalibrage-551`](decisions/fenetre-recalibrage-551.md), [`perimetre-coupure-575`](decisions/perimetre-coupure-575.md).
+
+## `src/verifier_transport_artifacts.py`
+
+1 décision(s) le gouvernent ; le module en cite 0.
+
+| Décision | Nomme |
+| --- | --- |
+| [Une panne de transport n'est pas une source absente (#786)](decisions/transport-artifacts-panne-ou-absence-786.md) | `inventaire` |

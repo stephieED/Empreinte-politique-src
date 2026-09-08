@@ -659,8 +659,8 @@ sous l'un des deux, ni ne sort sur le réseau (#473).
 
 ## Ce qui n'est pas ici, et pourquoi
 
-Le dépôt compte **45 exécutables** (40 modules `src/` avec un CLI, 5 scripts).
-Ce fichier en documente **33**. Les 12 autres ont un CLI, mais personne n'a de
+Le dépôt compte **46 exécutables** (41 modules `src/` avec un CLI, 5 scripts).
+Ce fichier en documente **33**. Les 13 autres ont un CLI, mais personne n'a de
 raison de les taper :
 
 | Écarté | Pourquoi |
@@ -673,8 +673,9 @@ raison de les taper :
 | `src/build_amendements_index.py` | le point d'entrée du job CI `extract-amendements-an`. Son unique drapeau force la reconstruction des législatures non figées au changement de semaine ISO, et le job l'arme seul depuis la sortie de son `actions/cache` — jamais à taper (`docs/decisions/fraicheur-index-amendements-749.md`) |
 | `src/build_scrutins_index_figes.py`, `src/build_amendements_index_figees.py` | les législatures closes (14/15/16) : construites **une fois**, hors ligne, puis committées sous `raw_data/`. La procédure complète et ses modes de défaillance sont dans `docs/decisions/amendements-legislatures-figees.md` et `docs/decisions/votes-multi-legislature.md` |
 | `src/cache_an_fraicheur.py`, `src/cache_an_empreinte.py` | la mécanique de cache des jobs CI, sans usage local |
+| `src/verifier_transport_artifacts.py` | compare l'inventaire des artifacts d'un run à ce qui est arrivé sur le disque (#786) ; il n'a de sens qu'à l'intérieur du run qu'il inspecte, et hors CI il le dit et rend la main |
 
-Aucun n'est mort. Dix sont sur le chemin d'exécution du pipeline, et
+Aucun n'est mort. Onze sont sur le chemin d'exécution du pipeline, et
 `docs/workflow-generate-data.md` dit quel job les appelle ; les deux derniers
 sont des constructions ponctuelles, hors ligne, dont la procédure est écrite
 dans la décision qui les porte.

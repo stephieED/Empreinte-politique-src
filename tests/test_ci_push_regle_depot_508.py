@@ -62,7 +62,14 @@ def test_le_checkout_de_merge_and_pivot_porte_la_cle_de_deploiement():
 
 def test_le_nom_du_secret_est_le_seul_du_job():
     """Un second secret de push signifierait deux identités possibles, donc une
-    seule inscrite dans le ruleset et une qui se ferait rejeter."""
+    seule inscrite dans le ruleset et une qui se ferait rejeter.
+
+    Ce que le test compte, ce sont les `secrets.` : un step qui a besoin du
+    jeton du run pour LIRE (l'inventaire des artifacts, #786) le prend par
+    `github.token`, qui n'est pas une identité de push et n'entre donc pas dans
+    ce décompte. `test_le_jeton_du_run_ne_sert_jamais_a_pousser`, dans
+    `test_transport_artifacts_786.py`, verrouille cette moitié-là.
+    """
     secrets = set(re.findall(r"secrets\.([A-Z0-9_]+)", BLOC))
     assert secrets == {"DATA_PUSH_SSH_KEY"}, (
         f"secrets attendus dans merge-and-pivot : DATA_PUSH_SSH_KEY seul ; trouvés : {sorted(secrets)}"
