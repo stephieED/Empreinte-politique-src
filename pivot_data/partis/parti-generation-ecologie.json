@@ -18,16 +18,11 @@
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335999",
       "synchro_le": "2026-09-07T23:23:37+0000"
-    },
-    {
-      "type": "assemblee_nationale",
-      "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-09-07T23:23:37+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-08T00:16:01+0000",
+    "genere_le": "2026-09-08T16:02:58+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr",
     "nb_candidats_declares": 1,
     "nb_candidats_avec_pivot": 1,

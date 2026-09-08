@@ -1,0 +1,25 @@
+{
+  "schema_version": "1",
+  "type_document": "profil_parti",
+  "parti_id": "trajectoire",
+  "parti_nom": "Trajectoire",
+  "candidats": [
+    {
+      "candidat_id": null,
+      "nom": "Manolo Mlekuz",
+      "statut": "declare",
+      "famille_politique": null,
+      "a_un_profil_pivot": false
+    }
+  ],
+  "tags_thematiques_agreges": [],
+  "sources": [],
+  "meta": {
+    "schema_version": "1",
+    "genere_le": "2026-09-08T16:02:58+0000",
+    "licence_donnees": "",
+    "nb_candidats_declares": 1,
+    "nb_candidats_avec_pivot": 0,
+    "warnings": []
+  }
+}
