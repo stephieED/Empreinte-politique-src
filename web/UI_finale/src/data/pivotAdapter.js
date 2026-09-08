@@ -20,7 +20,6 @@ import {
   causeListeVide,
   couvertureDesListes,
   directionQuestionsGouvernement,
-  ecartsAvecLeGroupe,
   essentiel,
   grandsChiffres,
   fonctionsExercees,
@@ -52,6 +51,7 @@ import {
   troncatureTags,
 } from '../utils/groupe';
 import { LIBELLE_SORT_TEXTE, OUTCOME_COLOR } from '../utils/lecture';
+import { ecartsAvecLeGroupe } from '../utils/ecartsGroupe';
 import {
   couvertureDesReperes,
   periodesDeVote,
@@ -364,7 +364,15 @@ export function buildCandidateView(
     roles.filter((r) => r.institution === INSTITUTION_PARLEMENT),
     scrutinsIndex,
   );
-  const ecarts = ecartsAvecLeGroupe(votes, fichesGroupe);
+  /* La matière d'un scrutin : le même chemin que « ce qu'il a voté » —
+     scrutin → dossier (#758), dossier → commission saisie au fond (#328). Elle
+     est passée aux deux sections depuis ICI, pour qu'aucune n'en écrive une
+     seconde version. */
+  const matiereDuScrutin = (scrutinId) => {
+    const dossierId = scrutinsDossiers?.scrutins?.[scrutinId] ?? null;
+    return commissionDuDossier(dossierId)?.sigle ?? null;
+  };
+  const ecarts = ecartsAvecLeGroupe(votes, fichesGroupe, matiereDuScrutin);
 
   /* « Ce qu'il a voté » : les positions de dernière lecture, rangées par
    * période politique (#328). Elles partent de `lectureVotes.retenus` — la
