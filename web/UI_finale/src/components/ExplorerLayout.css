@@ -6,16 +6,99 @@
   min-height: 100vh;
 }
 
+/* LES BARRES NE SONT PLUS COLLÉES. Elles faisaient 357 px en haut de tous les
+   supports — 45 % de la hauteur d'un 1 280 × 800. Elles défilent avec la page,
+   et la barre compacte prend le relais. */
 .explorer-bars {
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 12px 40px 10px;
+}
+
+/* `display: flex` l'emporte sur le `[hidden] { display: none }` de la feuille
+   de l'agent utilisateur : sans cette règle, l'attribut est bien posé et les
+   barres restent affichées. Le défaut n'a été vu qu'en CAPTURE — une mesure qui
+   lisait `element.hidden` le déclarait corrigé, parce qu'elle testait
+   l'attribut au lieu de son effet. */
+.explorer-bars[hidden] {
+  display: none;
+}
+
+/* Rappelées par « changer de fiche », elles se collent sous la barre compacte :
+   on vient de les demander, elles doivent rester sous la main. */
+.explorer-bars--rappel {
+  position: sticky;
+  top: 56px;
+  z-index: 4;
+  /* OPAQUE, pas translucide. Un fond à 94 % laissait lire le contenu à travers
+     les listes rappelées — vérifié en capture, et illisible. Le flou d'arrière-
+     plan est un raffinement qui ne survit pas partout ; l'opacité est un fait. */
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 6px 16px rgba(23, 20, 31, 0.06);
+}
+
+/* 56 px contre 357 : c'est tout le gain, et il vaut sur les cinq supports. */
+.explorer-compact {
   position: sticky;
   top: 0;
   z-index: 5;
-  background: rgba(247, 246, 244, 0.85);
-  backdrop-filter: blur(6px);
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 40px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.explorer-compact-marque {
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--ink);
+  text-decoration: none;
+  letter-spacing: -0.01em;
+}
+
+.explorer-compact-ouvrir {
+  margin-left: auto;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  border: 1px solid var(--border-strong);
+  background: var(--card);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 5px 13px;
+  cursor: pointer;
+}
+
+.explorer-compact-ouvrir:hover {
+  border-color: var(--muted);
+}
+
+.explorer-compact-ouvrir:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* LE SOMMAIRE PREND SUR LA MARGE, JAMAIS SUR LE CONTENU. La colonne de gauche
+   n'existe qu'au-delà de 1 440 px ; en dessous, la grille n'a qu'une colonne et
+   le contenu garde exactement la largeur qu'il avait. */
+.explorer-corps {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 1440px) {
+  .explorer-corps {
+    grid-template-columns: 204px minmax(0, 1fr);
+    gap: 0 24px;
+    padding-left: 40px;
+  }
 }
 
 .explorer-profile-zone {
