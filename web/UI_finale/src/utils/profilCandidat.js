@@ -89,7 +89,6 @@ const VOIX_MASCULINE = {
   accorde: '',
   ne: 'Né',
   titres: {
-    gouvernements: "Les gouvernements dont il a été membre",
     propose: "Ce qu'il a proposé",
     dit: "Ce qu'il a dit",
     vote: "Ce qu'il a voté",
@@ -106,7 +105,6 @@ const VOIX_FEMININE = {
   accorde: 'e',
   ne: 'Née',
   titres: {
-    gouvernements: "Les gouvernements dont elle a été membre",
     propose: "Ce qu'elle a proposé",
     dit: "Ce qu'elle a dit",
     vote: "Ce qu'elle a voté",
@@ -123,7 +121,6 @@ const VOIX_NON_DECLAREE = {
   accorde: '',
   ne: 'Naissance le',
   titres: {
-    gouvernements: "Les gouvernements dont cette personne a été membre",
     propose: 'Ce que cette personne a proposé',
     dit: 'Ce que cette personne a dit',
     vote: 'Ce que cette personne a voté',

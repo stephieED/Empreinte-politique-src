@@ -24,7 +24,6 @@ import {
   LAST_READING_RULE,
   LIBELLE_SORT_TEXTE,
   MOTIF_SORT,
-  OUTCOME_COLOR,
   WHOLE_TEXT_VOTE_BOUND,
   estProcedure49_3,
   formatNumber,
@@ -373,150 +372,6 @@ function Fonctions({ fonctions }) {
         );
       })}
     </div>
-  );
-}
-
-/*
- * Une barre empilée générique. Les segments portent leur couleur en `style`
- * pour que la source de vérité reste `OUTCOME_COLOR` (lot 1) ; un segment sans
- * couleur reçoit un motif hachuré, jamais une teinte de repli — c'est ce qui
- * distingue « sort non publié » d'un sort.
- */
-function Barre({ segments, total }) {
-  if (!total) return null;
-  return (
-    <>
-      <div className="cp-barre">
-        {segments.map((s) => (
-          <span
-            className={`cp-barre-seg${s.color ? '' : ' cp-barre-seg--sans-teinte'}`}
-            key={s.cle}
-            style={{ width: `${((s.n / total) * 100).toFixed(2)}%`, background: s.color || undefined }}
-          />
-        ))}
-      </div>
-      <div className="cp-cles">
-        {segments.map((s) => (
-          <span className="cp-cle" key={s.cle}>
-            <i
-              className={s.color ? undefined : 'cp-cle-pastille--sans-teinte'}
-              style={s.color ? { background: s.color } : undefined}
-            />
-            {s.label} <b className="cp-num">{formatNumber(s.n)}</b>
-          </span>
-        ))}
-      </div>
-    </>
-  );
-}
-
-/* ── § 2 — les gouvernements dont il a été membre ────────────────────────────
- *
- * En ensembles, jamais en liste attribuée. Cette section précède les actes
- * personnels parce qu'elle en donne le contexte, non parce qu'elle vaudrait
- * davantage.
- */
-const LIBELLE_STATUT_TEXTE = {
-  promulgue: 'promulgué',
-  adopte: 'adopté',
-  adopte_cmp: 'adopté en CMP',
-  adopte_49_3: 'adopté sans vote (49.3)',
-  navette_en_cours: 'en navette',
-  rejete: 'rejeté',
-  rejete_49_3: 'rejeté après 49.3',
-  retire: 'retiré',
-  depose: 'déposé',
-};
-
-const COULEUR_STATUT = {
-  promulgue: '#14151A',
-  adopte_cmp: '#4F9B77',
-  adopte: OUTCOME_COLOR['adopté'],
-  navette_en_cours: '#8B8794',
-  rejete: OUTCOME_COLOR['rejeté'],
-  retire: OUTCOME_COLOR['retiré'],
-  depose: '#DCD9D3',
-};
-
-function Gouvernements({ gouvernements, cause, voix }) {
-  if (!gouvernements.length) {
-    return (
-      <div className="cp-carte">
-        <ListeVide
-          cause={cause}
-          motif={`${voix.Sujet} n’a jamais été membre d’un gouvernement. C’est un fait établi, pas une donnée manquante : ses mandats sont collectés et aucun n’est une fonction gouvernementale.`}
-        />
-      </div>
-    );
-  }
-
-  return (
-    <>
-      <div className="cp-carte">
-        {gouvernements.map((g) => {
-          const segments = g.statuts.map((s) => ({ cle: s.cle, label: s.label, n: s.n, color: COULEUR_STATUT[s.cle] }));
-          if (g.adoptesSansVote > 0) {
-            segments.push({ cle: '49_3', label: 'adoptés sans vote (49.3)', n: g.adoptesSansVote, color: null });
-          }
-          return (
-            <div className={`cp-gouv${g.chef ? ' cp-gouv--chef' : ''}`} key={g.id}>
-              <div className="cp-gouv-tete">
-                <span className="cp-gouv-nom">{g.nom}</span>
-                <span className="cp-gouv-periode cp-num">
-                  {periode(g.debut, g.fin, g.actif)} · {formatNumber(g.total)} textes suivis
-                </span>
-              </div>
-              <p className="cp-gouv-fonction">
-                Sa fonction :{' '}
-                {g.fonctions.map((f, i) => (
-                  <span key={`${f.portefeuille}-${f.debut}`}>
-                    {i > 0 && ', puis '}
-                    {f.portefeuille}
-                  </span>
-                ))}
-              </p>
-              <Barre segments={segments} total={g.total} />
-              {g.total === 0 && (
-                <p className="cp-gouv-49">
-                  Aucun texte n’est rattaché à ce gouvernement dans le corpus. C’est un vide de
-                  collecte, pas un bilan : <em>rien ici ne dit qu’il n’en a porté aucun.</em>
-                </p>
-              )}
-              <p className="cp-gouv-49" hidden={g.total === 0}>
-                {g.adoptesSansVote > 0 ? (
-                  <>
-                    Dont <b className="cp-num">{g.adoptesSansVote}</b> texte
-                    {g.adoptesSansVote > 1 ? 's adoptés' : ' adopté'} sans vote, par l’article 49.3 —{' '}
-                    <em>un fait de procédure, jamais une position de vote</em>.
-                  </>
-                ) : (
-                  'Aucun texte adopté par l’article 49.3.'
-                )}
-              </p>
-              {g.textes && (
-                <ul className="cp-nommes">
-                  {g.textes.map((t) => (
-                    <li className="cp-nomme" key={`${t.titre}-${t.date}`}>
-                      <span className="cp-nomme-cle">{LIBELLE_STATUT_TEXTE[t.statut] || t.statut}</span>
-                      <span>{t.titre}</span>
-                      <span className="cp-nomme-date cp-num">{jour(t.date)}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          );
-        })}
-      </div>
-      <p className="cp-note">
-        <b>Un bilan de gouvernement est collectif.</b> Ces textes ne sont pas ses propositions : ce
-        sont ceux que le gouvernement dont {voix.pronom} était membre a portés. <em>Un chef du gouvernement
-        les signe tous — lui en attribuer un personnellement ne voudrait rien dire, et c’est
-        pourquoi cette section montre des ensembles et non des actes individuels.</em> L’état des
-        textes est celui d’aujourd’hui, pas celui du jour où le gouvernement a pris fin. Il ne
-        s’additionne à aucun autre décompte de la page.
-      </p>
-    </>
   );
 }
 
@@ -1220,7 +1075,7 @@ function Paroles({ interventions, cause, voix }) {
 }
 
 /* ── § 5 — ce qu'il a voté ─────────────────────────────────────────────────── */
-function Votes({ votes, cause, voix }) {
+function Votes({ votes, cause }) {
   if (!votes.total) {
     return (
       <div className="cp-carte">
@@ -1229,54 +1084,25 @@ function Votes({ votes, cause, voix }) {
     );
   }
 
-  const max = Math.max(...votes.parAnnee.map((a) => a.n), 1);
-
+  /* DEUX FIGURES RETIRÉES LE 08/09, ET CE QU'ELLES PORTAIENT.
+   *
+   * 1. L'AXE DES ANNÉES — une barre par année civile, avec trois situations
+   *    (`gouvernement`, `hors_mandat`, `en_mandat`). Il existait pour qu'un
+   *    zéro ne se lise pas comme une absence individuelle (§2 règle 3), ce qui
+   *    n'a de sens que sur un axe CONTINU. La vue par période n'affiche que
+   *    les périodes où la personne a voté : il n'y a plus de zéro à expliquer,
+   *    donc plus rien à protéger.
+   *
+   * 2. LA NOTE « un membre du gouvernement ne vote pas » — corollaire du même
+   *    axe : elle nommait les années creuses. Le fait lui-même n'est pas perdu,
+   *    il est porté par « Les fonctions exercées » et par la frise d'« En bref ».
+   *
+   * Ce qui RESTE, et qui n'est pas décoratif : les quatre branches de vide
+   * ci-dessous, qui distinguent quatre causes qu'aucune figure ne remplace, et
+   * les dénominateurs du repli, qu'un ratio ne peut pas taire (§2 règle 7).
+   */
   return (
     <>
-      <div className="cp-carte cp-bloc">
-        <p className="cp-section-critere">
-          Ses positions par année, sur un axe continu. Une année sans barre n’est jamais
-          publiée comme un chiffre nu : elle dit sa situation.
-        </p>
-        <div className="cp-annees">
-          {votes.parAnnee.map((a) => (
-            <div className={`cp-annee cp-annee--${a.situation}`} key={a.annee}>
-              <em className="cp-num">{a.n > 0 ? formatNumber(a.n) : ''}</em>
-              <i style={{ height: `${Math.max(4, (a.n / max) * 100).toFixed(0)}%` }} />
-              <b className="cp-num">{a.annee}</b>
-            </div>
-          ))}
-        </div>
-        <div className="cp-cles">
-          <span className="cp-cle">
-            <i style={{ background: '#14151A' }} />
-            année de mandat parlementaire
-          </span>
-          {votes.parAnnee.some((a) => a.situation === 'gouvernement') && (
-            <span className="cp-cle">
-              <i className="cp-cle-pastille--gouvernement" />
-              fonction gouvernementale — voter était impossible
-            </span>
-          )}
-          {votes.parAnnee.some((a) => a.situation === 'hors_mandat') && (
-            <span className="cp-cle">
-              <i className="cp-cle-pastille--hors-mandat" />
-              aucun mandat parlementaire cette année-là — {voix.pronom} n’avait rien à voter
-            </span>
-          )}
-        </div>
-      </div>
-
-      {votes.aExerceAuGouvernement && (
-        <p className="cp-note">
-          <b>Un membre du gouvernement ne vote pas.</b> Sur ses {formatNumber(votes.total)}{' '}
-          positions, <b>{formatNumber(votes.pendantGouvernement)}</b>{' '}
-          {votes.pendantGouvernement > 1 ? 'ont été émises' : 'a été émise'} pendant l’une de ses
-          fonctions gouvernementales. Ce n’est pas une lacune de collecte, c’est un fait
-          établi sur la personne — sans cette phrase, ces années se liraient comme une absence.
-        </p>
-      )}
-
       {!votes.derniereLectureDisponible ? (
         <div className="cp-carte">
           <ListeVide
@@ -1324,15 +1150,21 @@ function Votes({ votes, cause, voix }) {
               Ce qui NE PART PAS : les deux phrases elles-mêmes. #711 les veut
               à côté du chiffre, pas seulement dans la méthodologie — qui
               annonçait déjà la règle à l'époque où rien ne l'appliquait. */}
-          <p className="cp-note">
-            <b>{LAST_READING_RULE.phrase}</b> {WHOLE_TEXT_VOTE_BOUND.phrase}
-          </p>
           {votes.periodes?.length ? (
-            <VotesParPeriode
-              periodes={votes.periodes}
-              portee={votes.portee}
-              reperes={votes.reperes}
-            />
+            <>
+              <VotesParPeriode
+                periodes={votes.periodes}
+                portee={votes.portee}
+                reperes={votes.reperes}
+              />
+              {/* SOUS la figure, jamais au-dessus. Trois blocs de texte avant un
+                  graphique font lire la légende à la place du fait — c'est ce que
+                  la maquette du 08/09 a corrigé. Les deux phrases restent
+                  néanmoins sur la fiche : #711 les veut à côté du chiffre. */}
+              <p className="cp-note">
+                <b>{LAST_READING_RULE.phrase}</b> {WHOLE_TEXT_VOTE_BOUND.phrase}
+              </p>
+            </>
           ) : (
             <div className="cp-carte">
               <ListeVide
@@ -1672,21 +1504,13 @@ export default function CandidateProfile({ candidate }) {
         )}
       </Section>
 
-      <Section
-        numero="2"
-        titre={c.voix.titres.gouvernements}
-        critere="Ce que ces gouvernements ont porté, en ensembles. Cette section précède ses actes personnels parce qu’elle en donne le contexte, non parce qu’elle vaudrait davantage."
-      >
-        <Gouvernements cause="fait_etabli" gouvernements={c.gouvernements} voix={c.voix} />
-      </Section>
-
       {/* PAS DE CHAPEAU SUR CETTE SECTION. Il annonçait la règle avant qu'on
           ait rien lu — « une seule liste, quel que soit le banc… » — et faisait
           lire la consigne à la place du fait. Chaque figure porte désormais sa
           note SOUS elle : la cascade dit qu'aucun seuil ne s'applique et que la
           branche basse n'est pas un rejet, la chute dit que l'axe est le
           calendrier et qu'aucun rapport n'est calculé. */}
-      <Section numero="3" titre={c.voix.titres.propose}>
+      <Section numero="2" titre={c.voix.titres.propose}>
         <Propositions
           amendements={c.amendements}
           textes={c.textes}
@@ -1697,23 +1521,15 @@ export default function CandidateProfile({ candidate }) {
       </Section>
 
       <Section
-        numero="4"
-        titre={c.voix.titres.dit}
-        critere="La qualité en tête — celle que la source publie, ou celle que ses mandats permettent de dériver. Les deux régimes ne se confondent pas."
-      >
-        <Paroles cause={c.causes.interventions} interventions={c.interventions} voix={c.voix} />
-      </Section>
-
-      <Section
-        numero="5"
+        numero="3"
         titre={c.voix.titres.vote}
-        critere="Les positions exprimées sur l’ensemble d’un texte, une seule par texte : celle de sa dernière lecture. Quand une période rendait le vote impossible, la page le dit au lieu de laisser un vide. Aucun taux de participation n’est publié : ce serait un taux d’assiduité individuel."
+        critere="Les positions exprimées sur l’ensemble d’un texte, une seule par texte : celle de sa dernière lecture. Elles sont découpées en périodes politiques — une nouvelle dès que le banc ou le gouvernement change — parce qu’un même vote n’y dit pas la même chose. Aucun taux de participation n’est publié : ce serait un taux d’assiduité individuel."
       >
-        <Votes cause={c.causes.votes} votes={c.votes} voix={c.voix} />
+        <Votes cause={c.causes.votes} votes={c.votes} />
       </Section>
 
       <Section
-        numero="6"
+        numero="4"
         titre={c.voix.titres.ecarts}
         critere="Sa position à côté de la position majoritaire de son groupe, scrutin par scrutin. Jamais totalisé : « a voté contre son groupe N fois » serait une note, pas un fait."
       >
@@ -1721,7 +1537,15 @@ export default function CandidateProfile({ candidate }) {
       </Section>
 
       <Section
-        numero="7"
+        numero="5"
+        titre={c.voix.titres.dit}
+        critere="La qualité en tête — celle que la source publie, ou celle que ses mandats permettent de dériver. Les deux régimes ne se confondent pas."
+      >
+        <Paroles cause={c.causes.interventions} interventions={c.interventions} voix={c.voix} />
+      </Section>
+
+      <Section
+        numero="6"
         titre="Ce qu’on n’a pas pu lire"
         critere="Chaque liste porte son état et ses bornes, et chaque limite se déclare."
       >
