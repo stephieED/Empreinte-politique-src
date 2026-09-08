@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 243 décisions
+gouverne sans avoir à fouiller les 245 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -468,11 +468,12 @@ Le mentionnent sans le gouverner : [`collecte-interventions-reduite-au-theme-657
 
 ## `src/generate_all_profiles.py`
 
-21 décision(s) le gouvernent ; le module en cite 3.
+22 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
 | [Un bloc structuré sans fond n'écrase plus un bloc collecté (#484) (2026-08-30)](decisions/bloc-sans-fond-484.md) | `build_minimal_profile` |
+| [La boucle du périmètre a cassé quatre fois au même endroit (#771, #775, #781)](decisions/boucle-candidats-quatre-corrections-781.md) | `_normaliser_en_pivot` |
 | [Une source injoignable ne consomme plus le timeout d'un job, et son silence cesse de se lire comme un constat (#514) (2026-08-21)](decisions/budget-collecte-source-injoignable-514.md) | `_manifest_append`, `build_profile_any_chambre`, `process_candidat`, `valider_budgets` |
 | [Budget d'exécution à pleine échelle : 630 min annoncées, 55 mesurées (#467) (2026-08-20)](decisions/budget-execution-pleine-echelle-467.md) | `_select_candidats_couverture`, `process_candidat` |
 | [La chambre est un fait du mandat, pas du profil : `mandats[].chambre` estampillée à la collecte (#492) (2026-08-20)](decisions/chambre-par-mandat-electif.md) | `build_profile_any_chambre` |
