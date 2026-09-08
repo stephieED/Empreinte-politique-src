@@ -501,36 +501,6 @@
         "succede_a": "AN:NG:15"
       },
       {
-        "groupe_sigle": "LaREM",
-        "groupe_id": "AN:LAREM:15",
-        "legislature": "15",
-        "fichier": "groupe-AN-LaREM-15.json",
-        "sigles_an": [
-          "LAREM"
-        ],
-        "organes_an": [
-          "PO730964"
-        ],
-        "position_politique_an": {
-          "position": "majorite",
-          "verifie_le": "2026-09-08",
-          "organes": [
-            {
-              "organe_an": "PO730964",
-              "sigle_an": "LAREM",
-              "valeur_source": "Majoritaire",
-              "position": "majorite"
-            }
-          ]
-        },
-        "effectif_amo30": 343,
-        "effectif_publie": null,
-        "verifie_le": "2026-09-08",
-        "ecart_motif": "Publication configurée par #777 : organe PO730964 relu dans l'index AMO30 des groupes politiques le 2026-09-08 — sigle `LAREM` (libelleAbrev), 2017-06-27 → 2022-06-21. La fiche paraît au prochain run. 116 des 343 membres ont un slug dans raw_data/correspondance_acteurs_an.json ; les autres n'en ont pas, et build_roster_candidats_detaille laisse tomber un membre sans slug — ils sont hors de la fiche et nommés par l'annotation ROSTER_SANS_SLUG (#527). `effectif_publie` reste null jusqu'à la parution.",
-        "membres_avec_slug": 116,
-        "ecart_membres": []
-      },
-      {
         "groupe_sigle": "EDS",
         "groupe_id": "AN:EDS:15",
         "legislature": "15",
@@ -771,15 +741,6 @@
       "chambre": "AN",
       "legislature": "15",
       "fichier": "groupe-AN-SOC-15.json"
-    },
-    {
-      "roster_chambre": "deputes",
-      "groupe_id": "AN:LAREM:15",
-      "groupe_sigle": "LaREM",
-      "groupe_nom": "La République en Marche",
-      "chambre": "AN",
-      "legislature": "15",
-      "fichier": "groupe-AN-LaREM-15.json"
     },
     {
       "roster_chambre": "deputes",
