@@ -130,7 +130,7 @@ def test_le_composant_n_affiche_pas_le_nombre_de_divergences(composant: str) -> 
     compteur. Les deux seuls usages admis sont un test de présence.
     """
     for usage in re.findall(r"[^\n]*ecarts\.ecarts\.length[^\n]*", composant):
-        assert re.search(r"(length\s*[>?]|length\s*&&|\?\s*\()", usage), (
+        assert re.search(r"(length\s*(?:[>?]|===\s*0)|length\s*&&|\?\s*\()", usage), (
             f"usage suspect du compte de divergences : {usage.strip()}"
         )
     assert "formatNumber(ecarts.ecarts.length)" not in composant
@@ -262,7 +262,70 @@ def test_trois_vides_trois_causes(composant: str) -> None:
     """
     assert "Rien n’est comparable" in composant
     assert "ne recouvrent aucun de ses votes" in composant
-    assert "le sien ne diverge jamais" in composant
+    assert "sa position ne s’écarte jamais" in composant
+
+
+# ── L'interactivité ne promet que ce qu'elle tient ─────────────────────────
+
+
+def test_seule_une_divergence_est_cliquable(composant: str, feuille: str) -> None:
+    """Une colonne ordinaire ne mène nulle part : aucune ligne ne lui correspond.
+
+    Un objet qui a l'air interactif et ne réagit pas est pire qu'un objet
+    inerte — il fait douter de la figure entière. Les colonnes ordinaires
+    gardent leur infobulle, qui ne promet rien.
+    """
+    assert 'return x.ecart ? (' in composant
+    assert '<button' in composant.split('return x.ecart ? (')[1].split(') : (')[0]
+    ordinaire = composant.split(') : (')[1].split('}')[0]
+    assert '<span className="eg-col"' in ordinaire
+    assert "button.eg-col {" in feuille, "seul le bouton porte le curseur"
+
+
+def test_le_theme_du_texte_apparait_partout_ou_il_manque(composant: str) -> None:
+    """Le thème est affiché DANS l'infobulle du point ET dans la ligne, absent
+    compris : une puce qui disparaît se lirait comme un texte sans commission
+    saisie au fond, alors que c'est notre rattachement qui manque (§2 règle 5).
+    """
+    assert "x.matiere || 'matière non établie'" in composant
+    assert composant.count("x.matiere || 'matière non établie'") == 2, (
+        "une fois dans l'infobulle du point, une fois dans la puce de la ligne"
+    )
+
+
+def test_la_matiere_vient_de_l_adaptateur_et_n_est_pas_reconstruite() -> None:
+    """La même jointure que « ce qu'il a voté » — scrutin → dossier (#758), puis
+    dossier → commission saisie au fond (#328) —, écrite une seule fois."""
+    module = sans_commentaires(MODULE.read_text(encoding="utf-8"))
+    assert "matiereDuScrutin = () => null" in module, "paramètre, jamais reconstruit ici"
+    assert "commissions_dossiers" not in module
+
+    adaptateur = sans_commentaires(ADAPTATEUR.read_text(encoding="utf-8"))
+    assert "const matiereDuScrutin = (scrutinId) => {" in adaptateur
+    assert "ecartsAvecLeGroupe(votes, fichesGroupe, matiereDuScrutin)" in adaptateur
+
+
+def test_le_titre_du_texte_est_nettoye(module: str) -> None:
+    """La source écrit « l'ensemble du projet de loi … (première lecture). ».
+
+    Publier ce libellé ferait lire la mécanique du scrutin à la place du texte.
+    Le repli sur l'intitulé brut garde la source quand le nettoyage ne rend
+    rien — un titre approximatif vaut mieux qu'un titre absent.
+    """
+    assert "titreDuTexteVote(mien.texte) || mien.texte || null" in module
+
+
+def test_la_phrase_ne_subsiste_que_la_ou_la_figure_ne_dit_rien(composant: str) -> None:
+    """Les trois rangs sont nommés à leur hauteur : une phrase qui les répète
+    fait lire la consigne à la place du dessin, et elle est retirée.
+
+    Elle survit dans UN cas, et il est nécessaire : sans divergence, un rang de
+    repères sans aucun point ne se distingue pas d'un rang qui n'a pas fini de
+    charger, et la carte des scrutins n'existe pas non plus. Rien à l'écran ne
+    porterait alors le fait (§2 règle 5).
+    """
+    assert composant.count('className="eg-dit"') == 1
+    assert "ecarts.ecarts.length === 0 && (" in composant
 
 
 # ── Le renvoi mène quelque part ────────────────────────────────────────────

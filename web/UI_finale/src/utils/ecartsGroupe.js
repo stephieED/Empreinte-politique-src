@@ -26,7 +26,7 @@
  * de la maquette porte une pastille BINAIRE — « il s'écarte » ou non —, jamais
  * un compte.
  */
-import { isWholeTextVote } from './lecture';
+import { isWholeTextVote, titreDuTexteVote } from './lecture';
 
 export const POSITIONS_COMPARABLES = ['pour', 'contre', 'abstention'];
 
@@ -72,8 +72,15 @@ export function partDissidente(entree) {
  * divergences ne portant que sur les votes sur l'ensemble. Il reste calculé
  * parce qu'il distingue deux vides : « aucune fiche ne recouvre ses votes » et
  * « des fiches les recouvrent, mais aucun vote sur l'ensemble ».
+ *
+ * `matiereDuScrutin` est PASSÉE par l'adaptateur, jamais reconstruite ici :
+ * c'est la même jointure que « ce qu'il a voté » — scrutin → dossier (#758),
+ * puis dossier → commission saisie au fond (#328). Elle rend `null` dès que le
+ * rattachement manque, et l'affichage le DIT (§2 règle 5) : une puce absente se
+ * lirait comme un texte sans commission, alors que c'est notre rattachement qui
+ * manque.
  */
-export function ecartsAvecLeGroupe(votesJoints, fichesGroupe) {
+export function ecartsAvecLeGroupe(votesJoints, fichesGroupe, matiereDuScrutin = () => null) {
   const fiches = (fichesGroupe || []).filter(Boolean);
   if (!fiches.length) {
     return { fiches: [], communs: 0, bande: [], ecarts: [], divises: 0, comparable: false };
@@ -96,10 +103,16 @@ export function ecartsAvecLeGroupe(votesJoints, fichesGroupe) {
       if (!isWholeTextVote(mien.scrutin)) continue;
       bande.push({
         scrutinId: c.scrutin_id,
-        texte: mien.texte ?? null,
+        // Le titre NETTOYÉ, comme dans « ce qu'il a voté » : la source écrit
+        // « l'ensemble du projet de loi … (première lecture). », et publier ce
+        // libellé-là ferait lire la mécanique du scrutin à la place du texte.
+        // Le repli sur l'intitulé brut garde la source quand le nettoyage ne
+        // rend rien — un titre approximatif vaut mieux qu'un titre absent.
+        texte: titreDuTexteVote(mien.texte) || mien.texte || null,
         date: mien.date ?? null,
         sourceUrl: mien.scrutin?.source_url ?? null,
         sort: mien.scrutin?.sort ?? null,
+        matiere: matiereDuScrutin(c.scrutin_id),
         position: mien.position,
         positionGroupe: c.position_majoritaire,
         ecart: mien.position !== c.position_majoritaire,

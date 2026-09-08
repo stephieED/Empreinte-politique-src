@@ -27,6 +27,22 @@ function couverture(f) {
   return `${mois(f.debut)} → ${f.fin ? mois(f.fin) : 'en cours'}`;
 }
 
+/* L'infobulle d'une DIVERGENCE nomme le texte et son thème : sans eux, un point
+ * cerclé n'est qu'une date, et il faut descendre dans la liste pour savoir de
+ * quoi il s'agit. Les autres colonnes n'ont pas de texte à nommer — elles ne
+ * portent que la composition du groupe ce jour-là. */
+function infobulle(x) {
+  const groupe =
+    `${x.pour} pour, ${x.contre} contre, ${x.abstention} abstention, `
+    + `${x.absents} absents ou non-votants sur ${x.membresEligibles} éligibles`;
+  if (!x.ecart) {
+    return `${jour(x.date)} · ${groupe} · sa position : ${LIBELLE[x.position]}`;
+  }
+  return `${jour(x.date)} · ${x.matiere || 'matière non établie'} · ${x.texte}`
+    + ` — sa position : ${LIBELLE[x.position]}, celle de son groupe :`
+    + ` ${LIBELLE[x.positionGroupe]} · ${groupe}`;
+}
+
 /* ── La bande ────────────────────────────────────────────────────────────────
  *
  * TROIS FAITS, TROIS ÉLÉMENTS, et jamais deux faits sur le même. Deux
@@ -40,7 +56,16 @@ function couverture(f) {
  * rendu par l'écart entre colonnes, ramené à 1 px — mesuré à 1 000 px de page,
  * une colonne passe de 2,97 px à 3,03 px.
  */
+/* SEULE UNE DIVERGENCE EST CLIQUABLE. Une colonne ordinaire ne mène nulle part :
+ * aucune ligne ne lui correspond en bas. Un objet qui a l'air interactif et ne
+ * réagit pas est pire qu'un objet inerte — il fait douter de la figure entière.
+ * Les colonnes ordinaires gardent leur infobulle, qui ne promet rien. */
 function Bande({ bande }) {
+  const versLaLigne = (scrutinId) => {
+    const cible = document.getElementById(`eg-lg-${scrutinId}`);
+    if (cible) cible.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  };
+
   return (
     <>
       <div className="eg-zone">
@@ -51,18 +76,8 @@ function Bande({ bande }) {
         </div>
         <div className="eg-bande">
           {bande.map((x) => {
-            const exprimes = x.pour + x.contre + x.abstention;
-            const titre =
-              `${jour(x.date)} · ${x.pour} pour, ${x.contre} contre, ${x.abstention} abstention, `
-              + `${x.absents} absents ou non-votants sur ${x.membresEligibles} éligibles`
-              + ` · sa position : ${LIBELLE[x.position]}`
-              + (x.ecart ? ' — hors position majoritaire' : '');
-            return (
-              <span
-                className={`eg-col${x.ecart ? ' eg-col--ecart' : ''}`}
-                key={x.scrutinId}
-                title={titre}
-              >
+            const dedans = (
+              <>
                 <span
                   className="eg-lui"
                   style={x.ecart ? { background: teinte(x.position) } : undefined}
@@ -71,13 +86,22 @@ function Bande({ bande }) {
                   className="eg-part"
                   style={{ height: `${(partDissidente(x) * 44).toFixed(1)}px` }}
                 />
-                <span
-                  className="eg-socle"
-                  style={{ background: teinte(x.positionGroupe) }}
-                />
-                <span className="cp-invisible">
-                  {jour(x.date)} — {exprimes} exprimés
-                </span>
+                <span className="eg-socle" style={{ background: teinte(x.positionGroupe) }} />
+              </>
+            );
+            return x.ecart ? (
+              <button
+                type="button"
+                className="eg-col eg-col--ecart"
+                key={x.scrutinId}
+                title={infobulle(x)}
+                onClick={() => versLaLigne(x.scrutinId)}
+              >
+                {dedans}
+              </button>
+            ) : (
+              <span className="eg-col" key={x.scrutinId} title={infobulle(x)}>
+                {dedans}
               </span>
             );
           })}
@@ -128,7 +152,7 @@ function lecture(x) {
 
 function Ligne({ x }) {
   return (
-    <div className="eg-lg">
+    <div className="eg-lg" id={`eg-lg-${x.scrutinId}`}>
       <div className="eg-lg-date cp-num">{jour(x.date)}</div>
       <div>
         <p className="eg-lg-titre">
@@ -148,6 +172,10 @@ function Ligne({ x }) {
             {x.groupe}
             {x.legislature ? ` · ${x.legislature}ᵉ législature` : ''}
           </span>
+          {/* Le thème est TOUJOURS affiché, absent compris : une puce qui
+              disparaît se lirait comme un texte sans commission saisie au fond,
+              alors que c'est notre rattachement qui manque (§2 règle 5). */}
+          <span className="eg-puce">{x.matiere || 'matière non établie'}</span>
           {x.sort && <span className="eg-puce">{x.sort}</span>}
           {/* « Quorum non atteint » est un mot de règlement, pas une
               information : il ne dit ni le seuil, ni sur quoi il porte. Ce que
@@ -257,18 +285,23 @@ export default function EcartsGroupe({ ecarts, voix }) {
 
             <div className="eg-bloc">
               <h4>Ses positions par rapport au groupe, scrutin après scrutin</h4>
-              <p className="eg-dit">
-                En bas, <b>ce qu’a voté son groupe</b> dans le temps — et en relief,{' '}
-                <b>les membres qui ne l’ont pas suivi</b>. En haut,{' '}
-                {ecarts.ecarts.length ? (
-                  <b>les scrutins où le sien diverge</b>
-                ) : (
-                  <>
-                    <b>rien</b> : le sien ne diverge jamais
-                  </>
-                )}
-                .
-              </p>
+              {/* PLUS DE PHRASE DESCRIPTIVE SOUS LE TITRE. Elle nommait les trois
+                  rangs — ce que les étiquettes posées contre la figure disent
+                  maintenant, à la hauteur exacte de ce qu'elles nomment. Une
+                  phrase qui répète des étiquettes fait lire la consigne à la
+                  place du dessin.
+
+                  CE QUI RESTE, et seulement dans ce cas : quand la personne ne
+                  diverge JAMAIS, un rang de repères sans aucun point ne se
+                  distingue pas d'un rang qui n'a pas fini de charger. La carte
+                  des scrutins n'existe alors pas non plus, et rien à l'écran ne
+                  porterait le fait (§2 règle 5). */}
+              {ecarts.ecarts.length === 0 && (
+                <p className="eg-dit">
+                  Sur ces scrutins, <b>sa position ne s’écarte jamais</b> de celle de la majorité
+                  de son groupe.
+                </p>
+              )}
               <Bande bande={bande} />
             </div>
           </>

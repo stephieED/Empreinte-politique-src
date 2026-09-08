@@ -170,6 +170,22 @@
   min-width: 2px;
   display: grid;
   grid-template-rows: 20px 1fr 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+button.eg-col {
+  cursor: pointer;
+}
+
+button.eg-col:hover .eg-lui {
+  transform: scale(1.2);
+}
+
+button.eg-col:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
 }
 
 /* Rang 1 — sa position. Neutre par défaut : colorer les 172 repères mettait la
@@ -212,11 +228,6 @@
   height: 5px;
   border-radius: 1px;
   align-self: end;
-}
-
-.eg-col:hover .eg-socle {
-  outline: 1.5px solid var(--ink);
-  outline-offset: 1px;
 }
 
 .eg-axe {
@@ -401,15 +412,6 @@
 .eg-vide b {
   color: var(--ink);
   font-weight: 700;
-}
-
-.cp-invisible {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
 }
 
 @media (max-width: 720px) {
