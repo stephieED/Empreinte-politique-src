@@ -19,13 +19,22 @@
         "groupe_id": "AN:REN",
         "legislature": "16",
         "fichier": "groupe-AN-REN-16.json",
-        "sigles_an": ["RE"],
-        "organes_an": ["PO800538"],
+        "sigles_an": [
+          "RE"
+        ],
+        "organes_an": [
+          "PO800538"
+        ],
         "position_politique_an": {
           "position": "majorite",
           "verifie_le": "2026-09-01",
           "organes": [
-            {"organe_an": "PO800538", "sigle_an": "RE", "valeur_source": "Majoritaire", "position": "majorite"}
+            {
+              "organe_an": "PO800538",
+              "sigle_an": "RE",
+              "valeur_source": "Majoritaire",
+              "position": "majorite"
+            }
           ]
         },
         "effectif_amo30": 196,
@@ -33,9 +42,24 @@
         "verifie_le": "2026-08-26",
         "ecart_motif": "3 membres partis avant la fin de la législature : absents de la dernière composition connue de NosDéputés, sans profil publié, donc sans entrée dans raw_data/correspondance_acteurs_an.json. L'écart est une catégorie fermée et datée, pas un résidu.",
         "ecart_membres": [
-          {"acteur_ref": "PA722070", "nom": "Pierre Henriet", "mandat_debut": "2022-06-29", "mandat_fin": "2024-02-15"},
-          {"acteur_ref": "PA719032", "nom": "Bertrand Bouyx", "mandat_debut": "2022-06-29", "mandat_fin": "2024-02-15"},
-          {"acteur_ref": "PA721522", "nom": "Xavier Batut", "mandat_debut": "2022-06-29", "mandat_fin": "2023-08-29"}
+          {
+            "acteur_ref": "PA722070",
+            "nom": "Pierre Henriet",
+            "mandat_debut": "2022-06-29",
+            "mandat_fin": "2024-02-15"
+          },
+          {
+            "acteur_ref": "PA719032",
+            "nom": "Bertrand Bouyx",
+            "mandat_debut": "2022-06-29",
+            "mandat_fin": "2024-02-15"
+          },
+          {
+            "acteur_ref": "PA721522",
+            "nom": "Xavier Batut",
+            "mandat_debut": "2022-06-29",
+            "mandat_fin": "2023-08-29"
+          }
         ]
       },
       {
@@ -43,14 +67,30 @@
         "groupe_id": "AN:SOC",
         "legislature": "16",
         "fichier": "groupe-AN-SOC-16.json",
-        "sigles_an": ["SOC", "SOC-A"],
-        "organes_an": ["PO800496", "PO830170"],
+        "sigles_an": [
+          "SOC",
+          "SOC-A"
+        ],
+        "organes_an": [
+          "PO800496",
+          "PO830170"
+        ],
         "position_politique_an": {
           "position": "opposition",
           "verifie_le": "2026-09-01",
           "organes": [
-            {"organe_an": "PO800496", "sigle_an": "SOC", "valeur_source": "Opposition", "position": "opposition"},
-            {"organe_an": "PO830170", "sigle_an": "SOC-A", "valeur_source": "Opposition", "position": "opposition"}
+            {
+              "organe_an": "PO800496",
+              "sigle_an": "SOC",
+              "valeur_source": "Opposition",
+              "position": "opposition"
+            },
+            {
+              "organe_an": "PO830170",
+              "sigle_an": "SOC-A",
+              "valeur_source": "Opposition",
+              "position": "opposition"
+            }
           ]
         },
         "effectif_amo30": 31,
@@ -64,13 +104,22 @@
         "groupe_id": "AN:RN",
         "legislature": "16",
         "fichier": "groupe-AN-RN-16.json",
-        "sigles_an": ["RN"],
-        "organes_an": ["PO800520"],
+        "sigles_an": [
+          "RN"
+        ],
+        "organes_an": [
+          "PO800520"
+        ],
         "position_politique_an": {
           "position": "opposition",
           "verifie_le": "2026-09-01",
           "organes": [
-            {"organe_an": "PO800520", "sigle_an": "RN", "valeur_source": "Opposition", "position": "opposition"}
+            {
+              "organe_an": "PO800520",
+              "sigle_an": "RN",
+              "valeur_source": "Opposition",
+              "position": "opposition"
+            }
           ]
         },
         "effectif_amo30": 90,
@@ -84,13 +133,22 @@
         "groupe_id": "AN:LFI",
         "legislature": "16",
         "fichier": "groupe-AN-LFI-16.json",
-        "sigles_an": ["LFI-NUPES"],
-        "organes_an": ["PO800490"],
+        "sigles_an": [
+          "LFI-NUPES"
+        ],
+        "organes_an": [
+          "PO800490"
+        ],
         "position_politique_an": {
           "position": "opposition",
           "verifie_le": "2026-09-01",
           "organes": [
-            {"organe_an": "PO800490", "sigle_an": "LFI-NUPES", "valeur_source": "Opposition", "position": "opposition"}
+            {
+              "organe_an": "PO800490",
+              "sigle_an": "LFI-NUPES",
+              "valeur_source": "Opposition",
+              "position": "opposition"
+            }
           ]
         },
         "effectif_amo30": 76,
@@ -104,13 +162,22 @@
         "groupe_id": "AN:LR",
         "legislature": "16",
         "fichier": "groupe-AN-LR-16.json",
-        "sigles_an": ["LR"],
-        "organes_an": ["PO800508"],
+        "sigles_an": [
+          "LR"
+        ],
+        "organes_an": [
+          "PO800508"
+        ],
         "position_politique_an": {
           "position": "opposition",
           "verifie_le": "2026-09-01",
           "organes": [
-            {"organe_an": "PO800508", "sigle_an": "LR", "valeur_source": "Opposition", "position": "opposition"}
+            {
+              "organe_an": "PO800508",
+              "sigle_an": "LR",
+              "valeur_source": "Opposition",
+              "position": "opposition"
+            }
           ]
         },
         "effectif_amo30": 63,
@@ -118,7 +185,12 @@
         "verifie_le": "2026-08-26",
         "ecart_motif": "1 membre parti avant la fin de la législature : absent de la dernière composition connue de NosDéputés, sans profil publié, donc sans entrée dans raw_data/correspondance_acteurs_an.json.",
         "ecart_membres": [
-          {"acteur_ref": "PA794914", "nom": "Alexandre Vincendet", "mandat_debut": "2022-06-29", "mandat_fin": "2024-03-19"}
+          {
+            "acteur_ref": "PA794914",
+            "nom": "Alexandre Vincendet",
+            "mandat_debut": "2022-06-29",
+            "mandat_fin": "2024-03-19"
+          }
         ]
       },
       {
@@ -126,13 +198,22 @@
         "groupe_id": "AN:EPR",
         "legislature": "17",
         "fichier": "groupe-AN-EPR-17.json",
-        "sigles_an": ["EPR"],
-        "organes_an": ["PO845407"],
+        "sigles_an": [
+          "EPR"
+        ],
+        "organes_an": [
+          "PO845407"
+        ],
         "position_politique_an": {
           "position": "non_declaree",
           "verifie_le": "2026-09-01",
           "organes": [
-            {"organe_an": "PO845407", "sigle_an": "EPR", "valeur_source": null, "position": null}
+            {
+              "organe_an": "PO845407",
+              "sigle_an": "EPR",
+              "valeur_source": null,
+              "position": null
+            }
           ]
         },
         "effectif_amo30": 123,
@@ -148,13 +229,22 @@
         "groupe_id": "AN:SOC:17",
         "legislature": "17",
         "fichier": "groupe-AN-SOC-17.json",
-        "sigles_an": ["SOC"],
-        "organes_an": ["PO845419"],
+        "sigles_an": [
+          "SOC"
+        ],
+        "organes_an": [
+          "PO845419"
+        ],
         "position_politique_an": {
           "position": "non_declaree",
           "verifie_le": "2026-09-01",
           "organes": [
-            {"organe_an": "PO845419", "sigle_an": "SOC", "valeur_source": null, "position": null}
+            {
+              "organe_an": "PO845419",
+              "sigle_an": "SOC",
+              "valeur_source": null,
+              "position": null
+            }
           ]
         },
         "effectif_amo30": 70,
@@ -170,13 +260,22 @@
         "groupe_id": "AN:RN:17",
         "legislature": "17",
         "fichier": "groupe-AN-RN-17.json",
-        "sigles_an": ["RN"],
-        "organes_an": ["PO845401"],
+        "sigles_an": [
+          "RN"
+        ],
+        "organes_an": [
+          "PO845401"
+        ],
         "position_politique_an": {
           "position": "non_declaree",
           "verifie_le": "2026-09-01",
           "organes": [
-            {"organe_an": "PO845401", "sigle_an": "RN", "valeur_source": null, "position": null}
+            {
+              "organe_an": "PO845401",
+              "sigle_an": "RN",
+              "valeur_source": null,
+              "position": null
+            }
           ]
         },
         "effectif_amo30": 131,
@@ -192,13 +291,22 @@
         "groupe_id": "AN:LFI:17",
         "legislature": "17",
         "fichier": "groupe-AN-LFI-17.json",
-        "sigles_an": ["LFI-NFP"],
-        "organes_an": ["PO845413"],
+        "sigles_an": [
+          "LFI-NFP"
+        ],
+        "organes_an": [
+          "PO845413"
+        ],
         "position_politique_an": {
           "position": "non_declaree",
           "verifie_le": "2026-09-01",
           "organes": [
-            {"organe_an": "PO845413", "sigle_an": "LFI-NFP", "valeur_source": null, "position": null}
+            {
+              "organe_an": "PO845413",
+              "sigle_an": "LFI-NFP",
+              "valeur_source": null,
+              "position": null
+            }
           ]
         },
         "effectif_amo30": 73,
@@ -214,13 +322,22 @@
         "groupe_id": "AN:DR",
         "legislature": "17",
         "fichier": "groupe-AN-DR-17.json",
-        "sigles_an": ["DR"],
-        "organes_an": ["PO845425"],
+        "sigles_an": [
+          "DR"
+        ],
+        "organes_an": [
+          "PO845425"
+        ],
         "position_politique_an": {
           "position": "non_declaree",
           "verifie_le": "2026-09-01",
           "organes": [
-            {"organe_an": "PO845425", "sigle_an": "DR", "valeur_source": null, "position": null}
+            {
+              "organe_an": "PO845425",
+              "sigle_an": "DR",
+              "valeur_source": null,
+              "position": null
+            }
           ]
         },
         "effectif_amo30": 64,
@@ -229,6 +346,248 @@
         "verifie_le": "2026-08-26",
         "ecart_motif": "Publication configurée par #700 : cette entrée est désormais dans `groupes[]`, la fiche paraît au prochain run. 42 des 64 membres ont un slug dans raw_data/correspondance_acteurs_an.json ; les 22 autres n'en ont pas, et build_roster_candidats_detaille laisse tomber un membre sans slug — ils sont hors de la fiche et nommés par l'annotation ROSTER_SANS_SLUG (#527). `effectif_publie` reste null jusqu'à la parution ; la mention « lot 1b » qui figurait ici désignait #527, qui a basculé la SOURCE du roster sur AMO30 et n'a jamais publié de fiche.",
         "membres_avec_slug": 42,
+        "ecart_membres": []
+      },
+      {
+        "groupe_sigle": "ECOLO",
+        "groupe_id": "AN:ECOLO:16",
+        "legislature": "16",
+        "fichier": "groupe-AN-ECOLO-16.json",
+        "sigles_an": [
+          "ECOLO"
+        ],
+        "organes_an": [
+          "PO800526"
+        ],
+        "position_politique_an": {
+          "position": "opposition",
+          "verifie_le": "2026-09-08",
+          "organes": [
+            {
+              "organe_an": "PO800526",
+              "sigle_an": "ECOLO",
+              "valeur_source": "Opposition",
+              "position": "opposition"
+            }
+          ]
+        },
+        "effectif_amo30": 23,
+        "effectif_publie": null,
+        "verifie_le": "2026-09-08",
+        "ecart_motif": "Publication configurée par #777 : organe PO800526 relu dans l'index AMO30 des groupes politiques le 2026-09-08 — sigle `ECOLO` (libelleAbrev), 2022-06-28 → 2024-06-09. La fiche paraît au prochain run. 2 des 23 membres ont un slug dans raw_data/correspondance_acteurs_an.json ; les autres n'en ont pas, et build_roster_candidats_detaille laisse tomber un membre sans slug — ils sont hors de la fiche et nommés par l'annotation ROSTER_SANS_SLUG (#527). `effectif_publie` reste null jusqu'à la parution.",
+        "membres_avec_slug": 2,
+        "ecart_membres": []
+      },
+      {
+        "groupe_sigle": "GDR",
+        "groupe_id": "AN:GDR:16",
+        "legislature": "16",
+        "fichier": "groupe-AN-GDR-16.json",
+        "sigles_an": [
+          "GDR-NUPES"
+        ],
+        "organes_an": [
+          "PO800502"
+        ],
+        "position_politique_an": {
+          "position": "opposition",
+          "verifie_le": "2026-09-08",
+          "organes": [
+            {
+              "organe_an": "PO800502",
+              "sigle_an": "GDR-NUPES",
+              "valeur_source": "Opposition",
+              "position": "opposition"
+            }
+          ]
+        },
+        "effectif_amo30": 24,
+        "effectif_publie": null,
+        "verifie_le": "2026-09-08",
+        "ecart_motif": "Publication configurée par #777 : organe PO800502 relu dans l'index AMO30 des groupes politiques le 2026-09-08 — sigle `GDR-NUPES` (libelleAbrev), 2022-06-28 → 2024-06-09. La fiche paraît au prochain run. 2 des 24 membres ont un slug dans raw_data/correspondance_acteurs_an.json ; les autres n'en ont pas, et build_roster_candidats_detaille laisse tomber un membre sans slug — ils sont hors de la fiche et nommés par l'annotation ROSTER_SANS_SLUG (#527). `effectif_publie` reste null jusqu'à la parution.",
+        "membres_avec_slug": 2,
+        "ecart_membres": [],
+        "succede_a": "AN:GDR:15"
+      },
+      {
+        "groupe_sigle": "FI",
+        "groupe_id": "AN:FI:15",
+        "legislature": "15",
+        "fichier": "groupe-AN-FI-15.json",
+        "sigles_an": [
+          "FI"
+        ],
+        "organes_an": [
+          "PO730958"
+        ],
+        "position_politique_an": {
+          "position": "opposition",
+          "verifie_le": "2026-09-08",
+          "organes": [
+            {
+              "organe_an": "PO730958",
+              "sigle_an": "FI",
+              "valeur_source": "Opposition",
+              "position": "opposition"
+            }
+          ]
+        },
+        "effectif_amo30": 17,
+        "effectif_publie": null,
+        "verifie_le": "2026-09-08",
+        "ecart_motif": "Publication configurée par #777 : organe PO730958 relu dans l'index AMO30 des groupes politiques le 2026-09-08 — sigle `FI` (libelleAbrev), 2017-06-27 → 2022-06-21. La fiche paraît au prochain run. 14 des 17 membres ont un slug dans raw_data/correspondance_acteurs_an.json ; les autres n'en ont pas, et build_roster_candidats_detaille laisse tomber un membre sans slug — ils sont hors de la fiche et nommés par l'annotation ROSTER_SANS_SLUG (#527). `effectif_publie` reste null jusqu'à la parution.",
+        "membres_avec_slug": 14,
+        "ecart_membres": []
+      },
+      {
+        "groupe_sigle": "NG",
+        "groupe_id": "AN:NG:15",
+        "legislature": "15",
+        "fichier": "groupe-AN-NG-15.json",
+        "sigles_an": [
+          "NG"
+        ],
+        "organes_an": [
+          "PO730946"
+        ],
+        "position_politique_an": {
+          "position": "opposition",
+          "verifie_le": "2026-09-08",
+          "organes": [
+            {
+              "organe_an": "PO730946",
+              "sigle_an": "NG",
+              "valeur_source": "Opposition",
+              "position": "opposition"
+            }
+          ]
+        },
+        "effectif_amo30": 33,
+        "effectif_publie": null,
+        "verifie_le": "2026-09-08",
+        "ecart_motif": "Publication configurée par #777 : organe PO730946 relu dans l'index AMO30 des groupes politiques le 2026-09-08 — sigle `NG` (libelleAbrev), 2017-06-27 → 2018-09-11. La fiche paraît au prochain run. 14 des 33 membres ont un slug dans raw_data/correspondance_acteurs_an.json ; les autres n'en ont pas, et build_roster_candidats_detaille laisse tomber un membre sans slug — ils sont hors de la fiche et nommés par l'annotation ROSTER_SANS_SLUG (#527). `effectif_publie` reste null jusqu'à la parution.",
+        "membres_avec_slug": 14,
+        "ecart_membres": []
+      },
+      {
+        "groupe_sigle": "SOC",
+        "groupe_id": "AN:SOC:15",
+        "legislature": "15",
+        "fichier": "groupe-AN-SOC-15.json",
+        "sigles_an": [
+          "SOC"
+        ],
+        "organes_an": [
+          "PO758835"
+        ],
+        "position_politique_an": {
+          "position": "opposition",
+          "verifie_le": "2026-09-08",
+          "organes": [
+            {
+              "organe_an": "PO758835",
+              "sigle_an": "SOC",
+              "valeur_source": "Opposition",
+              "position": "opposition"
+            }
+          ]
+        },
+        "effectif_amo30": 36,
+        "effectif_publie": null,
+        "verifie_le": "2026-09-08",
+        "ecart_motif": "Publication configurée par #777 : organe PO758835 relu dans l'index AMO30 des groupes politiques le 2026-09-08 — sigle `SOC` (libelleAbrev), 2018-09-12 → 2022-06-21. La fiche paraît au prochain run. 17 des 36 membres ont un slug dans raw_data/correspondance_acteurs_an.json ; les autres n'en ont pas, et build_roster_candidats_detaille laisse tomber un membre sans slug — ils sont hors de la fiche et nommés par l'annotation ROSTER_SANS_SLUG (#527). `effectif_publie` reste null jusqu'à la parution.",
+        "membres_avec_slug": 17,
+        "ecart_membres": [],
+        "succede_a": "AN:NG:15"
+      },
+      {
+        "groupe_sigle": "LaREM",
+        "groupe_id": "AN:LAREM:15",
+        "legislature": "15",
+        "fichier": "groupe-AN-LaREM-15.json",
+        "sigles_an": [
+          "LAREM"
+        ],
+        "organes_an": [
+          "PO730964"
+        ],
+        "position_politique_an": {
+          "position": "majorite",
+          "verifie_le": "2026-09-08",
+          "organes": [
+            {
+              "organe_an": "PO730964",
+              "sigle_an": "LAREM",
+              "valeur_source": "Majoritaire",
+              "position": "majorite"
+            }
+          ]
+        },
+        "effectif_amo30": 343,
+        "effectif_publie": null,
+        "verifie_le": "2026-09-08",
+        "ecart_motif": "Publication configurée par #777 : organe PO730964 relu dans l'index AMO30 des groupes politiques le 2026-09-08 — sigle `LAREM` (libelleAbrev), 2017-06-27 → 2022-06-21. La fiche paraît au prochain run. 116 des 343 membres ont un slug dans raw_data/correspondance_acteurs_an.json ; les autres n'en ont pas, et build_roster_candidats_detaille laisse tomber un membre sans slug — ils sont hors de la fiche et nommés par l'annotation ROSTER_SANS_SLUG (#527). `effectif_publie` reste null jusqu'à la parution.",
+        "membres_avec_slug": 116,
+        "ecart_membres": []
+      },
+      {
+        "groupe_sigle": "EDS",
+        "groupe_id": "AN:EDS:15",
+        "legislature": "15",
+        "fichier": "groupe-AN-EDS-15.json",
+        "sigles_an": [
+          "EDS"
+        ],
+        "organes_an": [
+          "PO771789"
+        ],
+        "position_politique_an": {
+          "position": "minoritaire",
+          "verifie_le": "2026-09-08",
+          "organes": [
+            {
+              "organe_an": "PO771789",
+              "sigle_an": "EDS",
+              "valeur_source": "Minoritaire",
+              "position": "minoritaire"
+            }
+          ]
+        },
+        "effectif_amo30": 17,
+        "effectif_publie": null,
+        "verifie_le": "2026-09-08",
+        "ecart_motif": "Publication configurée par #777 : organe PO771789 relu dans l'index AMO30 des groupes politiques le 2026-09-08 — sigle `EDS` (libelleAbrev), 2020-05-20 → 2020-10-16. La fiche paraît au prochain run. 2 des 17 membres ont un slug dans raw_data/correspondance_acteurs_an.json ; les autres n'en ont pas, et build_roster_candidats_detaille laisse tomber un membre sans slug — ils sont hors de la fiche et nommés par l'annotation ROSTER_SANS_SLUG (#527). `effectif_publie` reste null jusqu'à la parution.",
+        "membres_avec_slug": 2,
+        "ecart_membres": []
+      },
+      {
+        "groupe_sigle": "GDR",
+        "groupe_id": "AN:GDR:15",
+        "legislature": "15",
+        "fichier": "groupe-AN-GDR-15.json",
+        "sigles_an": [
+          "GDR"
+        ],
+        "organes_an": [
+          "PO730940"
+        ],
+        "position_politique_an": {
+          "position": "opposition",
+          "verifie_le": "2026-09-08",
+          "organes": [
+            {
+              "organe_an": "PO730940",
+              "sigle_an": "GDR",
+              "valeur_source": "Opposition",
+              "position": "opposition"
+            }
+          ]
+        },
+        "effectif_amo30": 18,
+        "effectif_publie": null,
+        "verifie_le": "2026-09-08",
+        "ecart_motif": "Publication configurée par #777 : organe PO730940 relu dans l'index AMO30 des groupes politiques le 2026-09-08 — sigle `GDR` (libelleAbrev), 2017-06-27 → 2022-06-21. La fiche paraît au prochain run. 2 des 18 membres ont un slug dans raw_data/correspondance_acteurs_an.json ; les autres n'en ont pas, et build_roster_candidats_detaille laisse tomber un membre sans slug — ils sont hors de la fiche et nommés par l'annotation ROSTER_SANS_SLUG (#527). `effectif_publie` reste null jusqu'à la parution.",
+        "membres_avec_slug": 2,
         "ecart_membres": []
       }
     ]
@@ -367,6 +726,78 @@
         ],
         "condition_reprise": "Identique à Senat:LR — les deux entrées partagent la même décision éditoriale (#528) et se réactiveraient ensemble. Voir docs/decisions/retrait-senat-528.md §7."
       }
+    },
+    {
+      "roster_chambre": "deputes",
+      "groupe_id": "AN:ECOLO:16",
+      "groupe_sigle": "ECOLO",
+      "groupe_nom": "Écologiste - NUPES",
+      "chambre": "AN",
+      "legislature": "16",
+      "fichier": "groupe-AN-ECOLO-16.json"
+    },
+    {
+      "roster_chambre": "deputes",
+      "groupe_id": "AN:GDR:16",
+      "groupe_sigle": "GDR",
+      "groupe_nom": "Gauche démocrate et républicaine - NUPES",
+      "chambre": "AN",
+      "legislature": "16",
+      "fichier": "groupe-AN-GDR-16.json"
+    },
+    {
+      "roster_chambre": "deputes",
+      "groupe_id": "AN:FI:15",
+      "groupe_sigle": "FI",
+      "groupe_nom": "La France insoumise",
+      "chambre": "AN",
+      "legislature": "15",
+      "fichier": "groupe-AN-FI-15.json"
+    },
+    {
+      "roster_chambre": "deputes",
+      "groupe_id": "AN:NG:15",
+      "groupe_sigle": "NG",
+      "groupe_nom": "Nouvelle Gauche",
+      "chambre": "AN",
+      "legislature": "15",
+      "fichier": "groupe-AN-NG-15.json"
+    },
+    {
+      "roster_chambre": "deputes",
+      "groupe_id": "AN:SOC:15",
+      "groupe_sigle": "SOC",
+      "groupe_nom": "Socialistes et apparentés",
+      "chambre": "AN",
+      "legislature": "15",
+      "fichier": "groupe-AN-SOC-15.json"
+    },
+    {
+      "roster_chambre": "deputes",
+      "groupe_id": "AN:LAREM:15",
+      "groupe_sigle": "LaREM",
+      "groupe_nom": "La République en Marche",
+      "chambre": "AN",
+      "legislature": "15",
+      "fichier": "groupe-AN-LaREM-15.json"
+    },
+    {
+      "roster_chambre": "deputes",
+      "groupe_id": "AN:EDS:15",
+      "groupe_sigle": "EDS",
+      "groupe_nom": "Écologie Démocratie Solidarité",
+      "chambre": "AN",
+      "legislature": "15",
+      "fichier": "groupe-AN-EDS-15.json"
+    },
+    {
+      "roster_chambre": "deputes",
+      "groupe_id": "AN:GDR:15",
+      "groupe_sigle": "GDR",
+      "groupe_nom": "Gauche démocrate et républicaine",
+      "chambre": "AN",
+      "legislature": "15",
+      "fichier": "groupe-AN-GDR-15.json"
     }
   ]
 }
