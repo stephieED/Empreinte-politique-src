@@ -5,23 +5,27 @@
   "parti_nom": "Elvita",
   "candidats": [
     {
-      "candidat_id": null,
+      "candidat_id": "sylvain-durif",
       "nom": "Sylvain Durif",
       "statut": "declare",
       "famille_politique": null,
-      "a_un_profil_pivot": false
+      "a_un_profil_pivot": true
     }
   ],
   "tags_thematiques_agreges": [],
-  "sources": [],
+  "sources": [
+    {
+      "type": "assemblee_nationale",
+      "url": "https://fr.wikipedia.org/wiki/Sylvain_Durif",
+      "synchro_le": "2026-09-08T21:26:32+0000"
+    }
+  ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-08T00:16:01+0000",
-    "licence_donnees": "",
+    "genere_le": "2026-09-08T22:08:24+0000",
+    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr",
     "nb_candidats_declares": 1,
-    "nb_candidats_avec_pivot": 0,
-    "warnings": [
-      "candidat=sylvain-durif : aucun profil pivot trouvé dans pivot_data/profiles (fichier <slug>.pivot.json absent)."
-    ]
+    "nb_candidats_avec_pivot": 1,
+    "warnings": []
   }
 }
