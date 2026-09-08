@@ -51,6 +51,7 @@ trou muet se lit comme un constat (#510, #501).
 
 from __future__ import annotations
 
+import json
 from typing import Any, Iterable
 
 #: Les statuts dont la collecte est **gelée**. Fermé, et volontairement petit :
@@ -95,3 +96,54 @@ def slugs_geles(candidats: Iterable[Any]) -> list[tuple[str, str]]:
         and c["slug"]
         and c.get("statut") in STATUTS_GELES
     ]
+
+
+#: Fichier de résolutions d'identifiants du run, écrit par le job de tête
+#: (#757) et lu ici **en lecture seule**. Défaut aligné sur le nom que
+#: `generate-data.yml` publie dans l'artifact `candidats-a-jour`.
+RESOLUTIONS_PAR_DEFAUT = "raw_data/resolutions_candidats.json"
+
+#: Mémo de lecture : ce fichier est relu une fois par candidat dans un shard,
+#: et il ne change pas pendant un run.
+_MEMO_RESOLUTIONS: dict[str, dict[str, Any]] = {}
+
+
+def vider_memo_resolutions() -> None:
+    """Vide le mémo — pour les tests, qui changent de fichier entre deux cas."""
+    _MEMO_RESOLUTIONS.clear()
+
+
+def declare_hors_an_par_identifiant(
+    nom: str, chemin: Any = RESOLUTIONS_PAR_DEFAUT
+) -> bool:
+    """Vrai si un identifiant externe déclare que cette personne n'a aucun mandat AN.
+
+    C'est la **seconde déclaration** admise par #775, à côté de l'entrée relue de
+    la table (#539). Elle existe pour ouvrir un verrou que rien d'autre ne
+    pouvait ouvrir : sans profil publié, pas d'entrée de table (filtre 2 de
+    #715) ; sans entrée de table, pas de profil. Cinq candidats déclarés y sont
+    restés, et aucun run futur ne les aurait débloqués.
+
+    **`indetermine` ne vaut PAS déclaration.** « Wikidata ne décrit pas cette
+    personne » et « Wikidata la décrit et ne lui connaît aucun mandat AN » sont
+    deux affirmations différentes, et une seule est un fait (#757). Un fichier
+    absent, illisible ou muet sur ce nom rend `False` : l'absence de preuve
+    n'est pas une preuve d'absence, et l'appelant retombe alors sur son
+    comportement d'avant.
+
+    Ce qui protège du faux constat n'est pas cette fonction mais la garde
+    `en_echec` de son appelant : une collecte en panne rend le même vide qu'une
+    absence, et le squelette n'est jamais écrit dessus (#484).
+    """
+    if not chemin:
+        return False
+    cle = str(chemin)
+    if cle not in _MEMO_RESOLUTIONS:
+        try:
+            with open(cle, encoding="utf-8") as fichier:
+                document = json.load(fichier)
+            _MEMO_RESOLUTIONS[cle] = document.get("resolutions") or {}
+        except (OSError, json.JSONDecodeError):
+            _MEMO_RESOLUTIONS[cle] = {}
+    resolution = _MEMO_RESOLUTIONS[cle].get(nom)
+    return bool(resolution) and resolution.get("issue") == "hors_an"

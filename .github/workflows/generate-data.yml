@@ -722,6 +722,7 @@ jobs:
             src
             raw_data/candidats.json
             raw_data/correspondance_acteurs_an.json
+            raw_data/resolutions_candidats.json
             raw_data/gouvernements_reels.json
             raw_data/groupes_reels.json
             raw_data/amendements_an_figes
@@ -1038,6 +1039,23 @@ jobs:
       # factoriser casserait ce mécanisme. `--max-pages` en faisait partie
       # jusqu'à #510, qui l'a retiré avec la recherche NosDéputés. Même remarque pour les steps homonymes de
       # extract-ue-officiel et extract-roster-groupes.
+      # LES RÉSOLUTIONS DU RUN (#775). Sans elles, un candidat que l'identifiant
+      # externe déclare sans mandat AN ne recevait AUCUN profil — et sans profil,
+      # la passe hors ligne ne pouvait pas écrire son entrée de table, qui était
+      # justement ce qui lui aurait donné un profil. Cinq candidats déclarés
+      # étaient bloqués là, et aucun run futur ne les aurait débloqués.
+      #
+      # Optionnel : sans l'artifact, `--resolutions` pointe un fichier absent,
+      # la lecture rend False, et le comportement est celui d'avant à
+      # l'identique. L'artifact porte AUSSI `candidats.json` du jour — le shard
+      # lisait jusqu'ici la liste COMMITTÉE, donc celle d'hier.
+      - name: Liste et résolutions du run — artifact (optionnel)
+        uses: actions/download-artifact@v7
+        continue-on-error: true
+        with:
+          name: candidats-a-jour
+          path: raw_data/
+
       - name: Extraction AN — ${{ matrix.slug }}
         env:
           OVERWRITE: ${{ inputs.existing_profiles == 'overwrite' }}
