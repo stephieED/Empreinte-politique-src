@@ -229,3 +229,24 @@ def test_le_gel_nest_annote_quune_fois_par_run():
     assert "_annoter_github" not in bloc.group(1), (
         "le gel ne doit pas être annoté depuis un shard : la matrice le fait déjà"
     )
+
+
+def test_le_shard_recoit_les_resolutions_du_run():
+    """Sans elles, un candidat déclaré sans mandat AN par un identifiant externe
+    ne reçoit aucun profil — et sans profil, pas d'entrée de table (#775).
+
+    L'artifact porte aussi `candidats.json` du jour : le shard lisait jusqu'ici
+    la liste COMMITTÉE, donc celle d'hier.
+    """
+    bloc = _sans_commentaires(_bloc_job("extract-an"))
+    assert "candidats-a-jour" in bloc
+    telechargement = _indice("extract-an", "candidats-a-jour")
+    extraction = _indice("extract-an", "Extraction AN")
+    assert telechargement < extraction, "le shard collecterait avant d'avoir les résolutions"
+
+
+def test_le_telechargement_des_resolutions_ne_fait_pas_echouer_le_shard():
+    """Son absence rend le comportement d'avant, à l'identique — pas une panne."""
+    steps = _steps(_bloc_job("extract-an"))
+    step = next(s for s in steps if "candidats-a-jour" in s)
+    assert "continue-on-error: true" in step

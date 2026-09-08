@@ -1203,11 +1203,37 @@ def process_candidat(
         # résultat : un référentiel en panne rend exactement le même vide, et
         # écrire un squelette dessus serait le défaut de #484. Une panne déclarée
         # (`en_echec`) écarte donc la branche.
-        declaree_hors_an = (_entree_correspondance(effective_slug) or {}).get("ecart") == "hors_an"
+        # DEUX déclarations valent, et #775 a ajouté la seconde. La table
+        # (relue) reste la première ; un **identifiant externe** qui ne connaît
+        # aucun mandat AN à cette personne est la seconde, et elle débloque un
+        # verrou que rien d'autre ne pouvait ouvrir :
+        #
+        #   pour avoir une entrée de table il faut un profil publié
+        #     (filtre 2 de #715, il n'y a rien à corroborer sans lui)
+        #   pour avoir un profil il fallait une entrée de table (#539)
+        #
+        # Cinq candidats déclarés sont restés bloqués là — Asselineau, Kazib,
+        # Lalanne, Bouamrane, Durif —, sans profil ni entrée, et le run
+        # `34168924759` les a signalés en soft sans qu'aucun run futur ne
+        # puisse les débloquer. C'est la circularité de #715, sur une
+        # troisième population.
+        #
+        # Ce que la seconde déclaration ne relâche PAS : `en_echec` écarte
+        # toujours la branche. Une panne rend le même vide qu'une absence, et
+        # écrire un squelette dessus reste le défaut de #484 — c'est cette
+        # garde-là, et non l'exigence d'une relecture humaine, qui protège du
+        # faux constat.
+        declaree_hors_an = (
+            (_entree_correspondance(effective_slug) or {}).get("ecart") == "hors_an"
+            or perimetre.declare_hors_an_par_identifiant(
+                nom, getattr(args, "resolutions", perimetre.RESOLUTIONS_PAR_DEFAUT)
+            )
+        )
         if not en_echec and declaree_hors_an:
             _tprint(
-                f"  — {effective_slug} : absence d'acteur AN DÉCLARÉE dans la table "
-                "(#525) — profil écrit depuis raw_data/candidats.json seul (#539)."
+                f"  — {effective_slug} : absence d'acteur AN DÉCLARÉE (table relue "
+                "ou identifiant externe) — profil écrit depuis "
+                "raw_data/candidats.json seul (#539, #775)."
             )
             profile = build_minimal_profile(nom, effective_slug, candidat)
         else:
@@ -1459,6 +1485,14 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--candidats", default=DEFAULT_CANDIDATS_PATH, help=f"Fichier JSON listant les candidats (défaut: {DEFAULT_CANDIDATS_PATH})")
     parser.add_argument("--only", help="Ne traiter qu'un seul candidat (par slug), utile pour tester")
+    parser.add_argument(
+        "--resolutions", default=perimetre.RESOLUTIONS_PAR_DEFAUT,
+        help=(
+            "Résolutions d'identifiants du run (#757). Un candidat qu'un identifiant "
+            "externe déclare sans mandat AN reçoit son profil minimal, comme s'il était "
+            f"déclaré hors_an dans la table (#775). Défaut : {perimetre.RESOLUTIONS_PAR_DEFAUT}"
+        ),
+    )
     parser.add_argument(
         "--budget-interventions-secondes", type=int, default=0,
         help="Budget de temps mur (s) pour la collecte d'interventions d'UN candidat : débats "
