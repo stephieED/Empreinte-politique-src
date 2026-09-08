@@ -21,7 +21,7 @@ Ce fichier existe pour être lu **avant** d'ouvrir
 | `prepare-roster-matrix` | — | `raw_data/groupes_reels.json` | `raw_data/roster_candidats.json` → artifact `roster-candidats`, et la matrice roster |
 | `extract-an` | `extract-amendements-an`, `prepare-an-matrix` | AN open data, Syceron, l'index amendements | un artifact `raw-profiles-an-<slug>` par shard, cache `public-data-cache-an-<semaine>[-interv-<empreinte>]` |
 | `extract-roster-groupes` | les quatre `extract-*` + `prepare-roster-matrix` | l'artifact `roster-candidats`, les mêmes sources | un artifact `raw-profiles-roster-groupes-<shard>` par shard |
-| `merge-and-pivot` | `extract-an`, `extract-ue-officiel`, `extract-parltrack`, `extract-roster-groupes` | tous les artifacts ci-dessus | la fusion, les deux passes pivot, les quatre contrôles, le commit et le push |
+| `merge-and-pivot` | `extract-an`, `extract-ue-officiel`, `extract-parltrack`, `extract-roster-groupes` | tous les artifacts ci-dessus | le contrôle du transport, la fusion, les deux passes pivot, les quatre contrôles, le commit et le push |
 
 Cinq jobs n'ont aucun `needs:` et démarrent ensemble (`rafraichir-candidats` en fait partie depuis #757 ; `prepare-an-matrix` l'attend désormais). Le **chemin critique réel,
 ce sont les deux matrices en série** (`extract-an` en `max-parallel: 1`, puis la
@@ -352,7 +352,7 @@ combinaisons des deux axes du formulaire, les trois codes de sortie du roster :
 
 #### `merge-and-pivot`
 
-**Le seul job qui écrit dans le dépôt.** Il enchaîne, dans cet ordre : fusion
+**Le seul job qui écrit dans le dépôt.** Il enchaîne, dans cet ordre : **le contrôle du transport des artifacts** (`verifier_transport_artifacts.py`, #786 — un artifact que le run a publié et qui n'est pas sur le disque est rattrapé par `gh run download`, puis bloque ; une source qui n'a rien publié reste silencieuse, et un inventaire illisible n'échoue pas) ; fusion
 additive des profils bruts des trois familles d'artifacts
 (`src/merge_profile.py --dirs _artifacts/an _artifacts/ue _artifacts/roster`) ;
 **première** passe `--pivot-only` sur `raw_data/candidats.json`, avec
