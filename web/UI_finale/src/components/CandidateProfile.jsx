@@ -71,9 +71,14 @@ function periode(debut, fin, actif) {
  * publié, pas une légende décorative — c'est lui qui empêche de lire un
  * décompte comme une note.
  */
+/* `id` et `data-section` : c'est par eux que `SommaireSections` LIT la page, au
+ * lieu de recevoir une liste. Le sommaire sert ainsi les trois types de fiche
+ * sans qu'aucune ait à le connaître, et une section ajoutée y apparaît d'elle-
+ * même. L'ancre est dérivée du NUMÉRO, pas du titre : un titre change avec la
+ * voix du texte (« ce qu'il » / « ce qu'elle »), un lien partagé ne doit pas. */
 function Section({ numero, titre, critere, pied, children }) {
   return (
-    <section className="cp-section">
+    <section className="cp-section" id={`section-${numero}`} data-section={titre}>
       <div className="cp-section-bande">
         <span className="cp-section-numero">{numero}</span>
         <span className="cp-section-trait" />
