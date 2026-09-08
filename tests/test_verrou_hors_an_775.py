@@ -20,6 +20,7 @@ n'en devient pas une.
 """
 
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -120,3 +121,43 @@ def test_la_condition_du_squelette_garde_en_echec():
         "la garde `en_echec` a disparu de la condition du profil minimal"
     )
     assert "declare_hors_an_par_identifiant" in src
+
+
+# ---------------------------------------------------------------------------
+# La symétrie des deux places (#781)
+# ---------------------------------------------------------------------------
+
+
+def _source_generate() -> str:
+    return (Path(__file__).resolve().parents[1] / "src" / "generate_all_profiles.py").read_text(
+        encoding="utf-8"
+    )
+
+
+def test_les_deux_places_acceptent_la_meme_declaration():
+    """Écrire le brut et le publier en pivot sont deux décisions, au même titre.
+
+    #775 n'avait étendu que la première. Le run `34211117684` a donc écrit cinq
+    profils bruts sans aucun pivot, et le garde-fou de #511 a bloqué le commit —
+    « collecté mais non publié », exactement ce que le commentaire de
+    `_normaliser_en_pivot` annonçait.
+
+    Une déclaration qui autorise la COLLECTE doit autoriser la PUBLICATION :
+    sans quoi le profil existe et n'atteint aucune vue.
+    """
+    src = _source_generate()
+    assert src.count("declare_hors_an_par_identifiant") >= 2, (
+        "une seule des deux places consulte l'identifiant externe — l'autre "
+        "produira un « collecté mais non publié »"
+    )
+
+
+def test_la_place_du_pivot_consulte_bien_lidentifiant():
+    """Le test ci-dessus compte ; celui-ci vise l'endroit."""
+    src = _source_generate()
+    bloc = re.search(r"def _normaliser_en_pivot\((.*?)\n    if mandat_ue is not None:", src, re.DOTALL)
+    assert bloc, "`_normaliser_en_pivot` a changé de forme"
+    assert "declare_hors_an_par_identifiant" in bloc.group(1)
+    assert 'entree.get("ecart") == "hors_an"' in bloc.group(1), (
+        "la table reste la première déclaration ; elle ne doit pas disparaître"
+    )

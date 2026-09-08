@@ -765,6 +765,7 @@ def _normaliser_en_pivot(
     parti: Optional[str],
     provenance: str,
     chambre: Optional[str],
+    resolutions: Any = perimetre.RESOLUTIONS_PAR_DEFAUT,
     scrutins_index: Optional[ScrutinsIndex],
     decisions: Optional[tuple[str, ...]] = None,
 ) -> Optional[dict[str, Any]]:
@@ -789,7 +790,23 @@ def _normaliser_en_pivot(
     # vérifié comme n'ayant jamais siégé (Arthaud, Tondelier, Lisnard) aurait un
     # profil brut et aucun pivot : un « collecté mais non publié » (#511) créé
     # par le lot censé le retirer.
-    declaree_hors_an = bool(entree) and entree.get("ecart") == "hors_an"
+    # DEUX déclarations, ici comme à l'écriture du brut (#775, #781). La table
+    # relue est la première ; un identifiant externe qui ne connaît aucun mandat
+    # AN à cette personne est la seconde.
+    #
+    # #775 n'avait étendu QUE l'endroit qui écrit le brut. Cet endroit-ci décide
+    # si le brut devient un pivot, et il exigeait toujours la table : le run
+    # `34211117684` a donc écrit cinq profils bruts sans aucun pivot, et le
+    # garde-fou de #511 a bloqué le commit — « collecté mais non publié », le
+    # défaut que le commentaire ci-dessus annonçait mot pour mot.
+    #
+    # Les deux places sont symétriques et doivent le rester : une déclaration
+    # qui autorise la collecte doit autoriser la publication, sans quoi le
+    # profil existe et n'atteint aucune vue.
+    declaree_hors_an = (
+        (bool(entree) and entree.get("ecart") == "hors_an")
+        or perimetre.declare_hors_an_par_identifiant(profile.get("nom") or "", resolutions)
+    )
     pivoter_le_brut = bool(chambre) or (mandat_ue is None and declaree_hors_an)
     pivot_profile = (
         normalize_profil(
@@ -1048,6 +1065,7 @@ def process_candidat(
             profile, mandat_ue,
             effective_slug=effective_slug, parti=parti, provenance=provenance,
             chambre=chambre, scrutins_index=scrutins_index, decisions=None,
+            resolutions=getattr(args, "resolutions", perimetre.RESOLUTIONS_PAR_DEFAUT),
         )
 
         if pivot_profile is None:
@@ -1306,6 +1324,7 @@ def process_candidat(
             profile, mandat_ue,
             effective_slug=effective_slug, parti=parti, provenance=provenance,
             chambre=chambre, scrutins_index=scrutins_index, decisions=decisions,
+            resolutions=getattr(args, "resolutions", perimetre.RESOLUTIONS_PAR_DEFAUT),
         )
         if pivot_profile is not None:
             pivot_path = pivot_dir / f"{effective_slug}.pivot.json"
