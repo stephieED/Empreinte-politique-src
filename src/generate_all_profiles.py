@@ -761,6 +761,7 @@ def _normaliser_en_pivot(
     profile: dict[str, Any],
     mandat_ue: Optional[dict[str, Any]],
     *,
+    nom: str,
     effective_slug: str,
     parti: Optional[str],
     provenance: str,
@@ -803,9 +804,19 @@ def _normaliser_en_pivot(
     # Les deux places sont symétriques et doivent le rester : une déclaration
     # qui autorise la collecte doit autoriser la publication, sans quoi le
     # profil existe et n'atteint aucune vue.
+    #
+    # LE NOM VIENT DE L'APPELANT, PAS DU BRUT (#788). Cette ligne lisait
+    # `profile.get("nom")` — un champ qu'aucun des 652 profils bruts ne porte,
+    # le nom y vivant sous `identite.nom_complet`. La branche rendait donc
+    # `False` à tous les coups, et la seconde déclaration de #781 n'a jamais pu
+    # être vraie : le run `34264027824` a écrit les cinq profils bruts et aucun
+    # pivot, sur un fichier de résolutions correct. La clé des résolutions est
+    # le nom de `raw_data/candidats.json`, que l'appelant tient déjà et que
+    # l'autre place passe depuis toujours — le prendre ici rend la symétrie
+    # réelle au lieu de la décrire.
     declaree_hors_an = (
         (bool(entree) and entree.get("ecart") == "hors_an")
-        or perimetre.declare_hors_an_par_identifiant(profile.get("nom") or "", resolutions)
+        or perimetre.declare_hors_an_par_identifiant(nom or "", resolutions)
     )
     pivoter_le_brut = bool(chambre) or (mandat_ue is None and declaree_hors_an)
     pivot_profile = (
@@ -1063,7 +1074,7 @@ def process_candidat(
         # le job roster porte les deux `--skip-*` en dur (#357).
         pivot_profile = _normaliser_en_pivot(
             profile, mandat_ue,
-            effective_slug=effective_slug, parti=parti, provenance=provenance,
+            nom=nom, effective_slug=effective_slug, parti=parti, provenance=provenance,
             chambre=chambre, scrutins_index=scrutins_index, decisions=None,
             resolutions=getattr(args, "resolutions", perimetre.RESOLUTIONS_PAR_DEFAUT),
         )
@@ -1322,7 +1333,7 @@ def process_candidat(
         )
         pivot_profile = _normaliser_en_pivot(
             profile, mandat_ue,
-            effective_slug=effective_slug, parti=parti, provenance=provenance,
+            nom=nom, effective_slug=effective_slug, parti=parti, provenance=provenance,
             chambre=chambre, scrutins_index=scrutins_index, decisions=decisions,
             resolutions=getattr(args, "resolutions", perimetre.RESOLUTIONS_PAR_DEFAUT),
         )

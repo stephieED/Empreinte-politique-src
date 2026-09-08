@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 246 décisions
+gouverne sans avoir à fouiller les 247 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -37,15 +37,15 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 
 | Module | Décisions qui le gouvernent |
 | --- | ---: |
+| `src/build_correspondance_acteurs_an.py` | 4 |
 | `src/normalize_parltrack_dumps.py` | 4 |
 | `src/audit_pipeline.py` | 3 |
 | `src/budget_collecte.py` | 3 |
-| `src/build_correspondance_acteurs_an.py` | 3 |
 | `src/parse_syceron.py` | 3 |
+| `src/perimetre_candidats.py` | 3 |
 | `src/profil_brut.py` | 3 |
 | `src/audit_gouvernement_dataset.py` | 2 |
 | `src/gouvernement_profile.py` | 2 |
-| `src/perimetre_candidats.py` | 2 |
 | `src/purge_mandats_dupliques.py` | 2 |
 | `src/avertissements.py` | 1 |
 | `src/build_amendements_index.py` | 1 |
@@ -246,12 +246,13 @@ Le mentionnent sans le gouverner : [`mise-en-oeuvre-des-grands-chiffres-328`](de
 
 ## `src/build_correspondance_acteurs_an.py`
 
-3 décision(s) le gouvernent ; le module en cite 0.
+4 décision(s) le gouvernent ; le module en cite 0.
 
 | Décision | Nomme |
 | --- | --- |
 | [Une entrée dérivée gèle un slug fabriqué, elle ne prouve plus rien (#715) (2026-09-02)](decisions/entree-derivee-correspondance-715.md) | `_slugs_publies` |
 | [La liste des candidats se collecte, et un déclaré entre sans slug (#753)](decisions/liste-candidats-declares-753.md) | `slugs_fabriques` |
+| [La seconde déclaration lisait un champ que le corpus ne porte pas (#788)](decisions/nom-des-resolutions-vient-de-lappelant-788.md) | `resolutions_candidats` |
 | [Un membre de roster sans correspondance relue reçoit un slug, et la collision reste un refus (#708) (2026-09-02)](decisions/slug-fabrique-membre-de-roster-708.md) | `_slugs_publies` |
 
 Le mentionnent sans le gouverner : [`bascule-roster-an-amo30-527`](decisions/bascule-roster-an-amo30-527.md), [`correspondance-acteurs-an-525`](decisions/correspondance-acteurs-an-525.md), [`fiches-groupe-17e-legislature-700`](decisions/fiches-groupe-17e-legislature-700.md).
@@ -469,7 +470,7 @@ Le mentionnent sans le gouverner : [`collecte-interventions-reduite-au-theme-657
 
 ## `src/generate_all_profiles.py`
 
-22 décision(s) le gouvernent ; le module en cite 3.
+23 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
@@ -488,6 +489,7 @@ Le mentionnent sans le gouverner : [`collecte-interventions-reduite-au-theme-657
 | [`extract-senat` ne collecte plus d'interventions : la collecte n'en retenait aucune, par construction (#501) (2026-08-20)](decisions/interventions-senat-501.md) | `_manifest_append`, `build_profile_any_chambre` |
 | [`--limit` + `--skip-existing` sur `extract-roster-groupes` : sélection progressive + rafraîchissement (2026-08-12)](decisions/limit-skip-existing-roster-groupes.md) | `_select_candidats`, `_select_candidats_couverture`, `process_candidat` |
 | [`extract-an` en matrix strategy par candidat, pour isoler la perte en cas de shutdown signal runner (#344) (2026-08-16)](decisions/matrix-extract-an-par-candidat.md) | `process_candidat` |
+| [La seconde déclaration lisait un champ que le corpus ne porte pas (#788)](decisions/nom-des-resolutions-vient-de-lappelant-788.md) | `_normaliser_en_pivot`, `process_candidat` |
 | [Un fichier de progression dans un répertoire de données (#518, troisième incident) (2026-08-24)](decisions/point-de-sauvegarde-dans-les-profils-518.md) | `DEFAULT_CHECKPOINT_PATH`, `_save_checkpoint` |
 | [Le `texte_vise` fautif se reprend depuis l'archive figée, pas par une fusion plus permissive (#696, 01/09/2026)](decisions/report-texte-vise-source-696.md) | `_rafraichir_index_amendements` |
 | [Retrait de `fetch_activity_synthesis` (#356) (2026-08-16)](decisions/retrait-fetch-activity-synthesis.md) | `build_minimal_profile` |
@@ -820,11 +822,12 @@ Le mentionnent sans le gouverner : [`freshness-timestamps-groupes-gouvernements-
 
 ## `src/perimetre_candidats.py`
 
-2 décision(s) le gouvernent ; le module en cite 0.
+3 décision(s) le gouvernent ; le module en cite 0.
 
 | Décision | Nomme |
 | --- | --- |
 | [Une candidature déclinée n'a plus de fiche dans l'interface (#761)](decisions/fiches-masquees-candidatures-declinees-761.md) | `STATUTS_GELES` |
+| [La seconde déclaration lisait un champ que le corpus ne porte pas (#788)](decisions/nom-des-resolutions-vient-de-lappelant-788.md) | `declare_hors_an_par_identifiant` |
 | [Une candidature déclinée sort du périmètre de collecte, sa fiche reste publiée (#760)](decisions/perimetre-collecte-candidatures-declinees-760.md) | `STATUTS_GELES` |
 
 ## `src/population_profils.py`
