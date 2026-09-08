@@ -191,8 +191,8 @@ les charger, ni à les faire grossir. -->
   in the JO), and an already-`decline` entry is not rewritten. A named exit is a **fact**:
   `::notice::`, never `::warning::`.
   → `docs/decisions/sortie-nommee-par-la-source-763.md`
-- **Quand une règle décide d'une population, chercher sa jumelle (#771, #775, #781).** La
-  boucle du périmètre a cassé **trois fois** sur le même geste : borner une population à ce
+- **Quand une règle décide d'une population, chercher sa jumelle (#771, #775, #781, #788).** La
+  boucle du périmètre a cassé **quatre fois** sur le même geste : borner une population à ce
   qu'on avait sous les yeux en l'écrivant. Résoudre ce qui est *neuf* quand la passe hors
   ligne a besoin de ce que *la table ne couvre pas* ; réserver l'entrée à ceux qui ont un
   profil publié quand cinq candidats n'en auraient jamais eu sans entrée ; poser une
@@ -200,8 +200,19 @@ les charger, ni à les faire grossir. -->
   run perdu. **Une déclaration qui autorise la collecte doit autoriser la publication** ; une
   résolution qui sert au job de tête doit servir à la passe hors ligne. Corollaire : un
   fichier d'échange s'écrit **même vide**, parce que conditionner une étape sur sa
-  **présence** transforme « rien à ajouter » en « ne fais rien ».
-  → `docs/decisions/boucle-candidats-quatre-corrections-781.md`
+  **présence** transforme « rien à ajouter » en « ne fais rien ». **La quatrième casse n'est
+  plus le périmètre mais la CLÉ (#788)** : la place du pivot lisait `profile.get("nom")`, un
+  champ qu'**aucun des 652 profils bruts ne porte** — le nom y vit sous
+  `identite.nom_complet`. La branche rendait `False` à tous les coups, et la déclaration
+  posée par #781 n'a jamais pu être vraie. Le nom vient donc de l'**appelant**, comme à
+  l'autre place : c'est par construction la clé de
+  `raw_data/resolutions_candidats.json`. **Une symétrie s'exécute, elle ne se décrit pas** —
+  les tests de #781 lisaient le *source* et vérifiaient que la fonction *cite*
+  `declare_hors_an_par_identifiant`, ce qu'aucun champ absent ne peut contredire ; un test
+  qui fait tourner la fonction sur un brut à la **forme du corpus** l'aurait vue au premier
+  coup (le patron de #726).
+  → `docs/decisions/boucle-candidats-quatre-corrections-781.md`,
+    `docs/decisions/nom-des-resolutions-vient-de-lappelant-788.md`
 - **Un sigle de groupe ne se déduit jamais (#777).** Deux cas sur huit l'ont prouvé : le
   mandat dit « Ecolo - NUPES » quand l'organe s'appelle `ECOLO`, « GDR - NUPES » quand il
   s'appelle `GDR-NUPES`. Chaque organe se relit dans l'index AMO30 des groupes politiques,
