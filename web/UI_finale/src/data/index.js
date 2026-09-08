@@ -198,32 +198,17 @@ function loadFichesGroupe(manifest, entry) {
   );
 }
 
-/**
- * Fiches de gouvernement dont ce candidat a été membre (#328).
- *
- * `manifest.gouvernements[].membreIds` évite de charger les dix fiches pour
- * n'en garder qu'une ou quatre. Un candidat qui n'a jamais été au gouvernement
- * n'en télécharge aucune — et la section le dit comme un FAIT ÉTABLI sur la
- * personne, jamais comme une donnée manquante.
- */
-function loadGouvernements(manifest, slug) {
-  const fiches = (manifest.gouvernements || []).filter((g) => (g.membreIds || []).includes(slug));
-  return Promise.all(fiches.map((g) => fetchJson(`/data/gouvernements/${g.fichier}`).catch(() => null)));
-}
-
 export async function getCandidateProfile(id) {
   const manifest = await loadManifest();
   const entry = manifest.candidates.find((c) => c.slug === id);
   if (!entry) return null;
-  const [pivot, scrutins, fichesGroupe, gouvernements, commissions, scrutinsDossiers] =
-    await Promise.all([
-      fetchJson(`/data/profiles/${entry.slug}.pivot.json`),
-      loadScrutins(),
-      loadFichesGroupe(manifest, entry),
-      loadGouvernements(manifest, entry.slug),
-      loadCommissionsDossiers(),
-      loadScrutinsDossiers(),
-    ]);
+  const [pivot, scrutins, fichesGroupe, commissions, scrutinsDossiers] = await Promise.all([
+    fetchJson(`/data/profiles/${entry.slug}.pivot.json`),
+    loadScrutins(),
+    loadFichesGroupe(manifest, entry),
+    loadCommissionsDossiers(),
+    loadScrutinsDossiers(),
+  ]);
   if (!pivot) return null;
   // L'index des amendements se charge APRÈS le profil : ce sont les
   // identifiants du mapping qui disent quelles législatures aller chercher.
@@ -234,7 +219,6 @@ export async function getCandidateProfile(id) {
     scrutins,
     amendements,
     fichesGroupe.filter(Boolean),
-    gouvernements.filter(Boolean),
     commissions,
     scrutinsDossiers,
     // TOUS les gouvernements, pas les seuls dont la personne fut membre : « ce

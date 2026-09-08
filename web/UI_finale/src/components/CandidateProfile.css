@@ -881,31 +881,6 @@
   color: var(--muted);
 }
 
-/* ── Barres empilées ─────────────────────────────────────────────────────── */
-.cp-barre {
-  display: flex;
-  height: 22px;
-  border-radius: 5px;
-  overflow: hidden;
-  margin-top: 10px;
-  background: var(--border);
-}
-
-.cp-barre-seg {
-  display: block;
-  height: 100%;
-}
-
-/*
- * Un segment sans teinte : « sort non publié », « adopté sans vote (49.3) ».
- * Il ne reçoit JAMAIS une couleur d'issue par défaut — un 49.3 n'est pas une
- * position de vote (§2 règle 4) et un sort absent n'est pas un sort (§2 règle 5).
- */
-.cp-barre-seg--sans-teinte {
-  background: repeating-linear-gradient(135deg, #dcd9d3 0 3px, transparent 3px 7px);
-  border: 1px solid var(--border-strong);
-}
-
 .cp-cles {
   display: flex;
   gap: 14px;
@@ -927,11 +902,6 @@
   height: 9px;
   border-radius: 2px;
   display: block;
-}
-
-.cp-cle-pastille--sans-teinte {
-  background: repeating-linear-gradient(135deg, #dcd9d3 0 2px, transparent 2px 4px);
-  border: 1px solid var(--border-strong);
 }
 
 .cp-cle b {
@@ -1052,56 +1022,6 @@
   line-height: 1.55;
 }
 
-/* ── Listes nommées ─────────────────────────────────────────────────────── */
-.cp-nommes {
-  list-style: none;
-  margin: 14px 0 0;
-  padding: 0;
-  border-top: 1px solid var(--border);
-}
-
-.cp-nomme {
-  display: grid;
-  grid-template-columns: 160px 1fr auto;
-  gap: 16px;
-  align-items: baseline;
-  padding: 12px 0;
-  border-top: 1px solid var(--border);
-  font-size: 13.5px;
-}
-
-.cp-nomme:first-child {
-  border-top: 0;
-}
-
-.cp-nomme-cle {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.cp-nomme-date {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--muted);
-  white-space: nowrap;
-}
-
-.cp-marque {
-  display: inline-flex;
-  margin-left: 8px;
-  padding: 1px 8px;
-  border-radius: 999px;
-  border: 1px solid var(--border-strong);
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--gouv);
-}
-
 .cp-textes {
   padding: 22px 26px;
 }
@@ -1114,12 +1034,6 @@
 
 .cp-gouv:first-child {
   border-top: 0;
-}
-
-/* Le jaune signal en liseré, jamais en texte : contraste 1,05:1 sur fond clair. */
-.cp-gouv--chef {
-  border-left: 4px solid var(--accent);
-  background: #fbfaf8;
 }
 
 .cp-gouv-tete {
@@ -1140,26 +1054,6 @@
   font-weight: 700;
   color: var(--muted);
   white-space: nowrap;
-}
-
-.cp-gouv-fonction {
-  font-size: 13px;
-  color: #6e6a78;
-  margin: 5px 0 0;
-  line-height: 1.45;
-}
-
-.cp-gouv-49 {
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--muted);
-  margin-top: 11px;
-}
-
-.cp-gouv-49 em {
-  font-style: normal;
-  font-weight: 600;
-  color: #6e6a78;
 }
 
 /* ── § 4 — les mesures ───────────────────────────────────────────────────── */
@@ -1206,70 +1100,6 @@
   border-width: 2px;
   border-radius: 6px;
   color: var(--ink);
-}
-
-/* ── § 5 — les votes ─────────────────────────────────────────────────────── */
-.cp-annees {
-  display: flex;
-  align-items: flex-end;
-  gap: 5px;
-  margin-top: 16px;
-  height: 96px;
-}
-
-.cp-annee {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  min-width: 0;
-  height: 100%;
-  justify-content: flex-end;
-}
-
-.cp-annee i {
-  display: block;
-  width: 100%;
-  background: var(--ink);
-  border-radius: 3px 3px 0 0;
-}
-
-.cp-annee b,
-.cp-annee em {
-  font-size: 10.5px;
-  font-weight: 700;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-  font-style: normal;
-}
-
-.cp-annee em {
-  font-weight: 800;
-  color: var(--ink);
-}
-
-.cp-votes-barre {
-  display: flex;
-  gap: 8px;
-  margin-top: 4px;
-  flex-wrap: wrap;
-}
-
-.cp-votes-seg {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 120px;
-  padding: 14px 16px;
-  border: 1px solid var(--border-strong);
-  border-radius: 14px;
-}
-
-.cp-votes-seg b {
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
 }
 
 .cp-regles--votes {
@@ -1338,7 +1168,6 @@
 
 @media (max-width: 760px) {
   .cp-ligne,
-  .cp-nomme,
   .cp-ecart,
   .cp-role {
     grid-template-columns: 1fr;
@@ -1362,31 +1191,6 @@
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
-}
-
-/*
- * Les trois situations d'une année, distinguées par la FORME et non par une
- * teinte : une année de gouvernement et une année hors mandat ne sont pas deux
- * degrés d'une même échelle, et un dégradé les rangerait (§2 règle 1).
- */
-.cp-annee--gouvernement i {
-  background: repeating-linear-gradient(135deg, transparent 0 4px, var(--border-strong) 4px 5px);
-  border: 1px dashed var(--border-strong);
-}
-
-.cp-annee--hors-mandat i {
-  background: transparent;
-  border-bottom: 2px dotted var(--border-strong);
-}
-
-.cp-cle-pastille--gouvernement {
-  background: repeating-linear-gradient(135deg, transparent 0 2px, var(--border-strong) 2px 3px);
-  border: 1px dashed var(--border-strong);
-}
-
-.cp-cle-pastille--hors-mandat {
-  background: transparent;
-  border-bottom: 2px dotted var(--border-strong);
 }
 
 /* ── § 1 — les fonctions exercées, révision du 03/09/2026 (#328) ───────────────

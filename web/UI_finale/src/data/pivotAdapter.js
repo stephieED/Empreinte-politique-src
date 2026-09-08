@@ -297,87 +297,19 @@ function* joinAmendements(amendements, amendementsIndex) {
   }
 }
 
-/* ── Livrable : les gouvernements dont la personne a été membre (#328) ───────
- *
- * Une SECTION À PART, placée avant les actes personnels. La maquette d'août
- * rangeait ce bloc dans « ce qu'il a proposé » en portant la phrase « ces textes
- * engagent le gouvernement, pas la personne » : la place contredisait la
- * phrase, et la place gagne.
- *
- * En ENSEMBLES, jamais en liste attribuée — un Premier ministre signe les 25
- * textes de son gouvernement, lui en attribuer un personnellement ne voudrait
- * rien dire. Et jamais additionné aux amendements ou aux textes portés : 49
- * amendements et 25 textes de gouvernement ne font pas 74.
- */
-const STATUTS_GOUVERNEMENT = [
-  { cle: 'promulgue', label: 'promulgués' },
-  { cle: 'adopte_cmp', label: 'adoptés en CMP' },
-  { cle: 'adopte', label: 'adoptés' },
-  { cle: 'navette_en_cours', label: 'en navette' },
-  { cle: 'rejete', label: 'rejetés' },
-  { cle: 'retire', label: 'retirés' },
-  { cle: 'depose', label: 'déposés' },
-];
-
-// Les deux statuts « 49.3 » restent HORS de la répartition colorée : un texte
-// adopté sans vote est un fait de procédure, jamais une issue de scrutin
-// (AGENTS.md §2 règle 4). Ils sont comptés séparément et dits en toutes lettres.
-const STATUTS_49_3 = ['adopte_49_3', 'rejete_49_3'];
-
-function buildGouvernements(slug, gouvernements) {
-  return (gouvernements || [])
-    .filter((g) => (g.membres || []).some((m) => m.membre_id === slug))
-    .map((g) => {
-      const comptages = g.comptages?.par_statut || {};
-      const total = (g.textes || []).length;
-      const fonctions = (g.membres || [])
-        .filter((m) => m.membre_id === slug)
-        .map((m) => ({ portefeuille: m.portefeuille, debut: m.debut, fin: m.fin }))
-        .sort((a, b) => String(a.debut || '').localeCompare(String(b.debut || '')));
-      const chef = g.premier_ministre?.membre_id === slug
-        || fonctions.some((f) => /^premier ministre$/i.test(f.portefeuille || ''));
-      return {
-        id: g.gouvernement_id,
-        nom: g.nom,
-        debut: g.periode?.debut ?? null,
-        fin: g.periode?.fin ?? null,
-        actif: Boolean(g.periode?.actif),
-        chef,
-        fonctions,
-        total,
-        statuts: STATUTS_GOUVERNEMENT.filter((st) => comptages[st.cle] > 0).map((st) => ({
-          ...st,
-          n: comptages[st.cle],
-        })),
-        adoptesSansVote: STATUTS_49_3.reduce((n, cle) => n + (comptages[cle] || 0), 0),
-        // Les textes ne sont nommés que pour le gouvernement dont la personne
-        // était le chef : ailleurs, nommer un texte reviendrait à le lui
-        // attribuer alors qu'un autre ministre l'a porté.
-        textes: chef
-          ? (g.textes || [])
-              .slice()
-              .sort((a, b) => String(b.date_dernier_evenement || '').localeCompare(String(a.date_dernier_evenement || '')))
-              .map((t) => ({
-                titre: t.titre,
-                statut: t.statut,
-                date: t.date_dernier_evenement ?? t.date_depot ?? null,
-                sansVote: Boolean(t.sort_49_3),
-              }))
-          : null,
-      };
-    })
-    .sort((a, b) => String(a.debut || '').localeCompare(String(b.debut || '')));
-}
-
 /** Construit l'objet consommé par CandidateProfile.jsx à partir d'un profil pivot v1.
  *
  * Lot 2 (#328) : les règles de lecture propres au profil candidat vivent dans
  * `utils/profilCandidat.js`, les six fondations communes dans `utils/lecture.js`.
  * Cet adaptateur les APPELLE, il n'en écrit pas de seconde version.
  *
- * Sept emplacements, identiques pour les treize candidats déclarés, dans le
- * même ordre. Ce qui varie est le contenu, jamais la forme — et un emplacement
- * vide dit pourquoi il l'est.
+ * SIX emplacements, identiques pour les treize candidats déclarés, dans le même
+ * ordre. Ce qui varie est le contenu, jamais la forme — et un emplacement vide
+ * dit pourquoi il l'est.
+ *
+ * Sept jusqu'au 08/09/2026 : « les gouvernements dont il a été membre » a été
+ * retiré, et l'ordre a changé — ce qu'il a VOTÉ et ses ÉCARTS passent avant ce
+ * qu'il a DIT. Voir `docs/decisions/six-emplacements-fiche-candidat-328.md`.
  */
 export function buildCandidateView(
   pivot,
@@ -385,7 +317,6 @@ export function buildCandidateView(
   scrutinsIndex = null,
   amendementsIndex = null,
   fichesGroupe = null,
-  gouvernements = null,
   commissionsDossiers = null,
   scrutinsDossiers = null,
   tousLesGouvernements = null,
@@ -491,7 +422,6 @@ export function buildCandidateView(
 
     parcours: { roles, nbLignes, bornes },
     fonctions,
-    gouvernements: buildGouvernements(manifestEntry.slug, gouvernements),
     amendements,
     textes,
     interventions: {
