@@ -125,6 +125,63 @@ const SECTIONS = [
     ),
   },
   {
+    id: 'ecarts',
+    heading: 'Divergences avec son groupe',
+    body: (
+      <>
+        <p>
+          La fiche d'un candidat pose sa position à côté de celle de son groupe,{' '}
+          <strong>scrutin par scrutin</strong>. Elle ne les totalise jamais : le nombre de
+          divergences, son rapport aux scrutins comparables ou un taux de cohésion seraient un
+          indice individuel mesuré contre la moyenne d'un groupe, qui reste un contrôle interne.
+        </p>
+        <h3>Quels scrutins sont retenus</h3>
+        <p>
+          Quatre conditions, toutes nécessaires : la personne y a une position publiée, la fiche de
+          son groupe aussi, la position majoritaire du groupe est établie, et le scrutin porte sur
+          l'<strong>ensemble d'un texte</strong>. Cette dernière restriction n'est pas un défaut de
+          collecte : sur un article ou un amendement, la position majoritaire d'un groupe se déplace
+          d'un vote à l'autre pour des raisons de négociation que la source ne porte pas.
+        </p>
+        <p>
+          Le nombre de scrutins <em>communs toutes natures confondues</em> n'est pas publié. Posé à
+          côté des divergences, il servirait de dénominateur à une division que rien ne justifie —
+          et les deux nombres ne portent pas sur la même population.
+        </p>
+        <h3>Ce que veut dire « son groupe s'est divisé »</h3>
+        <p>
+          Le critère est brut et sans seuil : le groupe est compté comme divisé dès que ses membres
+          exprimés n'ont pas tous voté de la même façon. Un membre qui s'abstient quand soixante-sept
+          votent pour suffit. Les absents et les non-votants sont hors du critère — ne pas voter
+          n'est pas voter autrement — et le dénominateur reste les membres éligibles, pas les
+          exprimés.
+        </p>
+        <p>
+          C'est un fait de <strong>groupe</strong>, publié avec son dénominateur, et il donne son
+          sens à une divergence : se séparer d'un groupe uni et se ranger dans l'une des deux
+          moitiés d'un groupe partagé ne sont pas le même geste.
+        </p>
+        <h3>Quand la position du groupe repose sur peu de membres</h3>
+        <p>
+          Un scrutin où <strong>moins de la moitié</strong> des membres éligibles se sont exprimés
+          est signalé comme tel. La « position majoritaire » y repose sur une poignée de votes, et
+          un ratio sans couverture suffisante ne se publie pas sans le dire. Le scrutin n'est pas
+          écarté pour autant : choisir les faits qui arrangent serait pire que les publier avec leur
+          réserve.
+        </p>
+        <h3>Trois vides, trois causes</h3>
+        <p>
+          Une section sans divergence peut dire <strong>trois choses différentes</strong>, et elles
+          ne se confondent pas : aucune fiche de groupe n'est publiée pour les groupes où la
+          personne a siégé (rien n'est comparable) ; des fiches existent mais ne recouvrent aucun de
+          ses votes sur l'ensemble d'un texte (la comparaison est vide de base) ; ou la comparaison
+          est possible et aucune divergence n'y figure. Seule la troisième est un fait sur la
+          personne.
+        </p>
+      </>
+    ),
+  },
+  {
     heading: 'Groupes',
     body: (
       <>

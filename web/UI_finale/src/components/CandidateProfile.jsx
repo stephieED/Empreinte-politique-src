@@ -14,7 +14,7 @@
  */
 import '../styles/shell.css';
 import './CandidateProfile.css';
-import { BadgeSource, Interdits, ListeVide, PositionVote } from './Lecture';
+import { BadgeSource, Interdits, ListeVide } from './Lecture';
 import { teinteMatiere } from '../utils/matiere';
 import { croise, disposerCascade, textesDeLaSelection } from '../utils/cascadeTextes';
 import { Fragment, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -29,6 +29,7 @@ import {
   formatNumber,
 } from '../utils/lecture';
 import VotesParPeriode from './VotesParPeriode';
+import EcartsGroupe from './EcartsGroupe';
 import {
   CAS_RIEN_A_MONTRER,
   INSTITUTION_GOUVERNEMENT,
@@ -1179,77 +1180,6 @@ function Votes({ votes, cause }) {
   );
 }
 
-/* ── § 6 — où il s'est écarté des siens ─────────────────────────────────────
- *
- * Scrutin par scrutin, JAMAIS totalisé : « a voté contre son groupe N fois »
- * serait une note, pas un fait. Deux positions sourcées posées côte à côte ; la
- * lecture appartient au lecteur.
- */
-function Ecarts({ ecarts, voix }) {
-  if (!ecarts.comparable) {
-    return (
-      <div className="cp-carte">
-        <ListeVide
-          cause="hors_couverture"
-          motif={
-            ecarts.fiches.length
-              ? 'Aucune fiche de groupe publiée ne recouvre ses périodes de mandat de façon exploitable : aucun scrutin n’est commun à ses votes et aux fiches disponibles.'
-              : 'Aucune fiche de groupe n’est publiée pour les groupes où cette personne a siégé. Il n’y a donc rien à comparer — ce n’est pas l’absence d’écart.'
-          }
-        />
-      </div>
-    );
-  }
-
-  if (!ecarts.ecarts.length) {
-    return (
-      <div className="cp-carte">
-        <ListeVide
-          cause="couvert"
-          motif={
-            ecarts.communs > 1
-              ? `Sur les ${formatNumber(ecarts.communs)} scrutins communs à ses votes et aux fiches de groupe publiées, aucun vote sur l’ensemble d’un texte ne diverge de la position majoritaire de son groupe.`
-              : 'Un seul scrutin est commun à ses votes et aux fiches de groupe publiées, et il ne diverge pas. Un scrutin ne dit rien : ce vide mesure la comparaison possible, pas son comportement.'
-          }
-        />
-      </div>
-    );
-  }
-
-  return (
-    <>
-      <p className="cp-section-critere">
-        Relevé sur les {formatNumber(ecarts.communs)} scrutins communs à ses votes et aux fiches
-        de groupe publiées, et restreint aux votes sur l’ensemble d’un texte.
-      </p>
-      <div className="cp-carte">
-        {ecarts.ecarts.map((e) => (
-          <div className="cp-ecart" key={e.scrutinId}>
-            <div>
-              <p className="cp-ligne-titre">{e.texte}</p>
-              <p className="cp-ecart-meta cp-num">
-                {jour(e.date)} · groupe {e.groupe} · {e.legislature}
-                <sup>e</sup> législature
-              </p>
-              <BadgeSource url={e.sourceUrl} />
-            </div>
-            <div className="cp-ecart-positions">
-              <span className="cp-ecart-ligne">
-                <span>{voix.pronom}</span>
-                <PositionVote position={e.position} />
-              </span>
-              <span className="cp-ecart-ligne">
-                <span>son groupe</span>
-                <PositionVote position={e.positionGroupe} />
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </>
-  );
-}
-
 /* ── § 7 — ce qu'on n'a pas pu lire ─────────────────────────────────────────── */
 const LIBELLE_ETAT = {
   couvert: 'couvert',
@@ -1533,7 +1463,7 @@ export default function CandidateProfile({ candidate }) {
         titre={c.voix.titres.ecarts}
         critere="Sa position à côté de la position majoritaire de son groupe, scrutin par scrutin. Jamais totalisé : « a voté contre son groupe N fois » serait une note, pas un fait."
       >
-        <Ecarts ecarts={c.ecarts} voix={c.voix} />
+        <EcartsGroupe ecarts={c.ecarts} voix={c.voix} />
       </Section>
 
       <Section

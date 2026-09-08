@@ -20,7 +20,6 @@ import {
   causeListeVide,
   couvertureDesListes,
   directionQuestionsGouvernement,
-  ecartsAvecLeGroupe,
   essentiel,
   grandsChiffres,
   fonctionsExercees,
@@ -52,6 +51,7 @@ import {
   troncatureTags,
 } from '../utils/groupe';
 import { LIBELLE_SORT_TEXTE, OUTCOME_COLOR } from '../utils/lecture';
+import { ecartsAvecLeGroupe } from '../utils/ecartsGroupe';
 import {
   couvertureDesReperes,
   periodesDeVote,
