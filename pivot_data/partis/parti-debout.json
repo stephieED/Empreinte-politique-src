@@ -1,0 +1,452 @@
+{
+  "schema_version": "1",
+  "type_document": "profil_parti",
+  "parti_id": "debout",
+  "parti_nom": "Debout !",
+  "candidats": [
+    {
+      "candidat_id": "francois-ruffin",
+      "nom": "François Ruffin",
+      "statut": "declare",
+      "famille_politique": null,
+      "a_un_profil_pivot": true
+    }
+  ],
+  "tags_thematiques_agreges": [
+    {
+      "tag": "abrogation de la réforme des retraites",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "abrogation de l’obligation vaccinale contre la covid-19",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "accompagnants d’élèves en situation de handicap",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "accompagnement et soins palliatifs",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "accompagnement et soins palliatifs – droit à l’aide à mourir",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "accord commercial entre l’union européenne et le mercosur",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "accorder l’asile politique à julian assange et faciliter l’accès au statut de réfugié pour les lanceurs d’alerte étrangers",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "accélération des procédures liées à la construction de nouvelles installations nucléaires et fonctionnement des installations existantes",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "aides publiques aux entreprises",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "arcelormittal",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "assurer le droit de chaque enfant à être assisté d’un avocat dans le cadre d’une mesure d’assistance éducative et de protection de l’enfance",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "augmentation du salaire minimum",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "avenir de fret sncf",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "bâtir la société du bien vieillir en france",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "coût de la vie dans les outre-mer",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "droit à l’aide à mourir",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "débat sur les finances locales",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "décarbonation de l’industrie",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "déclaration de politique générale du gouvernement et débat sur cette déclaration",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "déclaration du gouvernement et débat",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "empêcher la constitution de monopoles économiques dans le secteur des médias d’information",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "encadrement des loyers et amélioration de l’habitat dans les outre-mer",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "enjeux de la politique familiale",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "fermeture des lieux culturels",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "fiscalité des droits de succession et de donation",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "fonctionnement du marché du travail",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "gestion des risques climatiques en agriculture",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "inciter les entreprises à augmenter les salaires nets de 10 %",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "inflation et pouvoir d’achat",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "inondations dans le pas-de-calais",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "interdiction des vols en jets privés",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "justice fiscale",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "les fonds d’aides au développement internationaux",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "lutte contre la précarité des accompagnants d’élèves handicapés",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "mesures d’urgence pour la protection du pouvoir d’achat",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "mesures relatives au grand âge et à l’autonomie",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "moratoire sur le déploiement des mégabassines",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "motion de censure",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "motions de censure",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "nationalisation des sociétés concessionnaires d’autoroutes",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "nationalisation d’arcelormittal france",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "nationalisation d’arcelormittal france (suite)",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "outils de gestion de la crise sanitaire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "partage de la valeur au sein de l’entreprise",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "pavoisement des drapeaux français et européen sur le fronton des mairies",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "perte de souveraineté industrielle et atteinte aux industries stratégiques",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "plein emploi",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "politique fiscale",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "pouvoir d’achat",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "pouvoir d’achat outre-mer",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "prise en charge de la dépendance",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "prise en charge des soins et dispositifs spécifiques au traitement du cancer du sein",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "prix des carburants",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "projet de loi de financement de la sécurité sociale pour 2023",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "projet de loi de financement de la sécurité sociale pour 2024",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "projet de loi de financement de la sécurité sociale pour 2026",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "projet de loi de financement rectificative de la sécurité sociale pour 2023",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "protéger la population des risques liés aux pfas",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "protéger le groupe électricité de france d’un démembrement",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "reconnaissance et réparation des préjudices subis par les harkis",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "rejet du projet d’accord sur les droits de douane et le commerce entre l’union européenne et les états-unis",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "renforcement du soutien à l’ukraine",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "renforcer le parcours inclusif des enfants à besoins éducatifs particuliers",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "règlement du budget et approbation des comptes de l’année 2021",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "réduction de l’impact environnemental de l’industrie textile",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "réduire les risques sanitaires liés aux contaminations au cadmium",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "réforme des retraites",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "réouverture des accueils physiques dans les services publics",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "répartition des richesses",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "révélations sur l’opération sirli",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "services de maternité",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "situation des hôpitaux",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "situation des urgences à l’hôpital",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "sommet choose france",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "sortir la france du piège du narcotrafic-statut du procureur de la république national anti-criminalité organisée",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "souveraineté industrielle, alimentaire et sanitaire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "superprofits réalisés par les concessionnaires d’autoroutes : état des lieux et perspectives",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "traité avec le mercosur",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "veille et sécurité sanitaire en matière de lutte contre la covid-19",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "versement des allocations familiales dès le premier enfant",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "vigilance sanitaire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "évaluation de la loi visant à lutter contre la précarité des accompagnants d’élèves en situation de handicap",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "évolution de la formation de sage-femme",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    }
+  ],
+  "sources": [
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/francois-ruffin",
+      "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722142",
+      "synchro_le": "2026-09-07T23:46:51+0000"
+    }
+  ],
+  "meta": {
+    "schema_version": "1",
+    "genere_le": "2026-09-08T00:16:01+0000",
+    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
+    "nb_candidats_declares": 1,
+    "nb_candidats_avec_pivot": 1,
+    "warnings": []
+  }
+}

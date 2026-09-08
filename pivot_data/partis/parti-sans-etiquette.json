@@ -1,0 +1,31 @@
+{
+  "schema_version": "1",
+  "type_document": "profil_parti",
+  "parti_id": "sans-etiquette",
+  "parti_nom": "Sans étiquette",
+  "candidats": [
+    {
+      "candidat_id": "benoit-mathieu",
+      "nom": "Benoît Mathieu",
+      "statut": "declare",
+      "famille_politique": null,
+      "a_un_profil_pivot": true
+    }
+  ],
+  "tags_thematiques_agreges": [],
+  "sources": [
+    {
+      "type": "assemblee_nationale",
+      "url": "https://fr.wikipedia.org/wiki/Candidatures_%C3%A0_l%27%C3%A9lection_pr%C3%A9sidentielle_fran%C3%A7aise_de_2027#Candidats_d%C3%A9clar%C3%A9s",
+      "synchro_le": "2026-09-07T23:29:03+0000"
+    }
+  ],
+  "meta": {
+    "schema_version": "1",
+    "genere_le": "2026-09-08T00:16:01+0000",
+    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr",
+    "nb_candidats_declares": 1,
+    "nb_candidats_avec_pivot": 1,
+    "warnings": []
+  }
+}

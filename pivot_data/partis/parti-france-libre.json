@@ -1,0 +1,27 @@
+{
+  "schema_version": "1",
+  "type_document": "profil_parti",
+  "parti_id": "france-libre",
+  "parti_nom": "France Libre",
+  "candidats": [
+    {
+      "candidat_id": null,
+      "nom": "Francis Lalanne",
+      "statut": "declare",
+      "famille_politique": null,
+      "a_un_profil_pivot": false
+    }
+  ],
+  "tags_thematiques_agreges": [],
+  "sources": [],
+  "meta": {
+    "schema_version": "1",
+    "genere_le": "2026-09-08T00:16:01+0000",
+    "licence_donnees": "",
+    "nb_candidats_declares": 1,
+    "nb_candidats_avec_pivot": 0,
+    "warnings": [
+      "candidat=francis-lalanne : aucun profil pivot trouvé dans pivot_data/profiles (fichier <slug>.pivot.json absent)."
+    ]
+  }
+}

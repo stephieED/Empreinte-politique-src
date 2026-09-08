@@ -1,0 +1,31 @@
+{
+  "schema_version": "1",
+  "type_document": "profil_parti",
+  "parti_id": "les-patriotes",
+  "parti_nom": "Les Patriotes",
+  "candidats": [
+    {
+      "candidat_id": "florian-philippot",
+      "nom": "Florian Philippot",
+      "statut": "declare",
+      "famille_politique": null,
+      "a_un_profil_pivot": true
+    }
+  ],
+  "tags_thematiques_agreges": [],
+  "sources": [
+    {
+      "type": "europarl",
+      "url": "https://www.europarl.europa.eu/meps/fr/110977",
+      "synchro_le": "2026-09-07T23:13:55+0000"
+    }
+  ],
+  "meta": {
+    "schema_version": "1",
+    "genere_le": "2026-09-08T00:16:01+0000",
+    "licence_donnees": "CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
+    "nb_candidats_declares": 1,
+    "nb_candidats_avec_pivot": 1,
+    "warnings": []
+  }
+}
