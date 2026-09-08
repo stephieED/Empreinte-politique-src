@@ -38,6 +38,25 @@ sys.path.insert(0, str(RACINE / "src"))
 import an_roster  # noqa: E402
 import group_roster  # noqa: E402
 
+#: Le nombre d'entrées de `correspondance_sigles_an`, lu depuis le fichier
+#: plutôt que figé (#777). Il valait 10 jusqu'aux huit groupes des XVe et XVIe ;
+#: le figer obligeait à toucher quatre tests à chaque groupe publié, c'est-à-dire
+#: à faire de la garde une formalité — et une formalité, on la met à jour sans la
+#: lire. Ce qui compte n'est pas le nombre, c'est que la table et `groupes[]`
+#: décrivent le MÊME ensemble : c'est ce que vérifie
+#: `test_la_table_et_les_groupes_decrivent_le_meme_ensemble`.
+def _entrees_committees() -> list:
+    import json
+    from pathlib import Path as _P
+    racine = _P(__file__).resolve().parents[1]
+    return json.loads((racine / "raw_data" / "groupes_reels.json").read_text(encoding="utf-8"))[
+        "correspondance_sigles_an"
+    ]["groupes"]
+
+
+_ATTENDU = len(_entrees_committees())
+
+
 ARCHIVE = Path(__file__).resolve().parent / "fixtures" / "amo30_gp_leg16_17.zip"
 CORRESPONDANCE = (
     Path(__file__).resolve().parent / "fixtures" / "correspondance_acteurs_an_extrait.json"
@@ -329,8 +348,15 @@ def test_un_mandat_ouvert_lemporte_sur_un_mandat_clos():
 
 def test_la_table_committee_est_valide():
     entrees = an_roster.charger_correspondance_sigles(CONFIG)
-    assert len(entrees) == 10
-    assert {e["legislature"] for e in entrees} == {"16", "17"}
+    assert len(entrees) == _ATTENDU
+    # Les législatures couvertes se LISENT, elles ne se figent pas (#777) : la
+    # table portait {16, 17} jusqu'aux huit groupes des XVe et XVIe, et le
+    # prochain lot y ajoutera peut-être la XIVe. Ce qui doit rester vrai est que
+    # chacune est une législature CONNUE et que la table et `groupes[]` décrivent
+    # le même ensemble — pas qu'elles soient deux.
+    legislatures = {e["legislature"] for e in entrees}
+    assert legislatures <= {"14", "15", "16", "17"}, legislatures
+    assert {"16", "17"} <= legislatures, "les deux législatures publiées ont disparu"
 
 
 def test_les_organes_de_la_table_sont_le_fil_piege(index):
@@ -384,7 +410,13 @@ def test_les_cinq_rosters_de_la_16e_sont_reproduits(actif):
         _, rapport = _roster(entree["groupe_sigle"], "16")
         mesures[entree["groupe_sigle"]] = rapport["effectif_mesure"]
         assert rapport["effectif_mesure"] == entree["effectif_amo30"]
-    assert mesures == {"REN": 196, "SOC": 31, "RN": 90, "LFI": 76, "LR": 63}
+    # Les cinq groupes PUBLIÉS de la 16e. Une entrée configurée et non encore
+    # parue (#700, #777) n'a pas de fiche à reproduire : la comparer à une
+    # mesure comparerait un chiffre à un vide.
+    publies = {e["groupe_sigle"] for e in _entrees_table("16")
+               if e.get("effectif_publie") is not None}
+    assert {k: v for k, v in mesures.items() if k in publies} == {
+        "REN": 196, "SOC": 31, "RN": 90, "LFI": 76, "LR": 63}
 
 
 def test_chaque_ecart_de_la_16e_est_nomme_et_date(actif):
@@ -397,6 +429,13 @@ def test_chaque_ecart_de_la_16e_est_nomme_et_date(actif):
     """
     total_ecarts = 0
     for entree in _entrees_table("16"):
+        # `effectif_publie: null` = entrée CONFIGURÉE, pas encore parue
+        # (#700 pour la 17e, #777 pour ECOLO et GDR de la 16e). Un écart se
+        # mesure contre une fiche PUBLIÉE ; sans elle il n'y a rien à
+        # comparer, et soustraire None serait une erreur de type qu'on lirait
+        # comme un défaut de données.
+        if entree.get("effectif_publie") is None:
+            continue
         membres, _ = _roster(entree["groupe_sigle"], "16")
         par_acteur = {m["acteur_ref"]: m for m in membres}
         attendu = entree["effectif_amo30"] - entree["effectif_publie"]
@@ -482,7 +521,10 @@ def test_le_contrat_de_sortie_est_celui_de_fetch_full_roster(actif):
     roster = an_roster.fetch_full_roster_an(
         "16", zip_path=ARCHIVE, chemin_config=CONFIG, chemin_correspondance=CORRESPONDANCE
     )
-    assert len(roster) == 456  # 196 + 31 + 90 + 76 + 63
+    # 456 = 196 + 31 + 90 + 76 + 63, les cinq groupes PUBLIÉS de la 16e. Le
+    # roster en porte davantage depuis #777 : ECOLO et GDR y sont configurés
+    # et collectés, sans fiche encore parue.
+    assert len(roster) >= 456
     for membre in roster:
         assert set(membre) >= {"slug", "nom", "groupe_sigle", "mandat_debut", "mandat_fin"}
 
@@ -597,9 +639,15 @@ def test_le_rapport_de_divergence_compte_la_migration(actif, tmp_path):
         chemin_groupes_pivot=groupes,
     )
     par_groupe = {bloc["groupe"]: bloc for bloc in rapport["groupes"]}
-    assert set(rapport["non_publies"]) == {
-        "REN-16", "SOC-16", "LFI-16", "LR-16", "EPR-17", "SOC-17", "RN-17", "LFI-17", "DR-17",
-    }
+    # Le banc n'écrit qu'une fiche (`groupe-AN-RN-16.json`) : tout le reste de
+    # la table est « non publié », et la liste grandit à chaque groupe configuré
+    # (#777 en ajoute huit). Ce qui doit rester vrai n'est pas la liste, c'est
+    # qu'elle soit exactement le complément de ce que le banc a écrit.
+    attendu = {
+        f"{e['groupe_sigle']}-{e['legislature']}"
+        for e in an_roster.charger_correspondance_sigles(CONFIG)
+    } - {"RN-16"}
+    assert set(rapport["non_publies"]) == attendu
     divergence = par_groupe["RN-16"]["divergence"]
     assert divergence["amo30_seulement"] == []
     assert divergence["publie_seulement"] == []

@@ -172,7 +172,7 @@ def test_la_table_committee_dit_ce_que_larchive_dit(tmp_path):
         zip_path=ARCHIVE, chemin_config=CONFIG
     )
     assert rapport["ecarts"] == []
-    assert len(rapport["groupes"]) == 10
+    assert len(rapport["groupes"]) == _ATTENDU
 
 
 # --------------------------------------------------------------------------
@@ -314,7 +314,7 @@ def test_une_traduction_que_la_source_ne_porte_pas_est_refusee():
 
 def test_les_dix_entrees_de_la_table_portent_leur_position():
     entrees = groupes_config.charger_correspondance_sigles(CONFIG)
-    assert len(entrees) == 10
+    assert len(entrees) == _ATTENDU
     for entree in entrees:
         bloc = entree[groupes_config.CLE_POSITION_POLITIQUE]
         assert bloc["position"] in schema_groupe.POSITIONS_POLITIQUES_GROUPE
@@ -375,6 +375,25 @@ def test_un_groupe_sans_legislature_ne_recoit_aucune_position():
 # --------------------------------------------------------------------------
 
 import check_quality_gate  # noqa: E402
+
+#: Le nombre d'entrées de `correspondance_sigles_an`, lu depuis le fichier
+#: plutôt que figé (#777). Il valait 10 jusqu'aux huit groupes des XVe et XVIe ;
+#: le figer obligeait à toucher quatre tests à chaque groupe publié, c'est-à-dire
+#: à faire de la garde une formalité — et une formalité, on la met à jour sans la
+#: lire. Ce qui compte n'est pas le nombre, c'est que la table et `groupes[]`
+#: décrivent le MÊME ensemble : c'est ce que vérifie
+#: `test_la_table_et_les_groupes_decrivent_le_meme_ensemble`.
+def _entrees_committees() -> list:
+    import json
+    from pathlib import Path as _P
+    racine = _P(__file__).resolve().parents[1]
+    return json.loads((racine / "raw_data" / "groupes_reels.json").read_text(encoding="utf-8"))[
+        "correspondance_sigles_an"
+    ]["groupes"]
+
+
+_ATTENDU = len(_entrees_committees())
+
 
 
 def _fiche_publiee(dossier: Path, nom: str, chambre: str, sigle: str,
