@@ -421,7 +421,7 @@ ensemble ou pas du tout, deux cases séparées autoriseraient « périmètre ré
 
 | Champ | Type | Défaut | Ce qu'il commande |
 |---|---|---|---|
-| `test_slugs` | `string` | vide | **Le mode**, et il est en tête pour ça (#792). Rempli, il réduit la matrice `extract-an` à ces slugs, plafonne le roster à 8 membres sur 1 shard si aucun plafond n'a été demandé, et **désarme le commit**. Vide : run ordinaire, rien ne change. Un slug hors périmètre est nommé (`TEST_SLUG_INTROUVABLE`), un périmètre vide fait échouer le job de matrice. |
+| `test_slugs` | `string` | vide | **Le mode**, et il est en tête pour ça (#792). Rempli, il réduit la matrice `extract-an` à ces slugs, plafonne le roster à 8 membres sur 1 shard si aucun plafond n'a été demandé, et **désarme le commit**. Vide : run ordinaire, rien ne change. Un slug hors périmètre est nommé (`TEST_SLUG_INTROUVABLE`), un périmètre vide fait échouer le job de matrice. **Mesuré : 51 min contre 1 h 15** — `merge-and-pivot` fait la moitié du run et ne se réduit pas. |
 | `existing_profiles` | `choice` : `leave-as-is` / `refresh` / `overwrite` | `refresh` | **Axe 1** — ce qu'on fait des profils DÉJÀ écrits. `overwrite` seul lève `--no-merge`. |
 | `add_uncovered_members` | `boolean` | `true` | **Axe 2** — si on écrit un premier profil pour les membres qui n'en ont pas. |
 | `cold_start` | `boolean` | `false` | Purge les caches de téléchargement et re-télécharge les sources. Ne dit **rien** de la façon dont les profils sont écrits. |
