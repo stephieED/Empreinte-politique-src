@@ -210,12 +210,34 @@ def test_le_memo_est_par_legislature_et_liberable(archive):
     """L'archive de la XVIe pèse 4,7 Go en clair, et une relecture entière a
     déjà déclenché l'OOM killer sur un run réel."""
     archives.charger_archive("16", archive)
-    assert set(archives._MEMO) == {"16"}
+    assert set(archives._MEMO_ACTEURS) == {"16"}
     archives.vider_memo()
-    assert archives._MEMO == {}
+    assert archives._MEMO_ACTEURS == {} and archives._MEMO_STORE == {}
 
 
 def test_les_legislatures_figees_sont_les_trois_closes():
     """Une législature vivante n'a pas d'archive : ses amendements bougent."""
     assert archives.LEGISLATURES_FIGEES == ("14", "15", "16")
     assert "17" not in archives.LEGISLATURES_FIGEES
+
+
+def test_compter_ne_charge_pas_le_store(archive):
+    """Mesuré à la dure : un essai de marquage sur `mathilde-panot` — deux
+    législatures closes — s'est fait tuer par l'OOM killer sur une machine à
+    7 Go, parce que `signatures()` chargeait aussi le store des amendements.
+
+    Compter et marquer n'ont besoin que de l'index par acteur : 10,5 Mo pour
+    la XVe, contre plusieurs centaines pour le store en clair.
+    """
+    archives.signatures("an:PA720892", "16", archive)
+    assert set(archives._MEMO_ACTEURS) == {"16"}
+    assert archives._MEMO_STORE == {}, (
+        "compter a chargé le store : c'est le chemin qui a produit l'OOM"
+    )
+
+
+def test_reconstruire_charge_bien_le_store(archive):
+    """Contre-épreuve : sans elle, le test ci-dessus passerait sur un module
+    qui ne lit plus rien."""
+    archives.reconstruire_tranche("an:PA720892", "16", archive)
+    assert set(archives._MEMO_STORE) == {"16"}

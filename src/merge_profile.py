@@ -89,8 +89,12 @@ from normalize_profil import (
     _profession_publiable,
 )
 from profil_brut import (
+    CLE_ACTEUR_TRANCHE,
+    CLE_MANIFESTE,
+    CLE_TRANCHE_DERIVEE,
     PartitionIllisible,
     charger_profil_brut,
+    chemin_socle,
     ecrire_profil_brut,
 )
 from schema_pivot import (
@@ -1542,6 +1546,30 @@ def _pivot_texte_key(t: dict[str, Any]) -> Key:
     return _repli_texte_key(t)
 
 
+def _acteur_du_socle(profils_dir: Path, slug: str) -> Optional[str]:
+    """L'acteur déclaré par une tranche dérivée du socle déjà écrit (#691).
+
+    Rend `None` si le profil n'est pas partitionné, n'a aucune tranche
+    dérivée, ou n'est pas relisible. **`None` ne marque rien**, donc la
+    fusion réécrit alors la partition telle qu'elle l'a trouvée : ne pas
+    savoir n'est jamais une raison de changer de forme.
+    """
+    try:
+        with open(chemin_socle(profils_dir, slug), encoding="utf-8") as fichier:
+            socle = json.load(fichier)
+    except (OSError, json.JSONDecodeError):
+        return None
+    manifeste = socle.get(CLE_MANIFESTE) if isinstance(socle, dict) else None
+    if not isinstance(manifeste, dict):
+        return None
+    for declaree in (manifeste.get("tranches") or []):
+        if isinstance(declaree, dict) and declaree.get(CLE_TRANCHE_DERIVEE):
+            acteur = declaree.get(CLE_ACTEUR_TRANCHE)
+            if acteur:
+                return str(acteur)
+    return None
+
+
 def merge_dossier_records(
     old_list: Optional[list[dict[str, Any]]],
     new_list: Optional[list[dict[str, Any]]],
@@ -2569,7 +2597,16 @@ def merge_raw_dirs(source_dirs: list[Path], out_dir: Path) -> int:
                 continue
             merged = merge_raw_profile(merged, profile)
         if merged is not None:
-            ecrire_profil_brut(out_dir, filename[: -len(".json")], merged)
+            slug = filename[: -len(".json")]
+            # L'acteur se relit dans le manifeste DÉJÀ écrit (#691), et non
+            # dans la table : la fusion ne résout pas d'identité, elle
+            # reconduit ce que la collecte a déclaré. Un profil jamais marqué
+            # reste non marqué ici — c'est la collecte qui amorce, jamais la
+            # fusion.
+            ecrire_profil_brut(
+                out_dir, slug, merged,
+                acteur_ref=_acteur_du_socle(out_dir, slug),
+            )
             n_written += 1
 
     return n_written

@@ -193,11 +193,17 @@ def test_le_nom_dune_tranche_declaree_a_une_seule_definition():
     source = (RACINE / "src" / "profil_brut.py").read_text(encoding="utf-8")
     code = "\n".join(l for l in source.split("\n") if not l.lstrip().startswith("#"))
     assert code.count("def _nom_declaree") == 1
-    # Une seule lecture du champ `fichier` d'une tranche DÉCLARÉE, et c'est
-    # celle de `_nom_declaree`. Les autres `[: -len(".json")]` du module
-    # portent sur des chemins de disque, pas sur le manifeste.
-    lectures = [l for l in code.split("\n") if '.get("fichier"' in l]
-    assert len(lectures) == 1, (
-        f"le champ `fichier` du manifeste est lu {len(lectures)} fois ; une "
-        "tranche dérivée n'en a pas, et un lecteur qui le relit divergera"
-    )
+    # Ce sont les trois LECTEURS qui doivent passer par `_nom_declaree` : une
+    # tranche dérivée n'a pas de `fichier`, et l'un d'eux qui le relirait
+    # divergerait des deux autres en silence. Les écrivains
+    # (`_marquer_derivables`, `ecrire_profil_brut`) ont le droit d'y toucher :
+    # c'est eux qui posent ou retirent la clé.
+    import re
+
+    for nom in ("charger_tranches", "recomposer", "iter_amendements_du_profil"):
+        bloc = re.search(rf"\ndef {nom}\(.*?(?=\ndef |\Z)", code, re.DOTALL)
+        assert bloc, f"fonction {nom} introuvable"
+        assert '"fichier"' not in bloc.group(0), (
+            f"{nom} lit le champ `fichier` du manifeste au lieu de passer par "
+            "`_nom_declaree` — une tranche dérivée n'en a pas"
+        )

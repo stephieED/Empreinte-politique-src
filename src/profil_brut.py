@@ -217,8 +217,80 @@ def _sequence(valeurs: Iterable[Any]) -> list[list[Any]]:
     return plages
 
 
-def partitionner(profil: dict[str, Any]) -> tuple[dict[str, Any], dict[str, list[Any]]]:
+def _marquer_derivables(
+    manifeste_tranches: list[dict[str, Any]],
+    tranches: dict[str, list[Any]],
+    acteur_ref: Optional[str],
+) -> set[str]:
+    """Marque les tranches de législature close que l'archive couvre (#691).
+
+    Rend les noms marqués. **Modifie `manifeste_tranches` en place** : une
+    entrée marquée perd son `fichier` — elle n'en a plus — et gagne `derivee`,
+    `acteur_ref` et un `nombre` qui est **celui de l'archive**.
+
+    ## Pourquoi le `nombre` vient de l'archive, et pas de la collecte
+
+    Arbitrage rendu par la propriétaire le 09/09/2026. Les deux comptes
+    coïncident aujourd'hui — 854 tranches sur 854, 568 771 amendements sans
+    écart —, la question portait sur le jour où ils divergeront :
+
+    - `nombre` = **la collecte** : `recomposer` lève, et le profil devient
+      **illisible**. L'erreur apparaît alors à la relecture, très loin de sa
+      cause — le patron que #771 a payé 1 h 18 ;
+    - `nombre` = **l'archive** : la lecture tient toujours, et l'écart se
+      déclare **là où il naît**, à l'écriture.
+
+    D'où `nombre_collecte`, écrit **uniquement** en cas d'écart : un champ qui
+    n'apparaît que quand quelque chose ne va pas se remarque, quand un champ
+    toujours présent et presque toujours égal ne se lit plus (#510).
+
+    ## Ce qui n'est jamais marqué
+
+    Une législature vivante, un acteur inconnu, une archive absente ou
+    illisible : dans les trois cas, la tranche reste un fichier. **Ne rien
+    marquer est le défaut**, et il est sûr — la tranche continue d'être écrite
+    exactement comme avant.
+    """
+    if not acteur_ref:
+        return set()
+    import tranches_amendements_figees as figees
+
+    marques: set[str] = set()
+    for declaree in manifeste_tranches:
+        legislature = str(declaree.get("legislature") or "")
+        if legislature not in figees.LEGISLATURES_FIGEES:
+            continue
+        try:
+            entrees = figees.signatures(acteur_ref, legislature)
+        except (OSError, json.JSONDecodeError):
+            # Archive absente ou illisible : on n'a rien à dériver, la tranche
+            # reste un fichier. Une panne d'archive ne doit pas amputer un
+            # profil (#484).
+            continue
+        if entrees is None:
+            continue
+        nom = str(declaree.get("fichier", ""))[: -len(".json")]
+        collecte = len(tranches.get(nom) or [])
+        declaree.pop("fichier", None)
+        declaree[CLE_TRANCHE_DERIVEE] = True
+        declaree[CLE_ACTEUR_TRANCHE] = acteur_ref
+        declaree["nombre"] = len(entrees)
+        if collecte != len(entrees):
+            declaree["nombre_collecte"] = collecte
+        marques.add(nom)
+    return marques
+
+
+def partitionner(
+    profil: dict[str, Any], *, acteur_ref: Optional[str] = None
+) -> tuple[dict[str, Any], dict[str, list[Any]]]:
     """Sépare un profil brut en (socle, {nom de tranche: amendements}).
+
+    `acteur_ref` déclenche le marquage des tranches dérivables (#691) : les
+    législatures closes que l'archive couvre pour cet acteur sortent du
+    dictionnaire rendu — elles ne sont plus écrites — et leur entrée de
+    manifeste porte `derivee`. Sans `acteur_ref`, rien n'est marqué et le
+    comportement est celui d'avant, à l'octet près.
 
     Le socle est une **copie de surface** : le profil d'entrée n'est pas
     modifié, et les objets amendements ne sont ni copiés ni retouchés — ce sont
@@ -288,6 +360,33 @@ def partitionner(profil: dict[str, Any]) -> tuple[dict[str, Any], dict[str, list
         "ordre": _sequence(index_du_nom[nom] for nom in suite),
     }
 
+    # Le marquage vient APRÈS la construction du manifeste, et il en corrige
+    # deux choses : l'entrée de la tranche, et la séquence.
+    marques = _marquer_derivables(manifeste["tranches"], tranches, acteur_ref)
+    if marques:
+        # L'ORDRE D'ORIGINE N'EST PLUS RESTITUABLE, et il est donc remplacé par
+        # un ordre par blocs — chaque tranche d'un seul tenant, dans l'ordre du
+        # manifeste. La raison n'est pas un renoncement : la tranche dérivée
+        # sera relue dans l'ordre de l'archive, qui n'est pas celui de la
+        # collecte (mesuré : sur `mathilde-panot/16.json`, ensemble identique et
+        # 16 915 positions sur 16 915 différentes). Garder la séquence
+        # d'origine ferait lever `recomposer` dès que le compte de l'archive
+        # diffère de celui de la collecte, c'est-à-dire précisément le cas que
+        # `nombre_collecte` existe pour déclarer.
+        #
+        # Ce que ça coûte : rien de publié. Aucun consommateur ne lit l'ordre —
+        # `audit_diff_profils` relève une liste par un **entier**, et le site
+        # trie ce qu'il affiche. Ce que ça préserve : la propriété d'aller-retour
+        # identique reste vraie pour tout profil SANS tranche dérivée, qui est
+        # le seul cas où elle était testée et le seul où elle a un sens.
+        manifeste["ordre"] = [
+            [i, declaree["nombre"]]
+            for i, declaree in enumerate(manifeste["tranches"])
+        ]
+        manifeste["total"] = sum(t["nombre"] for t in manifeste["tranches"])
+        for nom in marques:
+            tranches.pop(nom, None)
+
     # Le manifeste prend la PLACE EXACTE de `amendements` dans l'ordre des
     # clés, et `recomposer` fait l'inverse. Ce n'est pas de la coquetterie :
     # c'est ce qui rend l'aller-retour identique **octet pour octet**, et donc
@@ -301,7 +400,10 @@ def partitionner(profil: dict[str, Any]) -> tuple[dict[str, Any], dict[str, list
         socle[CLE_MANIFESTE if cle == CLE_PARTITIONNEE else cle] = (
             manifeste if cle == CLE_PARTITIONNEE else valeur
         )
-    return socle, {nom: tranches[nom] for nom in noms_ordonnes}
+    # Les tranches marquées `derivee` ne sont PAS rendues : elles n'ont plus de
+    # fichier à écrire, et `ecrire_profil_brut` supprimera celui qui existait —
+    # par le nettoyage des « non attendus » qui était déjà là (#691).
+    return socle, {nom: tranches[nom] for nom in noms_ordonnes if nom in tranches}
 
 
 def est_partitionne(socle: Any) -> bool:
@@ -395,19 +497,28 @@ def recomposer(socle: dict[str, Any], tranches: dict[str, list[Any]]) -> dict[st
 # I/O
 # ---------------------------------------------------------------------------
 
-def ecrire_profil_brut(profils_dir: Path, slug: str, profil: dict[str, Any]) -> list[Path]:
+def ecrire_profil_brut(
+    profils_dir: Path, slug: str, profil: dict[str, Any],
+    acteur_ref: Optional[str] = None,
+) -> list[Path]:
     """Écrit un profil brut sous sa forme partitionnée. Rend les chemins écrits.
 
     Les tranches devenues sans objet — une législature qui disparaîtrait d'un
     profil — sont retirées du répertoire : les laisser ferait recomposer des
     amendements que le profil ne porte plus. Rien d'autre n'est supprimé, et
     seuls les fichiers du répertoire de tranches sont touchés.
+
+    **Une tranche qui devient dérivée (#691) emprunte ce même chemin** : elle
+    sort du dictionnaire rendu par `partitionner`, donc elle n'est pas dans les
+    « attendus », donc son fichier est supprimé. Rien n'a été ajouté ici pour
+    ça — c'est le nettoyage qui existait déjà, appliqué à une tranche qui n'a
+    plus lieu d'être écrite.
     """
     profils_dir = Path(profils_dir)
     socle_path = chemin_socle(profils_dir, slug)
     dossier = dossier_tranches(profils_dir, slug)
 
-    socle, tranches = partitionner(profil)
+    socle, tranches = partitionner(profil, acteur_ref=acteur_ref)
 
     ecrits: list[Path] = []
     if tranches:
@@ -420,7 +531,7 @@ def ecrire_profil_brut(profils_dir: Path, slug: str, profil: dict[str, Any]) -> 
                 "slug": slug,
                 "legislature": next(
                     (t["legislature"] for t in socle[CLE_MANIFESTE]["tranches"]
-                     if t["fichier"] == f"{nom}.json"),
+                     if t.get("fichier") == f"{nom}.json"),
                     None,
                 ),
                 CLE_PARTITIONNEE: contenu,
