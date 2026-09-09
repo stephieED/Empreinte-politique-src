@@ -147,38 +147,34 @@ Convention d'écriture : `AGENTS.md` §8.
   (`vp/reunions/`), et donc un lot à part. Trou déclaré, pas comblé par un
   libellé (§2 règle 5).
 
-- **Les tranches d'amendements du roster recopient 4,58 Gio déjà versionnés en
-  38 Mo, et le chantier est ajourné (#691).** Mesuré le 01/09/2026 : sur les
-  7,70 Gio de `raw_data/profiles/`, **4,58 Gio** sont les tranches 14/15/16 des
-  468 profils `roster_groupe` — l'amendement complet recopié pour *chaque*
-  signataire, la duplication que #431 a supprimée au niveau pivot et jamais au
-  niveau brut. `raw_data/amendements_an_figes/` porte déjà les **624 180**
-  amendements de ces trois législatures fermées, gzippés, avec
-  `premier_signataire` et `co_signataires` : la reconstruction par membre est
-  possible **sans perte**.
+- **Les tranches d'amendements du roster ne sont plus écrites pour les
+  législatures closes — fait le 09/09/2026 (#691).** Le run `34344178203` a
+  retiré **854 fichiers de tranches** (77 en XIV, 270 en XV, 507 en XVI, la
+  totalité) et `raw_data/profiles/` est passé de **9,7 à 4,6 Gio**. Une tranche
+  close est désormais *déclarée* `derivee` dans le manifeste et relue dans
+  `raw_data/amendements_an_figes/`, qui portait déjà ces 624 180 amendements en
+  38 Mo — et, ce qui a rendu le chantier court, leur **inversion par acteur**.
 
-  **Ce qu'il ne faut pas re-trancher :** le gain est **nul sur le clone** et
-  entier sur le **checkout**. Le brut se compresse d'un facteur ~154 — les
-  7,70 Gio ne pèsent que **0,05 Gio** dans le pack, quand l'instantané HEAD
-  complet en fait 0,14 sur un pack de 2,0 Gio. **93 % du pack, soit 1,86 Gio,
-  est de l'historique** : c'est un bornage qui allège le clone, jamais ce
-  chantier-ci, et réciproquement. Côté checkout, `extract-an` ne récupère déjà
-  qu'un slug à la fois (#674) ; le seul job qui paie les 7,8 Gio est
-  **`merge-and-pivot`**.
+  **Ce qui reste, et pourquoi ce n'est pas la suite du même chantier :** la
+  **législature 17**, **3,64 Go**, qu'aucune archive figée ne couvre. Elle y
+  entrera le jour où elle sera figée ; la reconstruire depuis l'index pivot
+  serait circulaire, puisque cet index est construit à partir des tranches.
 
-  **Pourquoi c'est un chantier et non une suppression :** trois choses cassent
-  si on retire les fichiers. `profil_brut.recomposer` lève `PartitionIllisible`
-  — le manifeste déclare chaque tranche avec son `nombre` (#580) ; il faut un
-  mode *déclaré*, qui garde le compte. Le garde-fou #545 passerait du **déficit
-  bloquant** à l'**excédent rapporté**, donc muet en restant vert — le défaut
-  que AGENTS.md §3d nomme après #510 — tant que sa relation ne déclare pas
-  l'index figé comme source. Et `build_amendements_index_pivot.py` lit
-  `raw_data/profiles`.
+  **Ce qu'il ne faut pas re-trancher :** le gain était et reste **nul sur le
+  clone**. Le brut se compresse d'un facteur ~154, et **93 % du pack est de
+  l'historique** — c'est un bornage qui allègerait le clone, jamais ce
+  chantier-ci. Le gain est entier sur le **checkout**, et il est concentré sur
+  `merge-and-pivot`, seul job qui matérialise tout `raw_data/profiles/`.
 
-  Hors périmètre et à ne pas prendre dans la foulée : la **législature 17**
-  (2,21 Gio), qu'aucune source figée ne couvre — elle y entrera le jour où elle
-  sera figée. Non vérifié : que l'index pivot reconstruit depuis le figé soit
-  **identique**. C'est le premier geste, avant toute suppression.
+  **Ce que la mise en œuvre a démenti :** les deux obstacles annoncés ici
+  n'en étaient pas. L'ordre des amendements n'en est pas un — `audit_diff_profils`
+  relève une liste par un **entier**, donc une perte est une baisse de compte et
+  jamais une différence de séquence. Et le filet anti-écrasement de
+  `merge_profile` est **renforcé** : `old` valait ce qu'un run précédent avait
+  réussi à collecter, hostage d'un cache CI non versionné ; il vaut désormais
+  l'archive committée, vérité entière d'une législature close.
+  → `docs/decisions/reconstruction-tranches-depuis-archive-691.md` et les trois
+  décisions qui la suivent.
 
 - **Aucun commit de données n'est couvert par la suite de tests, et le rétablir
   demande trois gestes hors du dépôt (#685).** Mesuré le 01/09/2026 : **0 des 15**

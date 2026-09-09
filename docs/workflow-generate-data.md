@@ -354,7 +354,20 @@ combinaisons des deux axes du formulaire, les trois codes de sortie du roster :
 
 **Le seul job qui écrit dans le dépôt.** Il enchaîne, dans cet ordre : **le contrôle du transport des artifacts** (`verifier_transport_artifacts.py`, #786 — un artifact que le run a publié et qui n'est pas sur le disque est rattrapé par `gh run download`, puis bloque ; une source qui n'a rien publié reste silencieuse, et un inventaire illisible n'échoue pas) ; fusion
 additive des profils bruts des trois familles d'artifacts
-(`src/merge_profile.py --dirs _artifacts/an _artifacts/ue _artifacts/roster`) ;
+(`src/merge_profile.py --dirs _artifacts/an _artifacts/ue _artifacts/roster`) —
+c'est **elle** qui reconduit le marquage des tranches closes que les shards ont
+posé (#691), en lisant l'acteur dans les socles **sources** et jamais dans celui
+de la destination, et elle dit ce qu'elle en a fait :
+
+```
+· tranches d'amendements : 854 dérivée(s) de l'archive, 509 en fichier, 854 fichier(s) retiré(s) ce run.
+```
+
+La ligne n'apparaît **que** s'il y a quelque chose à dire, et le compte de
+retraits est **mesuré** (socle relu avant et après écriture), jamais déduit du
+nombre de dérivées : un profil déjà basculé au run précédent ne supprime plus
+rien. C'est la seule trace observable de la bascule dans un run de test, qui ne
+committe pas ;
 **première** passe `--pivot-only` sur `raw_data/candidats.json`, avec
 `--enrich-parltrack` ; **seconde** passe `--pivot-only` sur le
 `roster_candidats.json` du run ; profils de parti ; **la table des commissions
