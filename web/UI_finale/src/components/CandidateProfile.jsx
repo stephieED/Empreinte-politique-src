@@ -84,7 +84,7 @@ function Section({ numero, titre, critere, pied, children }) {
         <span className="cp-section-numero">{numero}</span>
         <span className="cp-section-trait" />
       </div>
-      <h2 className="cp-section-titre">{titre}</h2>
+      <h2 className="cp-section-titre"><span>{titre}</span></h2>
       {critere && <p className="cp-section-critere">{critere}</p>}
       <div className="cp-section-corps">{children}</div>
       {/* Le pied porte la règle de lecture APRÈS le contenu, jamais avant : une
@@ -1270,7 +1270,7 @@ function GrandsChiffres({ chiffres, parcours }) {
       <div className="cp-section-bande">
         <span className="cp-section-trait" />
       </div>
-      <h2 className="cp-section-titre">En bref</h2>
+      <h2 className="cp-section-titre"><span>En bref</span></h2>
 
       <div className="cp-carte cp-gc-carte">
         {/* La FRISE reste toujours dépliée : c'est l'ossature, et elle donne aux

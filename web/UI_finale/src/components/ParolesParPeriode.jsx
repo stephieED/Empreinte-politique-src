@@ -335,28 +335,30 @@ export default function ParolesParPeriode({ periodes, plafondPeriode, plafondEns
         )}
       </div>
 
+      {/* LE CHIFFRE RESTE ICI, LE POURQUOI PART À LA MÉTHODOLOGIE. Ce que la
+          source publie ou non de la qualité de l'orateur, ce qu'est une
+          collecte réduite au thème : c'est vrai des 30 fiches, et le répéter
+          sous chacune noyait la seule chose qui parle de cette personne — les
+          quatre chiffres. */}
       <p className="cp-note pp-couverture">
         <b>Ce que cette figure ne sait pas.</b> Sur ses {formatNumber(couverture.total)}{' '}
         interventions collectées, {formatNumber(couverture.sujet)} portent l’intitulé officiel sous
         lequel elles ont été prononcées, {formatNumber(couverture.verbatim)} le verbatim du compte
-        rendu et {formatNumber(couverture.fonction)} la qualité de l’orateur — que la source ne
-        publie que pour une fonction particulière, ministre ou rapporteur. Son absence est un
-        silence de la source, jamais un fait sur la personne.
+        rendu et {formatNumber(couverture.fonction)} la qualité de l’orateur.
         {couverture.themeSeul > 0 && (
           <>
             {' '}
-            {formatNumber(couverture.themeSeul)} d’entre elles relèvent d’un régime de collecte
-            déclaré, au thème seul : la date, la nature et le thème, et rien d’autre.
+            {formatNumber(couverture.themeSeul)} relèvent d’une collecte réduite au thème.
           </>
         )}
         {couverture.datees < couverture.total && (
           <>
             {' '}
             {formatNumber(couverture.total - couverture.datees)} ne portent pas de date exploitable
-            et restent hors du découpage : sans date, ni le banc ni le gouvernement en place ne se
-            lisent.
+            et restent hors du découpage.
           </>
-        )}
+        )}{' '}
+        <Link to="/methodologie#interventions">Ce que ces absences veulent dire</Link>.
       </p>
 
       <p className="pp-methodo">

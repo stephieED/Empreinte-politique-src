@@ -3,10 +3,11 @@
 // manifest listant les candidats et groupes réellement disponibles. Exécuté
 // avant `dev`/`build` (voir package.json) car Vite ne sert pas de fichiers
 // situés hors du dossier du projet.
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, cpSync, existsSync, rmSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, cpSync, existsSync, rmSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { cleLegislature, construireComparaisons } from './comparaison-groupes.mjs';
+import { construireCouverture } from './couverture-corpus.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(here, '..');
@@ -278,6 +279,49 @@ for (const file of gouvernementFiles) {
   });
 }
 manifestGouvernements.sort((a, b) => (b.debut || '').localeCompare(a.debut || ''));
+
+/* ── Ce que le dépôt porte, tous profils confondus (/couverture) ────────────
+ *
+ * Une projection au build, comme les comparaisons de groupe (#329) : elle ne
+ * crée aucun fait, elle compte ce que `pivot_data/` porte déjà et le range par
+ * institution. En faire une huitième sortie du pivot ajouterait un job, un
+ * cache et un budget CI pour un fichier que seule l'interface lit.
+ *
+ * LE CACHE EST SUR LES DATES, PAS SUR UN DRAPEAU. La lecture des quatre index
+ * d'amendements (141 Mo) coûte une trentaine de secondes : la refaire à chaque
+ * `npm run dev` rendrait le démarrage insupportable, et la sauter sans regarder
+ * les entrées servirait un corpus périmé après un run de données. On compare
+ * donc la date du fichier produit à la plus récente des entrées.
+ */
+const couverturePath = path.join(outDir, 'couverture.json');
+const plusRecent = (...chemins) => chemins.reduce((max, c) => {
+  if (!existsSync(c)) return max;
+  const st = statSync(c);
+  if (st.isDirectory()) {
+    return readdirSync(c).reduce((m, f) => Math.max(m, statSync(path.join(c, f)).mtimeMs), max);
+  }
+  return Math.max(max, st.mtimeMs);
+}, 0);
+const entreesCouverture = plusRecent(
+  pivotProfilesDir,
+  pivotGroupesDir,
+  pivotGouvernementsDir,
+  scrutinsPath,
+  scrutinsDossiersPath,
+  commissionsPath,
+  amendementsDir,
+  path.join(here, 'couverture-corpus.mjs'),
+);
+if (!existsSync(couverturePath) || statSync(couverturePath).mtimeMs < entreesCouverture) {
+  const debut = Date.now();
+  writeFileSync(
+    couverturePath,
+    JSON.stringify(construireCouverture({ repoRoot, slugsPublies: availableSlugs })),
+  );
+  console.log(`sync-data : couverture.json reconstruit en ${((Date.now() - debut) / 1000).toFixed(1)} s.`);
+} else {
+  console.log('sync-data : couverture.json à jour, reconstruction sautée.');
+}
 
 writeFileSync(
   path.join(outDir, 'manifest.json'),

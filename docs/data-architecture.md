@@ -778,6 +778,7 @@ graph TD
 
     SYNC --> MAN["public/data/manifest.json<br/>candidates + groupes + gouvernements<br/>(+ groupIds[] par candidat)"]
     SYNC --> PUB["public/data/ — profiles · groupes · gouvernements<br/>+ scrutins.json + amendements/ + commissions_dossiers.json<br/>+ scrutins_dossiers.json"]
+    SYNC --> CVR["public/data/couverture.json<br/>projection au build — ce que le dépôt porte,<br/>par institution / liste / champ"]
 
     MAN --> IDX["src/data/index.js<br/>getCandidateProfile / getGroupProfile / …"]
     PUB --> IDX
@@ -785,6 +786,7 @@ graph TD
     ADP --> VC["Candidats — /candidats/:id"]
     ADP --> VG["Groupes — /groupes/:id"]
     ADP --> VO["Gouvernement — GovernmentProfilePage.jsx"]
+    CVR --> VCV["Couverture — /couverture"]
 ```
 
 - `sync-data.mjs` copie les artefacts vers `public/data/` (Vite ne sert pas de
@@ -800,6 +802,17 @@ graph TD
   `rattachementDisponible` dit « le fichier n'a pas pu être lu », ce qui n'est
   pas « ce texte n'a pas de commission saisie au fond » (même distinction que
   #510).
+- **`couverture.json` est une projection, pas une huitième sortie du pivot**
+  (#328). `scripts/couverture-corpus.mjs` lit `pivot_data/` au build et écrit
+  32 Ko : ce que le dépôt porte, rangé par institution → liste → champ, avec les
+  bornes déclarées et, par liste, les fiches où elle manque. Elle ne crée aucun
+  fait — elle compte ce que les sept sorties portent déjà. En faire une sortie de
+  `pivot_data/` ajouterait un job, un cache et un budget CI pour un fichier que
+  seule l'interface lit ; même raisonnement que `comparaison-*.json` (#329).
+  Le fichier n'est **pas versionné** (`public/data/` est ignoré par git) et sa
+  reconstruction est conditionnée aux dates de ses entrées : lire les quatre
+  index d'amendements coûte 17 à 28 s, et le refaire à chaque `npm run dev`
+  rendrait le démarrage insupportable.
 - Le manifeste liste les candidats **déclarés** de `raw_data/candidats.json`,
   filtrés sur l'existence d'un profil sur disque — ne pas fabriquer la promesse
   d'une page absente. `groupIds[]` est rattaché par candidat pour permettre le

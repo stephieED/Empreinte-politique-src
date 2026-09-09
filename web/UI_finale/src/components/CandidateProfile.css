@@ -534,6 +534,19 @@
   letter-spacing: -0.018em;
 }
 
+/* LE SURLIGNAGE TIENT AU TEXTE, PAS À LA LIGNE. Le dégradé est posé sur un
+   `span` interne : sur le `h2`, bloc de la largeur de la colonne, la bande
+   jaune courrait jusqu'au bord et se lirait comme un fond de section.
+   Le jaune ne porte JAMAIS le texte (contraste 1,05:1 avec --ink) : il ne
+   couvre que le tiers bas des lettres, qui restent lues sur le fond de page.
+   Même geste que le titre de /couverture. */
+.cp-section-titre > span {
+  background: linear-gradient(transparent 62%, var(--accent) 62%);
+  padding: 0 2px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
 .cp-section-critere {
   font-size: 13px;
   color: #6e6a78;

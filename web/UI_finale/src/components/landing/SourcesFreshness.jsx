@@ -61,6 +61,13 @@ export default function SourcesFreshness() {
       <p className="sources-freshness-cta">
         <Link to={`/candidats/${DEFAULT_CANDIDATE_ID}`}>Voir la fraîcheur en détail →</Link>
       </p>
+      {/* La couverture est une propriété du CORPUS, pas d'une fiche : depuis
+          quand chaque source publie, ce qu'elle ne publie pas, et sur quelles
+          fiches une liste manque. Elle a sa page — la répéter sur chacune des
+          fiches disait 59 fois la même chose sans parler de personne. */}
+      <p className="sources-freshness-cta">
+        <Link to="/couverture">Ce que contient ce corpus →</Link>
+      </p>
     </section>
   );
 }

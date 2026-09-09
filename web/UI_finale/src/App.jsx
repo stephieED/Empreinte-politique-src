@@ -6,6 +6,7 @@ import CandidateProfilePage from './pages/CandidateProfilePage';
 import GroupProfilePage from './pages/GroupProfilePage';
 import GovernmentProfilePage from './pages/GovernmentProfilePage';
 import MethodologyPage from './pages/MethodologyPage';
+import CoveragePage from './pages/CoveragePage';
 import LegalNoticePage from './pages/LegalNoticePage';
 import { DEFAULT_CANDIDATE_ID, DEFAULT_GROUP_ID, DEFAULT_GOVERNMENT_ID } from './data';
 
@@ -32,6 +33,7 @@ function App() {
         {/* Pages statiques hors ExplorerLayout : pas de candidat/groupe sélectionné,
             les bandeaux Groupes/Gouvernements/Candidats n'ont pas de sens ici. */}
         <Route path="/methodologie" element={<MethodologyPage />} />
+        <Route path="/couverture" element={<CoveragePage />} />
         <Route path="/mentions-legales" element={<LegalNoticePage />} />
       </Routes>
     </>

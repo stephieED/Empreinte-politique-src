@@ -174,6 +174,11 @@ SITES_UI: dict[tuple[str, str], str] = {
     # C'est la source dont `chambres` dérive — elle ne migre pas, elle est ce
     # vers quoi on migre.
     ("src/utils/profilCandidat.js", "m"): MANDAT,
+    # La projection de couverture (/couverture) lit elle aussi la chambre SUR LE
+    # MANDAT : c'est ce qui tient le Sénat et le Parlement européen hors de la
+    # piste « Assemblée nationale » de la frise, et leur donne leur propre ligne
+    # — mandat publié, activité non collectée (#528).
+    ("scripts/couverture-corpus.mjs", "m"): MANDAT,
     ("src/utils/profilCandidat.js", "existant"): MANDAT,
     ("src/utils/profilCandidat.js", "siege"): MANDAT,
 }
