@@ -43,6 +43,24 @@ def _memo_propre():
     perimetre.vider_memo_resolutions()
 
 
+@pytest.fixture(autouse=True)
+def _table_neutre(monkeypatch):
+    """Aucune entrée de correspondance : la SECONDE déclaration, seule.
+
+    Sans ce neutre, ces tests lisaient `raw_data/correspondance_acteurs_an.json`
+    — le corpus vivant, ce que la règle de #473 interdit. Ils sont passés le
+    jour de leur écriture et ont échoué le lendemain, quand le run
+    `34278343461` a écrit l'entrée sourcée d'Asselineau : la PREMIÈRE
+    déclaration suffisait alors, et trois tests censés vérifier la seconde
+    passaient sans elle.
+
+    Ils sont même restés **verts en CI**, dont le sparse-checkout ne
+    matérialise pas ce fichier : vert là-bas, rouge ici, pour la même raison
+    que #721 — un test qui lit l'état d'un poste ne teste pas ce qu'il croit.
+    """
+    monkeypatch.setattr(generate, "_entree_correspondance", lambda slug: None)
+
+
 def _resolutions(tmp_path: Path, **issues) -> Path:
     chemin = tmp_path / "resolutions.json"
     chemin.write_text(
