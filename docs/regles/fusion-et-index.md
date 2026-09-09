@@ -26,8 +26,19 @@ les charger, ni à les faire grossir. -->
   in compute what was just saved on disk. And nothing is deleted before the consumers are
   settled — seven read that field, one of them (`merge_profile`) being a **guard**, not a
   source: the committed slice is what protects against an empty collection, and collection
-  reads a CI cache that is not versioned.
-  → `docs/decisions/reconstruction-tranches-depuis-archive-691.md`
+  reads a CI cache that is not versioned. **Both of those worries turned out backwards
+  (#691 lot 2).** Order is not an obstacle: `audit_diff_profils` records a list as an
+  **integer**, so a loss is a drop in count, never a change of sequence. And the merge guard
+  is *strengthened*, not weakened — today `old` is whatever a previous run managed to
+  collect, hostage to an unversioned CI cache, whereas a derived `old` is the committed
+  archive, the whole truth of a closed legislature (**854 slices out of 854 covered**,
+  measured). What must hold instead: **the manifest has to say `derivee`, and silence stays
+  a failure** — reaching for the archive "in case the file is missing" would read a *lost*
+  slice as a derived one and republish a truncated profile, the exact distinction
+  `PartitionIllisible` carries since #580. The actor comes from the manifest, never a join;
+  the announced `nombre` is a check, never a source (#576, #579).
+  → `docs/decisions/reconstruction-tranches-depuis-archive-691.md`,
+    `docs/decisions/tranches-derivees-lecteur-691.md`
 - **Build `pivot_data/scrutins.json` before any pivot pass, and merge it additively.**
   Resolving a ballot's `legislature` is a corpus-wide join, never per-profile.
   → `docs/decisions/normalisation-votes.md`
