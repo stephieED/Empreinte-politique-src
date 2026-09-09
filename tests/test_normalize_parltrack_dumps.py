@@ -630,3 +630,25 @@ def test_les_deux_constats_de_couverture_sont_des_familles():
     second = unir_warnings(
         [f"{WARNING_PREFIX_PARLTRACK_EXPLICATIONS_SANS_LIEN} 4 explication(s) …"], premier)
     assert len(second) == 1 and " 4 " in second[0]
+
+
+def test_le_repli_perime_est_retire_lui_aussi():
+    """Le troisième constat ParlTrack, manqué par la première reprise (#683).
+
+    Le run `34377413730` a publié « ParlTrack (fallback) : dumps absents ce
+    run » sur **les 6 profils enrichis**, hérité d'un run où c'était vrai, à
+    côté des votes qui viennent précisément de ces dumps. Même mécanisme que
+    les deux autres familles : c'est l'énumération qui était incomplète.
+    """
+    from merge_profile import merge_pivot_profile
+
+    ancien = make_empty_profil("raphael-glucksmann", "Raphaël GLUCKSMANN")
+    ancien["meta"]["warnings"] = [
+        "ParlTrack (fallback) : dumps absents ce run — données ParlTrack issues "
+        "du cache/dépôt précédent.",
+    ]
+    nouveau = make_empty_profil("raphael-glucksmann", "Raphaël GLUCKSMANN")
+    nouveau["votes"] = [_make_vote(_scrutin("A9-1/2023 - Résolution", voteid=7))]
+
+    fusionne = merge_pivot_profile(ancien, nouveau)
+    assert [w for w in fusionne["meta"]["warnings"] if "ParlTrack" in w] == []

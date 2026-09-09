@@ -358,3 +358,81 @@ def test_la_declaration_a_sa_famille_davertissement():
     """Elle porte l'énumération des listes divergentes, donc un compteur : sans
     famille, deux fusions publieraient deux énumérations, dont une périmée."""
     assert WARNING_PREFIX_COUVERTURE_DIVERGENTE in FAMILLES_WARNINGS
+
+
+# ---------------------------------------------------------------------------
+# Cinquième règle : un sur-ensemble strict de sources l'emporte (#683)
+# ---------------------------------------------------------------------------
+
+
+def _entree_an(constate_le="2026-09-09"):
+    return {
+        "etat": "couvert",
+        "portee": {"debut": "2012-06-20", "fin": None},
+        "preuve": "l'Assemblée nationale publie ses scrutins depuis la XIVe législature.",
+        "constate_le": constate_le,
+    }
+
+
+def _entree_pe(constate_le="2026-09-09"):
+    return {
+        "etat": "couvert",
+        "source": "parlement_europeen",
+        "portee": {"debut": "2019-07-18", "fin": "2026-03-11"},
+        "preuve": "« votes » porte aussi du matériau du Parlement européen, collecté "
+                  "via les dumps ParlTrack.",
+        "constate_le": constate_le,
+    }
+
+
+def test_lecrivain_qui_couvre_une_source_de_plus_lemporte():
+    """Le cas réel du run `34377413730`.
+
+    `extract-ue-officiel` écrit une couverture sans volet européen,
+    `merge-and-pivot` en écrit une avec. Même jour, même rang, contenus
+    différents : la règle 4 gardait la couverture déjà publiée, et **3 profils
+    sur 6** — Glucksmann, Philippot, Massard — publiaient leurs votes du
+    Parlement européen sans la borne qui les date.
+
+    Un sur-ensemble strict n'est pas une contradiction : il dit tout ce que
+    l'autre dit, plus une source de plus.
+    """
+    ancien = {"votes": [_entree_an()]}
+    neuf = {"votes": [_entree_an(), _entree_pe()]}
+    bloc, non_tranchees = fusionner_couverture(ancien, neuf)
+    assert non_tranchees == []
+    assert any(e.get("source") == "parlement_europeen" for e in bloc["votes"])
+
+
+def test_le_sur_ensemble_lemporte_aussi_quand_il_est_deja_publie():
+    """Symétrique : un écrivain qui en dit moins n'efface pas celui qui en dit plus."""
+    ancien = {"votes": [_entree_an(), _entree_pe()]}
+    neuf = {"votes": [_entree_an()]}
+    bloc, non_tranchees = fusionner_couverture(ancien, neuf)
+    assert non_tranchees == []
+    assert any(e.get("source") == "parlement_europeen" for e in bloc["votes"])
+
+
+def test_deux_jeux_de_sources_simplement_differents_restent_non_tranchables():
+    """La règle préfère le plus complet ; elle ne départage pas deux vérités.
+
+    Sans cette borne, elle deviendrait un « le dernier qui parle a raison »
+    déguisé — exactement ce que #602 a retiré.
+    """
+    ancien = {"votes": [_entree_an(), dict(_entree_pe(), source="senat")]}
+    neuf = {"votes": [_entree_an(), _entree_pe()]}
+    bloc, non_tranchees = fusionner_couverture(ancien, neuf)
+    assert non_tranchees == ["votes"]
+    assert bloc["votes"] == ancien["votes"], "la couverture déjà publiée est conservée"
+
+
+def test_une_entree_sans_source_vaut_assemblee_nationale():
+    """100 % des entrées écrites avant #683 n'ont pas la clé : l'absence le dit,
+    et aucun backfill n'a été fait."""
+    ancien = {"votes": [_entree_an()]}
+    neuf = {"votes": [dict(_entree_an(), source="assemblee_nationale")]}
+    bloc, non_tranchees = fusionner_couverture(ancien, neuf)
+    assert non_tranchees == ["votes"], (
+        "mêmes sources des deux côtés : le cas reste non tranchable, "
+        "la clé explicite ne crée pas une source de plus"
+    )

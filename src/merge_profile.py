@@ -1098,6 +1098,12 @@ WARNING_PREFIX_COUVERTURE_DIVERGENTE = "couverture divergente non tranchée"
 #: #683 — les deux constats de couverture européens. Recopiés ici plutôt
 #: qu'importés de `normalize_parltrack_dumps`, comme les deux préfixes ParlTrack
 #: juste au-dessus : ce module ne dépend d'aucun normaliseur.
+#: #683 — le troisième constat ParlTrack, et celui que la première reprise
+#: avait manqué : il affirme que les dumps étaient absents. Sur le run
+#: `34377413730`, **les 6 profils enrichis le portaient encore**, hérité d'un run
+#: où il était vrai, à côté de 1 977 votes qui viennent de ces mêmes dumps.
+_PREFIXE_PARLTRACK_FALLBACK = "ParlTrack (fallback)"
+
 _PREFIXE_PE_VOTES_ECARTES = "Parlement européen — votes non publiés :"
 _PREFIXE_PE_EXPLICATIONS = "Parlement européen — explications de vote :"
 
@@ -1491,6 +1497,12 @@ def retirer_constats_parltrack_perimes(profil: dict[str, Any]) -> None:
     européen. Le constat était vrai le jour où il a été écrit ; il devient faux
     le jour où la lecture est réparée, et rien ne l'aurait retiré.
 
+    **Trois familles, et la première version n'en visait que deux.** Le run
+    `34377413730` a publié le troisième constat — « ParlTrack (fallback) : dumps
+    absents ce run » — sur **les 6 profils enrichis**, à côté des votes qui
+    viennent précisément de ces dumps. Même mécanisme, même correctif : c'est
+    l'énumération qui était incomplète, pas la règle.
+
     ## Pourquoi une reprise, et pas une famille de plus
 
     Même patron que `clean_stale_interventions` et `clean_stale_textes_portes` :
@@ -1514,7 +1526,11 @@ def retirer_constats_parltrack_perimes(profil: dict[str, Any]) -> None:
         w for w in warnings
         if not (
             isinstance(w, str)
-            and w.startswith((_PREFIXE_PARLTRACK_AUCUNE_DONNEE, _PREFIXE_PARLTRACK_DIAGNOSTIC))
+            and w.startswith((
+                _PREFIXE_PARLTRACK_AUCUNE_DONNEE,
+                _PREFIXE_PARLTRACK_DIAGNOSTIC,
+                _PREFIXE_PARLTRACK_FALLBACK,
+            ))
         )
     ]
 
@@ -2084,6 +2100,44 @@ def _rang_interrogation(entrees: Any) -> int:
     return rang
 
 
+#: Ce que porte une entrée de couverture qui ne nomme pas sa source : la
+#: couverture de l'Assemblée nationale. C'est le cas de 100 % des entrées
+#: écrites avant #683, et l'absence de clé le dit sans backfill.
+_SOURCE_IMPLICITE = "assemblee_nationale"
+
+
+def _sources_couvertes(entrees: Any) -> frozenset[str]:
+    """Les institutions dont ce jeu d'entrées décrit la couverture (#683).
+
+    ## Pourquoi une règle de plus, et pourquoi celle-là
+
+    Deux écrivains d'un même run constatent le même jour, au même rang : la
+    règle 4 refusait alors de trancher et gardait la couverture déjà publiée.
+    C'est le bon geste quand les deux se contredisent — mais pas quand l'un
+    **couvre une source que l'autre n'a pas interrogée**.
+
+    Mesuré sur le run `34377413730` : `extract-ue-officiel` écrit une couverture
+    sans volet européen, `merge-and-pivot` en écrit une avec. Même jour, même
+    rang, contenus différents. Résultat : **3 profils sur 6** — Glucksmann,
+    Philippot, Massard — publiaient leurs votes du Parlement européen **sans la
+    borne de fraîcheur** qui les date, et le profil le déclarait sous
+    « couverture divergente non tranchée ». Le garde-fou de #602 faisait
+    exactement son travail ; c'est la règle qui manquait un cas.
+
+    Un sur-ensemble strict n'est pas une contradiction : il dit tout ce que
+    l'autre dit, plus une source de plus. Le préférer ne choisit pas entre deux
+    vérités, il retient la plus complète — et l'égalité, comme les deux
+    ensembles simplement différents, restent non tranchables.
+    """
+    sources: set[str] = set()
+    for entree in entrees if isinstance(entrees, list) else ():
+        if not isinstance(entree, dict):
+            continue
+        source = entree.get("source")
+        sources.add(source if isinstance(source, str) and source else _SOURCE_IMPLICITE)
+    return frozenset(sources)
+
+
 def _dernier_constat(entrees: Any) -> str:
     """La date de constat la plus récente du jeu d'entrées, `""` si aucune.
 
@@ -2182,6 +2236,14 @@ def fusionner_couverture(
         rang_neuf, rang_ancien = _rang_interrogation(neuf), _rang_interrogation(ancien)
         if rang_neuf != rang_ancien:
             fusionne[liste] = neuf if rang_neuf > rang_ancien else ancien
+            continue
+
+        # 4. À rang égal, l'écrivain qui couvre STRICTEMENT PLUS DE SOURCES
+        #    l'emporte (#683). Ce n'est pas trancher entre deux affirmations
+        #    contradictoires — c'est préférer celle qui en dit strictement plus.
+        sources_neuf, sources_ancien = _sources_couvertes(neuf), _sources_couvertes(ancien)
+        if sources_neuf > sources_ancien or sources_neuf < sources_ancien:
+            fusionne[liste] = neuf if sources_neuf > sources_ancien else ancien
             continue
 
         fusionne[liste] = ancien
