@@ -8,9 +8,24 @@ et amendements) en entrées pivot v1 (`textes_portes[]` et `amendements[]`).
 Usage :
     from normalize_parltrack_dumps import enrich_pivot_with_parltrack
     enrich_pivot_with_parltrack(profil_pivot, mep_id=131580)
+
+Cinq décisions gouvernent ce module ; les trois qui se lisent avant d'y
+toucher :
+
+- `docs/decisions/lecture-dumps-parltrack-683.md` — pourquoi `role_signataire`
+  se lit sur `authors` au lieu de valoir `auteur_principal` pour tout le monde,
+  et pourquoi 44 dates du corpus sont publiées `null` avec leur valeur brute.
+- `docs/decisions/destinataire-avertissements-642.md` — pourquoi le constat
+  « aucune donnée » s'écrit deux fois, une par destinataire.
+- `docs/decisions/licence-lot-6-530.md` — pourquoi `meta.licence_donnees` est
+  recomposée ici et jamais écrite en dur.
+
+La table complète : `docs/decisions-par-module.md`.
 """
 
+import datetime
 import time
+import unicodedata
 from typing import Any, Optional
 
 from avertissements import (
@@ -41,6 +56,80 @@ _PARLTRACK_LICENCE = LICENCE_PARLTRACK
 _PARLTRACK_SOURCE_URL = "https://parltrack.org/dumps"
 
 
+#: Bornes de plausibilité d'une date d'amendement européen. Basse : la première
+#: élection du Parlement européen au suffrage universel (juin 1979) — rien
+#: d'antérieur ne peut être l'acte d'un député européen élu. Haute : l'année
+#: suivante, pour ne pas rejeter un dépôt légitimement postérieur au dump.
+#:
+#: **Ce n'est pas de l'hygiène de données, c'est la règle 5.** Mesuré le
+#: 09/09/2026 sur les 20 937 amendements de nos profils européens : **44**
+#: portent une date impossible — année 0302, année 2068. Republiée telle
+#: quelle, elle range un amendement de 2020 dans un siècle qui n'existe pas ;
+#: corrigée en silence, elle invente. Elle est donc publiée `null`, avec la
+#: valeur brute conservée à côté sous `date_non_resolue`.
+_ANNEE_MIN_PE = 1979
+
+
+def _date_plausible(brut: Optional[str]) -> tuple[Optional[str], Optional[str]]:
+    """`(date publiable, date brute écartée)` — l'un des deux est toujours `None`."""
+    if not brut:
+        return None, None
+    date = str(brut)[:10]
+    annee = date[:4]
+    if not annee.isdigit():
+        return None, str(brut)
+    if _ANNEE_MIN_PE <= int(annee) <= datetime.date.today().year + 1:
+        return date, None
+    return None, str(brut)
+
+
+def _normaliser_nom(nom: Optional[str]) -> str:
+    """Nom réduit à un ensemble de mots, sans accents ni casse ni ordre.
+
+    ParlTrack écrit « France Jamet », le pivot « Jordan BARDELLA » : ni la
+    casse, ni l'ordre prénom/nom ne sont garantis. La comparaison porte donc
+    sur l'ensemble des mots, ce que ni l'un ni l'autre ne change.
+    """
+    sans_accents = "".join(
+        c for c in unicodedata.normalize("NFKD", nom or "") if not unicodedata.combining(c)
+    )
+    return " ".join(sorted(m for m in sans_accents.lower().replace("-", " ").split() if m))
+
+
+def _role_signataire(amendment: dict[str, Any], nom_profil: Optional[str]) -> Optional[str]:
+    """Le rôle de cette personne sur cet amendement — ou `None` si la source ne le dit pas.
+
+    ## Pourquoi ce n'est pas « auteur_principal » pour tout le monde
+
+    Le module écrivait `auteur_principal` sur chaque entrée. C'est faux, et
+    mesurablement : l'amendement `A9-0183/2023-18` de Jordan Bardella compte
+    **30 signataires**, et la médiane sur nos profils est de 3 (maximum 127).
+    Personne ne s'en apercevait — le lecteur des dumps ne rendait aucune ligne.
+
+    ## Trois cas, et un quatrième qui reste muet
+
+    1. **un seul signataire** → `auteur_principal`, sans avoir à lire un nom :
+       s'il n'y en a qu'un, c'est lui ;
+    2. le nom en **tête** de `authors` est le sien → `auteur_principal` ;
+    3. la source nomme quelqu'un d'autre en tête → `cosignataire` ;
+    4. `authors` est absent ou illisible → **`None`**.
+
+    Le quatrième cas est le seul honnête quand la source se tait, et il n'est
+    pas rare : l'ordre de `meps` reproduit celui de `authors` dans **91 %** des
+    1 257 735 amendements vérifiables, ce qui est trop pour l'ignorer et bien
+    trop peu pour en faire une règle. Le schéma admet `role_signataire: null`
+    (`KNOWN_ROLES_SIGNATAIRE_AMENDEMENT` n'est vérifié que sur une valeur
+    présente) : une place cosignataire supposée serait une affirmation que rien
+    ne source (§2 règle 2).
+    """
+    if amendment.get("nb_signataires") == 1:
+        return "auteur_principal"
+    premier = _normaliser_nom(amendment.get("premier_auteur"))
+    if not premier:
+        return None
+    return "auteur_principal" if premier == _normaliser_nom(nom_profil) else "cosignataire"
+
+
 def _make_texte_porte(dossier: dict[str, Any]) -> dict[str, Any]:
     """Convertit un enregistrement dossier ParlTrack en entrée pivot `textes_portes`.
 
@@ -62,14 +151,14 @@ def _make_texte_porte(dossier: dict[str, Any]) -> dict[str, Any]:
         # aucune issue de dossier : l'absence est un fait de la source.
         "sort": None,
         "sort_non_resolu": {"motif": "source_sans_sort"},
-        "date_min": dossier.get("date"),
-        "date_max": dossier.get("date"),
+        "date_min": _date_plausible(dossier.get("date"))[0],
+        "date_max": _date_plausible(dossier.get("date"))[0],
         "legislature": None,
         "source_url": dossier.get("source_url"),
     }
 
 
-def _make_amendement(amendment: dict[str, Any]) -> dict[str, Any]:
+def _make_amendement(amendment: dict[str, Any], nom_profil: Optional[str] = None) -> dict[str, Any]:
     """Convertit un enregistrement amendement ParlTrack en entrée pivot `amendements`.
 
     Note : ParlTrack ne fournit pas de champ `sort` (outcome) fiable sur
@@ -84,9 +173,14 @@ def _make_amendement(amendment: dict[str, Any]) -> dict[str, Any]:
     dans le profil sous `amendement_non_resolu` — la forme exacte que le schéma
     prévoit pour une entrée qu'on ne sait pas rattacher, ni supprimée ni devinée.
 
-    Aucune duplication n'est perdue au passage : la normalisation ne sert à rien
-    ici, un amendement PE n'étant pas recopié chez ses cosignataires (ParlTrack
-    ne les fournit pas).
+    Aucune duplication n'est perdue au passage : l'entrée décrit la signature
+    de CETTE personne sur un amendement donné, et le dump publie l'amendement
+    une seule fois quel que soit le nombre de signataires.
+
+    **Correction de ce qui était écrit ici** : « ParlTrack ne fournit pas les
+    cosignataires » était faux. Chaque amendement porte la liste complète de
+    ses signataires (`meps`) et leurs noms dans l'ordre (`authors`) — c'est ce
+    qui rend `_role_signataire` possible.
 
     Args:
         amendment: dict retourné par `parltrack_dumps.get_amendments_for_mep`.
@@ -94,20 +188,31 @@ def _make_amendement(amendment: dict[str, Any]) -> dict[str, Any]:
     Returns:
         Dict conforme au schéma `amendements[]` (mapping + enregistrement).
     """
+    date, date_ecartee = _date_plausible(amendment.get("date"))
+    non_resolu: dict[str, Any] = {
+        "texte_vise": amendment.get("reference") or "",
+        "sort": None,
+        "base_juridique_irrecevabilite": None,
+        # Reste `null` : le schéma attend ici un **slug** de notre corpus
+        # (#487), pas un nom libre. Ce que ParlTrack nomme en tête d'`authors`
+        # sert à qualifier `role_signataire`, il n'usurpe pas un champ dont le
+        # contrat est un identifiant.
+        "premier_signataire": None,
+        "co_signataires": [],
+        "type_deposant": None,
+        "date": date,
+        "numero": amendment.get("id"),
+        "source_url": amendment.get("source_url"),
+    }
+    if date_ecartee is not None:
+        non_resolu["date_non_resolue"] = {
+            "motif": "date_hors_bornes",
+            "valeur_source": date_ecartee,
+        }
     return {
         "amendement_id": None,
-        "role_signataire": "auteur_principal",
-        "amendement_non_resolu": {
-            "texte_vise": amendment.get("reference") or "",
-            "sort": None,
-            "base_juridique_irrecevabilite": None,
-            "premier_signataire": None,
-            "co_signataires": [],
-            "type_deposant": None,
-            "date": amendment.get("date"),
-            "numero": amendment.get("id"),
-            "source_url": amendment.get("source_url"),
-        },
+        "role_signataire": _role_signataire(amendment, nom_profil),
+        "amendement_non_resolu": non_resolu,
     }
 
 
@@ -183,8 +288,9 @@ def enrich_pivot_with_parltrack(
         if isinstance(a, dict)
     }
     new_amds = []
+    nom_profil = profil.get("nom")
     for a in amendments:
-        entry = _make_amendement(a)
+        entry = _make_amendement(a, nom_profil)
         key = _amd_key(entry)
         if key not in existing_amd_keys:
             existing_amd_keys.add(key)
