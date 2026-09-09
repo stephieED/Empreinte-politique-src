@@ -559,6 +559,36 @@
         "ecart_motif": "Publication configurée par #777 : organe PO730940 relu dans l'index AMO30 des groupes politiques le 2026-09-08 — sigle `GDR` (libelleAbrev), 2017-06-27 → 2022-06-21. La fiche paraît au prochain run. 2 des 18 membres ont un slug dans raw_data/correspondance_acteurs_an.json ; les autres n'en ont pas, et build_roster_candidats_detaille laisse tomber un membre sans slug — ils sont hors de la fiche et nommés par l'annotation ROSTER_SANS_SLUG (#527). `effectif_publie` reste null jusqu'à la parution.",
         "membres_avec_slug": 2,
         "ecart_membres": []
+      },
+      {
+        "groupe_sigle": "LAREM",
+        "groupe_id": "AN:LAREM:15",
+        "legislature": "15",
+        "fichier": "groupe-AN-LAREM-15.json",
+        "sigles_an": [
+          "LAREM"
+        ],
+        "organes_an": [
+          "PO730964"
+        ],
+        "position_politique_an": {
+          "position": "majorite",
+          "verifie_le": "2026-09-09",
+          "organes": [
+            {
+              "organe_an": "PO730964",
+              "sigle_an": "LAREM",
+              "valeur_source": "Majoritaire",
+              "position": "majorite"
+            }
+          ]
+        },
+        "effectif_amo30": 343,
+        "effectif_publie": null,
+        "verifie_le": "2026-09-09",
+        "ecart_motif": "Publication configurée par #779, après #691. L'organe PO730964 est relu dans l'index AMO30 des groupes politiques le 2026-09-09 : sigle `LAREM` (libelleAbrev, `LaREM` en libelleAbrege), « La République en Marche », 2017-06-27 → 2022-06-21, positionPolitique « Majoritaire ». 367 mandats pour 343 acteurs distincts, et 343 après filtrage des mandats de transit (an_roster.est_mandat_de_transit) : aucun transit sur cet organe, contrairement aux NI de la 16e et de la 17e. 131 des 343 ont déjà une entrée dans raw_data/correspondance_acteurs_an.json ; les 212 autres reçoivent un slug fabriqué au roster (#527, #708 §3) puis leur entrée dérivée à la passe hors ligne (#715), comme les 5 groupes XVe de #777 — dont FI publie ses 17 membres sur 17. `effectif_publie` reste null jusqu'à la parution.\n\nCE QUI A LEVÉ LA CONDITION. #779 écartait ce groupe sur son coût de stockage : 227 profils à collecter, ~3,4 Go, pour un seul candidat bénéficiaire — Gabriel Attal, dont les 268 votes de la XVe sont la seule autre période comparable à sa XVIIe. #691 a supprimé la recopie des amendements des législatures closes : ils se dérivent désormais de raw_data/amendements_an_figes/, et un membre de la XVe ne coûte plus que son socle.",
+        "membres_avec_slug": 131,
+        "ecart_membres": []
       }
     ]
   },
@@ -759,6 +789,15 @@
       "chambre": "AN",
       "legislature": "15",
       "fichier": "groupe-AN-GDR-15.json"
+    },
+    {
+      "roster_chambre": "deputes",
+      "groupe_id": "AN:LAREM:15",
+      "groupe_sigle": "LAREM",
+      "groupe_nom": "La République en Marche",
+      "chambre": "AN",
+      "legislature": "15",
+      "fichier": "groupe-AN-LAREM-15.json"
     }
   ]
 }
