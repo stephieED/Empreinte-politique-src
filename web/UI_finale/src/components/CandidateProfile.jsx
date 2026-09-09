@@ -747,7 +747,7 @@ function ListeCascade({ cascade, selection, onRaz }) {
   if (!selection) {
     return (
       <p className="cp-note cp-ter-invite">
-        Clique un ruban, une barre ou une étiquette pour lire les textes qui la composent.
+        Cliquez un ruban, une barre ou une étiquette pour lire ce qui la compose.
       </p>
     );
   }
@@ -967,6 +967,12 @@ function Propositions({ amendements, textes, causeAmendements, causeTextes, voix
           ))}
         </div>
       )}
+
+      <p className="cp-methodo">
+        <Link to="/methodologie#propose">
+          Quels textes et quels amendements sont retenus, et pourquoi aucun taux d’adoption
+        </Link>
+      </p>
     </>
   );
 }
@@ -1163,6 +1169,14 @@ function Couverture({ couverture, limites }) {
         </p>
       ))}
       <Interdits />
+      {/* UN renvoi pour toute la section, pas un par note : ce qui descend en
+          méthodologie est le POURQUOI, et il est commun (DESIGN_SYSTEM §7
+          règle 2). */}
+      <p className="cp-methodo">
+        <Link to="/methodologie#couverture">
+          Pourquoi ces limites se déclarent au lieu de se combler
+        </Link>
+      </p>
     </>
   );
 }
@@ -1363,10 +1377,8 @@ export default function CandidateProfile({ candidate }) {
         titre="Les fonctions exercées"
         pied={
           <>
-            Chaque catégorie montre ses trois fonctions les plus longues. Un filet marque
-            celle qui dépasse la moitié du temps de mandat, quand il y en a une. Le rôle
-            n’est précisé que lorsqu’il n’est pas celui de membre.{' '}
-            <Link to="/methodologie">Méthodologie →</Link>
+            Les trois plus longues par catégorie ; un filet passé la moitié du mandat.{' '}
+            <Link to="/methodologie#fonctions">Pourquoi ce n’est pas un palmarès →</Link>
           </>
         }
       >
@@ -1398,7 +1410,7 @@ export default function CandidateProfile({ candidate }) {
       <Section
         numero="3"
         titre={c.voix.titres.vote}
-        critere="Les positions exprimées sur l’ensemble d’un texte, une seule par texte : celle de sa dernière lecture. Elles sont découpées en périodes politiques — une nouvelle dès que le banc ou le gouvernement change — parce qu’un même vote n’y dit pas la même chose. Aucun taux de participation n’est publié : ce serait un taux d’assiduité individuel."
+        critere="Une position par texte, rangée par période politique. Aucun taux de participation n’est publié."
       >
         <Votes cause={c.causes.votes} votes={c.votes} />
       </Section>
@@ -1406,7 +1418,7 @@ export default function CandidateProfile({ candidate }) {
       <Section
         numero="4"
         titre={c.voix.titres.ecarts}
-        critere="Sa position à côté de la position majoritaire de son groupe, scrutin par scrutin. Jamais totalisé : « a voté contre son groupe N fois » serait une note, pas un fait."
+        critere="Sa position à côté de celle de son groupe, scrutin par scrutin. Jamais totalisée."
       >
         <EcartsGroupe ecarts={c.ecarts} voix={c.voix} />
       </Section>
@@ -1414,7 +1426,7 @@ export default function CandidateProfile({ candidate }) {
       <Section
         numero="5"
         titre={c.voix.titres.dit}
-        critere="Ses interventions par période politique, puis par nature et par sujet. Le verbatim est celui du compte rendu, jamais un extrait choisi : le fil publie toutes celles du sujet retenu."
+        critere="Ses interventions par période politique, puis par nature et par sujet. Le verbatim est celui du compte rendu."
       >
         <Paroles cause={c.causes.interventions} interventions={c.interventions} />
       </Section>

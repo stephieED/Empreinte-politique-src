@@ -280,10 +280,27 @@ def test_la_section_n_a_plus_de_critere_d_en_tete(composant):
 
 def test_le_pied_documente_la_regle_et_mene_a_la_methodologie(composant):
     """Le lecteur doit pouvoir savoir POURQUOI certaines fonctions sont en avant,
-    et aller plus loin s'il le souhaite."""
+    et aller plus loin s'il le souhaite.
+
+    LA RÈGLE EST LÀ, SON POURQUOI EST AILLEURS (#328). Le pied disait les trois
+    règles de lecture en quarante mots — les trois plus longues, le filet à la
+    moitié du mandat, le rôle précisé hors « membre ». DESIGN_SYSTEM §7 règle 2
+    range cela du côté de l'explication : le pied garde les deux repères qu'on
+    voit à l'écran, et le renvoi mène à `#fonctions`, où les trois sont écrites
+    avec ce qu'elles ne veulent PAS dire — qu'aucune n'est un palmarès.
+    """
     section = _corps(composant, 'titre="Les fonctions exercées"', "</Section>")
-    assert "moitié du temps de mandat" in section
-    assert 'to="/methodologie"' in section
+    assert "plus longues" in section
+    assert "filet" in section
+    assert 'to="/methodologie#fonctions"' in section
+
+    methodo = (
+        RACINE / "web" / "UI_finale" / "src" / "pages" / "MethodologyPage.jsx"
+    ).read_text(encoding="utf-8")
+    ancre = methodo[methodo.index("id: 'fonctions'") :]
+    ancre = ancre[: ancre.index("id: 'propose'")]
+    assert "moitié du temps de mandat" in ancre
+    assert "n'est pas celui de membre" in ancre
 
 
 def test_le_pied_vient_apres_le_contenu(composant):

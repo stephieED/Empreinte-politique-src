@@ -7,6 +7,15 @@ import { initialsOf } from '../utils/text';
 import ScrollRow from './ScrollRow';
 import './CandidatesBar.css';
 
+/* La barre suit l'ordre alphabétique du manifeste, et n'en refait aucun : deux
+ * tris pour une même liste sont deux listes qui divergeront (#328).
+ *
+ * Une pastille GRISÉE dit que la fiche ne porte ni mandat à l'Assemblée ni
+ * fonction gouvernementale — donc ni vote, ni intervention, ni amendement à
+ * publier. C'est un fait sur CE QUE LA FICHE MONTRE, jamais un rang entre des
+ * personnes (§2 règle 1) : l'infobulle l'écrit, et la pastille reste cliquable,
+ * lisible et sélectionnable comme les autres.
+ */
 export default function CandidatesBar() {
   const { selectedGroupId } = useGroupFilter();
   const { data: candidates, loading } = useAsyncData(getCandidatesList, []);
@@ -47,8 +56,15 @@ export default function CandidatesBar() {
                 type="button"
                 role="listitem"
                 aria-pressed={active}
-                className={`cb-chip ${active ? 'active' : ''}`}
+                className={`cb-chip ${active ? 'active' : ''}${
+                  candidate.mandatAnOuGouvernement ? '' : ' cb-chip--sans-mandat'
+                }`}
                 onClick={() => navigate(`/candidats/${candidate.id}`)}
+                title={
+                  candidate.mandatAnOuGouvernement
+                    ? undefined
+                    : 'Aucun mandat à l’Assemblée nationale ni fonction gouvernementale : sa fiche existe, mais elle ne porte ni vote, ni intervention, ni amendement.'
+                }
               >
                 <span className="cb-chip-avatar">{initialsOf(candidate.nom)}</span>
                 <span className="cb-chip-label">{candidate.nom}</span>

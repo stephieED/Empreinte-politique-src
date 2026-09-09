@@ -142,6 +142,13 @@ export function NiveauxLecture({ actif, onChange }) {
 
 /*
  * Ce qui est interdit est écrit — du contenu publié, pas un commentaire.
+ *
+ * LA PHRASE SEULE, DEPUIS #328. Le `pourquoi` de chaque refus — 71 mots à eux
+ * trois — est descendu dans la méthodologie, sous l'ancre `#couverture`, où le
+ * renvoi de la section mène. Il n'est pas dupliqué : `MethodologyPage` rend le
+ * même `STATED_REFUSALS`, et une phrase écrite deux fois est une phrase qui
+ * divergera. Ce qui reste ici est l'interdit lui-même, qui doit se lire là où
+ * le lecteur pourrait le chercher (DESIGN_SYSTEM §7 règle 2).
  */
 export function Interdits() {
   return (
@@ -151,7 +158,6 @@ export function Interdits() {
           <p className="lec-interdit-sujet">{refus.sujet}</p>
           <div>
             <p className="lec-interdit-phrase">{refus.phrase}</p>
-            <p className="lec-interdit-pourquoi">{refus.pourquoi}</p>
           </div>
         </div>
       ))}

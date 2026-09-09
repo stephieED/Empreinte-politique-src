@@ -1,11 +1,50 @@
 import StaticPage from '../components/StaticPage';
-import { LAST_READING_RULE, WHOLE_TEXT_VOTE_BOUND } from '../utils/lecture';
+import { LAST_READING_RULE, STATED_REFUSALS, WHOLE_TEXT_VOTE_BOUND } from '../utils/lecture';
 
+/* ── Une ancre par section de la fiche candidat (#328) ───────────────────────
+ *
+ * `DESIGN_SYSTEM.md` §7 règle 2 : « une limite tient en deux mots, une
+ * explication en paragraphe ». La fiche garde donc la limite et le renvoi ; le
+ * paragraphe vit ici. Pour que ce renvoi dépose le lecteur devant SA règle et
+ * non en haut d'une page de douze sections, chaque section de la fiche a son
+ * ancre, et une seule :
+ *
+ *   fonctions · propose · votes · ecarts · interventions · couverture
+ *
+ * « Textes portés » et « Amendements » étaient deux sections pour un seul
+ * emplacement de la fiche : elles sont réunies sous « Ce qui est proposé »,
+ * chacune gardant son sous-titre. Une section de méthodologie qui ne
+ * correspond à rien d'affichable est une section que personne n'atteint.
+ */
 const SECTIONS = [
   {
-    heading: 'Textes portés',
+    id: 'fonctions',
+    heading: 'Fonctions exercées',
     body: (
       <>
+        <p>
+          Chaque catégorie montre ses <strong>trois fonctions les plus longues</strong>. Ce n'est
+          pas un palmarès : la durée est un fait daté, publié par la source, et rien n'est calculé
+          par-dessus — ni total, ni rang, ni comparaison entre personnes.
+        </p>
+        <p>
+          Un filet marque la fonction qui dépasse la moitié du temps de mandat, quand il y en a
+          une. Là encore, c'est une proportion de temps, pas une importance : une présidence de
+          trois mois ne devient pas plus légère qu'une appartenance de cinq ans.
+        </p>
+        <p>
+          Le rôle n'est précisé que lorsqu'il n'est pas celui de membre. Écrire « membre » partout
+          ferait lire une distinction là où la source n'en pose aucune.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: 'propose',
+    heading: 'Ce qui est proposé',
+    body: (
+      <>
+        <h3>Textes portés</h3>
         <p>
           Un texte est affiché seulement si le pivot lui attribue un rôle factuel parmi{' '}
           <code>auteur</code>, <code>rapporteur</code> ou <code>co-rapporteur</code>, à un stade attestant
@@ -16,17 +55,18 @@ const SECTIONS = [
           l'ordre du jour, la discussion en séance, l'adoption et la promulgation. Un dépôt seul, un rôle
           non retenu ou un volume d'interventions ne suffisent pas.
         </p>
-      </>
-    ),
-  },
-  {
-    heading: 'Amendements',
-    body: (
-      <>
+        <h3>Amendements</h3>
         <p>Les issues sont publiées en comptes bruts : adoptés, rejetés, retirés, tombés, irrecevables et non soutenus.</p>
         <p>
           Aucun taux d'adoption isolé n'est présenté. Ces issues dépendent du texte, de la procédure, de la
           recevabilité et du rôle du déposant ; elles ne constituent pas une mesure d'efficacité.
+        </p>
+        <h3>Pourquoi la cascade et la chute se cliquent</h3>
+        <p>
+          Les deux figures sont des <strong>entrées de lecture</strong>, pas des illustrations : un
+          ruban, une barre ou une étiquette ouvre la liste des textes ou des dossiers qui la
+          composent, avec leur date et leur source. Aucun seuil ne s'y applique, et la branche basse
+          d'une cascade n'est pas un rejet — c'est un stade que le texte n'a pas encore atteint.
         </p>
       </>
     ),
@@ -134,6 +174,7 @@ const SECTIONS = [
           <strong>scrutin par scrutin</strong>. Elle ne les totalise jamais : le nombre de
           divergences, son rapport aux scrutins comparables ou un taux de cohésion seraient un
           indice individuel mesuré contre la moyenne d'un groupe, qui reste un contrôle interne.
+          « A voté contre son groupe 47 fois » serait une note, pas un fait.
         </p>
         <h3>Quels scrutins sont retenus</h3>
         <p>
@@ -286,13 +327,40 @@ const SECTIONS = [
     ),
   },
   {
-    heading: 'Limites et sources',
+    id: 'couverture',
+    heading: 'Ce qu\u2019on n\u2019a pas pu lire',
     body: (
-      <p>
-        L'absence de donnée reste une absence de donnée, jamais un zéro. Chaque fait sensible doit remonter
-        à une source primaire ; les classifications thématiques par mots-clés sont des aides de lecture, pas
-        des positions déclarées.
-      </p>
+      <>
+        <p>
+          L'absence de donnée reste une absence de donnée, jamais un zéro. Chaque fait sensible doit remonter
+          à une source primaire ; les classifications thématiques par mots-clés sont des aides de lecture, pas
+          des positions déclarées.
+        </p>
+        <h3>Ce que les trois refus veulent dire</h3>
+        <p>
+          La fiche les écrit en une phrase chacun, parce qu'une page qui se contente de ne pas
+          répondre laisse croire qu'elle n'y a pas pensé. Le raisonnement est ici.
+        </p>
+        {STATED_REFUSALS.map((refus) => (
+          <p key={refus.id}>
+            <strong>{refus.phrase}</strong> {refus.pourquoi}
+          </p>
+        ))}
+        <h3>La qualification d'un groupe n'est pas déductible</h3>
+        <p>
+          L'Assemblée nationale déclare elle-même si un groupe est majoritaire, minoritaire ou
+          d'opposition. Quand elle ne l'a pas fait — et elle ne l'a fait sur aucun groupe de la
+          législature en cours —, la fiche l'écrit et s'arrête là. Le déduire d'un comportement de
+          vote serait un jugement, pas une lecture.
+        </p>
+        <h3>Pourquoi un siège peut porter deux enregistrements</h3>
+        <p>
+          La source rend parfois plusieurs enregistrements de mandat électif pour un même siège :
+          l'un d'eux est antérieur à l'estampillage de la chambre. Ils sont regroupés sur leur date
+          de fin, et <strong>aucun n'est supprimé</strong> — un enregistrement écarté est une
+          collecte qu'on ne peut plus vérifier.
+        </p>
+      </>
     ),
   },
 ];
