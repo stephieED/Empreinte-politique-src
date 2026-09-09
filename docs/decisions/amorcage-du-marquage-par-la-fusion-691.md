@@ -61,6 +61,39 @@ Le test ajouté ne vérifie donc pas une absence d'erreur mais un **effet** : un
 socle source marqué doit rester marqué après fusion, et sa tranche disparaître
 du disque. Il échoue sur le code d'avant — vérifié.
 
+## Pourquoi le run de TEST ne l'avait pas vu non plus
+
+Le run de test qui précédait, `34323318020`, tournait sur le même code et
+portait le même défaut. Son artifact `raw-profiles-an-gabriel-attal` était bien
+marqué (`derivee: true` sur 15 et 16), et sa fusion l'a défait exactement de la
+même façon.
+
+Il ne pouvait pas le montrer, pour deux raisons dont la première n'est pas
+technique :
+
+1. **on n'a pas cherché l'effet** — la vérification a porté sur la liste
+   annoncée (matrice réduite, transport, profils fusionnés, « Manquants : 0 »,
+   pas de commit), et cette liste ne contenait pas « des tranches ont
+   disparu » : une absence d'erreur a été prise pour une preuve ;
+2. **le log ne le donnait pas à voir** — l'effet vit dans le commit, et un run
+   de test ne committe pas. Le seul endroit observable était l'artifact d'un
+   shard, qu'il faut penser à ouvrir.
+
+D'où la ligne que `merge_raw_dirs` imprime désormais :
+
+```
+  · tranches d'amendements : 812 dérivée(s) de l'archive, 509 en fichier, 812 fichier(s) retiré(s) ce run.
+```
+
+Elle n'apparaît **que** si une tranche est dérivée ou retirée : un compteur
+toujours imprimé et presque toujours à zéro ne se lit plus (#510). Et les
+fichiers retirés sont **mesurés** — socle relu avant et après écriture — et non
+déduits du nombre de dérivées : un profil déjà basculé au run précédent ne
+supprime plus rien, et l'annoncer serait faux.
+
+**Un mode de test ne vaut que ce que le log donne à voir.** C'est la leçon qui
+dépasse ce lot, et elle valait d'être payée une fois.
+
 ## Ce que la bascule sera : progressive
 
 `merge_raw_dirs` ne réécrit que les slugs présents dans les artifacts. Les

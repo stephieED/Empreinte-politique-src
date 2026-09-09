@@ -2553,6 +2553,22 @@ def preserve_stable_freshness_timestamps(
 # CLI : fusion de répertoires d'extraction parallèles → merge-and-pivot
 # ---------------------------------------------------------------------------
 
+def _tranches_du_socle(profils_dir: Path, slug: str) -> tuple[int, int]:
+    """`(dérivées, fichiers)` déclarées par le socle écrit. `(0, 0)` s'il n'y
+    en a pas — un profil sans partition, ou illisible."""
+    try:
+        with open(chemin_socle(profils_dir, slug), encoding="utf-8") as fichier:
+            socle = json.load(fichier)
+    except (OSError, json.JSONDecodeError):
+        return (0, 0)
+    manifeste = socle.get(CLE_MANIFESTE) if isinstance(socle, dict) else None
+    if not isinstance(manifeste, dict):
+        return (0, 0)
+    declarees = [t for t in (manifeste.get("tranches") or []) if isinstance(t, dict)]
+    derivees = sum(1 for t in declarees if t.get(CLE_TRANCHE_DERIVEE))
+    return (derivees, len(declarees) - derivees)
+
+
 def merge_raw_dirs(source_dirs: list[Path], out_dir: Path) -> int:
     """Fusionne les profils bruts (*.json) de plusieurs répertoires sources
     (jobs d'extraction parallèles AN / Sénat / UE) vers un répertoire cible,
@@ -2587,6 +2603,16 @@ def merge_raw_dirs(source_dirs: list[Path], out_dir: Path) -> int:
 
     out_dir.mkdir(parents=True, exist_ok=True)
     n_written = 0
+    # CE QUE LA FUSION A FAIT AUX TRANCHES, compté pour être IMPRIMÉ (#691).
+    #
+    # Le run `34329085168` est passé vert en ne basculant rien, et le run de
+    # TEST qui le précédait portait déjà le même défaut sans pouvoir le
+    # montrer : l'effet vit dans le commit, et un run de test ne committe pas.
+    # Le seul endroit observable était l'artifact d'un shard.
+    #
+    # Un mode de test ne vaut que ce que le log donne à voir. « ✓ N profil(s)
+    # écrits » ne disait rien de la bascule ; ces trois nombres, si.
+    n_derivees = n_fichiers = n_supprimees = 0
     for filename, paths in sorted(slug_paths.items()):
         merged: Optional[dict[str, Any]] = None
         acteur: Optional[str] = None
@@ -2611,11 +2637,23 @@ def merge_raw_dirs(source_dirs: list[Path], out_dir: Path) -> int:
             acteur = acteur or _acteur_du_socle(path.parent, path.stem)
             merged = merge_raw_profile(merged, profile)
         if merged is not None:
-            ecrire_profil_brut(
-                out_dir, filename[: -len(".json")], merged, acteur_ref=acteur,
-            )
+            slug = filename[: -len(".json")]
+            avant_derivees, avant_fichiers = _tranches_du_socle(out_dir, slug)
+            ecrire_profil_brut(out_dir, slug, merged, acteur_ref=acteur)
+            apres_derivees, apres_fichiers = _tranches_du_socle(out_dir, slug)
+            n_derivees += apres_derivees
+            n_fichiers += apres_fichiers
+            # Une tranche qui était un fichier et ne l'est plus : le gain de ce
+            # profil, mesuré et non déduit du nombre de dérivées — un profil
+            # déjà basculé au run précédent ne supprime plus rien.
+            n_supprimees += max(0, (avant_fichiers - apres_fichiers))
             n_written += 1
 
+    if n_derivees or n_supprimees:
+        print(
+            f"  · tranches d'amendements : {n_derivees} dérivée(s) de l'archive, "
+            f"{n_fichiers} en fichier, {n_supprimees} fichier(s) retiré(s) ce run."
+        )
     return n_written
 
 

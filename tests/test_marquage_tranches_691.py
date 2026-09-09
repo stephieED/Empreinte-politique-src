@@ -228,3 +228,49 @@ def test_la_fusion_reconduit_le_marquage_des_sources(corpus):
         "la fusion a défait le marquage de la collecte"
     )
     assert sorted(p.name for p in (destination / "un-depute").glob("*.json")) == ["17.json"]
+
+
+def test_la_fusion_dit_ce_quelle_a_fait_aux_tranches(corpus, capsys):
+    """Un mode de test ne vaut que ce que le log donne à voir.
+
+    Le run de test qui précédait `34329085168` portait déjà le défaut et ne
+    pouvait pas le montrer : l'effet vit dans le commit, et un run de test ne
+    committe pas. `✓ N profil(s) écrits` ne disait rien de la bascule.
+    """
+    import merge_profile
+
+    source = corpus / "_artifacts" / "an"
+    source.mkdir(parents=True)
+    profil_brut.ecrire_profil_brut(
+        source, "un-depute", _profil([_am("AM1", "16"), _am("AM9", "17")]),
+        acteur_ref="an:PA1",
+    )
+    destination = corpus / "profiles"
+    destination.mkdir(exist_ok=True)
+    # Un premier passage NON marqué : la tranche 16 existe en fichier.
+    profil_brut.ecrire_profil_brut(
+        destination, "un-depute", _profil([_am("AM1", "16"), _am("AM9", "17")])
+    )
+    capsys.readouterr()
+
+    merge_profile.merge_raw_dirs([source], destination)
+    sortie = capsys.readouterr().out
+    assert "1 dérivée(s) de l'archive" in sortie
+    assert "1 en fichier" in sortie
+    assert "1 fichier(s) retiré(s) ce run" in sortie
+
+
+def test_la_fusion_se_tait_quand_il_ny_a_rien_a_dire(corpus, capsys):
+    """Un compteur toujours imprimé, presque toujours à zéro, ne se lit plus
+    (#510) : la ligne n'apparaît que si une tranche est dérivée ou retirée."""
+    import merge_profile
+
+    source = corpus / "_artifacts" / "an"
+    source.mkdir(parents=True)
+    profil_brut.ecrire_profil_brut(source, "un-depute", _profil([_am("AM9", "17")]))
+    destination = corpus / "profiles"
+    destination.mkdir(exist_ok=True)
+    capsys.readouterr()
+
+    merge_profile.merge_raw_dirs([source], destination)
+    assert "tranches d'amendements" not in capsys.readouterr().out
