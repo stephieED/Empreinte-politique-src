@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom';
 import Brand from '../components/Brand';
+import PiedDeSite from '../components/PiedDeSite';
 import Hero from '../components/landing/Hero';
 import HowItWorks from '../components/landing/HowItWorks';
 import FactDemo from '../components/landing/FactDemo';
@@ -46,14 +46,7 @@ export default function LandingPage() {
             </div>
           </div>
         </main>
-        <footer className="landing-footer">
-          <p className="landing-footer-text">Données publiques agrégées. Aucun score, aucun classement.</p>
-          <nav className="landing-footer-links" aria-label="Pages du site">
-            <Link to="/couverture">Ce que contient ce corpus</Link>
-            <Link to="/methodologie">Méthodologie</Link>
-            <Link to="/mentions-legales">Mentions légales</Link>
-          </nav>
-        </footer>
+        <PiedDeSite />
       </div>
     </div>
   );

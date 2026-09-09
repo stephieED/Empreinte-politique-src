@@ -1,5 +1,6 @@
 import '../styles/shell.css';
 import './GovernmentProfile.css';
+import { SOURCE_BADGE_VERIFIED } from '../utils/lecture';
 
 function VerifiedIcon() {
   return (
@@ -96,7 +97,7 @@ export default function GovernmentProfile({ government }) {
               <div className="gvp-texte-footer">
                 {texte.sourceUrl ? (
                   <a className="gvp-verified-badge" href={texte.sourceUrl} target="_blank" rel="noreferrer">
-                    <VerifiedIcon /> Source vérifiée
+                    <VerifiedIcon /> {SOURCE_BADGE_VERIFIED}
                   </a>
                 ) : (
                   <span className="gvp-texte-nd">Source non renseignée</span>

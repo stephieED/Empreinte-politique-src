@@ -2371,37 +2371,47 @@ export function causeListeVide(entrees) {
   return PRIORITE_CAUSES.find((c) => etats.includes(c)) ?? null;
 }
 
-/* ── Règle : une preuve de borne se dit UNE FOIS par liste ───────────────────
+/* ── Règle : la borne de source n'est plus rendue sur la fiche ───────────────
  *
- * Une même borne explique souvent les deux états d'une liste : « couvert depuis
- * le 19/06/2002 » et « hors couverture jusqu'au 18/06/2002 » viennent tous deux
- * de ce que le référentiel AMO30 ne rattache aucun acteur à un mandat antérieur
- * à la XIIe législature. Le corpus porte donc la même chaîne sur les deux
- * entrées, et la fiche l'imprimait deux fois : 148 mots en double sur Jérôme
- * Guedj et Marine Le Pen, 197 sur Édouard Philippe.
+ * CE QUE LA FICHE GARDE, ET CE QUI PART. Une preuve de borne — « l'Assemblée
+ * nationale ne publie pas de scrutins avant la XIVe législature… » — ne dit
+ * rien de la personne affichée : elle dit ce que l'Assemblée publie. Elle était
+ * recopiée sur toutes les fiches, où elle se lisait comme une limite DE CETTE
+ * PERSONNE. Elle vit désormais une fois, sur `/couverture` (#328).
  *
- * Ce n'est PAS une redondance qu'on pourrait supprimer à la source : les deux
- * états portent bien la même preuve, et c'est vrai. Mesuré sur les 27 candidats
- * déclarés, 135 listes portant au moins une preuve : 69 répètent la même sur
- * plusieurs états, 35 en portent de DIFFÉRENTES — sur Marine Tondelier, la
- * borne AMO30 et l'absence déclarée dans la table de correspondance expliquent
- * deux états distincts de la même liste. Supprimer la seconde effacerait un
- * fait dans ces 35 cas.
+ * L'ÉTAT DATÉ, LUI, RESTE. « Couvert depuis le 20.06.2012 » est ce qui empêche
+ * de lire une liste vide comme une absence d'activité (§2 règle 5) : c'est la
+ * ligne, pas sa preuve, qui porte cette fonction.
  *
- * La preuve reste donc sur chaque état, et c'est l'AFFICHAGE qui ne la répète
- * pas : `preuveDejaDite` marque la seconde occurrence de la même chaîne dans la
- * même liste. La donnée reste vraie, la page cesse de bégayer.
+ * LE DISCRIMINANT EST L'ÉTAT, ET IL EST GARANTI À LA SOURCE — pas reconnu au
+ * texte. `couverture_profil._deriver` attache `borne.preuve` à `couvert` et à
+ * `hors_couverture`, et bascule sur `fait_etabli` dès que la preuve devient
+ * propre à la personne (« aucun acteur AMO30 pour X »). `non_collecte` porte
+ * une décision de run. Vérifié sur les 32 fiches de candidats déclarés :
+ * partition exacte, zéro exception — 180 entrées de borne sur 286, soit 6 413
+ * des 8 328 mots de preuve rendus (77 %).
+ *
+ * LA PREUVE QUI RESTE SE DIT UNE FOIS POUR LA SECTION, plus une fois par liste.
+ * #802 avait délibérément limité la mémoire à la liste, parce qu'une mémoire
+ * partagée aurait fait disparaître la borne AMO30 de « Votes » après que
+ * « Mandats » l'a écrite. Cette raison tombe avec la borne : ce qui reste est
+ * propre à la personne ou au run, identique d'une liste à l'autre, et se répète
+ * cinq fois pour rien — 700 mots sur la fiche Retailleau, dont le certificat de
+ * suspension Sénat/LR compte 140 mots par liste.
  */
+export const ETATS_PORTANT_LA_BORNE = new Set(['couvert', 'hors_couverture']);
+
 export function couvertureDesListes(couverture, decomptes) {
+  const dites = new Set();
   return LISTES_COUVERTES.map(({ cle, titre }) => {
     const entrees = (couverture || {})[cle] || [];
-    const dites = new Set();
     return {
       cle,
       titre,
       decompte: decomptes[cle] ?? null,
       etats: entrees.map((e) => {
-        const preuve = e.preuve ?? null;
+        const borne = ETATS_PORTANT_LA_BORNE.has(e.etat);
+        const preuve = borne ? null : e.preuve ?? null;
         const dejaDite = Boolean(preuve) && dites.has(preuve);
         if (preuve) dites.add(preuve);
         return {
@@ -2428,7 +2438,7 @@ export function couvertureDesListes(couverture, decomptes) {
  * lue, pas devinée : un avertissement `lecteur` apparaîtra le jour où il en
  * sera écrit un, sans toucher à ce composant.
  */
-export function limitesDeclarees({ profil, roles, textes, sieges }) {
+export function limitesDeclarees({ profil, roles, sieges }) {
   /* CES TEXTES SONT DES LIMITES, PAS DES EXPLICATIONS (#328).
    *
    * Chacun dit UN fait sur CE profil, avec ses nombres. Le « pourquoi » — la
@@ -2445,15 +2455,26 @@ export function limitesDeclarees({ profil, roles, textes, sieges }) {
     if (a.destinataire === 'lecteur') limites.push({ cle: `avertissement:${a.message}`, texte: a.message });
   }
 
+  /* DEUX CORRECTIONS SUR LA MÊME PHRASE (#328).
+   *
+   * « dont la législature en cours » était écrit en dur et n'était vérifié
+   * nulle part : sur Bruno Retailleau, dont le mandat à l'Assemblée est clos
+   * depuis longtemps, la fiche l'affirmait quand même (§2 règle 2).
+   *
+   * Et la limite ne se déclenche plus À PARTIR D'UN SEUL mandat : « la
+   * qualification n'est pas déclarée sur 1 des mandats parlementaires » d'un
+   * profil qui n'en a qu'un ne décrit aucune lacune de corpus — c'est la
+   * situation ordinaire, et l'écrire ajoute une ligne qui ne dit rien. */
   const sansPosition = roles.filter(
     (r) => r.institution === INSTITUTION_PARLEMENT && !r.position,
   );
-  if (sansPosition.length) {
+  const parlementaires = roles.filter((r) => r.institution === INSTITUTION_PARLEMENT);
+  if (sansPosition.length > 1 || (sansPosition.length === 1 && parlementaires.length > 1)) {
     limites.push({
       cle: 'position-non-declaree',
       texte:
         `La qualification du groupe — majoritaire, minoritaire, d'opposition — n'est pas déclarée ` +
-        `par l'Assemblée sur ${sansPosition.length} des mandats parlementaires de ce profil, dont la législature en cours.`,
+        `par l'Assemblée sur ${sansPosition.length} de ses ${parlementaires.length} mandats parlementaires.`,
     });
   }
 
@@ -2466,18 +2487,21 @@ export function limitesDeclarees({ profil, roles, textes, sieges }) {
       cle: 'suspension',
       texte:
         `Le corpus ne dit pas si un mandat s'est arrêté parce que la personne entrait au gouvernement : ` +
-        `« suspendu_pour_fonction_gouvernementale » n'est renseigné sur aucun de ses ${electifs.length} mandats électifs.`,
+        `« suspendu_pour_fonction_gouvernementale » n'est renseigné sur aucun de ses ${electifs.length} `
+        + `mandat${electifs.length > 1 ? 's' : ''} électif${electifs.length > 1 ? 's' : ''}.`,
     });
   }
 
-  if (textes?.projetsDeLoi > 0) {
-    limites.push({
-      cle: 'projets-de-loi',
-      texte:
-        `${textes.projetsDeLoi} de ses ${textes.total} textes portés sont des projets de loi, rangés sous ` +
-        `le même rôle « auteur » qu'une proposition parlementaire. Seul l'intitulé officiel les distingue.`,
-    });
-  }
+  /* LA LIMITE « PROJETS DE LOI » EST RETIRÉE : elle décrivait un corpus qui a
+   * changé (#328). Elle affirmait que projets et propositions sont « rangés
+   * sous le même rôle "auteur" » et que « seul l'intitulé officiel les
+   * distingue ». Mesuré sur les textes portés des 32 fiches de candidats
+   * déclarés : `role` les sépare sur 570 des 575 — `initiateur_projet_de_loi`
+   * (313) contre `auteur_proposition_de_loi` (183) et
+   * `auteur_proposition_de_resolution` (59) ; les 5 restants portent `auteur`
+   * sans `nature_texte`. Le fait vrai — combien de textes sont des projets de
+   * loi signés comme ministre — reste publié sous la cascade de « Ce qui est
+   * proposé », et la répartition sur `/couverture`. */
 
   const enregistrements = electifs.length;
   if (sieges && enregistrements > sieges.length) {

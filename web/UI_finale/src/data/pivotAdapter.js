@@ -501,7 +501,7 @@ export function buildCandidateView(
       textes_portes: (pivot.textes_portes || []).length,
       interventions: interventions.length,
     }),
-    limites: limitesDeclarees({ profil: pivot, roles, textes, sieges }),
+    limites: limitesDeclarees({ profil: pivot, roles, sieges }),
   };
 }
 

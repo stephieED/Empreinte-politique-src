@@ -7,6 +7,7 @@ import CandidatesBar from './CandidatesBar';
 import SommaireSections from './SommaireSections';
 import { GroupFilterProvider } from '../context/GroupFilterContext';
 import '../styles/shell.css';
+import PiedDeSite from './PiedDeSite';
 import './ExplorerLayout.css';
 
 /* ── Le cadre de la page (#324) ───────────────────────────────────────────────
@@ -59,8 +60,13 @@ export default function ExplorerLayout() {
         <div className="explorer-main">
           {replie && (
             <div className="explorer-compact">
+              {/* LE NOM ENTIER, PAS SA PREMIÈRE MOITIÉ. « Empreinte » seul
+                  n'est pas la marque : c'est « Empreinte politique » que le
+                  logo, le pied de site et les mentions légales portent, et
+                  l'en-tête réduit est justement le moment où le lecteur n'a
+                  plus le logo sous les yeux. */}
               <Link to="/" className="explorer-compact-marque">
-                Empreinte
+                Empreinte politique
               </Link>
               <button
                 type="button"
@@ -90,31 +96,7 @@ export default function ExplorerLayout() {
             </div>
           </div>
 
-          <footer className="explorer-footer">
-            <p className="explorer-footer-text">
-              Données publiques agrégées. Aucun score, aucun classement.
-            </p>
-            {/* Le contact et les deux comptes vivent dans les mentions légales,
-                qui font foi ; ils sont RAPPELÉS ici en discret, parce qu'une
-                adresse qu'il faut chercher dans une page légale est une adresse
-                qu'on n'écrit pas. `rel="noopener"` : un lien sortant ouvert dans
-                un onglet neuf ne doit pas garder la main sur celui-ci. */}
-            <nav className="explorer-footer-links" aria-label="Pages légales et contact">
-              <Link to="/methodologie">Méthodologie</Link>
-              <Link to="/mentions-legales">Mentions légales</Link>
-              <a href="mailto:contact@empreinte-politique.fr">Contact</a>
-              <a
-                href="https://www.linkedin.com/company/empreinte-politique"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                LinkedIn
-              </a>
-              <a href="https://x.com/EmpreintePol" target="_blank" rel="noopener noreferrer">
-                X
-              </a>
-            </nav>
-          </footer>
+          <PiedDeSite />
         </div>
       </div>
     </GroupFilterProvider>

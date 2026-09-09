@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import Brand from '../components/Brand';
 import FriseCouverture from '../components/FriseCouverture';
+import PiedDeSite from '../components/PiedDeSite';
 import { useAsyncData } from '../hooks/useAsyncData';
 import { loadCouverture } from '../data';
 import '../styles/shell.css';
@@ -91,6 +92,7 @@ export default function CoveragePage() {
             </>
           )}
         </main>
+        <PiedDeSite />
       </div>
     </div>
   );
