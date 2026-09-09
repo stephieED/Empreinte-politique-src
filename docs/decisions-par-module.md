@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 247 décisions
+gouverne sans avoir à fouiller les 248 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -470,7 +470,7 @@ Le mentionnent sans le gouverner : [`collecte-interventions-reduite-au-theme-657
 
 ## `src/generate_all_profiles.py`
 
-23 décision(s) le gouvernent ; le module en cite 3.
+24 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
@@ -496,6 +496,7 @@ Le mentionnent sans le gouverner : [`collecte-interventions-reduite-au-theme-657
 | [NosDéputés sort du pipeline (#529, lot 5 de l'épic « une seule source AN ») (2026-08-27)](decisions/retrait-nosdeputes-529.md) | `process_candidat` |
 | [Le Sénat sort du périmètre, et le job qui concluait vert sans rien produire est retiré (#528, lot 3 de l'épic « une seule source AN ») (2026-08-26)](decisions/retrait-senat-528.md) | `SOURCE_VALUES` |
 | [Un seul roster par run, une reprise sur ce qui est retentable, et des échecs qu'on peut lire (#518) (2026-08-24)](decisions/roster-unique-par-run-518.md) | `_annoter_github` |
+| [Un run de test : même workflow, périmètre réduit, jamais de commit (#792)](decisions/run-de-test-perimetre-reduit-792.md) | `_normaliser_en_pivot` |
 | [Régénérer l'existant : `--refresh-existing`, l'inverse de `--skip-existing` (#445) (2026-08-19)](decisions/telechargement-an-trois-modes-defaillance.md) | `_select_candidats_couverture` |
 
 Le mentionnent sans le gouverner : [`amendements-legislatures-figees`](decisions/amendements-legislatures-figees.md), [`chambres-profil-derivees`](decisions/chambres-profil-derivees.md), [`cle-fusion-interventions-540`](decisions/cle-fusion-interventions-540.md), [`collecte-vs-publie-545`](decisions/collecte-vs-publie-545.md), [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`id-pivot-sans-prefixe`](decisions/id-pivot-sans-prefixe.md), [`integrite-referentielle-pivot`](decisions/integrite-referentielle-pivot.md), [`libelles-formulaire`](decisions/libelles-formulaire.md), [`licence-lot-6-530`](decisions/licence-lot-6-530.md), [`licences`](decisions/licences.md), [`limit-sample`](decisions/limit-sample.md), [`liste-candidats-declares-753`](decisions/liste-candidats-declares-753.md), [`mode-extraction-leger-roster`](decisions/mode-extraction-leger-roster.md), [`normalisation-amendements`](decisions/normalisation-amendements.md), [`normalisation-votes`](decisions/normalisation-votes.md), [`oom-reconstruction-amendements-figees`](decisions/oom-reconstruction-amendements-figees.md), [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`perimetre-collecte-candidatures-declinees-760`](decisions/perimetre-collecte-candidatures-declinees-760.md), [`pivot-freshness-timestamps-stables`](decisions/pivot-freshness-timestamps-stables.md), [`provenance-pivot`](decisions/provenance-pivot.md), [`publication-scopee-artifacts`](decisions/publication-scopee-artifacts.md), [`retry-generate-data-preemption`](decisions/retry-generate-data-preemption.md), [`sparse-checkout-extract-an-674`](decisions/sparse-checkout-extract-an-674.md), [`workers-fige-a-1`](decisions/workers-fige-a-1.md).

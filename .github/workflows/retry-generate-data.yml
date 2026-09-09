@@ -296,6 +296,26 @@ jobs:
           # run échantillonné. Le grep sur le stdout reste en repli si le bloc
           # env: est absent du log ; il couvre les deux libellés de sélection
           # ("Plafond réparti par couverture", "Sélection réduite").
+          # RUN DE TEST : on ne relance PAS (#792). Le retry reconstruit les
+          # inputs depuis les logs, et il ne saurait pas reconstruire
+          # `test_slugs` de façon sûre : une valeur perdue relancerait un run
+          # de test en run COMPLET, qui committerait un corpus que personne n'a
+          # demandé à publier.
+          #
+          # Le défaut penche donc vers « ne pas relancer » : un retry manqué se
+          # rattrape d'un clic, un commit publié depuis un périmètre réduit ne
+          # se rattrape pas. C'est aussi pourquoi la condition exige
+          # explicitement `false` et non « pas true » — log illisible, job
+          # absent, valeur inattendue : dans les trois cas on s'abstient.
+          matrice_log=$(job_log "prepare-an-matrix")
+          run_de_test=false
+          if echo "$matrice_log" | grep -qP 'TEST_SLUGS: \S'; then
+            run_de_test=true
+          elif ! echo "$matrice_log" | grep -q 'TEST_SLUGS:'; then
+            run_de_test=inconnu
+          fi
+          echo "run_de_test=${run_de_test}" >> "$GITHUB_OUTPUT"
+
           roster_log=$(job_log "extract-roster-groupes")
           roster_limit=$(echo "$roster_log" | grep -oP 'ROSTER_LIMIT: \K[0-9]+' | head -1) || true
           if [[ ! "$roster_limit" =~ ^[0-9]+$ ]]; then
@@ -352,7 +372,10 @@ jobs:
       # par défaut que celles déclarées dans generate-data.yml, pour rester
       # sûr même si le step best-effort n'a pu écrire aucun de ses outputs.
       - name: Re-déclencher generate-data.yml
-        if: always() && (steps.collect.outputs.matched == 'true' || steps.collect.outputs.code_change == 'true')
+        if: >-
+          always()
+          && (steps.collect.outputs.matched == 'true' || steps.collect.outputs.code_change == 'true')
+          && steps.inputs.outputs.run_de_test == 'false'
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
@@ -366,6 +389,14 @@ jobs:
             -f incomplete_read_threshold="${{ steps.inputs.outputs.incomplete_read_threshold || '3' }}" \
             -f collect_interventions="${{ steps.inputs.outputs.collect_interventions || 'false' }}" \
             -f roster_limit="${{ steps.inputs.outputs.roster_limit || '0' }}"
+
+      - name: Pourquoi aucune relance — run de test ou statut inconnu (#792)
+        if: >-
+          always()
+          && (steps.collect.outputs.matched == 'true' || steps.collect.outputs.code_change == 'true')
+          && steps.inputs.outputs.run_de_test != 'false'
+        run: |
+          echo "::notice::RETRY_ABANDONNE — le run à relancer était un run de test (ou son statut n'a pas pu être lu : ${{ steps.inputs.outputs.run_de_test }}). Un retry ne sait pas reconstruire \`test_slugs\`, et le relancer en run complet publierait un corpus que personne n'a demandé (#792). Relancez à la main si nécessaire."
 
       - name: Résumé — trace visible du résultat
         if: always()
