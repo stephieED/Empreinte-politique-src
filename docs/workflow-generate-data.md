@@ -414,10 +414,14 @@ Le détail est dans la §8 pour les contrôles, la §6 pour le push,
 ## 2. Le formulaire de lancement
 
 Deux axes **disjoints**, plus le cache à part (#578,
-`docs/decisions/deux-axes-formulaire-578.md`) :
+`docs/decisions/deux-axes-formulaire-578.md`) — et, depuis #792, un **mode** au-dessus
+d'eux : `test_slugs` ne règle rien, il restreint. Les trois effets qu'il porte vont
+ensemble ou pas du tout, deux cases séparées autoriseraient « périmètre réduit ET commit ».
+
 
 | Champ | Type | Défaut | Ce qu'il commande |
 |---|---|---|---|
+| `test_slugs` | `string` | vide | **Le mode**, et il est en tête pour ça (#792). Rempli, il réduit la matrice `extract-an` à ces slugs, plafonne le roster à 8 membres sur 1 shard si aucun plafond n'a été demandé, et **désarme le commit**. Vide : run ordinaire, rien ne change. Un slug hors périmètre est nommé (`TEST_SLUG_INTROUVABLE`), un périmètre vide fait échouer le job de matrice. |
 | `existing_profiles` | `choice` : `leave-as-is` / `refresh` / `overwrite` | `refresh` | **Axe 1** — ce qu'on fait des profils DÉJÀ écrits. `overwrite` seul lève `--no-merge`. |
 | `add_uncovered_members` | `boolean` | `true` | **Axe 2** — si on écrit un premier profil pour les membres qui n'en ont pas. |
 | `cold_start` | `boolean` | `false` | Purge les caches de téléchargement et re-télécharge les sources. Ne dit **rien** de la façon dont les profils sont écrits. |
@@ -598,6 +602,16 @@ analysant les logs** des jobs, puis repassés par
 | `roster_limit` | `ROSTER_LIMIT: <n>` dans le bloc `env:` résolu du step roster ; à défaut le stdout de sélection | `0` |
 | `existing_profiles` | `EXISTING_PROFILES: <valeur>` dans le même bloc `env:` | la présence de `--no-merge` dans le log `extract-an` ⇒ `overwrite`, sinon `refresh` |
 | `add_uncovered_members` | `ADD_UNCOVERED: <bool>` dans le même bloc `env:` | `true` |
+
+**`test_slugs` n'est PAS reconstruit — il interdit la relance (#792).** Un retry
+qui perdrait cette valeur relancerait un run de test en run **complet**, qui
+committerait un corpus que personne n'a demandé à publier. Le step de lecture
+rend donc `run_de_test` ∈ `false` / `true` / `inconnu` d'après la présence d'un
+`TEST_SLUGS: <valeur>` non vide dans le bloc `env:` résolu de
+`prepare-an-matrix`, et la relance exige un `false` **explicite** : log
+illisible, job absent ou valeur inattendue, on s'abstient et on le dit
+(`RETRY_ABANDONNE`). Un retry manqué se rattrape d'un clic ; un commit publié
+depuis un périmètre réduit ne se rattrape pas.
 
 Deux pièges qui expliquent la forme de ces greps, et qu'il ne faut pas
 « simplifier » :

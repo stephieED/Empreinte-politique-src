@@ -21,6 +21,19 @@ on:
       # answer two questions at once, which is why no wording ever made it
       # read straight.
       # The rationale lives in docs/technical_decisions.md, reachable by anchor.
+      #
+      # TEST RUN — first field on purpose: it is a MODE, and a mode is read
+      # before the settings it modifies. Filling it does three things and says
+      # so: it shrinks the extract-an matrix to these slugs, it caps the roster
+      # at one shard when no cap was asked for, and it DISARMS the commit.
+      #
+      # One field, three effects, deliberately: two independent checkboxes
+      # would allow "reduced scope AND commit", i.e. publishing a corpus known
+      # to be partial. Empty = an ordinary run, unchanged.
+      test_slugs:
+        description: "Test run — these slugs only (empty = full run, never commits)"
+        type: string
+        required: false
       existing_profiles:
         description: "Existing profiles treatment"
         type: choice
@@ -391,12 +404,15 @@ jobs:
           # moment précis où il sert. Cohérence vérifiée par
           # tests/test_ci_budget_interventions.py.
           AN_TIMEOUT_MINUTES: ${{ inputs.collect_interventions && 10 || 5 }}
+          TEST_SLUGS: ${{ inputs.test_slugs }}
         run: |
           set -euo pipefail
-          SLUGS_JSON=$(python3 - <<'EOF'
-          import json, sys
+          SLUGS_JSON=$(TEST_SLUGS="${TEST_SLUGS:-}" python3 - <<'EOF'
+          import json, os, sys
           sys.path.insert(0, "src")
-          from perimetre_candidats import slugs_a_collecter, slugs_geles
+          from perimetre_candidats import (
+              restreindre_au_test, slugs_a_collecter, slugs_geles,
+          )
           data = json.load(open("raw_data/candidats.json", encoding="utf-8"))
           candidats = data["candidats"]
           # Le gel se DÉCLARE : un candidat qui sort du périmètre est nommé ici,
@@ -404,7 +420,20 @@ jobs:
           # polluer la sortie que le shell capture.
           for slug, statut in slugs_geles(candidats):
               print(f"::notice::CANDIDAT_GELE — {slug} (statut: {statut}) : collecte gelée, profil publié conservé tel quel (#760).", file=sys.stderr)
-          print(json.dumps(slugs_a_collecter(candidats)))
+          slugs = slugs_a_collecter(candidats)
+          # Le périmètre de test se RESTREINT, il ne se substitue pas : un slug
+          # demandé mais gelé ou mal tapé n'entre pas dans la matrice, et il est
+          # nommé — sinon un run de test qui collecte zéro se lit comme un run
+          # qui n'a rien trouvé (patron de #510).
+          retenus, introuvables = restreindre_au_test(slugs, os.environ["TEST_SLUGS"])
+          for slug in introuvables:
+              print(f"::warning::TEST_SLUG_INTROUVABLE — {slug} : absent du périmètre de collecte (mal orthographié, sans slug résolvable, ou gelé #760). Il n'aura pas de shard.", file=sys.stderr)
+          if introuvables and not retenus:
+              print("::error::TEST_PERIMETRE_VIDE — aucun des slugs demandés n'est collectable ; le run n'aurait rien à faire.", file=sys.stderr)
+              raise SystemExit(1)
+          if retenus is not slugs and len(retenus) != len(slugs):
+              print(f"::notice::RUN_DE_TEST — matrice réduite à {len(retenus)} shard(s) sur {len(slugs)} ; ce run NE COMMITTERA PAS.", file=sys.stderr)
+          print(json.dumps(retenus))
           EOF
           )
           COUNT=$(SLUGS_JSON="$SLUGS_JSON" python3 -c 'import json, os; print(len(json.loads(os.environ["SLUGS_JSON"])))')
@@ -1796,8 +1825,22 @@ jobs:
           # sur préemption mais multiplie les frais fixes de checkout : c'est
           # le vrai arbitrage derrière cette constante, pas le temps de calcul.
           ROSTER_SHARDS: "8"
+          TEST_SLUGS: ${{ inputs.test_slugs }}
+          # Un shard, huit membres : de quoi exercer la chaîne roster de bout en
+          # bout (collecte → artifact → transport → fusion → agrégats) sans
+          # payer une couverture dont un test n'a que faire.
+          TEST_ROSTER_LIMIT: "8"
         run: |
           set -euo pipefail
+          # RUN DE TEST : un plafond par défaut, et il est ANNONCÉ (#786/#788).
+          # Sans lui, un run « de test » collecterait quand même les 625 membres
+          # du roster — 10 min de mur pour vérifier une orchestration qui n'en a
+          # pas besoin. Un `roster_limit` explicite l'emporte : le plafond
+          # automatique ne s'applique qu'à la valeur par défaut.
+          if [[ -n "${TEST_SLUGS:-}" && ( -z "${ROSTER_LIMIT}" || "${ROSTER_LIMIT}" == "0" ) ]]; then
+            ROSTER_LIMIT="${TEST_ROSTER_LIMIT}"
+            echo "::notice::RUN_DE_TEST — roster plafonné à ${ROSTER_LIMIT} membre(s) sur 1 shard (aucun plafond n'avait été demandé). Passez roster_limit pour en collecter plus."
+          fi
           if [[ -z "${ROSTER_LIMIT}" || "${ROSTER_LIMIT}" == "0" ]]; then
             TOTAL="${ROSTER_SHARDS}"
             echo "Aucun plafond (roster_limit=${ROSTER_LIMIT:-0}) : ${TOTAL} shards."
@@ -3411,8 +3454,31 @@ jobs:
       # ne doit partir que si des données ont réellement atterri sur main.
       # Écrit avant chaque `exit 0` — un `exit` termine le step immédiatement,
       # un output posé après ne serait jamais écrit.
+      # RUN DE TEST : ON NE COMMITTE PAS. C'est l'effet le plus important du
+      # champ, et le seul qui ne se rattrape pas : un run à périmètre réduit
+      # publierait un corpus dont on SAIT qu'il est partiel. Les quatre
+      # garde-fous d'avant-commit, eux, tournent quand même — c'est précisément
+      # ce qu'un run de test vient exercer.
+      #
+      # Les deux étapes qui suivent (signal `tests.yml` #685, déclenchement de
+      # `deploy-pages` #416) se sautent d'elles-mêmes : elles lisent
+      # `steps.commit.outputs.pushed`, qui reste vide quand ce step ne tourne
+      # pas. Rien à conditionner en double.
+      - name: Run de test — commit désarmé
+        if: ${{ inputs.test_slugs != '' }}
+        run: |
+          echo "::notice::RUN_DE_TEST — les données NE SONT PAS committées (périmètre réduit à : ${{ inputs.test_slugs }}). Les garde-fous d'avant-commit ont tourné et leur verdict est au-dessus."
+          {
+            echo "### 🧪 Run de test — rien n'a été committé"
+            echo
+            echo "Périmètre demandé : \`${{ inputs.test_slugs }}\`"
+            echo
+            echo "Les quatre contrôles d'avant-commit ont tourné normalement."
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Committer et pousser les données mises à jour
         id: commit
+        if: ${{ inputs.test_slugs == '' }}
         env:
           # Même raison que sur le garde-fou ci-dessus (#413 §2) : le rebase de
           # la boucle de retry doit viser la branche du run, pas main en dur.
@@ -3739,7 +3805,7 @@ jobs:
       #   · le step ne fait toujours pas tomber le job : il vient de committer
       #     des données, et un compteur n'est pas une porte de qualité.
       - name: Fenêtre de rétention de l'historique de données (#551)
-        if: always()
+        if: ${{ always() && inputs.test_slugs == '' }}
         run: |
           set -euo pipefail
           LU=$(python3 -c "import sys; sys.path.insert(0, 'src'); import audit_volumetrie_profils as a; print(a.FENETRE_COMMITS_DONNEES, a.MOTIF_COMMIT_DONNEES)")

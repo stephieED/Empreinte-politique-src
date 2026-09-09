@@ -147,3 +147,66 @@ def declare_hors_an_par_identifiant(
             _MEMO_RESOLUTIONS[cle] = {}
     resolution = _MEMO_RESOLUTIONS[cle].get(nom)
     return bool(resolution) and resolution.get("issue") == "hors_an"
+
+
+# ---------------------------------------------------------------------------
+# Le run de test : le même workflow, sur quelques slugs, sans commit
+# ---------------------------------------------------------------------------
+#
+# POURQUOI CETTE FONCTION EXISTE. Un défaut d'orchestration se paie
+# aujourd'hui **1 h 15** : c'est le temps qu'a mis le run `34264027824` pour
+# révéler qu'un nom n'était pas transmis (#788). Un test unitaire l'aurait vu en
+# une demi-seconde, et c'est le bon remède pour ce défaut-là — mais tout n'est
+# pas testable hors CI : le transport des artifacts (#786) ne se voit que dans
+# un run réel, et il n'a rien à faire de la taille du périmètre.
+#
+# Le mode de test ne change donc **ni le workflow, ni le code, ni l'ordre des
+# jobs** : il réduit la matrice, et rien d'autre. Un mode qui divergerait du
+# mode réel ne prouverait rien de ce qu'on lui demande de prouver.
+
+
+def slugs_demandes(saisie: Any) -> list[str]:
+    """Les slugs saisis dans le formulaire, séparés par des virgules.
+
+    Tolère les espaces, les points-virgules et les retours à la ligne : une
+    liste se colle depuis un log ou un tableau aussi souvent qu'elle se tape.
+    """
+    if not isinstance(saisie, str):
+        return []
+    brut = saisie.replace(";", ",").replace("\n", ",")
+    return [morceau.strip() for morceau in brut.split(",") if morceau.strip()]
+
+
+def restreindre_au_test(
+    slugs: Iterable[str], saisie: Any
+) -> tuple[list[str], list[str]]:
+    """`(retenus, introuvables)` — la matrice réduite, et ce qui n'a pas matché.
+
+    Les retenus gardent l'ordre du **périmètre**, pas celui de la saisie : le
+    run doit se comporter comme un run ordinaire amputé, pas comme une liste
+    rejouée dans un autre ordre.
+
+    **Les introuvables sont rendus pour être nommés.** Un slug mal tapé, ou
+    gelé par #760, disparaît sans bruit d'une intersection — et un run de test
+    qui collecte zéro profil parce qu'on a écrit `marine-lepen` se lit comme un
+    run qui n'a rien trouvé. C'est le patron de #510, sur une troisième
+    population.
+    """
+    voulus = slugs_demandes(saisie)
+    if not voulus:
+        return list(slugs), []
+    disponibles = list(slugs)
+    ensemble = set(voulus)
+    retenus = [s for s in disponibles if s in ensemble]
+    introuvables = [s for s in voulus if s not in set(disponibles)]
+    return retenus, introuvables
+
+
+def est_run_de_test(saisie: Any) -> bool:
+    """Vrai dès qu'un slug est demandé — c'est ce qui désarme le commit.
+
+    Un seul champ porte les deux effets, et c'est délibéré : deux cases à
+    cocher indépendantes autoriseraient la combinaison « périmètre réduit ET
+    commit », c'est-à-dire publier un corpus dont on sait qu'il est partiel.
+    """
+    return bool(slugs_demandes(saisie))

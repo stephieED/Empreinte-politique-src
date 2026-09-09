@@ -8,6 +8,23 @@ les charger, ni à les faire grossir. -->
 
 ### 3b. CI: jobs, caches, artifacts
 
+- **A test run reduces the matrix and nothing else — and it never commits (#792).** Two
+  consecutive runs cost 1 h 13 and 1 h 15 to surface a one-line defect; there was no rung
+  between a unit test (half a second) and a full run. The `test_slugs` field, **first in the
+  form**, shrinks the `extract-an` matrix, caps the roster at 8 members on 1 shard when no
+  cap was asked for, and **disarms the commit**. One field for three effects, deliberately:
+  two independent checkboxes would allow "reduced scope AND commit", i.e. publishing a
+  corpus known to be partial — the only one of the three that cannot be undone. **What the
+  mode must never change is the workflow itself**: same jobs, same order, same code, and the
+  four pre-commit guards still run, since exercising them is the point. A test mode that
+  diverged from the real one would prove nothing about what it was built to prove, and that
+  failure is unrecoverable — you cannot learn afterwards what it did not exercise. It
+  replaces no test: #788 was a half-second unit test, and this mode exists for what no test
+  can see, orchestration. A requested slug outside the scope is **named**
+  (`TEST_SLUG_INTROUVABLE`) and an empty scope fails at the matrix job
+  (`TEST_PERIMETRE_VIDE`), never an hour later — otherwise "you mistyped it" reads as
+  "nothing to collect" (#510, #771).
+  → `docs/decisions/run-de-test-perimetre-reduit-792.md`
 - **An artifact that was published and did not arrive is a failure, not an absent source
   (#786).** Run `34241352524` is **green and collected nobody**: its four extraction
   downloads left within the same second and all took a **403 "secondary rate limit"** on
