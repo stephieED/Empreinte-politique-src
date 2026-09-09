@@ -2589,23 +2589,30 @@ def merge_raw_dirs(source_dirs: list[Path], out_dir: Path) -> int:
     n_written = 0
     for filename, paths in sorted(slug_paths.items()):
         merged: Optional[dict[str, Any]] = None
+        acteur: Optional[str] = None
         for path in paths:
             try:
                 profile = charger_profil_brut(path)
             except (json.JSONDecodeError, OSError, PartitionIllisible) as exc:
                 print(f"  [!] Lecture impossible de {path}, ignoré : {exc}")
                 continue
+            # L'acteur se relit dans le manifeste des profils SOURCES (#691) —
+            # ceux que les shards viennent d'écrire —, jamais dans celui de la
+            # destination.
+            #
+            # POURQUOI CETTE PRÉCISION EST TOUT LE CORRECTIF. Le principe était
+            # juste — « la fusion ne résout pas d'identité, elle reconduit ce
+            # que la collecte a déclaré » — et l'implémentation lisait le
+            # mauvais fichier : le socle COMMITTÉ, jamais marqué, donc `None`,
+            # donc aucun marquage, donc les tranches réécrites. Le run
+            # `34329085168` est passé vert en ne basculant rien : les shards
+            # avaient bien marqué leurs socles (vérifié dans l'artifact de
+            # `gabriel-attal`), et la fusion les a défaits.
+            acteur = acteur or _acteur_du_socle(path.parent, path.stem)
             merged = merge_raw_profile(merged, profile)
         if merged is not None:
-            slug = filename[: -len(".json")]
-            # L'acteur se relit dans le manifeste DÉJÀ écrit (#691), et non
-            # dans la table : la fusion ne résout pas d'identité, elle
-            # reconduit ce que la collecte a déclaré. Un profil jamais marqué
-            # reste non marqué ici — c'est la collecte qui amorce, jamais la
-            # fusion.
             ecrire_profil_brut(
-                out_dir, slug, merged,
-                acteur_ref=_acteur_du_socle(out_dir, slug),
+                out_dir, filename[: -len(".json")], merged, acteur_ref=acteur,
             )
             n_written += 1
 
