@@ -2371,20 +2371,48 @@ export function causeListeVide(entrees) {
   return PRIORITE_CAUSES.find((c) => etats.includes(c)) ?? null;
 }
 
+/* ── Règle : une preuve de borne se dit UNE FOIS par liste ───────────────────
+ *
+ * Une même borne explique souvent les deux états d'une liste : « couvert depuis
+ * le 19/06/2002 » et « hors couverture jusqu'au 18/06/2002 » viennent tous deux
+ * de ce que le référentiel AMO30 ne rattache aucun acteur à un mandat antérieur
+ * à la XIIe législature. Le corpus porte donc la même chaîne sur les deux
+ * entrées, et la fiche l'imprimait deux fois : 148 mots en double sur Jérôme
+ * Guedj et Marine Le Pen, 197 sur Édouard Philippe.
+ *
+ * Ce n'est PAS une redondance qu'on pourrait supprimer à la source : les deux
+ * états portent bien la même preuve, et c'est vrai. Mesuré sur les 27 candidats
+ * déclarés, 135 listes portant au moins une preuve : 69 répètent la même sur
+ * plusieurs états, 35 en portent de DIFFÉRENTES — sur Marine Tondelier, la
+ * borne AMO30 et l'absence déclarée dans la table de correspondance expliquent
+ * deux états distincts de la même liste. Supprimer la seconde effacerait un
+ * fait dans ces 35 cas.
+ *
+ * La preuve reste donc sur chaque état, et c'est l'AFFICHAGE qui ne la répète
+ * pas : `preuveDejaDite` marque la seconde occurrence de la même chaîne dans la
+ * même liste. La donnée reste vraie, la page cesse de bégayer.
+ */
 export function couvertureDesListes(couverture, decomptes) {
   return LISTES_COUVERTES.map(({ cle, titre }) => {
     const entrees = (couverture || {})[cle] || [];
+    const dites = new Set();
     return {
       cle,
       titre,
       decompte: decomptes[cle] ?? null,
-      etats: entrees.map((e) => ({
-        etat: e.etat,
-        cause: e.cause ?? null,
-        debut: e.portee?.debut ?? null,
-        fin: e.portee?.fin ?? null,
-        preuve: e.preuve ?? null,
-      })),
+      etats: entrees.map((e) => {
+        const preuve = e.preuve ?? null;
+        const dejaDite = Boolean(preuve) && dites.has(preuve);
+        if (preuve) dites.add(preuve);
+        return {
+          etat: e.etat,
+          cause: e.cause ?? null,
+          debut: e.portee?.debut ?? null,
+          fin: e.portee?.fin ?? null,
+          preuve,
+          preuveDejaDite: dejaDite,
+        };
+      }),
     };
   });
 }
