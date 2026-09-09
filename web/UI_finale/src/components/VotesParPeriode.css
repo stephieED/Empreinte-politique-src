@@ -9,130 +9,16 @@
   gap: 0;
 }
 
-/* ── Navigation ─────────────────────────────────────────────────────────── */
-.vp-nav {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 8px;
-}
-
-.vp-fleche {
-  font: inherit;
-  cursor: pointer;
-  background: var(--card);
-  color: var(--ink);
-  border: 1px solid var(--border-strong);
-  border-radius: 10px;
-  padding: 9px 13px;
-  display: grid;
-  gap: 1px;
-  text-align: left;
-  min-width: 150px;
-  max-width: 230px;
-}
-
-.vp-fleche:hover:not(:disabled) {
-  border-color: var(--ink);
-}
-
-.vp-fleche:disabled {
-  opacity: 0.32;
-  cursor: default;
-}
-
-.vp-fleche--suivant {
-  text-align: right;
-}
-
-.vp-fleche-quoi {
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.vp-fleche-lib {
-  font-size: 12.5px;
-  font-weight: 700;
-  line-height: 1.25;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.vp-fleche:disabled .vp-fleche-lib {
-  font-weight: 600;
-  font-style: italic;
-}
-
-.vp-rail {
-  display: flex;
-  gap: 3px;
-  align-items: stretch;
-  height: 38px;
-}
-
-.vp-rail-seg {
-  font: inherit;
-  cursor: pointer;
-  border: 1px solid var(--border-strong);
-  background: var(--card);
-  border-radius: 6px;
-  padding: 0;
-  position: relative;
-  overflow: hidden;
-  display: grid;
-  place-items: center;
-  min-width: 14px;
-}
-
-.vp-rail-seg:hover {
-  border-color: var(--muted);
-}
-
-.vp-rail-seg[aria-current='true'] {
-  background: var(--ink);
-  border-color: var(--ink);
-}
-
-/* Une période sans aucun repère publié : le trait pointillé le dit avant le
-   titre, et sans le combler. */
-.vp-rail-seg--absent {
-  border-style: dashed;
-}
-
-.vp-rail-an {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-  padding: 0 4px;
-  white-space: nowrap;
-}
-
-.vp-rail-seg[aria-current='true'] .vp-rail-an {
-  color: var(--bg);
-}
-
-.vp-fleche:focus-visible,
-.vp-rail-seg:focus-visible,
+/* La navigation par période a quitté ce fichier pour
+   `NavigationPeriodes.css` (#328) : deux sections la partagent, aucune ne
+   la possède. Seule la règle de focus des commandes PROPRES à cette
+   section reste ici. */
 .vp-piste:focus-visible,
 .vp-chip:focus-visible,
 .vp-col-tete:focus-visible,
 .vp-raz:focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 2px;
-}
-
-.vp-position {
-  font-size: 11.5px;
-  color: var(--muted);
-  font-weight: 700;
-  text-align: center;
-  margin: 0 0 18px;
 }
 
 /* ── Le bloc d'une période ──────────────────────────────────────────────── */
@@ -505,32 +391,6 @@
      années devenaient illisibles et ses segments intouchables. Le rail passe
      pleine largeur au-dessus, les deux flèches se partagent la ligne du
      dessous, et il gagne en hauteur — c'est une cible tactile. */
-  .vp-nav {
-    grid-template-columns: 1fr 1fr;
-    gap: 9px;
-  }
-
-  .vp-fleche {
-    min-width: 0;
-    max-width: none;
-    padding: 9px 11px;
-  }
-
-  .vp-rail {
-    grid-column: 1 / -1;
-    order: -1;
-    height: 44px;
-    gap: 4px;
-  }
-
-  .vp-rail-seg {
-    min-width: 18px;
-  }
-
-  .vp-rail-an {
-    font-size: 11.5px;
-  }
-
   .vp-barres {
     grid-template-columns: 1fr;
   }

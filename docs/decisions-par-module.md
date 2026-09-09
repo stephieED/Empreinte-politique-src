@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 252 décisions
+gouverne sans avoir à fouiller les 253 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -39,9 +39,9 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 | --- | ---: |
 | `src/build_correspondance_acteurs_an.py` | 4 |
 | `src/normalize_parltrack_dumps.py` | 4 |
+| `src/parse_syceron.py` | 4 |
 | `src/audit_pipeline.py` | 3 |
 | `src/budget_collecte.py` | 3 |
-| `src/parse_syceron.py` | 3 |
 | `src/perimetre_candidats.py` | 3 |
 | `src/audit_gouvernement_dataset.py` | 2 |
 | `src/gouvernement_profile.py` | 2 |
@@ -808,11 +808,12 @@ Le mentionnent sans le gouverner : [`investigation-sources-ue`](decisions/invest
 
 ## `src/parse_syceron.py`
 
-3 décision(s) le gouvernent ; le module en cite 0.
+4 décision(s) le gouvernent ; le module en cite 0.
 
 | Décision | Nomme |
 | --- | --- |
 | [Un créneau de séance n'est pas un sujet, et le discriminant reste structurel (#710, 02/09/2026)](decisions/creneau-de-seance-nest-pas-un-sujet-710.md) | `_CODE_GRAMMAIRE_QUESTION`, `_CODE_GRAMMAIRE_SUJET`, `_TYPE_DETAIL_MAP`, `_TYPE_DETAIL_PAR_CODE_GRAMMAIRE`, `_creneaux_de_questions`, `_iter_paragraphes`, `_point_porteur_du_sujet` |
+| [« Ce qu'il a dit » publie les mots, et les range par période politique (#328) (2026-09-09)](decisions/paroles-par-periode-328.md) | `_infer_format` |
 | [Syceron publie l'identifiant d'orateur NU, et n'a donc jamais rien indexé (#510) (2026-08-20)](decisions/syceron-acteur-ref-nu-510.md) | `_parse_interventions`, `_parse_orateur` |
 | [Suite du 26/08/2026 : les trois archives vérifiées, les deux défauts de parseur corrigés](decisions/syceron-archives-verifiees-parseur-510.md) | `_parse_orateur` |
 
