@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 258 décisions
+gouverne sans avoir à fouiller les 259 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -698,10 +698,11 @@ Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambr
 
 ## `src/merge_profile.py`
 
-57 décision(s) le gouvernent ; le module en cite 5.
+58 décision(s) le gouvernent ; le module en cite 5.
 
 | Décision | Nomme |
 | --- | --- |
+| [La fusion défaisait le marquage de la collecte : un run vert qui n'a rien basculé (#691, lot 3c)](decisions/amorcage-du-marquage-par-la-fusion-691.md) | `_acteur_du_socle`, `merge_raw_dirs` |
 | [Un bloc structuré sans fond n'écrase plus un bloc collecté (#484) (2026-08-30)](decisions/bloc-sans-fond-484.md) | `BLOCS_PROTEGES_DU_VIDE`, `_merge_pivot_sources`, `_prefer_non_empty`, `_synchro_la_plus_recente`, `bloc_sans_fond`, `merge_raw_profile`, `preserver_collectes_non_vides` |
 | [Le correctif de #540 validé en conditions réelles, et les deux budgets qu'il a périmés (#546) (2026-08-27)](decisions/budgets-extract-an-perimes-546.md) | `clean_stale_interventions` |
 | [Un mandat dit quel référentiel a établi sa catégorie, et l'absence n'accuse personne (#718) (2026-09-03)](decisions/categorie-source-des-mandats-718.md) | `_mandat_key`, `_pivot_mandat_key`, `backfill_mandat_categorie_source` |
@@ -843,10 +844,11 @@ Le mentionnent sans le gouverner : [`freshness-timestamps-groupes-gouvernements-
 
 ## `src/profil_brut.py`
 
-6 décision(s) le gouvernent ; le module en cite 3.
+7 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
+| [La fusion défaisait le marquage de la collecte : un run vert qui n'a rien basculé (#691, lot 3c)](decisions/amorcage-du-marquage-par-la-fusion-691.md) | `partitionner` |
 | [Un audit lit le corpus par projection, et son plafond de mémoire est dans un test (#628, 2026-08-30)](decisions/audit-599-projection-blocs-lus-628.md) | `charger_socle` |
 | [« Collecté = publié » compte une tranche dérivée dans l'archive (#691, lot 3a)](decisions/audit-compte-les-tranches-derivees-691.md) | `partitionner`, `recomposer` |
 | [L'écriture marque les tranches closes, et le `nombre` vient de l'archive (#691, lot 3b)](decisions/marquage-tranches-derivees-691.md) | `ecrire_profil_brut`, `partitionner`, `recomposer` |

@@ -187,3 +187,90 @@ def test_lordre_devient_par_blocs_des_quune_tranche_est_derivee(corpus):
     manifeste = socle[profil_brut.CLE_MANIFESTE]
     assert manifeste["ordre"] == [[0, 2], [1, 1]]
     assert manifeste["total"] == 3
+
+
+# ---------------------------------------------------------------------------
+# L'amorçage : la fusion reconduit ce que la collecte a marqué (#691, lot 3c)
+# ---------------------------------------------------------------------------
+
+
+def test_la_fusion_reconduit_le_marquage_des_sources(corpus):
+    """Le défaut que le run `34329085168` a rendu visible : vert, et rien basculé.
+
+    Les shards avaient bien marqué leurs socles — vérifié dans l'artifact de
+    `gabriel-attal` —, et la fusion les a défaits : elle lisait l'acteur dans le
+    socle de **destination**, celui du corpus committé, jamais marqué, donc
+    `None`, donc aucun marquage, donc les tranches réécrites.
+
+    Le principe était juste, l'implémentation lisait le mauvais fichier.
+    """
+    import merge_profile
+
+    source = corpus / "_artifacts" / "an"
+    source.mkdir(parents=True)
+    profil_brut.ecrire_profil_brut(
+        source, "un-depute", _profil([_am("AM1", "16"), _am("AM9", "17")]),
+        acteur_ref="an:PA1",
+    )
+    socle_source = json.loads((source / "un-depute.json").read_text(encoding="utf-8"))
+    assert any(t.get(profil_brut.CLE_TRANCHE_DERIVEE)
+               for t in socle_source[profil_brut.CLE_MANIFESTE]["tranches"]), \
+        "prérequis : la source doit être marquée"
+
+    destination = corpus / "profiles"
+    destination.mkdir(exist_ok=True)
+    merge_profile.merge_raw_dirs([source], destination)
+
+    socle = json.loads((destination / "un-depute.json").read_text(encoding="utf-8"))
+    tranches = socle[profil_brut.CLE_MANIFESTE]["tranches"]
+    derivees = [t for t in tranches if t.get(profil_brut.CLE_TRANCHE_DERIVEE)]
+    assert [t["legislature"] for t in derivees] == ["16"], (
+        "la fusion a défait le marquage de la collecte"
+    )
+    assert sorted(p.name for p in (destination / "un-depute").glob("*.json")) == ["17.json"]
+
+
+def test_la_fusion_dit_ce_quelle_a_fait_aux_tranches(corpus, capsys):
+    """Un mode de test ne vaut que ce que le log donne à voir.
+
+    Le run de test qui précédait `34329085168` portait déjà le défaut et ne
+    pouvait pas le montrer : l'effet vit dans le commit, et un run de test ne
+    committe pas. `✓ N profil(s) écrits` ne disait rien de la bascule.
+    """
+    import merge_profile
+
+    source = corpus / "_artifacts" / "an"
+    source.mkdir(parents=True)
+    profil_brut.ecrire_profil_brut(
+        source, "un-depute", _profil([_am("AM1", "16"), _am("AM9", "17")]),
+        acteur_ref="an:PA1",
+    )
+    destination = corpus / "profiles"
+    destination.mkdir(exist_ok=True)
+    # Un premier passage NON marqué : la tranche 16 existe en fichier.
+    profil_brut.ecrire_profil_brut(
+        destination, "un-depute", _profil([_am("AM1", "16"), _am("AM9", "17")])
+    )
+    capsys.readouterr()
+
+    merge_profile.merge_raw_dirs([source], destination)
+    sortie = capsys.readouterr().out
+    assert "1 dérivée(s) de l'archive" in sortie
+    assert "1 en fichier" in sortie
+    assert "1 fichier(s) retiré(s) ce run" in sortie
+
+
+def test_la_fusion_se_tait_quand_il_ny_a_rien_a_dire(corpus, capsys):
+    """Un compteur toujours imprimé, presque toujours à zéro, ne se lit plus
+    (#510) : la ligne n'apparaît que si une tranche est dérivée ou retirée."""
+    import merge_profile
+
+    source = corpus / "_artifacts" / "an"
+    source.mkdir(parents=True)
+    profil_brut.ecrire_profil_brut(source, "un-depute", _profil([_am("AM9", "17")]))
+    destination = corpus / "profiles"
+    destination.mkdir(exist_ok=True)
+    capsys.readouterr()
+
+    merge_profile.merge_raw_dirs([source], destination)
+    assert "tranches d'amendements" not in capsys.readouterr().out
