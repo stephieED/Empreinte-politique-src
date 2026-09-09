@@ -24,6 +24,7 @@ La table complète : `docs/decisions-par-module.md`.
 """
 
 import datetime
+import re
 import time
 import unicodedata
 from typing import Any, Optional
@@ -35,7 +36,13 @@ from avertissements import (
     deriver_avertissements,
 )
 from licences import LICENCE_PARLTRACK, appliquer_licence_donnees
-from parltrack_dumps import get_amendments_for_mep, get_dossiers_for_mep
+from schema_pivot import COLLECTE_SANS_VERBATIM_SOURCE
+from parltrack_dumps import (
+    get_activities_for_mep,
+    get_amendments_for_mep,
+    get_dossiers_for_mep,
+    get_votes_for_mep,
+)
 
 #: #642 — les deux familles du constat ParlTrack, une par destinataire.
 #: Aucune n'est le préfixe de l'autre : sans quoi l'union par famille (#600)
@@ -49,6 +56,12 @@ from parltrack_dumps import get_amendments_for_mep, get_dossiers_for_mep
 #: `WARNING_PREFIX_INTERVENTIONS_SYCERON_INDISPONIBLES`.
 WARNING_PREFIX_PARLTRACK_AUCUNE_DONNEE = "ParlTrack: aucune donnée"
 WARNING_PREFIX_PARLTRACK_DIAGNOSTIC = "ParlTrack (diagnostic) :"
+
+#: #683 — deux constats de couverture, adressés au lecteur. Ils disent ce que la
+#: fiche NE porte pas et pourquoi, ce qui est la condition pour qu'un compte
+#: partiel ne se lise pas comme un compte total (§2 règle 7).
+WARNING_PREFIX_PARLTRACK_VOTES_ECARTES = "Parlement européen — votes non publiés :"
+WARNING_PREFIX_PARLTRACK_EXPLICATIONS_SANS_LIEN = "Parlement européen — explications de vote :"
 
 #: Alias historique. Le libellé vit dans `licences` depuis #530 (lot 6) : les
 #: mentions d'attribution du pipeline n'ont qu'une seule fabrique.
@@ -141,6 +154,7 @@ def _make_texte_porte(dossier: dict[str, Any]) -> dict[str, Any]:
     """
     return {
         "titre": dossier.get("titre") or dossier.get("reference") or "",
+        "institution": "parlement_europeen",
         "role": "rapporteur",
         "type_rapport": None,
         "stade_procedural": None,
@@ -190,6 +204,10 @@ def _make_amendement(amendment: dict[str, Any], nom_profil: Optional[str] = None
     """
     date, date_ecartee = _date_plausible(amendment.get("date"))
     non_resolu: dict[str, Any] = {
+        # #683 — l'institution est portée par l'entrée elle-même. C'est ce qui
+        # permet à `couverture_profil` de dire quelle borne s'applique à quoi,
+        # sans deviner à partir d'une URL.
+        "institution": "parlement_europeen",
         "texte_vise": amendment.get("reference") or "",
         "sort": None,
         "base_juridique_irrecevabilite": None,
@@ -213,6 +231,286 @@ def _make_amendement(amendment: dict[str, Any], nom_profil: Optional[str] = None
         "amendement_id": None,
         "role_signataire": _role_signataire(amendment, nom_profil),
         "amendement_non_resolu": non_resolu,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Les votes : ce qui se publie, et ce qui se compte (#683)
+# ---------------------------------------------------------------------------
+
+#: Les natures de scrutin qui portent sur **l'ensemble d'un texte**, telles que
+#: le Parlement européen les nomme en queue d'intitulé. Vocabulaire **fermé**,
+#: relevé sur les 44 648 scrutins du dump : on l'étend, on ne le contourne pas
+#: (§4).
+#:
+#: ## Pourquoi une sélection, et pourquoi celle-là
+#:
+#: Un député européen vote des centaines de fois sur un même texte : Jordan
+#: Bardella compte **607 scrutins sur le seul dossier `2018/0216(COD)`**, dont
+#: 271 pour, 247 contre et 89 abstentions. Publier ces positions une à une ne
+#: dit rien — **93 %** des intitulés sont procéduraux (« Am 1 », « § 13 »,
+#: « Mardi - demande du groupe GUE/NGL »), et un chiffre dont le lecteur ne peut
+#: rien tirer ne se publie pas (règle de forme 1, #326).
+#:
+#: Ce qui se publie est donc la position sur **l'ensemble du texte** — 375 pour
+#: Bardella, dont **97 %** retrouvent le titre de leur dossier. C'est la
+#: transposition exacte de « un texte, une position » (#711), et le seul
+#: registre où le lecteur apprend ce qu'une personne a voté.
+#:
+#: ## Ce que cette sélection ne fait pas
+#:
+#: Elle n'efface rien. Les scrutins écartés sont **comptés** et le compte est
+#: publié dans l'avertissement de couverture : une position d'amendement n'est
+#: pas une position absente (§2 règle 5, #511).
+NATURES_VOTE_SUR_ENSEMBLE: frozenset[str] = frozenset({
+    # Xe législature et avant — la source écrivait en français.
+    "resolution",
+    "resolution legislative",
+    "proposition de resolution",
+    "proposition de resolution (ensemble du texte)",
+    "vote unique",
+    "ensemble du texte",
+    "texte dans son ensemble",
+    "proposition de la commission",
+    "proposition modifiee",
+    "decision",
+    "decision (ensemble du texte)",
+    "proposition de decision",
+    "propositions de decision",
+    "projet de decision du conseil",
+    "approbation",
+    "procedure d'approbation",
+    # XIe législature (depuis juillet 2024) — la source écrit en anglais.
+    # Ce n'est pas une variante de style : sans ces formes, la sélection perdait
+    # **5 012 scrutins** de la seule législature en cours pour Jordan Bardella,
+    # et sa fiche se serait arrêtée au 19/10/2023 sans que rien ne le dise.
+    "motion for a resolution",
+    "motion for a resolution (as a whole)",
+    "motion for a resolution (text as a whole)",
+    "text as a whole",
+    "single vote",
+    "legislative resolution",
+    "commission proposal",
+    "commission proposal to the council",
+    "commission proposal and amendments",
+    "draft council decision",
+    "council draft",
+    "proposal for a decision",
+    "proposal for a decision (as a whole)",
+    "proposal for a council decision",
+    "joint text",
+    "approval",
+})
+
+#: La queue d'intitulé porte la nature du scrutin, après le dernier tiret et
+#: avant l'horodatage que la source colle parfois derrière.
+#:
+#: **Les trois tirets sont là exprès.** La source a changé de séparateur en même
+#: temps que de langue : trait d'union jusqu'à la Xe législature, tiret demi-cadratin
+#: (« – ») depuis la XIe. Un motif qui ne connaît que le premier ne rend aucune
+#: nature sur la législature en cours — et une nature nulle est un scrutin écarté,
+#: c'est-à-dire un trou muet (#510).
+_QUEUE_INTITULE = re.compile(r"[-\u2013\u2014]\s*([^-\u2013\u2014]{2,45}?)\s*(?:\d{2}/\d{2}/\d{4}[\d:. ]*)?$")
+
+
+def _normaliser_nature(brut: Optional[str]) -> str:
+    """Minuscules, sans accents, espaces réduits — **l'ordre des mots est gardé**.
+
+    Distinct de `_normaliser_nom`, qui trie les mots parce qu'un prénom et un nom
+    s'écrivent dans les deux ordres. Une nature de scrutin, non : « proposition de
+    decision » et « decision de proposition » ne sont pas la même chose, et trier
+    les rapprocherait.
+    """
+    sans_accents = "".join(
+        c for c in unicodedata.normalize("NFKD", brut or "") if not unicodedata.combining(c)
+    )
+    return " ".join(sans_accents.lower().split())
+
+
+def _nature_scrutin(titre: Optional[str]) -> Optional[str]:
+    """La nature d'un scrutin, normalisée, ou `None` si l'intitulé n'en porte pas."""
+    if not titre:
+        return None
+    trouve = _QUEUE_INTITULE.search(titre.strip())
+    if not trouve:
+        return None
+    return _normaliser_nature(trouve.group(1)) or None
+
+
+def _porte_sur_ensemble(titre: Optional[str]) -> bool:
+    """Ce scrutin porte-t-il sur l'ensemble d'un texte ?
+
+    **Le seul signal disponible est l'intitulé**, et c'est une fragilité qu'il
+    faut nommer : le dump ne porte aucun drapeau de nature. Un libellé qui
+    change côté source fait maigrir le registre sans rien lever — c'est
+    exactement ce qui s'est produit au passage à la XIe législature, où la
+    source est passée au français à l'anglais et du trait d'union au tiret
+    demi-cadratin. D'où le décompte des écartés, publié par l'appelant : un
+    registre qui maigrit se voit alors dans le chiffre déclaré.
+    """
+    nature = _nature_scrutin(titre)
+    return nature is not None and nature in NATURES_VOTE_SUR_ENSEMBLE
+
+
+def _make_vote(scrutin: dict[str, Any]) -> dict[str, Any]:
+    """Convertit un scrutin ParlTrack en entrée pivot `votes[]`.
+
+    **`scrutin_id` est toujours `null`**, et pour la raison qui vaut déjà pour
+    les amendements européens (#431) : l'index partagé `pivot_data/scrutins.json`
+    est keyé `an:<législature>:<numéro>`, et `scrutins_index.decomposer_id`
+    refuse tout ce qui ne commence pas par `an:`. Fabriquer une clé européenne
+    dans cet espace de noms serait inventer un identifiant (§2 règle 5) ; la
+    ranger sous un préfixe qui annonce l'Assemblée serait pire.
+
+    L'enregistrement complet part donc dans `scrutin_non_resolu`, la forme que
+    le schéma prévoit exactement pour ce cas, et il porte ce qui rend le vote
+    vérifiable : le procès-verbal officiel du Parlement européen.
+    """
+    date, date_ecartee = _date_plausible(scrutin.get("date"))
+    reference = scrutin.get("reference")
+    if isinstance(reference, list):
+        reference = reference[0] if reference else None
+    non_resolu: dict[str, Any] = {
+        "institution": "parlement_europeen",
+        "titre": scrutin.get("titre") or "",
+        "nature": _nature_scrutin(scrutin.get("titre")),
+        "reference_dossier": reference,
+        "date": date,
+        "numero_scrutin": scrutin.get("scrutin_id"),
+        "source_url": scrutin.get("source_url"),
+    }
+    if date_ecartee is not None:
+        non_resolu["date_non_resolue"] = {
+            "motif": "date_hors_bornes",
+            "valeur_source": date_ecartee,
+        }
+    return {
+        "scrutin_id": None,
+        "position": scrutin.get("position"),
+        "scrutin_non_resolu": non_resolu,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Les interventions : trois natures, une seule liste (#683)
+# ---------------------------------------------------------------------------
+
+#: `type_detail` par type d'activité ParlTrack. Les trois natures européennes
+#: entrent dans `interventions[]` — la liste où l'Assemblée range déjà ses
+#: débats **et** ses questions écrites (`type_detail: "question"`), ce qui rend
+#: le rangement européen conforme et non inventé.
+TYPE_DETAIL_PAR_ACTIVITE: dict[str, str] = {
+    "intervention_seance": "debat",
+    "question_ecrite": "question",
+    "question_orale": "question",
+    "interpellation_majeure": "question",
+    "explication_de_vote_ecrite": "explication_de_vote",
+}
+
+#: `sous_type`, sur le modèle des `QE`/`QG`/`QOSD` de l'Assemblée.
+SOUS_TYPE_PAR_ACTIVITE: dict[str, str] = {
+    "question_ecrite": "QE",
+    "question_orale": "QO",
+    "interpellation_majeure": "IM",
+}
+
+
+def _make_intervention(activite: str, entree: dict[str, Any]) -> dict[str, Any]:
+    """Convertit une activité ParlTrack en entrée pivot `interventions[]`.
+
+    ## Ce que la source donne, et ce qu'elle ne donne pas
+
+    Le Parlement européen publie le **titre du point**, sa date et le lien vers
+    le document officiel — jamais le compte rendu intégral, contrairement à
+    Syceron. L'entrée porte donc `collecte: "sans_verbatim_source"`, valeur
+    ajoutée pour ce cas : `theme_seul` dirait que **notre run** n'a pas demandé
+    le verbatim, ce qui serait un fait faux sur nous et un fait faux sur la
+    source (§2 règle 5, la distinction de #657).
+
+    ## L'exception : les explications de vote
+
+    Elles portent le texte **écrit par la personne**, en français, et c'est la
+    seule matière du corpus européen où quelqu'un dit lui-même pourquoi il a
+    voté ainsi. Elles ne portent donc PAS `collecte` — leur forme est complète.
+
+    Elles ne portent pas non plus de `source_url` : **0 sur 190** en ont un chez
+    Bardella, la référence n'est dans l'intitulé qu'**1 fois sur 190**, et le
+    titre ne correspond exactement à un dossier que dans **30 %** des cas. Le
+    texte est sourcé — ParlTrack transcrit l'annexe officielle de la séance —
+    mais le lien profond manque, et cette limite se publie dans `couverture`
+    plutôt que de se combler par une URL devinée (§2 règle 2).
+
+    L'`intervention_id` reprend la **référence de la source** quand elle existe
+    (`P10_CRE-REV(2024)07-17(2-020-0000)`), préfixée `europarl_`. Ce n'est pas
+    un identifiant fabriqué : c'est celui du Parlement européen, préfixé pour ne
+    pas entrer en collision avec l'espace `syceron_`/`question_` de l'Assemblée.
+    """
+    reference = entree.get("reference")
+    date, _ = _date_plausible(entree.get("date"))
+    intervention: dict[str, Any] = {
+        "intervention_id": f"europarl_{reference}" if reference else None,
+        "date": date,
+        "type_detail": TYPE_DETAIL_PAR_ACTIVITE.get(activite, "debat"),
+        "sujet": entree.get("titre") or "",
+        "theme_officiel": None,
+        "seance": None,
+        "dossier": None,
+        "source": {"institution": "parlement_europeen", "legislature": entree.get("legislature")},
+        "fonction": None,
+        "format": None,
+        "mots_cles": [],
+        "source_url": entree.get("source_url"),
+    }
+    texte = entree.get("texte")
+    if texte:
+        intervention["texte"] = texte
+    else:
+        intervention["texte"] = None
+        intervention["collecte"] = COLLECTE_SANS_VERBATIM_SOURCE
+    sous_type = SOUS_TYPE_PAR_ACTIVITE.get(activite)
+    if sous_type:
+        intervention["sous_type"] = sous_type
+    return intervention
+
+
+# ---------------------------------------------------------------------------
+# Les propositions de résolution (#683)
+# ---------------------------------------------------------------------------
+
+#: Les activités qui sont des **textes portés**, avec le rôle que le schéma
+#: leur connaît déjà (`KNOWN_ROLES_TEXTE`). Rien de neuf : une proposition de
+#: résolution européenne est portée comme une proposition de résolution
+#: française.
+#: `(nature_texte, role)`. Les deux vont **ensemble** : #689 refuse un rôle
+#: d'initiateur qui ne serait pas dérivé de la nature du texte — « deux champs
+#: qui disent la même chose ne valent que s'ils ne peuvent pas se contredire ».
+#: Un rôle de rapport est hors table de natures, et sa nature reste `null` :
+#: rapporter un texte est une fonction, pas une nature.
+ROLE_PAR_ACTIVITE: dict[str, tuple[Optional[str], str]] = {
+    "proposition_de_resolution": ("proposition_de_resolution", "auteur_proposition_de_resolution"),
+    "proposition_de_resolution_individuelle": ("proposition_de_resolution", "auteur_proposition_de_resolution"),
+    "rapport": (None, "rapporteur"),
+    "avis_de_commission": (None, "rapporteur"),
+}
+
+
+def _make_texte_porte_activite(activite: str, entree: dict[str, Any]) -> dict[str, Any]:
+    """Convertit une activité portée (résolution, rapport) en `textes_portes[]`."""
+    date, _ = _date_plausible(entree.get("date"))
+    nature, role = ROLE_PAR_ACTIVITE[activite]
+    return {
+        "titre": entree.get("titre") or "",
+        "institution": "parlement_europeen",
+        "nature_texte": nature,
+        "role": role,
+        "type_rapport": None,
+        "stade_procedural": None,
+        "sort": None,
+        "sort_non_resolu": {"motif": "source_sans_sort"},
+        "date_min": date,
+        "date_max": date,
+        "legislature": None,
+        "source_url": entree.get("source_url"),
     }
 
 
@@ -300,6 +598,71 @@ def enrich_pivot_with_parltrack(
         profil["amendements"] = []
     profil["amendements"].extend(new_amds)
 
+    # --- votes sur l'ensemble d'un texte (#683) ---
+    scrutins = get_votes_for_mep(mep_id, force_download=force_download)
+    retenus = [s for s in scrutins if _porte_sur_ensemble(s.get("titre"))]
+    ecartes = len(scrutins) - len(retenus)
+
+    def _vote_key(v: dict[str, Any]) -> Any:
+        # Même clé que `merge_profile._pivot_vote_key`, branche « non résolu » :
+        # une clé qui diverge de celle de la fusion republie tout à chaque run.
+        if v.get("scrutin_id"):
+            return v["scrutin_id"]
+        non_resolu = v.get("scrutin_non_resolu") or {}
+        return ("non_resolu", non_resolu.get("numero_scrutin"), non_resolu.get("date"))
+
+    cles_votes = {
+        _vote_key(v) for v in (profil.get("votes") or []) if isinstance(v, dict)
+    }
+    nouveaux_votes = []
+    for scrutin in retenus:
+        entree = _make_vote(scrutin)
+        cle = _vote_key(entree)
+        if cle not in cles_votes:
+            cles_votes.add(cle)
+            nouveaux_votes.append(entree)
+    if profil.get("votes") is None:
+        profil["votes"] = []
+    profil["votes"].extend(nouveaux_votes)
+
+    # --- interventions et textes portés, depuis les activités (#683) ---
+    activites = get_activities_for_mep(mep_id, force_download=force_download)
+
+    def _interv_key(i: dict[str, Any]) -> Any:
+        if i.get("intervention_id"):
+            return ("intervention_id", i["intervention_id"])
+        if i.get("source_url"):
+            return ("source_url", i["source_url"])
+        return ("contenu", i.get("date"), i.get("sujet"), (i.get("texte") or "")[:50])
+
+    cles_interv = {
+        _interv_key(i) for i in (profil.get("interventions") or []) if isinstance(i, dict)
+    }
+    nouvelles_interv: list[dict[str, Any]] = []
+    for activite, entrees in sorted(activites.items()):
+        if activite not in TYPE_DETAIL_PAR_ACTIVITE:
+            continue
+        for brut in entrees:
+            entree = _make_intervention(activite, brut)
+            cle = _interv_key(entree)
+            if cle not in cles_interv:
+                cles_interv.add(cle)
+                nouvelles_interv.append(entree)
+    if profil.get("interventions") is None:
+        profil["interventions"] = []
+    profil["interventions"].extend(nouvelles_interv)
+
+    for activite, entrees in sorted(activites.items()):
+        if activite not in ROLE_PAR_ACTIVITE:
+            continue
+        for brut in entrees:
+            entree = _make_texte_porte_activite(activite, brut)
+            cle = _tp_key(entree)
+            if cle not in existing_tp_keys:
+                existing_tp_keys.add(cle)
+                new_tp.append(entree)
+                profil["textes_portes"].append(entree)
+
     # --- source ParlTrack dans sources[] ---
     has_parltrack_source = any(
         s.get("type") == "parltrack" and "dumps" in (s.get("url") or "")
@@ -322,7 +685,7 @@ def enrich_pivot_with_parltrack(
     appliquer_licence_donnees(profil)
 
     # Warning si aucune donnée retournée (dumps peut-être indisponibles)
-    if not dossiers and not amendments:
+    if not dossiers and not amendments and not retenus and not activites:
         # #642 — LE cas que l'issue nomme : un seul message disait deux
         # choses, à deux personnes différentes. « Vérifier la disponibilité des
         # dumps ou la validité du MEP ID » est une consigne qui nous est
@@ -346,6 +709,31 @@ def enrich_pivot_with_parltrack(
             f"{WARNING_PREFIX_PARLTRACK_DIAGNOSTIC} aucune donnée pour le MEP ID {mep_id}. "
             "Vérifier la disponibilité des dumps ou la validité du MEP ID.",
             DESTINATAIRE_INTERNE,
+        ))
+
+    # #683 — LE COMPTE DES SCRUTINS ÉCARTÉS SE PUBLIE. Un vote d'amendement
+    # n'est pas un vote absent : sans ce décompte, un profil publierait 375
+    # positions là où la source en porte 20 635, et la différence se lirait
+    # comme une lacune de collecte (§2 règle 5, #511).
+    if ecartes:
+        warnings.append(avertissement(
+            f"{WARNING_PREFIX_PARLTRACK_VOTES_ECARTES} {ecartes} scrutin(s) du Parlement "
+            f"européen portent sur un amendement, un paragraphe ou un point de procédure : "
+            f"seules les {len(retenus)} positions sur l'ensemble d'un texte sont publiées.",
+            DESTINATAIRE_LECTEUR,
+        ))
+
+    # #683 — les explications de vote n'ont pas de lien vers leur document.
+    sans_lien = sum(
+        1 for i in nouvelles_interv
+        if i.get("type_detail") == "explication_de_vote" and not i.get("source_url")
+    )
+    if sans_lien:
+        warnings.append(avertissement(
+            f"{WARNING_PREFIX_PARLTRACK_EXPLICATIONS_SANS_LIEN} {sans_lien} explication(s) de "
+            "vote sont publiées sans lien vers le document officiel : la source en transcrit "
+            "le texte sans en donner l'adresse.",
+            DESTINATAIRE_LECTEUR,
         ))
 
     # #642 : jumeau typé recomposé en fin d'enrichissement — champ dérivé.

@@ -366,7 +366,12 @@ def test_l_enrichissement_parltrack_ecrit_les_deux_avertissements(monkeypatch):
 
     monkeypatch.setattr(npd, "get_dossiers_for_mep", lambda *a, **k: [])
     monkeypatch.setattr(npd, "get_amendments_for_mep", lambda *a, **k: [])
-    profil = {"sources": [], "textes_portes": [], "amendements": [], "meta": {}}
+    # #683 : deux lectures de plus, muettes ici — le cas testé est « la source
+    # ne connaît personne », et il exige que TOUTES les listes soient vides.
+    monkeypatch.setattr(npd, "get_votes_for_mep", lambda *a, **k: [])
+    monkeypatch.setattr(npd, "get_activities_for_mep", lambda *a, **k: {})
+    profil = {"sources": [], "textes_portes": [], "amendements": [],
+              "votes": [], "interventions": [], "meta": {}}
     npd.enrich_pivot_with_parltrack(profil, 96742)
 
     par_destinataire = {

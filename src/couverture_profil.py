@@ -775,6 +775,80 @@ def _romain(legislature: int) -> str:
     return f"{texte}e"
 
 
+#: #683 — L'INSTITUTION QUI A FOURNI UNE ENTRÉE, LUE SUR L'ENTRÉE ELLE-MÊME.
+#:
+#: Sans cela, un profil européen publiait ses 1 317 votes du Parlement européen
+#: sous une couverture qui dit « l'Assemblée nationale ne publie pas de scrutins
+#: avant la XIVe législature ». La borne était vraie et ne portait sur rien —
+#: une preuve qui parle d'une source dont la liste ne vient pas est une preuve
+#: fausse (§2 règle 2).
+INSTITUTION_PE = "parlement_europeen"
+
+#: Où l'institution se lit, liste par liste. Deux formes seulement, parce que le
+#: schéma en a deux : sur l'entrée pour un texte porté, dans l'enregistrement
+#: non résolu pour un vote ou un amendement (#431), dans `source` pour une
+#: intervention.
+_CHEMINS_INSTITUTION: dict[str, tuple[tuple[str, ...], ...]] = {
+    "votes": (("scrutin_non_resolu", "institution"),),
+    "amendements": (("amendement_non_resolu", "institution"),),
+    "textes_portes": (("institution",),),
+    "interventions": (("source", "institution"),),
+}
+
+#: Où la date se lit, dans le même ordre de préséance.
+_CHEMINS_DATE: dict[str, tuple[tuple[str, ...], ...]] = {
+    "votes": (("scrutin_non_resolu", "date"),),
+    "amendements": (("amendement_non_resolu", "date"),),
+    "textes_portes": (("date_min",), ("date_max",)),
+    "interventions": (("date",),),
+}
+
+
+def _lire(entree: Any, chemin: tuple[str, ...]) -> Any:
+    for cle in chemin:
+        if not isinstance(entree, dict):
+            return None
+        entree = entree.get(cle)
+    return entree
+
+
+def bornes_europeennes(profil: dict[str, Any]) -> dict[str, tuple[str, str]]:
+    """`liste → (première date, dernière date)` du matériau européen publié.
+
+    **Mesurée sur les entrées, jamais recopiée d'une page de source.** La date
+    de fraîcheur d'un dump ParlTrack vieillit dès qu'on l'écrit ; la dernière
+    date effectivement portée par le corpus, elle, se recalcule à chaque run et
+    dit la même chose sans pouvoir mentir — c'est la leçon des constats chiffrés
+    recopiés (#484).
+    """
+    bornes: dict[str, tuple[str, str]] = {}
+    for liste, chemins_institution in _CHEMINS_INSTITUTION.items():
+        dates: list[str] = []
+        for entree in profil.get(liste) or ():
+            if not isinstance(entree, dict):
+                continue
+            if not any(_lire(entree, c) == INSTITUTION_PE for c in chemins_institution):
+                continue
+            for chemin in _CHEMINS_DATE[liste]:
+                valeur = _lire(entree, chemin)
+                if isinstance(valeur, str) and valeur:
+                    dates.append(valeur)
+        if dates:
+            bornes[liste] = (min(dates), max(dates))
+    return bornes
+
+
+def _preuve_europeenne(liste: str, fin: str) -> str:
+    """La preuve d'une couverture européenne — construite, jamais recopiée."""
+    return (
+        f"« {liste} » porte aussi du matériau du Parlement européen, collecté via les "
+        f"dumps ParlTrack (parltrack.org/dumps, ODbL v1.0) et sourcé sur les documents "
+        f"officiels d'europarl.europa.eu. La source ne publie rien au-delà du {fin} "
+        f"dans ce corpus : ce qui suit cette date n'est pas absent, il n'est pas encore "
+        f"paru chez elle."
+    )
+
+
 def deriver(
     profil: dict[str, Any],
     *,
@@ -959,6 +1033,20 @@ def deriver(
                 portee={"debut": None, "fin": borne.veille},
             ),
         ]
+
+    # #683 — LA PART EUROPÉENNE DIT SA PROPRE BORNE, à côté de celle de
+    # l'Assemblée et jamais à sa place. Les deux institutions cohabitent dans
+    # une même liste sans se totaliser (§6) ; leurs couvertures cohabitent de
+    # la même façon, chacune avec sa portée.
+    for liste, (debut, fin) in bornes_europeennes(profil).items():
+        couverture.setdefault(liste, []).append(
+            _entree(
+                ETAT_COUVERT,
+                _preuve_europeenne(liste, fin),
+                constate_le,
+                portee={"debut": debut, "fin": fin},
+            )
+        )
 
     return couverture
 
