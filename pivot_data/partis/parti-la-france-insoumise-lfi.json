@@ -148,18 +148,23 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2150",
-      "synchro_le": "2026-09-08T21:44:23+0000"
+      "synchro_le": "2026-09-09T17:08:52+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/96742",
-      "synchro_le": "2026-09-08T21:44:31+0000"
+      "synchro_le": "2026-09-09T17:09:03+0000"
+    },
+    {
+      "type": "parltrack",
+      "url": "https://parltrack.org/dumps",
+      "synchro_le": "2026-09-09T17:26:18"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-08T22:08:24+0000",
-    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO) + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
+    "genere_le": "2026-09-09T17:41:41+0000",
+    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO) + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu) + ODbL v1.0 (ParlTrack — https://parltrack.org/dumps)",
     "nb_candidats_declares": 1,
     "nb_candidats_avec_pivot": 1,
     "warnings": []

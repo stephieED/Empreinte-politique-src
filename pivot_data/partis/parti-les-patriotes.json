@@ -17,13 +17,18 @@
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/110977",
-      "synchro_le": "2026-09-07T23:13:55+0000"
+      "synchro_le": "2026-09-09T16:37:22+0000"
+    },
+    {
+      "type": "parltrack",
+      "url": "https://parltrack.org/dumps",
+      "synchro_le": "2026-09-09T17:27:59"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-08T00:16:01+0000",
-    "licence_donnees": "CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
+    "genere_le": "2026-09-09T17:41:42+0000",
+    "licence_donnees": "CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu) + ODbL v1.0 (ParlTrack — https://parltrack.org/dumps)",
     "nb_candidats_declares": 1,
     "nb_candidats_avec_pivot": 1,
     "warnings": []
