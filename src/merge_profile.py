@@ -1095,6 +1095,12 @@ _PREFIXE_PARLTRACK_DIAGNOSTIC = "ParlTrack (diagnostic) :"
 #: `FAMILLES_WARNINGS` juste en dessous doit le connaître.
 WARNING_PREFIX_COUVERTURE_DIVERGENTE = "couverture divergente non tranchée"
 
+#: #683 — les deux constats de couverture européens. Recopiés ici plutôt
+#: qu'importés de `normalize_parltrack_dumps`, comme les deux préfixes ParlTrack
+#: juste au-dessus : ce module ne dépend d'aucun normaliseur.
+_PREFIXE_PE_VOTES_ECARTES = "Parlement européen — votes non publiés :"
+_PREFIXE_PE_EXPLICATIONS = "Parlement européen — explications de vote :"
+
 #: Familles d'avertissements. Un warning appartient à la famille dont il porte
 #: le préfixe ; à défaut, **il est sa propre famille** (dédoublonnage exact).
 #:
@@ -1132,6 +1138,13 @@ FAMILLES_WARNINGS: tuple[str, ...] = (
     # fusions successives publieraient deux identifiants côte à côte.
     _PREFIXE_PARLTRACK_AUCUNE_DONNEE,
     _PREFIXE_PARLTRACK_DIAGNOSTIC,
+    # #683 : les deux constats de couverture européens portent des COMPTEURS
+    # (« 18 709 scrutin(s) », « 179 explication(s) »). Sans leur famille, deux
+    # fusions successives publient deux comptes côte à côte, dont un faux —
+    # vérifié : 12 000 et 18 709 sur le même profil. C'est la raison d'être de
+    # cette table, et l'oubli reproduisait exactement ce qu'elle prévient.
+    _PREFIXE_PE_VOTES_ECARTES,
+    _PREFIXE_PE_EXPLICATIONS,
     _PREFIXE_CHAMBRE_EN_ECHEC,
     _PREFIXE_DEUX_CHAMBRES,
 )
@@ -1459,6 +1472,78 @@ def merge_raw_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dic
 
 
 # --- Clés d'unicité, format pivot v1 (schema_pivot.py) ---
+
+
+def retirer_constats_parltrack_perimes(profil: dict[str, Any]) -> None:
+    """Retire le constat « ParlTrack : aucune donnée » d'un profil qui en porte (#683).
+
+    ## Le défaut
+
+    `unir_warnings` garde un avertissement de l'ancien écrivain **dont la
+    famille n'est pas représentée par le nouveau**. C'est ce qui protège un
+    constat que le run du jour n'a pas eu l'occasion de refaire. Mais un run qui
+    trouve des données n'émet aucun message de la famille « aucune donnée » — et
+    l'ancien survit donc, intact.
+
+    Mesuré avant correction : le profil de `jordan-bardella` aurait publié
+    « ParlTrack : aucune donnée trouvée pour le député européen 131580 » à côté
+    de **1 926 votes, 525 amendements et 255 interventions** du Parlement
+    européen. Le constat était vrai le jour où il a été écrit ; il devient faux
+    le jour où la lecture est réparée, et rien ne l'aurait retiré.
+
+    ## Pourquoi une reprise, et pas une famille de plus
+
+    Même patron que `clean_stale_interventions` et `clean_stale_textes_portes` :
+    une entrée écrite sous un régime révolu ne se corrige pas en changeant la
+    règle de fusion, elle se retire sur **preuve**. La preuve ici est le corpus
+    lui-même — une entrée européenne dans une des quatre listes — et non le
+    succès d'un appel, qui ne survivrait pas au prochain run.
+
+    Une absence qui redeviendrait vraie se réécrira d'elle-même : l'enrichissement
+    republie le constat dès qu'il ne trouve rien (§2 règle 5).
+    """
+    meta = profil.get("meta")
+    if not isinstance(meta, dict):
+        return
+    warnings = meta.get("warnings")
+    if not isinstance(warnings, list) or not warnings:
+        return
+    if not _porte_du_materiau_europeen(profil):
+        return
+    meta["warnings"] = [
+        w for w in warnings
+        if not (
+            isinstance(w, str)
+            and w.startswith((_PREFIXE_PARLTRACK_AUCUNE_DONNEE, _PREFIXE_PARLTRACK_DIAGNOSTIC))
+        )
+    ]
+
+
+#: Où l'institution se lit, liste par liste — même table que
+#: `couverture_profil._CHEMINS_INSTITUTION`, et pour la même raison : le marqueur
+#: est porté par l'entrée, jamais deviné depuis une URL.
+_CHEMINS_INSTITUTION_PE: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("votes", ("scrutin_non_resolu", "institution")),
+    ("amendements", ("amendement_non_resolu", "institution")),
+    ("textes_portes", ("institution",)),
+    ("interventions", ("source", "institution")),
+)
+
+
+def _porte_du_materiau_europeen(profil: dict[str, Any]) -> bool:
+    """Au moins une entrée publiée vient du Parlement européen."""
+    for liste, chemin in _CHEMINS_INSTITUTION_PE:
+        for entree in profil.get(liste) or ():
+            valeur: Any = entree
+            for cle in chemin:
+                if not isinstance(valeur, dict):
+                    valeur = None
+                    break
+                valeur = valeur.get(cle)
+            if valeur == "parlement_europeen":
+                return True
+    return False
+
 
 def _pivot_vote_key(v: dict[str, Any]) -> Key:
     """Identité d'un vote pivot depuis sa normalisation (#432).
@@ -2457,6 +2542,12 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
     # table unie par `REGLES_META`.
     deriver_avertissements(merged.get("meta"))
 
+    # #683 — le constat « ParlTrack : aucune donnée » ne survit pas à l'arrivée
+    # de données. `unir_warnings` garde un message dont la famille n'est pas
+    # représentée par le nouvel écrivain, et un run qui TROUVE n'émet rien dans
+    # cette famille : sans cette reprise, la fiche publierait « aucune donnée
+    # trouvée » à côté de 1 926 votes.
+    retirer_constats_parltrack_perimes(merged)
     return merged
 
 

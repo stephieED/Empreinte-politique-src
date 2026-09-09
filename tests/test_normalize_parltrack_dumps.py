@@ -569,3 +569,64 @@ def test_la_nature_garde_lordre_de_ses_mots():
     proposition » ne sont pas la même chose."""
     assert _nature_scrutin("A9-1/2023 - Proposition de décision") == "proposition de decision"
     assert not _porte_sur_ensemble("A9-1/2023 - Décision de proposition")
+
+
+# ---------------------------------------------------------------------------
+# Un constat périmé ne survit pas à l'arrivée de données (#683)
+# ---------------------------------------------------------------------------
+
+
+def test_le_constat_aucune_donnee_est_retire_quand_la_donnee_arrive():
+    """Sans cette reprise, la fiche de Bardella publierait « ParlTrack : aucune
+    donnée trouvée pour le député européen 131580 » à côté de 1 926 votes.
+
+    `unir_warnings` garde un message de l'ancien écrivain dont la famille n'est
+    pas représentée par le nouveau — et un run qui TROUVE des données n'émet
+    rien dans la famille « aucune donnée ».
+    """
+    from merge_profile import merge_pivot_profile
+
+    ancien = make_empty_profil("jordan-bardella", "Jordan BARDELLA")
+    ancien["meta"]["warnings"] = [
+        "ParlTrack: aucune donnée trouvée pour le député européen "
+        "(identifiant ParlTrack 131580) dans les dumps publiés sur parltrack.org/dumps.",
+        "ParlTrack (diagnostic) : aucune donnée pour le MEP ID 131580.",
+    ]
+    nouveau = make_empty_profil("jordan-bardella", "Jordan BARDELLA")
+    nouveau["votes"] = [_make_vote(_scrutin("A9-1/2023 - Résolution", voteid=7))]
+
+    fusionne = merge_pivot_profile(ancien, nouveau)
+    restants = [w for w in fusionne["meta"]["warnings"] if "ParlTrack" in w]
+    assert restants == [], restants
+
+
+def test_le_constat_survit_tant_quaucune_donnee_narrive():
+    """La reprise se fait sur PREUVE — une entrée européenne —, pas sur le
+    succès d'un appel. Sans donnée, le constat reste vrai et reste publié."""
+    from merge_profile import merge_pivot_profile
+
+    ancien = make_empty_profil("jordan-bardella", "Jordan BARDELLA")
+    ancien["meta"]["warnings"] = [
+        "ParlTrack: aucune donnée trouvée pour le député européen "
+        "(identifiant ParlTrack 131580) dans les dumps publiés sur parltrack.org/dumps.",
+    ]
+    fusionne = merge_pivot_profile(ancien, make_empty_profil("jordan-bardella", "Jordan BARDELLA"))
+    assert any("ParlTrack" in w for w in fusionne["meta"]["warnings"])
+
+
+def test_les_deux_constats_de_couverture_sont_des_familles():
+    """Ils portent des COMPTEURS : sans famille, deux fusions successives
+    publient deux comptes côte à côte, dont un faux (vérifié : 12 000 et 18 709)."""
+    from merge_profile import unir_warnings
+
+    premier = unir_warnings(
+        [f"{WARNING_PREFIX_PARLTRACK_VOTES_ECARTES} 18709 scrutin(s) …"], [])
+    second = unir_warnings(
+        [f"{WARNING_PREFIX_PARLTRACK_VOTES_ECARTES} 12000 scrutin(s) …"], premier)
+    assert len(second) == 1 and "12000" in second[0]
+
+    premier = unir_warnings(
+        [f"{WARNING_PREFIX_PARLTRACK_EXPLICATIONS_SANS_LIEN} 179 explication(s) …"], [])
+    second = unir_warnings(
+        [f"{WARNING_PREFIX_PARLTRACK_EXPLICATIONS_SANS_LIEN} 4 explication(s) …"], premier)
+    assert len(second) == 1 and " 4 " in second[0]
