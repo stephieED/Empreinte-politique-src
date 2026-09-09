@@ -2,6 +2,19 @@
 """profil_brut.py — Lecture/écriture d'un profil brut PARTITIONNÉ par
 législature (#580, sous-issue de l'épic volumétrie #429).
 
+Les trois décisions à lire avant de toucher ce module :
+
+- `docs/decisions/partition-profils-legislature-580.md` — pourquoi un profil
+  n'est plus un fichier, et pourquoi une tranche annoncée et absente **lève**
+  au lieu de rendre une liste vide ;
+- `docs/decisions/reconstruction-tranches-depuis-archive-691.md` — une tranche
+  de législature close se reconstruit **exactement** depuis
+  `raw_data/amendements_an_figes/` (120 profils, 568 771 amendements, zéro
+  écart) ;
+- `docs/decisions/tranches-derivees-lecteur-691.md` — d'où la marque `derivee`
+  du manifeste, et la règle qui la gouverne : **le manifeste doit le dire, et
+  le silence reste une panne**.
+
 Le problème, mesuré le 29/08/2026
 ---------------------------------
 `amendements` fait **96,7 % du plus gros profil brut** — 54,15 Mo sur 56,00.
