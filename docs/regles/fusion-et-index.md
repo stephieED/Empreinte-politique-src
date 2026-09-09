@@ -8,6 +8,26 @@ les charger, ni à les faire grossir. -->
 
 ### 3a. Files, indexes, merge
 
+- **A closed legislature's amendments are already stored, deduplicated and inverted — the
+  raw slices only recopy them (#691).** `raw_data/profiles/` weighs 9.7 GiB, 89 % of it
+  amendment slices, and no single field is large: `co_signataires` is **79.5 %** of a
+  slice's weight because an amendment with 74 cosignatories is written into **75 files**,
+  each carrying all 75 identifiers — 5 625 identifiers for information worth 75, at the
+  **median**. `raw_data/amendements_an_figes/` already holds the 624 180 amendments of the
+  three closed legislatures in **38 MB** gzipped, **plus** an `index_par_acteur.json.gz`
+  that returns `{uid, role_signataire}` — precisely the shape pivots consume since #431.
+  Reconstruction is a join, and it is **exact**: 120 profiles, 568 771 amendments, zero
+  field-level discrepancy, with only two derived fields (`role_signataire` from the actor
+  index, `legislature` from the filename). Two rules follow. **Normalise the XML nils**:
+  the archive keeps `{"@xsi:nil": "true"}` where collection writes `null` — 8 entries out
+  of 624 180, rare enough to go unseen and real enough to break §2 rule 5. **Never route
+  the pivot through a rebuilt slice**: `mapping_pivot()` goes from archive to final shape
+  directly, because rebuilding a duplicated list to deduplicate it three lines later pays
+  in compute what was just saved on disk. And nothing is deleted before the consumers are
+  settled — seven read that field, one of them (`merge_profile`) being a **guard**, not a
+  source: the committed slice is what protects against an empty collection, and collection
+  reads a CI cache that is not versioned.
+  → `docs/decisions/reconstruction-tranches-depuis-archive-691.md`
 - **Build `pivot_data/scrutins.json` before any pivot pass, and merge it additively.**
   Resolving a ballot's `legislature` is a corpus-wide join, never per-profile.
   → `docs/decisions/normalisation-votes.md`
