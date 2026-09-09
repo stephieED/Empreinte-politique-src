@@ -17,7 +17,10 @@ Front door, editorial line, coverage limits: `README.md`.
 the current production interface, wired to real pivot data (`docs/decisions/web-v3-ui.md`). Earlier design
 generations — `v1`-`v7`, including the `v3` editorial reference — are archived under `web/old/`.
 `web/UI_finale` navigation: **Candidats** · **Groupes** (real parliamentary groups) ·
-**Gouvernement** (real governments) — no Partis tab.
+**Gouvernement** (real governments) — no Partis tab. Three tabs, but **five published
+pages**: `/methodologie`, `/mentions-legales` and `/couverture` live outside the tabs.
+`/couverture` says once, for the whole corpus, what every fiche used to repeat — what the
+repository holds and since when (#328).
 Positioning, naming, target audience: `docs/decisions/direction-artistique-empreinte.md`.
 
 ## 2. Non-negotiable editorial rules
