@@ -1143,7 +1143,10 @@ function Couverture({ couverture, limites }) {
                   <b>{LIBELLE_ETAT[e.etat] || e.etat}</b>
                   {e.debut && ` depuis le ${jour(e.debut)}`}
                   {!e.debut && e.fin && ` jusqu’au ${jour(e.fin)}`}
-                  {e.preuve && <em>{e.preuve}</em>}
+                  {/* La même borne explique souvent « couvert depuis » ET
+                      « hors couverture jusqu'au » : elle se dit une fois par
+                      liste, jamais deux (`preuveDejaDite`). */}
+                  {e.preuve && !e.preuveDejaDite && <em>{e.preuve}</em>}
                 </span>
               ))}
             </span>
