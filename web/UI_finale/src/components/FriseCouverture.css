@@ -1,0 +1,292 @@
+/* La frise de couverture — mêmes teintes que la fiche candidat.
+   `--parl` et `--gouv` sont ceux de CandidateProfile.css : sur une fiche, la
+   teinte dit déjà d'où vient le fait, et la frise ne réinvente pas un code
+   couleur que le lecteur devrait réapprendre. `--pop-grp` est le troisième,
+   pour les fiches de groupe. */
+.fc {
+  --pop-cand: #3f5166;
+  --pop-gouv: #8a6b4c;
+  --pop-grp: #6f5b7a;
+  --fc-rule: #e7e4df;
+  --fc-rule-fin: #f0eeeb;
+  --fc-hachure: #eae6e0;
+  --fc-sous-ink: #5b5766;
+
+  background: var(--card);
+  border: 1px solid var(--fc-rule);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.fc-tete {
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--fc-rule-fin);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.fc-tete b {
+  font-size: 15px;
+}
+
+.fc-tete span {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Le corps défile horizontalement sur petit écran plutôt que d'écraser le rail :
+   une frise à 120 px de large ne dit plus rien, et le reste de la page n'a pas
+   à défiler avec elle.
+   La largeur minimale vit sur le CONTENEUR des lignes, jamais sur chacune : la
+   posée sur l'axe, dont les marges valent déjà 370 px, elle le rendait 8 px
+   plus large que les rails — et une graduation qui ne tombe pas sur le rail
+   décale toutes les lectures. */
+.fc-corps {
+  padding: 18px 20px 8px;
+  overflow-x: auto;
+}
+
+.fc-lignes {
+  min-width: 640px;
+}
+
+/* L'AXE ET LES RAILS PARTAGENT LA MÊME BOÎTE : les marges reprennent les
+   colonnes de .fc-piste, gouttières comprises. Une graduation qui ne tombe pas
+   sur le rail décale toutes les lectures. */
+.fc-axe {
+  position: relative;
+  height: 18px;
+  margin: 0 108px 6px 262px;
+  border-bottom: 1px solid var(--fc-rule);
+}
+
+.fc-axe span {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  font-size: 10.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.fc-piste {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr) 96px;
+  gap: 0 12px;
+  align-items: center;
+  padding: 5px 0;
+}
+
+.fc-nom {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--fc-sous-ink);
+  padding-left: 16px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.fc-piste--liste .fc-nom {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  padding-left: 0;
+}
+
+.fc-bouton {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  width: 100%;
+}
+
+.fc-bouton:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.fc-chevron {
+  font-size: 9px;
+  color: var(--muted);
+  transition: transform 0.12s ease;
+}
+
+.fc-chevron--ouvert {
+  transform: rotate(90deg);
+}
+
+.fc-rail {
+  position: relative;
+  height: 22px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: linear-gradient(var(--fc-rule-fin), var(--fc-rule-fin)) center / 100% 1px no-repeat;
+}
+
+.fc-rail--nu {
+  background: none;
+}
+
+/* UNE SEULE PISTE, PAS DES COUCHES EMPILÉES. Les segments des différentes
+   origines vivent dans le MÊME rail, à la même hauteur. `mix-blend-mode:
+   multiply` fait le reste : une origine seule garde sa teinte, deux origines
+   qui se recouvrent en produisent une troisième, plus sombre. */
+.fc-couche {
+  position: absolute;
+  inset: 0;
+}
+
+.fc-couche .fc-seg {
+  mix-blend-mode: multiply;
+}
+
+.fc-couche--cand { --pop: var(--pop-cand); }
+.fc-couche--gouv { --pop: var(--pop-gouv); }
+.fc-couche--grp { --pop: var(--pop-grp); }
+
+.fc-seg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 3px;
+  background: var(--pop, var(--ink));
+}
+
+/* CE QUE LA SOURCE NE DONNE PAS — hachure discrète, sans contour : c'est un
+   fait sur l'institution, immuable, et rien ne se joue là. */
+.fc-horssource {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 3px;
+  background: repeating-linear-gradient(45deg, var(--fc-hachure) 0 3px, transparent 3px 8px);
+}
+
+/* CE QUI MANQUE DE NOTRE FAIT — jaune signal, avec un filet d'encre pour qu'il
+   tienne sur blanc (le jaune seul est à 1,05:1). L'accent marque l'ACTION dans
+   ce système : un trou de notre côté est exactement une action, et ça ne juge
+   personne — c'est un fait sur NOUS. */
+.fc-noncollecte {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 2px;
+  background: repeating-linear-gradient(45deg, var(--accent) 0 5px, #fbffd6 5px 10px);
+  box-shadow: inset 0 0 0 1.5px #a9c400;
+}
+
+.fc-n {
+  text-align: right;
+  font-size: 12.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.fc-sous .fc-n {
+  font-size: 11.5px;
+}
+
+.fc-n em {
+  display: block;
+  font-style: normal;
+  font-size: 10.5px;
+  color: #a29ead;
+  line-height: 1.25;
+  margin-top: 2px;
+}
+
+.fc-aucune {
+  font-size: 11.5px;
+}
+
+/* `[hidden]` ne suffit pas sur un `display: grid` : la règle d'agent
+   utilisateur perd contre la nôtre, et les replis s'ouvriraient tous. */
+.fc-sous {
+  display: grid;
+  gap: 2px;
+  padding: 2px 0 8px;
+}
+
+.fc-sous[hidden] {
+  display: none;
+}
+
+.fc-sous .fc-rail {
+  height: 14px;
+}
+
+.fc-groupe {
+  padding: 2px 0 10px;
+}
+
+.fc-groupe + .fc-groupe {
+  border-top: 1px solid var(--fc-rule-fin);
+  padding-top: 10px;
+}
+
+.fc-groupe-titre {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fc-sous-ink);
+  padding: 4px 0 6px;
+}
+
+.fc-piste--seule .fc-groupe-titre {
+  padding: 0;
+  align-self: center;
+}
+
+.fc-legende {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 22px;
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--fc-rule-fin);
+  font-size: 11.5px;
+  color: var(--fc-sous-ink);
+  margin: 0;
+}
+
+.fc-cle {
+  display: inline-block;
+  width: 22px;
+  height: 11px;
+  border-radius: 2px;
+  vertical-align: -1px;
+  margin-right: 6px;
+}
+
+.fc-cle--cand { background: var(--pop-cand); }
+.fc-cle--gouv { background: var(--pop-gouv); }
+.fc-cle--grp { background: var(--pop-grp); }
+
+.fc-cle--nonc {
+  background: repeating-linear-gradient(45deg, var(--accent) 0 5px, #fbffd6 5px 10px);
+  box-shadow: inset 0 0 0 1.5px #a9c400;
+}
+
+.fc-cle--hors {
+  background: repeating-linear-gradient(45deg, var(--fc-hachure) 0 3px, transparent 3px 8px);
+}
+
+/* PAS DE VARIANTE SOMBRE ICI. `index.css` déclare `color-scheme: light` sur
+   `:root` : l'interface est claire, point. Un composant qui bascule seul en
+   sombre poserait une figure foncée au milieu d'une page claire — c'est ce que
+   fait déjà le bloc `.cp-gc` de CandidateProfile.css, et ce n'est pas un motif
+   à reproduire. */
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-chevron {
+    transition: none;
+  }
+}

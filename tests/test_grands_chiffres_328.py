@@ -106,7 +106,10 @@ def test_le_bloc_s_appelle_en_bref(composant):
     assert "Les grands chiffres" not in composant
     assert "Coup d’œil" not in composant and "Coup d'œil" not in composant
     assert "L’essentiel" not in composant
-    assert '<h2 className="cp-section-titre">En bref</h2>' in composant, (
+    # Le `span` interne porte le surlignage jaune commun à tous les titres de
+    # section : le dégradé posé sur le `h2`, bloc de la largeur de la colonne,
+    # courrait jusqu'au bord et se lirait comme un fond de section.
+    assert '<h2 className="cp-section-titre"><span>En bref</span></h2>' in composant, (
         "même bande, même filet, même h2 que les titres de section"
     )
     assert "cp-gc-label" not in composant, (

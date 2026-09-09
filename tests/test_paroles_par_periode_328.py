@@ -272,9 +272,19 @@ def test_la_qualite_absente_n_est_jamais_comblee(composant: str) -> None:
 
     Lire ce silence comme « il parlait comme député » serait une inférence, et
     la section ne la fait pas : elle écrit la qualité quand elle existe.
+
+    LE POURQUOI A DÉMÉNAGÉ, PAS LA RÈGLE. Le paragraphe qui expliquait le
+    silence de la source était identique sous les 30 fiches et noyait les quatre
+    chiffres qui, eux, parlent de la personne affichée. Il vit maintenant dans
+    la méthodologie, et la fiche y renvoie : le test suit les deux moitiés,
+    faute de quoi supprimer le renvoi ou vider la méthodologie passerait.
     """
     assert "i.fonction &&" in composant
-    assert "silence de la source" in composant
+    assert 'to="/methodologie#interventions"' in composant
+
+    methodo = (SRC / "pages" / "MethodologyPage.jsx").read_text(encoding="utf-8")
+    assert "silence de la source" in methodo
+    assert "La qualité de l'orateur" in methodo
 
 
 def test_une_date_illisible_sort_du_decoupage_et_le_dit(module: str, composant: str) -> None:

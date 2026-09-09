@@ -372,15 +372,18 @@ export default function VotesParPeriode({ periodes, portee, reperes }) {
 
       {/* La section publie ses propres trous. Sans cette ligne, une matière
           absente sur 449 des 1 160 positions se lirait comme « ces textes n'ont
-          pas de commission saisie au fond » (§2 règles 5 et 7). */}
+          pas de commission saisie au fond » (§2 règles 5 et 7).
+          LE CHIFFRE RESTE ICI, LE POURQUOI PART À LA MÉTHODOLOGIE : la mesure
+          ne vaut que de cette personne et n'a de sens que sous sa figure ;
+          l'explication du rattachement est la même sur les 30 fiches, et un
+          paragraphe recopié trente fois se lit zéro fois. */}
       {reperes && (
         <p className="cp-note vp-couverture">
           <b>Ce que cette figure ne sait pas.</b> Sur ses {formatNumber(reperes.total)} positions
           de dernière lecture, {formatNumber(reperes.matiere)} sont rattachées à une commission
-          saisie au fond et {formatNumber(reperes.statut)} portent le sort final de leur texte —
-          le rattachement vient des actes du dossier, et l’Assemblée n’en publie pas pour tous les
-          scrutins. Les autres restent en « matière non établie » : c’est une absence de source,
-          jamais une absence de commission.
+          saisie au fond et {formatNumber(reperes.statut)} portent le sort final de leur texte.
+          Les autres restent en « matière non établie ».{' '}
+          <Link to="/methodologie#votes">Pourquoi ce rattachement n’aboutit pas toujours</Link>.
         </p>
       )}
     </div>

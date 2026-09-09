@@ -48,7 +48,8 @@ export default function LandingPage() {
         </main>
         <footer className="landing-footer">
           <p className="landing-footer-text">Données publiques agrégées. Aucun score, aucun classement.</p>
-          <nav className="landing-footer-links" aria-label="Pages légales">
+          <nav className="landing-footer-links" aria-label="Pages du site">
+            <Link to="/couverture">Ce que contient ce corpus</Link>
             <Link to="/methodologie">Méthodologie</Link>
             <Link to="/mentions-legales">Mentions légales</Link>
           </nav>

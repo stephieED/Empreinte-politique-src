@@ -11,6 +11,7 @@ export const DEFAULT_GOVERNMENT_ID = 'LECORNU_II';
 
 let manifestPromise = null;
 let scrutinsPromise = null;
+let couverturePromise = null;
 const amendementsPromises = new Map();
 
 function loadManifest() {
@@ -37,6 +38,22 @@ function loadManifest() {
  * que de faire échouer toute la page. Les vues affichent alors une donnée
  * manquante — jamais une donnée inventée.
  */
+/**
+ * Ce que le dépôt porte, tous profils confondus (/couverture).
+ *
+ * Projection calculée au build par `scripts/couverture-corpus.mjs` — 32 Ko là
+ * où la page devrait sinon lire les 743 profils. Mémoïsée, et non bloquante :
+ * un échec de chargement rend `null`, la page dit qu'elle ne peut pas afficher
+ * la couverture plutôt que d'en approcher une.
+ */
+export function loadCouverture() {
+  if (!couverturePromise) {
+    couverturePromise = fetch('/data/couverture.json')
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`couverture.json : HTTP ${r.status}`))));
+  }
+  return couverturePromise;
+}
+
 function loadScrutins() {
   if (!scrutinsPromise) {
     scrutinsPromise = fetch('/data/scrutins.json')
