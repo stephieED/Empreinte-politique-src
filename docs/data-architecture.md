@@ -184,6 +184,43 @@ cassée lève `PartitionIllisible` au lieu de rendre une liste vide. Écriture :
 toujours la forme partitionnée, donc un run complet migre le corpus tout seul ;
 migration hors run par `src/migrer_profils_partitionnes_580.py`, idempotent.
 
+**Depuis #691, une tranche de législature CLOSE n'est plus écrite** — elle est
+*déclarée* dans le manifeste et relue dans `raw_data/amendements_an_figes/` :
+
+```json
+{"legislature": "15", "nombre": 18751, "derivee": true, "acteur_ref": "PA720892"}
+{"legislature": "17", "fichier": "17.json", "nombre": 18893}
+```
+
+Le run `34344178203` (09/09/2026) a retiré **854 fichiers de tranches** —
+77 en XIV, 270 en XV, 507 en XVI, la totalité — et `raw_data/profiles/` est
+passé de **9,7 à 4,6 Gio**. Il ne reste que la XVIIe, **3,64 Go** : elle est
+vivante, son archive figée n'existera qu'à la dissolution, et la reconstruire
+depuis l'index pivot serait circulaire.
+
+Trois propriétés gouvernent cette forme, et elles se lisent ensemble :
+
+- **le manifeste doit dire `derivee`, et le silence reste une panne.** Une
+  tranche annoncée sans marque et dont le fichier manque lève toujours
+  `PartitionIllisible` : chercher l'archive « au cas où » ferait lire une
+  tranche *perdue* comme une tranche dérivée ;
+- **le `nombre` est celui de l'ARCHIVE**, pas de la collecte. Un écart
+  n'empêche donc jamais de relire un profil ; il se déclare à l'écriture par
+  `nombre_collecte`, écrit uniquement en cas de divergence ;
+- **l'ordre devient par blocs** dès qu'une tranche est dérivée. Aucun
+  consommateur ne lit l'ordre — `audit_diff_profils` relève une liste par un
+  entier —, et l'aller-retour identique octet pour octet reste vrai pour tout
+  profil sans tranche dérivée.
+
+L'équivalence a été mesurée avant la bascule : **120 profils, 568 771
+amendements, trois législatures, zéro écart** champ par champ. Deux champs sont
+dérivés — `role_signataire`, qui vient de `index_par_acteur.json.gz`, et
+`legislature`, que porte le nom du fichier.
+
+→ `docs/decisions/reconstruction-tranches-depuis-archive-691.md`,
+  `docs/decisions/tranches-derivees-lecteur-691.md`,
+  `docs/decisions/marquage-tranches-derivees-691.md`
+
 Le plus gros fichier versionné est un garde-fou surveillé : `src/garde_fou_blobs.py`
 est la **§7 du quality gate** — avertissement à 50 Mio, **échec du commit à
 80 Mio**. Ni « monter le seuil » ni « supprimer de la donnée » n'est un remède
