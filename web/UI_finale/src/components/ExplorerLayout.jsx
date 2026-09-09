@@ -94,9 +94,25 @@ export default function ExplorerLayout() {
             <p className="explorer-footer-text">
               Données publiques agrégées. Aucun score, aucun classement.
             </p>
-            <nav className="explorer-footer-links" aria-label="Pages légales">
+            {/* Le contact et les deux comptes vivent dans les mentions légales,
+                qui font foi ; ils sont RAPPELÉS ici en discret, parce qu'une
+                adresse qu'il faut chercher dans une page légale est une adresse
+                qu'on n'écrit pas. `rel="noopener"` : un lien sortant ouvert dans
+                un onglet neuf ne doit pas garder la main sur celui-ci. */}
+            <nav className="explorer-footer-links" aria-label="Pages légales et contact">
               <Link to="/methodologie">Méthodologie</Link>
               <Link to="/mentions-legales">Mentions légales</Link>
+              <a href="mailto:contact@empreinte-politique.fr">Contact</a>
+              <a
+                href="https://www.linkedin.com/company/empreinte-politique"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                LinkedIn
+              </a>
+              <a href="https://x.com/EmpreintePol" target="_blank" rel="noopener noreferrer">
+                X
+              </a>
             </nav>
           </footer>
         </div>

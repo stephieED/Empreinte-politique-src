@@ -149,6 +149,44 @@ const availableSlugs = new Set(
 // fichiers de profil, et un candidat listé sans profil sur disque produirait
 // un lien qui casse au clic. Le rendu d'un candidat déclaré sans page relève
 // du lot UI #324/#328 ; ici on ne fabrique pas la promesse d'une page absente.
+/* ── Qui a siégé à l'Assemblée, ou gouverné (#328) ───────────────────────────
+ *
+ * La barre des candidats grise les fiches qui ne portent NI mandat à
+ * l'Assemblée nationale NI fonction gouvernementale. Ce n'est pas un jugement
+ * sur la personne : c'est ce que la fiche peut montrer. Sans l'un des deux, le
+ * corpus n'a ni vote, ni intervention, ni amendement à publier — la page existe
+ * et le dit, mais elle ne porte pas d'activité parlementaire.
+ *
+ * DEUX FAITS, ET AUCUN DEVINÉ. `chambres` est le champ DÉRIVÉ des mandats
+ * (#493) : il vaut `["PE"]` pour un député européen, et un mandat au Parlement
+ * européen n'est pas un mandat à l'Assemblée. `fonction_gouvernementale` est une
+ * catégorie de mandat, pas une inférence sur un intitulé.
+ *
+ * Mesuré sur les 27 candidats déclarés au commit de données courant : 17 ont
+ * l'un des deux, 10 n'ont ni l'un ni l'autre — 6 sans aucun mandat collecté
+ * (Tondelier, Arthaud, Lisnard, Labib, Verdier, Mathieu) et 4 dont toute la
+ * carrière est au Parlement européen (Bardella, Glucksmann, Philippot,
+ * Massard). Ségolène Royal, elle, n'a aucun vote publié mais sept fonctions
+ * gouvernementales : elle n'est pas grisée, parce que le critère porte sur ce
+ * qu'elle a exercé et non sur ce que nous avons collecté.
+ */
+const aSiegeOuGouverne = (slug) => {
+  const profil = JSON.parse(
+    readFileSync(path.join(pivotProfilesDir, `${slug}.pivot.json`), 'utf-8'),
+  );
+  /* `chambres` UNIQUEMENT, jamais le scalaire `chambre` : #328 avait retiré le
+   * dernier consommateur de ce scalaire dans l'interface, et le rétablir en
+   * repli annulerait la condition de retrait que `test_garde_fou_chambre.py`
+   * surveille. Les 19 profils du corpus sans la clé sont tous des
+   * `roster_groupe`, jamais listés comme candidats — l'absence retomberait
+   * donc sur le seul test de fonction gouvernementale, et le dirait. */
+  const chambres = profil.chambres || [];
+  const gouvernement = (profil.mandats || []).some(
+    (m) => m.categorie === 'fonction_gouvernementale',
+  );
+  return chambres.includes('AN') || gouvernement;
+};
+
 const manifestCandidates = candidats
   .filter((c) => !estMasque(c) && availableSlugs.has(c.slug))
   .map((c) => ({
@@ -157,7 +195,16 @@ const manifestCandidates = candidats
     parti: c.parti,
     famillePolitique: c.famille_politique,
     statut: c.statut,
-  }));
+    mandatAnOuGouvernement: aSiegeOuGouverne(c.slug),
+  }))
+  /* L'ORDRE EST CELUI DU LIBELLÉ AFFICHÉ, pas celui du fichier source.
+   * `raw_data/candidats.json` suit l'ordre de collecte, que rien ne rend
+   * lisible : une barre de vingt-cinq pastilles où l'œil ne peut pas prédire
+   * la place d'un nom se parcourt en entier à chaque fois. Le tri porte sur
+   * `nom` — ce que le lecteur lit — et non sur un patronyme reconstruit :
+   * découper « Le Pen » ou « Dupont-Aignan » demanderait une règle que la
+   * source ne donne pas. */
+  .sort((a, b) => a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' }));
 
 // --- profils de groupe réels ---
 const slugByMembreId = new Map(manifestCandidates.map((c) => [c.slug, c]));

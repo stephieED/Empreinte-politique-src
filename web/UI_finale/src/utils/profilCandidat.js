@@ -2401,6 +2401,16 @@ export function couvertureDesListes(couverture, decomptes) {
  * sera écrit un, sans toucher à ce composant.
  */
 export function limitesDeclarees({ profil, roles, textes, sieges }) {
+  /* CES TEXTES SONT DES LIMITES, PAS DES EXPLICATIONS (#328).
+   *
+   * Chacun dit UN fait sur CE profil, avec ses nombres. Le « pourquoi » — la
+   * qualification d'un groupe n'est pas déductible d'un comportement de vote,
+   * un enregistrement écarté est une collecte qu'on ne peut plus vérifier —
+   * vit dans la méthodologie, sous l'ancre `#couverture` où mène le renvoi
+   * posé sous la liste. DESIGN_SYSTEM §7 règle 2 : « une limite tient en deux
+   * mots, une explication en paragraphe ». Une phrase ajoutée ici est une
+   * phrase qui manque là-bas.
+   */
   const limites = [];
 
   for (const a of profil?.meta?.avertissements || []) {
@@ -2414,9 +2424,8 @@ export function limitesDeclarees({ profil, roles, textes, sieges }) {
     limites.push({
       cle: 'position-non-declaree',
       texte:
-        `L'Assemblée nationale déclare elle-même si un groupe est majoritaire, minoritaire ou d'opposition. ` +
-        `Elle ne l'a pas fait pour ${sansPosition.length} des mandats parlementaires de ce profil — dont la législature en cours, ` +
-        `pour laquelle la qualification n'est publiée sur aucun groupe. Le déduire d'un comportement de vote serait un jugement, pas une lecture.`,
+        `La qualification du groupe — majoritaire, minoritaire, d'opposition — n'est pas déclarée ` +
+        `par l'Assemblée sur ${sansPosition.length} des mandats parlementaires de ce profil, dont la législature en cours.`,
     });
   }
 
@@ -2437,9 +2446,8 @@ export function limitesDeclarees({ profil, roles, textes, sieges }) {
     limites.push({
       cle: 'projets-de-loi',
       texte:
-        `${textes.projetsDeLoi} de ses ${textes.total} textes portés sont des projets de loi — des textes du gouvernement ` +
-        `signés comme ministre — et le corpus les range sous le même rôle « auteur » qu'une proposition déposée comme parlementaire. ` +
-        `Seul l'intitulé officiel les distingue.`,
+        `${textes.projetsDeLoi} de ses ${textes.total} textes portés sont des projets de loi, rangés sous ` +
+        `le même rôle « auteur » qu'une proposition parlementaire. Seul l'intitulé officiel les distingue.`,
     });
   }
 
@@ -2448,9 +2456,8 @@ export function limitesDeclarees({ profil, roles, textes, sieges }) {
     limites.push({
       cle: 'sieges-replies',
       texte:
-        `La source rend ${enregistrements} enregistrements de mandat électif pour ${sieges.length} sièges : ` +
-        `certains sièges portent deux entrées, l'une antérieure à l'estampillage de la chambre (#492). ` +
-        `Ils sont regroupés sur leur date de fin, aucun n'est supprimé.`,
+        `${enregistrements} enregistrements de mandat électif pour ${sieges.length} sièges, regroupés sur ` +
+        `leur date de fin. Aucun n'est supprimé.`,
     });
   }
 

@@ -68,6 +68,11 @@ de données téléchargeable — voir le texte ci-dessous.
 > demande, à toute autorité judiciaire compétente.
 >
 > **Contact éditeur** : empreinte.politique@gmail.com
+
+*Cette citation est datée du 14/08/2026 et n'est pas réécrite : c'est le texte
+tel qu'il était au moment de la décision. L'adresse publiée est depuis
+`contact@empreinte-politique.fr`, et le seul endroit qui fasse foi est
+`web/UI_finale/src/pages/LegalNoticePage.jsx` (#328).*
 >
 > ## Hébergement
 >

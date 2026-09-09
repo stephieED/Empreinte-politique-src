@@ -122,9 +122,12 @@
   margin: 0;
 }
 
+/* Cinq entrées au lieu de deux depuis #328 : elles passent à la ligne plutôt
+   que de pousser le pied hors de la colonne sur un écran étroit. */
 .explorer-footer-links {
   display: flex;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 8px 20px;
 }
 
 .explorer-footer-links a {

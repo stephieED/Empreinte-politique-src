@@ -164,6 +164,11 @@ export async function getCandidatesList() {
     nom: c.nom,
     groupId: c.groupId ?? null,
     parti: c.parti,
+    // Calculé par `scripts/sync-data.mjs` : « AN » dans `chambres`, ou au moins
+    // un mandat de catégorie `fonction_gouvernementale` (#328). L'ordre de la
+    // liste est déjà alphabétique à la source — l'UI ne retrie pas, sans quoi
+    // deux tris cohabiteraient.
+    mandatAnOuGouvernement: c.mandatAnOuGouvernement !== false,
   }));
 }
 

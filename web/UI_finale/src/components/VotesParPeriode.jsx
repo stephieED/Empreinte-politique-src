@@ -231,10 +231,10 @@ function Colonnes({ votes, positions, matiere, onIsoler, onToutAfficher }) {
         })}
       </div>
 
-      <p className="vp-aide">
-        Cliquez une barre pour ne garder qu’une matière · cliquez un en-tête de colonne pour
-        isoler une position.
-      </p>
+      {/* Une seule voix sur toute la fiche : « cliquez ». Le tutoiement de
+          l'invite des textes portés et le vouvoiement d'ici cohabitaient sur la
+          même page (#328). */}
+      <p className="vp-aide">Cliquez une barre, ou un en-tête de colonne.</p>
     </div>
   );
 }

@@ -14,7 +14,21 @@ const SECTIONS = [
         </p>
         <p>
           <strong>Contact éditeur</strong> :{' '}
-          <a href="mailto:empreinte.politique@gmail.com">empreinte.politique@gmail.com</a>
+          <a href="mailto:contact@empreinte-politique.fr">contact@empreinte-politique.fr</a>
+        </p>
+        <p>
+          <strong>Comptes publics</strong> :{' '}
+          <a
+            href="https://www.linkedin.com/company/empreinte-politique"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            linkedin.com/company/empreinte-politique
+          </a>
+          {' · '}
+          <a href="https://x.com/EmpreintePol" target="_blank" rel="noopener noreferrer">
+            x.com/EmpreintePol
+          </a>
         </p>
       </>
     ),
