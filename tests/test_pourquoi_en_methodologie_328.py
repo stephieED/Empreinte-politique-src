@@ -118,16 +118,25 @@ def test_le_critere_des_votes_ne_redit_plus_la_regle_de_derniere_lecture(fiche: 
     assert "LAST_READING_RULE.phrase" in fiche, "la règle a disparu de la fiche entière"
 
 
-def test_les_trois_refus_gardent_leur_phrase_et_perdent_leur_pourquoi() -> None:
-    """Le `pourquoi` n'est pas supprimé : il est rendu par la méthodologie.
+def test_les_trois_refus_ne_sont_plus_rendus_que_par_la_methodologie() -> None:
+    """#801 avait laissé la phrase sur la fiche et descendu le `pourquoi`.
 
-    Et il n'y est pas recopié — les deux pages lisent le même
-    `STATED_REFUSALS`, sans quoi les deux versions divergeraient.
+    #328 retire la phrase aussi : mesuré sur la page rendue de `delphine-batho`,
+    « aucun classement » y apparaissait TROIS fois — le bloc des refus en §6, le
+    pied de la fiche juste en dessous, et le pied du site. Les trois refus
+    restent publiés là où ils s'argumentent : la méthodologie, source unique, et
+    « Ce que vous ne trouverez pas ici » sur l'accueil.
+
+    `STATED_REFUSALS` n'est donc plus rendu qu'une fois — et le `pourquoi` n'est
+    pas supprimé, il est là.
     """
-    interdits = sans_commentaires(LECTURE_JSX.read_text(encoding="utf-8"))
-    bloc = interdits[interdits.index("export function Interdits") :]
-    assert "refus.phrase" in bloc
-    assert "refus.pourquoi" not in bloc, "la fiche republie le pourquoi"
+    lecture_jsx = LECTURE_JSX.read_text(encoding="utf-8")
+    assert "export function Interdits" not in lecture_jsx, (
+        "la fiche republie les refus sous la figure"
+    )
+    fiche = FICHE.read_text(encoding="utf-8")
+    assert "<Interdits" not in fiche
+
     donnees = LECTURE_JS.read_text(encoding="utf-8")
     assert "pourquoi:" in donnees, "le pourquoi a été supprimé au lieu d'être déplacé"
     methodo = METHODO.read_text(encoding="utf-8")

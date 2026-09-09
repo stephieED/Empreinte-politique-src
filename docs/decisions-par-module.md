@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 260 décisions
+gouverne sans avoir à fouiller les 261 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -436,7 +436,7 @@ Le mentionnent sans le gouverner : [`absences-publiees-comme-faits-556-558-560`]
 | [Une exception n'est pas une preuve, et un défaut de notre code n'est pas une panne de l'Assemblée nationale (#562) (2026-08-28)](decisions/defaut-collecte-vs-panne-562.md) | `MOTIFS_PANNE`, `_preuve_defaut_collecte` |
 | [`meta.warnings[]` déclare son destinataire, dans un jumeau typé et aligné (#642) (2026-08-31)](decisions/destinataire-avertissements-642.md) | `MOTIFS_DEFAUT_COLLECTE`, `MOTIFS_JAMAIS_PANNE`, `MOTIFS_PANNE` |
 
-Le mentionnent sans le gouverner : [`couverture-remplacee-par-liste-602`](decisions/couverture-remplacee-par-liste-602.md), [`fiches-groupe-17e-legislature-700`](decisions/fiches-groupe-17e-legislature-700.md), [`preuve-de-borne-dite-une-fois-328`](decisions/preuve-de-borne-dite-une-fois-328.md).
+Le mentionnent sans le gouverner : [`couverture-remplacee-par-liste-602`](decisions/couverture-remplacee-par-liste-602.md), [`fiches-groupe-17e-legislature-700`](decisions/fiches-groupe-17e-legislature-700.md), [`pied-de-site-et-section-6-328`](decisions/pied-de-site-et-section-6-328.md), [`preuve-de-borne-dite-une-fois-328`](decisions/preuve-de-borne-dite-une-fois-328.md).
 
 ## `src/download_watchdog.py`
 

@@ -40,7 +40,7 @@ Trois formes, verified dans `src/components/Brand.jsx`/`Brand.css` et cotées da
 
 ## 2. Couleur
 
-**Principe** : l'encre et le blanc cassé portent tout le texte. Le jaune signal ne sert jamais à indiquer un jugement — il marque la sélection, l'action, la source vérifiée. Les couleurs de vote sont **fonctionnelles, pas décoratives** : vert et rouge ne restituent qu'un scrutin réel, jamais une préférence éditoriale.
+**Principe** : l'encre et le blanc cassé portent tout le texte. Le jaune signal ne sert jamais à indiquer un jugement — il marque la sélection, l'action, le lien vers la source. Les couleurs de vote sont **fonctionnelles, pas décoratives** : vert et rouge ne restituent qu'un scrutin réel, jamais une préférence éditoriale.
 
 ### Palette neutre — *vérifiée*, `src/index.css` `:root`
 
@@ -109,7 +109,7 @@ C'est la justification chiffrée de la règle « accent jamais en texte sur fond
 | Titre de section | « Cohésion de vote » | 16px · 800 | Vérifié (`.gp-section-title`) |
 | Titre de carte (vote/texte) | « L'ensemble du projet de loi » | 14px · 700 | **Partiel** — `.cp-ligne-titre` (14px/600, #328) et `.gp-vote-texte` (14px, poids hérité). Voir §8. |
 | Libellé de chip/onglet | « Socialistes et apparentés » | 13px · 600 | Vérifié (`.cb-chip`, `.tab-btn`, `.cp-puce`) |
-| Badge/pill | « Source vérifiée » | 11–12px · 700 | Vérifié (`.vote-badge`, `.gp-verified-badge`) |
+| Badge/pill | « Source » | 11–12px · 700 | Un lien de source est publié (`.vote-badge`, `.gp-verified-badge`) |
 | Libellé de bande (majuscules) | « GROUPES » | 11px · 700 · +0.04em | Vérifié (`.cb-bar-label`, `.gb-bar-label`) |
 | Métadonnée/caveat | « Mesure la durée, pas l'implication. » | 12–13px · 400–600 | Vérifié (`.gp-kpi-caveat`, `.cp-section-critere`) |
 
@@ -155,7 +155,9 @@ Vocabulaire vérifié dans `src/components/*.css` et `*.jsx` :
 | Composant | Règle |
 |---|---|
 | **Carte KPI** | Survol → la mise en garde (« caveat ») recouvre la carte en overlay. Chaque métrique explique elle-même sa limite (`.gp-kpi-caveat`) — aucune n'est présentée comme un score. **Retirée de la fiche candidat depuis #328** : quatre KPI en tête de page classent avant qu'on ait lu un chiffre ; le critère de chaque section (`.cp-section-critere`) porte désormais la mise en garde, en permanence et non au survol. |
-| **Carte de vote** | Point + libellé colorés selon la position (`VOTE_STYLE`). Le badge « Source vérifiée » réutilise systématiquement le jaune signal — jamais une autre couleur pour ce badge précis. |
+| **Carte de vote** | Point + libellé colorés selon la position (`VOTE_STYLE`). Le badge de source réutilise systématiquement le jaune signal — jamais une autre couleur pour ce badge précis. |
+| **Badge de source** | **« Source »**, et rien de plus (`SOURCE_BADGE_VERIFIED`, #328). Le badge est vrai quand un `source_url` existe et qu'il est publié : il n'atteste **ni** une vérification que nous ne faisons pas, **ni** une autorité qu'il ne mesure pas. « Source officielle » a été écarté **sur mesure** — sur les 23 499 liens publiés des 32 fiches candidats, des 19 fiches de groupe et des 10 fiches de gouvernement, 22 988 pointent vers l'Assemblée ou le Parlement européen, mais **511 vers nosdeputes.fr**, un tiers : le mot aurait été faux 511 fois. Son pendant, « Lien de source non publié », ne bouge pas — il parle de NOUS, quand « non vérifié » ferait porter le doute sur la donnée. Que la source fasse foi **parce qu'elle est institutionnelle** est une phrase vraie et argumentée : elle se dit une fois, en méthodologie et dans le bloc Sources de l'accueil, jamais en trois mots répétés sous chaque fait. |
+| **Pied du site** | **Un seul composant**, rendu par les quatre carcasses — accueil, explorateur, pages statiques, couverture (`PiedDeSite`, #328). Il y en avait trois, et celui des pages statiques n'existait pas : le contact était absent de la méthodologie, des mentions légales et de la couverture. Trois colonnes : la marque et la phrase éditoriale, les pages du site, « Nous joindre ». **L'adresse s'écrit en entier** — c'est ce qui la rend copiable, et ce qui a fait retenir ce rendu ; coût mesuré et assumé, le pied passe de 66 à 148 px sur toutes les pages. **Les pages sont des mots, les comptes sont des icônes** : la forme dit la nature du lien, un mot mène à une page du site, une icône ouvre autre chose. Chaque icône garde son `aria-label` en toutes lettres et une cible de 30 px — elle remplace le libellé **à l'écran**, jamais pour un lecteur d'écran ni pour le doigt. |
 | **Onglets** | Fond plein jaune signal pour un onglet exclusif (`.tab-btn.active`). |
 | **Pills de filtre** | Contour encre inversé pour un filtre multi-état (`.gb-chip.active` : fond `--dark`, texte blanc). Deux formes du même principe visuel, jamais confondues. |
 | **Chip de sélection (groupe/candidat)** | Avatar à initiales + libellé. À l'état actif, l'avatar seul bascule au jaune signal — le fond de la chip passe à l'encre (`GroupsBar`) ou reste blanc à bordure encre (`CandidatesBar` — asymétrie assumée entre les deux barres, voir composants respectifs). |

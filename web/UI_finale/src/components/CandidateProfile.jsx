@@ -14,7 +14,7 @@
  */
 import '../styles/shell.css';
 import './CandidateProfile.css';
-import { BadgeSource, Interdits, ListeVide } from './Lecture';
+import { BadgeSource, ListeVide } from './Lecture';
 import { teinteMatiere } from '../utils/matiere';
 import { croise, disposerCascade, textesDeLaSelection } from '../utils/cascadeTextes';
 import { Fragment, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -870,14 +870,18 @@ function Propositions({ amendements, textes, causeAmendements, causeTextes, voix
               />
             </>
           )}
+          {/* LE FAIT RESTE, L'AFFIRMATION FAUSSE PART (#328). La note ajoutait
+              que le corpus range projets et propositions « sous le même rôle
+              "auteur" » et qu'« aucun champ ne la porte ». Mesuré sur les
+              textes portés des 32 fiches de candidats déclarés : `role` les
+              sépare sur 570 des 575 — `initiateur_projet_de_loi` contre
+              `auteur_proposition_de_loi`. */}
           {textes.projetsDeLoi > 0 && (
             <p className="cp-note">
               <b>
                 {textes.projetsDeLoi} de ses {textes.total} textes portés sont des projets de loi
               </b>
-              , c’est-à-dire des textes du gouvernement signés comme ministre. Le corpus les range
-              sous le même rôle « auteur » qu’une proposition déposée comme parlementaire :{' '}
-              <em>la distinction se lit dans l’intitulé officiel, aucun champ ne la porte.</em>
+              , c’est-à-dire des textes du gouvernement signés comme ministre.
             </p>
           )}
         </div>
@@ -1168,11 +1172,21 @@ function Couverture({ couverture, limites }) {
           {l.texte}
         </p>
       ))}
-      <Interdits />
-      {/* UN renvoi pour toute la section, pas un par note : ce qui descend en
-          méthodologie est le POURQUOI, et il est commun (DESIGN_SYSTEM §7
-          règle 2). */}
+      {/* LE BLOC « ASSIDUITÉ / CLASSEMENT / 49.3 » EST RETIRÉ (#328). Mesuré
+          sur la page rendue de `delphine-batho` : « aucun classement » y
+          apparaissait TROIS fois — ici, dans le pied de la fiche juste en
+          dessous, et dans le pied du site. Les trois refus restent publiés là
+          où ils s'argumentent : `STATED_REFUSALS` est rendu par la
+          méthodologie, source unique, et « Ce que vous ne trouverez pas ici »
+          l'expose sur l'accueil. Le 49.3, lui, est déjà porté là où il sert —
+          la pastille d'encre de « Ce qu'il a voté » marque chaque texte adopté
+          sans vote (#743). */}
+      {/* DEUX renvois, deux questions distinctes : ce que ces bornes valent
+          pour tout le corpus, et pourquoi une limite se déclare au lieu de se
+          combler (DESIGN_SYSTEM §7 règle 2). */}
       <p className="cp-methodo">
+        <Link to="/couverture">Ce que le dépôt porte, et depuis quand</Link>
+        {' · '}
         <Link to="/methodologie#couverture">
           Pourquoi ces limites se déclarent au lieu de se combler
         </Link>
@@ -1439,9 +1453,11 @@ export default function CandidateProfile({ candidate }) {
         <Couverture couverture={c.couverture} limites={c.limites} />
       </Section>
 
+      {/* La licence SEULE. La phrase de refus qui l'accompagnait était la
+          troisième occurrence de « aucun score, aucun classement » sur la même
+          page ; elle vit maintenant dans le pied du site, une fois. */}
       <footer className="cp-pied">
         <span>{c.licence}</span>
-        <span>Aucun score, aucun classement, aucun taux de présence individuel.</span>
       </footer>
     </main>
   );

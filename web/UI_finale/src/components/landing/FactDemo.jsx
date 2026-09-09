@@ -1,4 +1,5 @@
 import { useId, useState } from 'react';
+import { SOURCE_BADGE_VERIFIED } from '../../utils/lecture';
 import './landing.css';
 import demoFact from '../../data/demoFact.fixture';
 
@@ -49,7 +50,7 @@ export default function FactDemo() {
 
         <div id={sourceId} className="fact-demo-source" hidden={!revealed} aria-live="polite">
           <span className="fact-demo-badge">
-            <VerifiedIcon /> Source vérifiée
+            <VerifiedIcon /> {SOURCE_BADGE_VERIFIED}
           </span>
           <dl className="fact-demo-source-details">
             <div>
