@@ -13,8 +13,10 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from normalize_parltrack_dumps import (
+    _date_plausible,
     _make_amendement,
     _make_texte_porte,
+    _role_signataire,
     enrich_pivot_with_parltrack,
 )
 from schema_pivot import make_empty_profil, validate_profil
@@ -97,7 +99,9 @@ def test_make_amendement_fields():
     a = _amendment()
     amd = _make_amendement(a)
     assert amd["amendement_id"] is None
-    assert amd["role_signataire"] == "auteur_principal"
+    # La fixture ne porte ni `nb_signataires` ni `authors` : la source ne dit
+    # rien du rôle, donc le pivot n'en dit rien non plus (#683).
+    assert amd["role_signataire"] is None
     non_resolu = amd["amendement_non_resolu"]
     assert non_resolu["texte_vise"] == "2020/2202(INI)"
     assert non_resolu["sort"] is None  # ParlTrack ne fournit pas de sort fiable
@@ -105,6 +109,79 @@ def test_make_amendement_fields():
     assert non_resolu["source_url"].startswith("https://parltrack.org/")
     assert non_resolu["co_signataires"] == []
     assert non_resolu["base_juridique_irrecevabilite"] is None
+
+
+# ---------------------------------------------------------------------------
+# Tests : _role_signataire — quatre cas, dont un qui se tait (#683)
+# ---------------------------------------------------------------------------
+
+
+def test_un_seul_signataire_est_lauteur_principal():
+    """S'il n'y en a qu'un, c'est lui — aucun nom à comparer."""
+    assert _role_signataire({"nb_signataires": 1}, "Jordan BARDELLA") == "auteur_principal"
+
+
+def test_le_nom_en_tete_est_celui_du_profil():
+    a = {"nb_signataires": 30, "premier_auteur": "Jordan Bardella"}
+    assert _role_signataire(a, "Jordan BARDELLA") == "auteur_principal"
+
+
+def test_ordre_et_casse_et_accents_ne_changent_pas_le_rôle():
+    """ParlTrack écrit « France Jamet », le pivot « Jean-Luc MÉLENCHON »."""
+    a = {"nb_signataires": 12, "premier_auteur": "Mélenchon Jean-luc"}
+    assert _role_signataire(a, "Jean-Luc MELENCHON") == "auteur_principal"
+
+
+def test_un_autre_nom_en_tete_fait_un_cosignataire():
+    a = {"nb_signataires": 30, "premier_auteur": "France Jamet"}
+    assert _role_signataire(a, "Jordan BARDELLA") == "cosignataire"
+
+
+def test_sans_nom_en_tete_le_role_reste_nul():
+    """La source se tait : le pivot se tait aussi.
+
+    91 % des amendements vérifiables mettent en tête de `meps` le premier des
+    `authors` — assez pour tenter la déduction, beaucoup trop peu pour la
+    publier comme un fait (§2 règle 2).
+    """
+    assert _role_signataire({"nb_signataires": 4, "premier_auteur": None}, "Marine LE PEN") is None
+    assert _role_signataire({"nb_signataires": 4}, "Marine LE PEN") is None
+
+
+# ---------------------------------------------------------------------------
+# Tests : _date_plausible — 44 dates impossibles dans le corpus réel (#683)
+# ---------------------------------------------------------------------------
+
+
+def test_une_date_normale_passe_telle_quelle():
+    assert _date_plausible("2023-06-07T00:00:00") == ("2023-06-07", None)
+
+
+def test_une_annee_impossible_est_ecartee_et_conservee():
+    """`PE650.371-2` porte réellement « 0302-01-01 » dans le dump publié."""
+    assert _date_plausible("0302-01-01T00:00:00") == (None, "0302-01-01T00:00:00")
+    assert _date_plausible("2068-01-03T00:00:00") == (None, "2068-01-03T00:00:00")
+
+
+def test_une_date_absente_nest_pas_une_date_ecartee():
+    """Rien à écarter quand il n'y avait rien : les deux sorties sont nulles."""
+    assert _date_plausible(None) == (None, None)
+    assert _date_plausible("") == (None, None)
+
+
+def test_la_date_ecartee_est_publiee_a_cote_de_son_motif():
+    amd = _make_amendement({"id": "PE650.371-2", "date": "0302-01-01T00:00:00"})
+    non_resolu = amd["amendement_non_resolu"]
+    assert non_resolu["date"] is None
+    assert non_resolu["date_non_resolue"] == {
+        "motif": "date_hors_bornes",
+        "valeur_source": "0302-01-01T00:00:00",
+    }
+
+
+def test_une_date_valable_ne_pose_aucun_motif():
+    amd = _make_amendement({"id": "A9-1/2023", "date": "2023-05-10"})
+    assert "date_non_resolue" not in amd["amendement_non_resolu"]
 
 
 def test_make_amendement_missing_reference():

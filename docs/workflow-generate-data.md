@@ -17,7 +17,7 @@ Ce fichier existe pour être lu **avant** d'ouvrir
 | `prepare-an-matrix` | `rafraichir-candidats` | l'artifact `candidats-a-jour`, à défaut `raw_data/candidats.json` | la matrice `extract-an` (un shard par candidat à slug résolvable, #344) |
 | `extract-amendements-an` | — | AN open data (dumps amendements) | artifact `amendements-index-an` + cache `public-data-cache-amendements-<semaine>` |
 | `extract-ue-officiel` | — | Europarl Open Data | artifact `raw-profiles-ue-officiel`, cache `public-data-cache-ue-<semaine>` |
-| `extract-parltrack` | — | dumps ParlTrack | artifact `parltrack-dumps`, cache `public-data-cache-parltrack-<semaine>` |
+| `extract-parltrack` | — | 5 dumps ParlTrack (232 Mio) | artifact `parltrack-dumps`, cache `public-data-cache-parltrack-<semaine>` |
 | `prepare-roster-matrix` | — | `raw_data/groupes_reels.json` | `raw_data/roster_candidats.json` → artifact `roster-candidats`, et la matrice roster |
 | `extract-an` | `extract-amendements-an`, `prepare-an-matrix` | AN open data, Syceron, l'index amendements | un artifact `raw-profiles-an-<slug>` par shard, cache `public-data-cache-an-<semaine>[-interv-<empreinte>]` |
 | `extract-roster-groupes` | les quatre `extract-*` + `prepare-roster-matrix` | l'artifact `roster-candidats`, les mêmes sources | un artifact `raw-profiles-roster-groupes-<shard>` par shard |
@@ -173,12 +173,30 @@ tranché pour les dumps ParlTrack, d'où le job suivant.
 
 #### `extract-parltrack`
 
-Restaure `.cache/parltrack`, puis télécharge trois dumps `.zst` via
-`ensure_dump()` de `src/parltrack_dumps.py` : `ep_dossiers`,
-`ep_plenary_amendments`, `ep_amendments`. **Il n'écrit aucun profil** — il
-prépare la matière que `merge-and-pivot` consomme à la passe pivot
-(`--enrich-parltrack` → `src/normalize_parltrack_dumps.py` → `textes_portes[]`
-et `amendements[]` des profils MEP).
+Restaure `.cache/parltrack`, puis télécharge **cinq** dumps `.zst` via
+`ensure_dump()` de `src/parltrack_dumps.py`. La liste n'est pas dans le YAML :
+il itère sur `DUMPS_LUS`, la seule définition, parce qu'une liste recopiée
+aurait divergé du jour où le module lit un dump de plus — et un dump absent ne
+fait pas échouer la lecture, il rend un index vide (#683, #510).
+
+| Dump | Ce qu'il porte | Poids |
+| --- | --- | ---: |
+| `ep_dossiers` | dossiers législatifs, rapporteurs | 53 Mio |
+| `ep_amendments` | amendements en commission | 114 Mio |
+| `ep_plenary_amendments` | amendements en séance | 7 Mio |
+| `ep_votes` | 44 648 scrutins nominatifs, 2004 → 26/03/2026 | 11 Mio |
+| `ep_mep_activities` | interventions, questions, explications de vote, motions | 47 Mio |
+
+**Il n'écrit aucun profil** — il prépare la matière que `merge-and-pivot`
+consomme à la passe pivot (`--enrich-parltrack` →
+`src/normalize_parltrack_dumps.py` → `textes_portes[]` et `amendements[]` des
+profils MEP). Les deux derniers dumps sont **lus et testés mais pas encore
+stockés** : leur place dans le pivot se décide au lot suivant de #683.
+
+**Les trois dumps que ParlTrack publie et que ce job ne prend pas**, chacun pour
+une raison mesurée : `ep_meps` fait doublon avec `extract-ue-officiel` ;
+`ep_com_votes` porte **89 scrutins en tout** ; `ep_comagendas` ne nomme
+personne.
 
 **Consomme** `https://parltrack.org/dumps`. **Produit** l'artifact
 `parltrack-dumps` — hors de la famille `raw-profiles-*` exprès, puisqu'il ne
@@ -187,7 +205,11 @@ contient pas de profils (#412 §4) — et la clé
 
 **Pourquoi comme ça** : source tierce non officielle, donc traitée comme
 faillible de bout en bout. Dumps absents ⇒ la passe pivot ajoute un warning de
-repli **déclaré** et n'invente rien ; `--parltrack-status-out` écrit le fichier
+repli **déclaré** et n'invente rien. **Dump présent mais illisible ⇒ une panne,
+pas une absence** : `DumpParltrackIllisible` (#683) est levée quand un dump
+porteur de lignes ne rend aucun enregistrement — sans elle, un changement de
+format côté ParlTrack rend des listes vides, et une liste vide se publie comme
+un constat sur la personne (#484, #510). C'est exactement ce qui a duré un an ; `--parltrack-status-out` écrit le fichier
 JSON que `check_quality_gate.py` §5 relit. La licence est ODbL, ce que
 `src/licences.py` répercute dans `meta.licence_donnees`
 ([licences](decisions/licences.md), [lot 6](decisions/licence-lot-6-530.md)).

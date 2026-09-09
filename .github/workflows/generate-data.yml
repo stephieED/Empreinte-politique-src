@@ -1394,15 +1394,26 @@ jobs:
       # Télécharge les dumps ParlTrack (.zst) dans .cache/parltrack/.
       # Ces dumps seront uploadés comme artifact et utilisés par merge-and-pivot
       # pour l'enrichissement ParlTrack (enrich_pivot_with_parltrack).
+      #
+      # #683 — CINQ DUMPS, ET NON PLUS TROIS. `ep_votes` porte les scrutins
+      # nominatifs (44 648, de 2004 au 26/03/2026) et `ep_mep_activities` les
+      # interventions, questions, explications de vote et propositions de
+      # résolution. Ils pèsent 11 et 47 Mio, soit +58 Mio sur les 182 déjà
+      # téléchargés — le job garde très largement ses 30 minutes.
+      #
+      # La liste vit DANS le module (`DUMPS_LUS`) et non ici : recopiée dans le
+      # YAML, elle aurait divergé du jour où le module lit un sixième dump, et
+      # le fichier manquant serait arrivé jusqu'à merge-and-pivot sous la forme
+      # d'une liste vide — c'est-à-dire d'un constat (#510).
       - name: Téléchargement dumps ParlTrack
         run: |
           python3 - <<'EOF'
           import sys
           sys.path.insert(0, "src")
-          from parltrack_dumps import ensure_dump, _DUMP_DOSSIERS, _DUMP_PLENARY_AMENDMENTS, _DUMP_COMMITTEE_AMENDMENTS
+          from parltrack_dumps import ensure_dump, DUMPS_LUS
           force = "${{ inputs.cold_start }}" == "true"
           ok = True
-          for dump in [_DUMP_DOSSIERS, _DUMP_PLENARY_AMENDMENTS, _DUMP_COMMITTEE_AMENDMENTS]:
+          for dump in DUMPS_LUS:
               path = ensure_dump(dump, force_download=force)
               if path is None:
                   print(f"[!] Échec téléchargement : {dump}", file=sys.stderr)
