@@ -146,7 +146,12 @@ from pathlib import Path
 from typing import Any, Optional
 
 import gha
-from profil_brut import CLE_PARTITIONNEE
+from profil_brut import (
+    CLE_ACTEUR_TRANCHE,
+    CLE_MANIFESTE,
+    CLE_PARTITIONNEE,
+    CLE_TRANCHE_DERIVEE,
+)
 # Les deux populations de `pivot_data/profiles/` (#630) : « 476 profils
 # rapprochés » ne dit pas si le déficit porte sur les 13 fiches publiées ou sur
 # les 468 membres de roster, et ce n'est pas la même suite. La ventilation est
@@ -404,24 +409,89 @@ def compter_listes_profil_brut(
     # réduit délibérément les objets imbriqués, donc le manifeste n'arrive pas
     # jusqu'ici — et surtout, le répertoire de tranches est un fait observable
     # là où le manifeste est une déclaration.
+    #
+    # SAUF POUR UNE TRANCHE DÉRIVÉE (#691), qui n'a pas de disque à observer.
+    # Le principe tient quand même, et c'est ce qui autorise l'exception : ce
+    # qui est interdit ici, c'est de recopier le `nombre` que le manifeste
+    # ANNONCE — un contrôle qui lit sa conclusion dans le document qu'il
+    # contrôle ne contrôle rien (#576, #579). L'archive figée n'est pas ce
+    # document : elle est versionnée, close, et le compte y est **mesuré**
+    # exactement comme il l'est dans une tranche sur disque. Le manifeste ne
+    # sert qu'à dire OÙ compter.
+    #
+    # Sans ce chemin, ce contrôle lirait « 0 amendement collecté » face à des
+    # millions publiés dès la première tranche dérivée — le défaut que son
+    # propre docstring donne comme celui à éviter.
+    derivees = _tranches_derivees(raw_dir / f"{slug}{SUFFIXE_BRUT}")
     dossier = raw_dir / slug
-    if not dossier.is_dir():
+    if not dossier.is_dir() and not derivees:
         return releve
 
     if CLE_PARTITIONNEE in releve:
         raise ValueError(
-            f"{slug} : le socle porte encore `{CLE_PARTITIONNEE}` alors qu'un "
-            f"répertoire de tranches existe ({dossier}). La donnée serait "
-            "comptée deux fois."
+            f"{slug} : le socle porte encore `{CLE_PARTITIONNEE}` alors qu'une "
+            f"partition existe ({dossier}). La donnée serait comptée deux fois."
         )
-    tranches = sorted(dossier.glob("*.json"))
-    if not tranches:
+    tranches = sorted(dossier.glob("*.json")) if dossier.is_dir() else []
+    if not tranches and not derivees:
         raise ValueError(f"{slug} : répertoire de tranches vide ({dossier})")
     releve[CLE_PARTITIONNEE] = sum(
         _longueur(compter_listes(tranche, cles), (CLE_PARTITIONNEE,))
         for tranche in tranches
-    )
+    ) + _compter_derivees(slug, derivees)
     return releve
+
+
+def _tranches_derivees(chemin_socle: Path) -> list[dict[str, Any]]:
+    """Les tranches que le manifeste déclare dérivables (#691).
+
+    Un socle illisible rend une liste vide plutôt que de lever : ce module
+    relève, il ne valide pas la partition — c'est `profil_brut` qui refuse un
+    manifeste malformé, à la lecture, et là où l'erreur est actionnable.
+    """
+    try:
+        with open(chemin_socle, encoding="utf-8") as fichier:
+            socle = json.load(fichier)
+    except (OSError, json.JSONDecodeError):
+        return []
+    manifeste = socle.get(CLE_MANIFESTE) if isinstance(socle, dict) else None
+    if not isinstance(manifeste, dict):
+        return []
+    return [
+        t for t in (manifeste.get("tranches") or [])
+        if isinstance(t, dict) and t.get(CLE_TRANCHE_DERIVEE)
+    ]
+
+
+def _compter_derivees(slug: str, derivees: list[dict[str, Any]]) -> int:
+    """Compte les amendements des tranches dérivées, **dans l'archive**.
+
+    `signatures()` et non `reconstruire_tranche()` : compter n'a besoin que de
+    l'index par acteur, pas du store des amendements — 10,5 Mo au lieu de
+    plusieurs centaines, sur un contrôle qui boucle sur tout le corpus.
+
+    Une tranche déclarée dérivée et non dérivable lève : c'est un profil dont
+    les amendements ne se relisent pas, et le taire ferait passer un déficit
+    pour une absence (#511).
+    """
+    if not derivees:
+        return 0
+    import tranches_amendements_figees as figees
+
+    total = 0
+    for declaree in derivees:
+        entrees = figees.signatures(
+            declaree.get(CLE_ACTEUR_TRANCHE), str(declaree.get("legislature") or "")
+        )
+        if entrees is None:
+            raise ValueError(
+                f"{slug} : tranche dérivée non dérivable "
+                f"(législature {declaree.get('legislature')!r}, "
+                f"acteur {declaree.get(CLE_ACTEUR_TRANCHE)!r}) — "
+                "le compte collecté serait faux."
+            )
+        total += len(entrees)
+    return total
 
 
 def _longueur(releve: dict[str, Any], chemin: tuple[str, ...]) -> int:
