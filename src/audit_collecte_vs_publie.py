@@ -190,6 +190,25 @@ class Relation:
     Il n'y a volontairement **pas** de quatrième cas « enrichissement borné ».
     Une marge non attribuée serait un trou de la taille de la marge — et c'est
     dans un trou de cette nature que #540 a vécu.
+
+    ## Ce que #683 ajoute, et pourquoi ça ne fait pas un quatrième cas
+
+    Depuis #683, quatre listes du pivot portent aussi du matériau du **Parlement
+    européen**, versé par `normalize_parltrack_dumps` depuis les dumps
+    ParlTrack. Ce matériau n'a **aucune** contrepartie dans `raw_data/` : il ne
+    transite pas par un profil brut, il vient de `.cache/parltrack`.
+
+    Les 7 candidats déclarés à identifiant européen sortent donc en **excédent**
+    sur `votes`, `amendements`, `interventions` et `textes_portes`. C'est
+    attendu, et ce n'est pas de la dérive de fusion.
+
+    Ce n'est pas non plus un quatrième cas de cette table : `sources` porte des
+    chemins **dans le profil brut**, et il n'y en a pas à porter. L'attribution
+    exacte — soustraire les entrées marquées `institution: "parlement_europeen"`
+    — demanderait d'examiner chaque entrée, alors que `compter_listes` compte en
+    flux, sans jamais matérialiser un document. Le rapport nomme donc la cause
+    au lieu de la déduire, et le **déficit** — le seul verdict bloquant — reste
+    inchangé.
     """
 
     #: Nom du champ dans `pivot_data/profiles/<slug>.pivot.json`.
@@ -224,7 +243,7 @@ RELATIONS: tuple[Relation, ...] = (
             "Égalité stricte. `normalize_profil.py:446` mappe un vote brut sur "
             "un vote pivot, un pour un ; la clé de fusion pivot "
             "(`_pivot_vote_key`) est le `scrutin_id`, aussi distinctif que la "
-            "clé brute. Mesuré : 1 312 828 des deux côtés, 0 profil en écart."
+            "clé brute. Mesuré : 1 312 828 des deux côtés, 0 profil en écart. Depuis #683 le pivot porte **en plus** les votes du Parlement européen sur l'ensemble d'un texte, qui n'ont aucune contrepartie brute : les 7 profils européens sont en excédent, et c'est attendu."
         ),
     ),
     Relation(
@@ -234,7 +253,7 @@ RELATIONS: tuple[Relation, ...] = (
             "Égalité stricte. `normalize_profil.py:449`, un pour un. C'est la "
             "liste la plus volumineuse du corpus (3 074 378 entrées) et donc "
             "celle où un effondrement de clé coûterait le plus cher. Mesuré : "
-            "0 profil en écart."
+            "0 profil en écart. Depuis #683 s'y ajoutent les amendements du Parlement européen, sans contrepartie brute."
         ),
     ),
     Relation(
@@ -245,7 +264,7 @@ RELATIONS: tuple[Relation, ...] = (
             "`normalize_profil.py:448` mappe un pour un ; c'est la clé de "
             "FUSION pivot qui écrasait un débat entier sur une entrée. Mesuré "
             "avant correctif (`deb28a7`) : 7 767 collectées, 891 publiées. "
-            "Après (`3104e37`) : 16 242 des deux côtés, 0 profil en écart."
+            "Après (`3104e37`) : 16 242 des deux côtés, 0 profil en écart. Depuis #683 s'y ajoutent les interventions, questions et explications de vote du Parlement européen, sans contrepartie brute."
         ),
     ),
     Relation(
@@ -256,7 +275,7 @@ RELATIONS: tuple[Relation, ...] = (
             "`dossiers_legislatifs`, le pivot `textes_portes` "
             "(`normalize_profil.py:447`). Comparer les champs de même nom "
             "rendrait −472 sur l'un et +472 sur l'autre — deux faux positifs "
-            "pour zéro défaut. Mesuré : 472 des deux côtés, 0 profil en écart."
+            "pour zéro défaut. Mesuré : 472 des deux côtés, 0 profil en écart. Depuis #683 s'y ajoutent les rapports, avis et propositions de résolution du Parlement européen, sans contrepartie brute."
         ),
     ),
     Relation(
@@ -810,9 +829,15 @@ def generate_markdown_report(rapport: dict[str, Any]) -> str:
         lignes += [
             "## Excédents — publié plus que collecté (non bloquant)",
             "",
-            "La fusion pivot est additive : un pivot conserve les entrées d'un "
-            "run précédent que la collecte du jour n'a pas rendues "
-            "(AGENTS.md §3). Compteur de dérive, jamais un verdict.",
+            "**Deux causes, et elles ne se lisent pas pareil.** (1) La fusion "
+            "pivot est additive : un pivot conserve les entrées d'un run "
+            "précédent que la collecte du jour n'a pas rendues (AGENTS.md §3) "
+            "— c'est de la dérive. (2) Depuis #683, quatre listes portent du "
+            "matériau du Parlement européen versé depuis les dumps ParlTrack, "
+            "qui n'a aucune contrepartie dans `raw_data/` — les 7 candidats "
+            "déclarés à identifiant européen sont donc attendus ici, sur "
+            "`votes`, `amendements`, `interventions` et `textes_portes`. "
+            "Compteur, jamais un verdict.",
             "",
             "| Profil | Liste | Collecté | Publié | Écart |",
             "| --- | --- | ---: | ---: | ---: |",
