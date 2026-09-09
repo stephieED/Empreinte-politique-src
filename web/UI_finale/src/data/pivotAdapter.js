@@ -23,7 +23,6 @@ import {
   essentiel,
   grandsChiffres,
   fonctionsExercees,
-  interventionsParNature,
   limitesDeclarees,
   regimeQualiteOrateur,
   rolesDuParcours,
@@ -58,6 +57,13 @@ import {
   porteeCommune,
   qualifierVotes,
 } from '../utils/votesParPeriode';
+import {
+  couvertureDesParoles,
+  periodesDeParole,
+  plafondParPeriode,
+  plafondToutesPeriodes,
+  qualifierInterventions,
+} from '../utils/parolesParPeriode';
 
 // Libellés des catégories de mandats_agreges (group_profile.MANDATS_AGREGES_CATEGORIES).
 // Périmètre élargi par #382/#386 : avant cette taxonomie, commissions
@@ -390,6 +396,17 @@ export function buildCandidateView(
   });
   const periodesDeVotes = periodesDeVote(votesQualifies);
 
+  /* « Ce qu'il a dit » : les interventions rangées par période politique
+   * (#328). Le découpage vient des MÊMES repères que les votes — le banc lu
+   * dans `mandats[].position_dans_hemicycle`, le gouvernement EN PLACE lu dans
+   * la chronologie complète —, et par les mêmes fonctions : deux sections qui
+   * découpent le temps pareil doivent le faire au même endroit. */
+  const parolesQualifiees = qualifierInterventions(interventions, {
+    roles: roles.filter((r) => r.institution === INSTITUTION_PARLEMENT),
+    gouvernements: tousLesGouvernements || [],
+  });
+  const periodesDeParoles = periodesDeParole(parolesQualifiees);
+
   return {
     id: manifestEntry.slug,
     nom: pivot.nom,
@@ -432,11 +449,21 @@ export function buildCandidateView(
     fonctions,
     amendements,
     textes,
+    /* `natures` a disparu d'ici avec #328 : la nature de l'intervention est
+     * devenue une FACETTE de la section, comptée sous la période et le sujet
+     * retenus, et non plus une liste de totaux de carrière. `qualite` et
+     * `questions` restent : « En bref » les consomme.
+     *
+     * `periodes` porte les interventions elles-mêmes — c'est la section qui
+     * publie le verbatim, il ne se recalcule nulle part ailleurs. */
     interventions: {
       total: interventions.length,
-      natures: interventionsParNature(interventions),
       qualite,
       questions,
+      periodes: periodesDeParoles,
+      plafondPeriode: plafondParPeriode(periodesDeParoles),
+      plafondEnsemble: plafondToutesPeriodes(periodesDeParoles),
+      couverture: couvertureDesParoles(parolesQualifiees),
     },
     votes: {
       ...lectureVotes,

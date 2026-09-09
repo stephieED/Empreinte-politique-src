@@ -28,6 +28,7 @@ import {
   estProcedure49_3,
   formatNumber,
 } from '../utils/lecture';
+import ParolesParPeriode from './ParolesParPeriode';
 import VotesParPeriode from './VotesParPeriode';
 import EcartsGroupe from './EcartsGroupe';
 import {
@@ -970,11 +971,24 @@ function Propositions({ amendements, textes, causeAmendements, causeTextes, voix
   );
 }
 
-/* ── § 4 — ce qu'il a dit, et en quelle qualité ─────────────────────────────── */
-function Paroles({ interventions, cause, voix }) {
-  const { total, natures, qualite, questions } = interventions;
-
-  if (!total) {
+/* ── § 4 — ce qu'il a dit ────────────────────────────────────────────────────
+ *
+ * REMPLACÉ EN ENTIER LE 09/09/2026 (#328). Ce qui était ici — le régime de
+ * qualité en pavé, la liste des natures, la liste des fonctions, le bloc des
+ * questions au gouvernement — publiait quatre listes de totaux de carrière et
+ * un paragraphe de méthode, sans jamais montrer un mot de ce qui avait été dit,
+ * alors que le corpus porte 16 188 verbatims du compte rendu intégral. La
+ * maquette validée ne garde rien de cela : la section est désormais la figure
+ * par période, ses deux facettes croisées et le fil.
+ *
+ * CE QUI N'EST PAS PERDU. Le régime de qualité et la direction des questions au
+ * gouvernement restent calculés — « En bref » les consomme —, et la qualité est
+ * écrite intervention par intervention dans le fil (« prononcé comme ministre
+ * délégué »), là où elle qualifie un fait plutôt qu'une carrière. Ce que la
+ * section ne sait pas est publié sous la figure.
+ */
+function Paroles({ interventions, cause }) {
+  if (!interventions.total) {
     return (
       <div className="cp-carte">
         <ListeVide cause={cause} source="Interventions en séance et en commission" />
@@ -982,101 +996,24 @@ function Paroles({ interventions, cause, voix }) {
     );
   }
 
-  return (
-    <>
-      <div className="cp-carte cp-bloc">
-        {qualite.regime === 'source' && (
-          <>
-            <span className="cp-etiquette cp-etiquette--pleine">qualité publiée par la source</span>
-            <p className="cp-section-critere">
-              Le compte rendu publie la qualité de l’orateur sur la totalité de ses{' '}
-              <b>{formatNumber(total)}</b> interventions.
-            </p>
-          </>
-        )}
-        {qualite.regime === 'partiel' && (
-          <>
-            <span className="cp-etiquette cp-etiquette--pleine">qualité publiée sur une partie</span>
-            <p className="cp-section-critere">
-              Le compte rendu publie la qualité de l’orateur sur{' '}
-              <b>{formatNumber(qualite.sourcees)}</b> de ses {formatNumber(total)} interventions.
-              Les {formatNumber(total - qualite.sourcees)} restantes n’en portent aucune : la source
-              ne le dit pas, nous non plus. Ces deux régimes ne se confondent pas, et rien ici ne
-              comble le second avec le premier.
-            </p>
-          </>
-        )}
-        {qualite.regime === 'derive' && (
-          <>
-            <span className="cp-etiquette">qualité dérivée des mandats</span>
-            <p className="cp-section-critere">
-              La source ne publie la qualité de l’orateur que pour une fonction{' '}
-              <b>particulière</b> — ministre, rapporteur. Elle est absente des{' '}
-              <b>{formatNumber(total)}</b> interventions de ce profil. Lire ce silence comme « {voix.pronom}
-              parlait comme {voix.depute} » est une <b>inférence de notre part</b>, licite parce que
-              ses mandats disent qu’{voix.pronom === 'il' ? 'il' : voix.pronom} n’exerçait aucune autre fonction à ces dates.{' '}
-              <em>Aucune source ne l’affirme.</em>
-            </p>
-          </>
-        )}
-
-        <ul className="cp-mesures">
-          {natures.map((n) => (
-            <li className="cp-mesure" key={n.label}>
-              <span>{n.label}</span>
-              <b className="cp-num">{formatNumber(n.n)}</b>
-            </li>
-          ))}
-        </ul>
+  if (!interventions.periodes?.length) {
+    return (
+      <div className="cp-carte">
+        <ListeVide
+          cause="non_collecte"
+          motif="Aucune de ses interventions ne porte de date exploitable : sans date, ni le banc ni le gouvernement en place ne peuvent être lus, et une période politique ne se construit pas."
+        />
       </div>
+    );
+  }
 
-      {qualite.sourcee && (
-        <div className="cp-carte cp-bloc">
-          <p className="cp-section-critere">
-            La qualité telle que le compte rendu l’écrit, sans regroupement de notre part.
-          </p>
-          <ul className="cp-mesures">
-            {qualite.fonctions.map((f) => (
-              <li className="cp-mesure" key={f.label}>
-                <span>{f.label}</span>
-                <b className="cp-num">{formatNumber(f.n)}</b>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {questions && (
-        <div className="cp-carte cp-bloc">
-          <p className="cp-section-critere">
-            {questions.sens === 'recues' ? (
-              <>
-                <b>Ce sur quoi {voix.pronom} a été interpellé{voix.accorde}.</b>{' '}
-                {formatNumber(questions.ministerielles)}{' '}
-                de ses {formatNumber(questions.total)} questions au gouvernement portent une
-                qualité ministérielle publiée par la source, à une date où {voix.pronom} était membre
-                d’un gouvernement : {voix.pronom} y a répondu, {voix.pronom} ne les a pas posées.
-                Sans cette distinction, ce bloc serait exactement inversé.
-              </>
-            ) : (
-              <>
-                <b>Ce sur quoi {voix.pronom} a interpellé le gouvernement.</b> Ses{' '}
-                {formatNumber(questions.total)} questions au gouvernement ne portent{' '}
-                <b>aucune qualité ministérielle</b> : {voix.pronom} les a posées.
-              </>
-            )}
-          </p>
-          <div className="cp-puces">
-            {questions.sujets.map((s) => (
-              <span className="cp-puce" key={s.label}>
-                {s.label}
-                <b className="cp-num">{s.n}</b>
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-    </>
+  return (
+    <ParolesParPeriode
+      periodes={interventions.periodes}
+      plafondPeriode={interventions.plafondPeriode}
+      plafondEnsemble={interventions.plafondEnsemble}
+      couverture={interventions.couverture}
+    />
   );
 }
 
@@ -1474,9 +1411,9 @@ export default function CandidateProfile({ candidate }) {
       <Section
         numero="5"
         titre={c.voix.titres.dit}
-        critere="La qualité en tête — celle que la source publie, ou celle que ses mandats permettent de dériver. Les deux régimes ne se confondent pas."
+        critere="Ses interventions par période politique, puis par nature et par sujet. Le verbatim est celui du compte rendu, jamais un extrait choisi : le fil publie toutes celles du sujet retenu."
       >
-        <Paroles cause={c.causes.interventions} interventions={c.interventions} voix={c.voix} />
+        <Paroles cause={c.causes.interventions} interventions={c.interventions} />
       </Section>
 
       <Section

@@ -1261,22 +1261,12 @@ export const TYPES_INTERVENTION = [
   { cles: ['commission'], label: 'Commission' },
 ];
 
-export function interventionsParNature(interventions) {
-  const liste = interventions || [];
-  const compte = new Map();
-  for (const i of liste) compte.set(i.type_detail, (compte.get(i.type_detail) || 0) + 1);
-
-  const lignes = TYPES_INTERVENTION.map(({ cles, label }) => ({
-    label,
-    n: cles.reduce((s, c) => s + (compte.get(c) || 0), 0),
-  })).filter((l) => l.n > 0);
-
-  const connus = new Set(TYPES_INTERVENTION.flatMap((t) => t.cles));
-  const autres = [...compte.entries()].filter(([c]) => !connus.has(c));
-  for (const [cle, n] of autres) lignes.push({ label: cle || 'Nature non publiée', n });
-
-  return lignes.sort((a, b) => b.n - a.n);
-}
+/* `interventionsParNature()` est partie avec #328. Elle rendait la liste des
+ * natures d'intervention TOUTES PÉRIODES CONFONDUES, pour un bloc de la fiche
+ * qui n'existe plus : la nature est devenue une facette de « Ce qu'il a dit »,
+ * comptée sous la période et le sujet retenus. `TYPES_INTERVENTION` reste — la
+ * table de libellés, elle, sert toujours, et à un seul endroit.
+ */
 
 export function regimeQualiteOrateur(interventions) {
   const liste = interventions || [];

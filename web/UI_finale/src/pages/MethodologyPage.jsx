@@ -182,6 +182,66 @@ const SECTIONS = [
     ),
   },
   {
+    id: 'interventions',
+    heading: 'Interventions en séance',
+    body: (
+      <>
+        <p>
+          La fiche publie les interventions elles-mêmes — le verbatim du compte rendu intégral —,
+          et jamais un extrait choisi : le fil affiche <strong>toutes</strong> les interventions du
+          sujet retenu, dans l'ordre. Il reste fermé tant qu'aucun sujet n'est choisi, pour
+          qu'aucune phrase ne se trouve mise en avant par le seul fait d'être la première.
+        </p>
+        <h3>Pourquoi le sujet ne se lit pas au même endroit selon le type</h3>
+        <p>
+          L'Assemblée écrit son ordre du jour en <strong>chemin</strong> — « racine &rsaquo; étape
+          &rsaquo; article » —, et la grammaire de ce chemin change avec le type d'intervention.
+          Sur une question au gouvernement, « Questions au Gouvernement &rsaquo; Réforme des
+          retraites », le sujet est la <strong>feuille</strong> et la racine n'est que le créneau de
+          séance. Sur l'examen d'un texte, « Projet de loi de finances pour 2023 &rsaquo; Première
+          partie &rsaquo; Après l'article 3 », le sujet est la <strong>racine</strong> et la feuille
+          est une étape de procédure.
+        </p>
+        <p>
+          Prendre partout le même bout rangerait 2 885 des 3 660 questions sous un seul libellé —
+          « Questions au Gouvernement », qui est un créneau de séance et non un sujet — ou bien
+          ferait des textes examinés autant de « Suspension et reprise de la séance ». Le niveau se
+          choisit donc par type,
+          ce qui revient à <em>lire</em> la structure que la source pose. Deux intitulés voisins ne
+          sont jamais rapprochés pour autant : « Motion de censure » et « Motions de censure »
+          restent deux entrées.
+        </p>
+        <h3>La qualité de l'orateur</h3>
+        <p>
+          Le compte rendu ne publie la qualité que pour une fonction particulière — ministre,
+          rapporteur. Son absence n'est pas « cette personne parlait comme député » : c'est un
+          silence de la source, et la fiche l'écrit intervention par intervention, jamais en
+          totalisant une carrière.
+        </p>
+        <h3>Ce qui n'est pas publié</h3>
+        <p>
+          La distinction entre « réaction courte » et « prise de parole développée » existe dans nos
+          données, sur 16 242 lignes, mais elle est <strong>notre</strong> déduction : un seuil de
+          cinquante mots posé à la collecte, jamais un fait du compte rendu. La publier ferait
+          passer un choix d'implémentation pour une donnée.
+        </p>
+        <p>
+          Aucune densité par jour de séance n'est dessinée : un creux s'y lirait comme une absence
+          individuelle, que la source ne publie pas et que nous ne publions jamais. Aucun total de
+          carrière non plus — une intervention portée depuis le banc du gouvernement et une
+          intervention portée depuis les bancs ne se comptent pas dans la même unité.
+        </p>
+        <h3>Quand la collecte s'est arrêtée au thème</h3>
+        <p>
+          Une partie des interventions relève d'un régime de collecte déclaré : la date, la nature
+          et le thème, et rien d'autre. Aucun verbatim, aucune qualité, souvent aucun intitulé. Ce
+          n'est pas une donnée manquante à combler, et surtout pas un silence de la personne : la
+          fiche le nomme sous chaque entrée concernée et le compte sous la figure.
+        </p>
+      </>
+    ),
+  },
+  {
     heading: 'Groupes',
     body: (
       <>

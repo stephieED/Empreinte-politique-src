@@ -7,7 +7,7 @@
  *
  * Maquette validée le 08/09/2026 (artefact « Depuis quel banc il a voté »).
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LIBELLE_SORT_TEXTE, VOTE_STYLE, formatNumber } from '../utils/lecture';
 import { libellePosition, MATIERE_NON_ETABLIE } from '../utils/profilCandidat';
@@ -20,6 +20,7 @@ import {
   REPERE_NON_PUBLIE,
   matieresDePeriode,
 } from '../utils/votesParPeriode';
+import NavigationPeriodes from './NavigationPeriodes';
 import './VotesParPeriode.css';
 
 const jour = (d) => (d ? `${d.slice(8, 10)}/${d.slice(5, 7)}/${d.slice(0, 4)}` : '');
@@ -157,70 +158,6 @@ function BlocPeriode({ periode, portee, garde, matiere, onMatiere }) {
   );
 }
 
-/* ── La navigation : deux flèches nommées, et un rail proportionnel ──────────
- *
- * Le rail donne à voir d'un coup ce qu'une navigation séquentielle perd : un
- * segment par période, LARGE EN PROPORTION de son nombre de textes, dans
- * l'ordre du temps. L'année n'est écrite qu'au-dessus de 12 % de la largeur —
- * en dessous, une date tronquée se lirait comme une date fausse, ce qui est
- * pire qu'une date absente. Le segment garde alors sa taille, donc son
- * information, et rend sa date au titre et aux deux flèches.
- */
-const PART_MINIMALE_ETIQUETTE = 12;
-
-function Navigation({ periodes, index, onIndex }) {
-  const totalVotes = periodes.reduce((n, p) => n + p.votes.length, 0) || 1;
-  const fleche = (k, sens, quoi) => {
-    const p = periodes[k];
-    return (
-      <button
-        type="button"
-        className={`vp-fleche vp-fleche--${sens}`}
-        onClick={() => p && onIndex(k)}
-        disabled={!p}
-      >
-        <span className="vp-fleche-quoi">{quoi}</span>
-        <span className="vp-fleche-lib">
-          {p ? `${p.debut.slice(0, 4)} · ${libelleCourtDePeriode(p)}` : 'début de la période couverte'}
-        </span>
-      </button>
-    );
-  };
-
-  return (
-    <>
-      <div className="vp-nav">
-        {fleche(index - 1, 'precedent', '← période précédente')}
-        <div className="vp-rail">
-          {periodes.map((p, i) => {
-            const part = (p.votes.length / totalVotes) * 100;
-            return (
-              <button
-                type="button"
-                key={p.cle}
-                className={`vp-rail-seg${p.sansRepere ? ' vp-rail-seg--absent' : ''}`}
-                style={{ flex: `${part} 1 0` }}
-                aria-current={i === index}
-                onClick={() => onIndex(i)}
-                title={`${mois(p.debut)} → ${mois(p.fin)} · ${libelleCourtDePeriode(p)} · ${formatNumber(p.votes.length)} textes`}
-              >
-                {part >= PART_MINIMALE_ETIQUETTE && (
-                  <span className="vp-rail-an">{p.debut.slice(0, 4)}</span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-        {fleche(index + 1, 'suivant', 'période suivante →')}
-      </div>
-      <p className="vp-position">
-        Période {index + 1} sur {periodes.length} · {formatNumber(periodes[index].votes.length)}{' '}
-        textes · les flèches ← → du clavier naviguent aussi
-      </p>
-    </>
-  );
-}
-
 /* ── Les trois colonnes ─────────────────────────────────────────────────────
  *
  * Une colonne par position, dans l'ordre de la figure. Sans matière
@@ -308,23 +245,6 @@ export default function VotesParPeriode({ periodes, portee, reperes }) {
   const [origine, setOrigine] = useState(null);
   const [matiere, setMatiere] = useState(null);
 
-  /* Les flèches du clavier suivent la même logique que les boutons, et sont
-     ignorées dès qu'on tape dans un champ. */
-  useEffect(() => {
-    const surTouche = (e) => {
-      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-      const cible = e.target;
-      if (cible instanceof HTMLElement && cible.closest('input, textarea, select')) return;
-      setIndex((i) => {
-        const j = i + (e.key === 'ArrowLeft' ? -1 : 1);
-        return j >= 0 && j < periodes.length ? j : i;
-      });
-      setMatiere(null);
-    };
-    window.addEventListener('keydown', surTouche);
-    return () => window.removeEventListener('keydown', surTouche);
-  }, [periodes.length]);
-
   const periode = periodes[Math.min(index, periodes.length - 1)];
 
   const garde = useMemo(
@@ -375,13 +295,17 @@ export default function VotesParPeriode({ periodes, portee, reperes }) {
 
   return (
     <div className="vp">
-      <Navigation
+      <NavigationPeriodes
         periodes={periodes}
         index={Math.min(index, periodes.length - 1)}
         onIndex={(i) => {
           setIndex(i);
           setMatiere(null);
         }}
+        poids={(p) => p.votes.length}
+        libelle={libelleCourtDePeriode}
+        unite="textes"
+        uniteSingulier="texte"
       />
 
       <div className="cp-carte cp-bloc">
