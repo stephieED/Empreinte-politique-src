@@ -15,6 +15,33 @@
   },
   "membres": [
     {
+      "membre_id": "annick-girardin",
+      "nom": "Annick Girardin",
+      "portefeuille": "Ministère des outre-mer",
+      "debut": "2017-05-18",
+      "fin": "2017-06-19",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "bruno-le-maire",
+      "nom": "Bruno Le Maire",
+      "portefeuille": "Ministère de l’économie",
+      "debut": "2017-05-18",
+      "fin": "2017-06-19",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "christophe-castaner",
+      "nom": "Christophe Castaner",
+      "portefeuille": "Secrétariat d’État, auprès du Premier ministre, chargé des relations avec le Parlement, porte-parole du Gouvernement",
+      "debut": "2017-05-18",
+      "fin": "2017-06-19",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "edouard-philippe",
       "nom": "Édouard Philippe",
       "portefeuille": "Premier ministre",
@@ -36,6 +63,24 @@
       "membre_id": "gerald-darmanin",
       "nom": "Gérald Darmanin",
       "portefeuille": "Ministère de l’action et des comptes publics",
+      "debut": "2017-05-18",
+      "fin": "2017-06-19",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "mounir-mahjoubi",
+      "nom": "Mounir Mahjoubi",
+      "portefeuille": "Secrétariat d’État, auprès du Premier ministre, chargé du numérique",
+      "debut": "2017-05-18",
+      "fin": "2017-06-19",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "richard-ferrand",
+      "nom": "Richard Ferrand",
+      "portefeuille": "Ministère de la cohésion des territoires",
       "debut": "2017-05-18",
       "fin": "2017-06-19",
       "actif": false,
@@ -81,6 +126,26 @@
   },
   "sources": [
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA337633",
+      "synchro_le": "2026-09-09T14:06:37+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://data.assemblee-nationale.fr/",
+      "synchro_le": "2026-09-09T14:06:37+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA331481",
+      "synchro_le": "2026-09-09T14:03:43+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605131",
+      "synchro_le": "2026-09-09T14:03:43+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/edouard-philippe",
       "synchro_le": null
@@ -88,7 +153,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA345619",
-      "synchro_le": "2026-09-04T12:41:57+0000"
+      "synchro_le": "2026-09-09T11:23:54+0000"
     },
     {
       "type": "nosdeputes",
@@ -98,7 +163,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717161",
-      "synchro_le": "2026-09-04T12:55:17+0000"
+      "synchro_le": "2026-09-09T14:02:48+0000"
     },
     {
       "type": "nosdeputes",
@@ -108,12 +173,22 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607846",
-      "synchro_le": "2026-09-04T12:56:54+0000"
+      "synchro_le": "2026-09-09T14:02:48+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717167",
+      "synchro_le": "2026-09-09T14:03:50+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA606171",
+      "synchro_le": "2026-09-09T14:06:09+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-04T13:31:09+0000",
+    "genere_le": "2026-09-09T14:29:25+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": []
   }

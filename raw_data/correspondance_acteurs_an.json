@@ -1,6 +1,6 @@
 {
   "schema_version": "correspondance-acteurs-an-v2",
-  "genere_le": "2026-09-08T22:09:46+0000",
+  "genere_le": "2026-09-09T14:29:29+0000",
   "source_referentiel": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
   "correspondances": {
     "abdelkader-lahmar": {
@@ -23,6 +23,26 @@
       "verifie_le": "2026-09-02",
       "origine": "derivee"
     },
+    "adrien-morenas": {
+      "identifiants": {
+        "an": "PA721876",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Adrien Morenas",
+        "date_naissance": "1982-01-01"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721876",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "adrien-quatennens": {
       "identifiants": {
         "an": "PA720422",
@@ -42,6 +62,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720422",
       "verifie_le": "2026-08-26"
     },
+    "adrien-taquet": {
+      "identifiants": {
+        "an": "PA722086",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Adrien Taquet",
+        "date_naissance": "1977-01-03"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722086",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "agnes-pannier-runacher": {
       "identifiants": {
         "an": "PA759832",
@@ -60,6 +100,46 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA759832",
       "verifie_le": "2026-09-02",
+      "origine": "derivee"
+    },
+    "agnes-thill": {
+      "identifiants": {
+        "an": "PA720568",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Agnès Thill",
+        "date_naissance": "1964-06-02"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720568",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "aina-kuric": {
+      "identifiants": {
+        "an": "PA720214",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Aina Kuric",
+        "date_naissance": "1987-05-15"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720214",
+      "verifie_le": "2026-09-09",
       "origine": "derivee"
     },
     "alain-bruneel": {
@@ -101,6 +181,46 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1008",
       "verifie_le": "2026-08-26"
     },
+    "alain-perea": {
+      "identifiants": {
+        "an": "PA718802",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Alain Perea",
+        "date_naissance": "1971-06-05"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718802",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "alain-tourret": {
+      "identifiants": {
+        "an": "PA2828",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Alain Tourret",
+        "date_naissance": "1947-12-25"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2828",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "albane-gaillot": {
       "identifiants": {
         "an": "PA721246",
@@ -119,6 +239,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721246",
       "verifie_le": "2026-09-08",
+      "origine": "derivee"
+    },
+    "alexandra-louis": {
+      "identifiants": {
+        "an": "PA718918",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Alexandra Louis",
+        "date_naissance": "1983-09-17"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718918",
+      "verifie_le": "2026-09-09",
       "origine": "derivee"
     },
     "alexandra-martin": {
@@ -178,6 +318,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793314",
       "verifie_le": "2026-08-26"
     },
+    "alexandra-valetta-ardisson": {
+      "identifiants": {
+        "an": "PA718768",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Alexandra Valetta Ardisson",
+        "date_naissance": "1976-06-07"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718768",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "alexandre-dufosset": {
       "identifiants": {
         "an": "PA840135",
@@ -196,6 +356,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840135",
       "verifie_le": "2026-09-02",
+      "origine": "derivee"
+    },
+    "alexandre-freschi": {
+      "identifiants": {
+        "an": "PA720030",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Alexandre Freschi",
+        "date_naissance": "1979-05-17"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720030",
+      "verifie_le": "2026-09-09",
       "origine": "derivee"
     },
     "alexandre-holroyd": {
@@ -351,6 +531,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794030",
       "verifie_le": "2026-08-26"
     },
+    "alice-thourot": {
+      "identifiants": {
+        "an": "PA719302",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Alice Thourot",
+        "date_naissance": "1985-10-12"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719302",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "alim-latreche": {
       "identifiants": {
         "an": "PA857021",
@@ -448,6 +648,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721004",
       "verifie_le": "2026-08-26"
+    },
+    "amelie-de-montchalin": {
+      "identifiants": {
+        "an": "PA721670",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Amélie de Montchalin",
+        "date_naissance": "1985-06-19"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721670",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "anais-belouassa-cherifi": {
       "identifiants": {
@@ -605,6 +825,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793230",
       "verifie_le": "2026-08-26"
     },
+    "anissa-khedher": {
+      "identifiants": {
+        "an": "PA722300",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Anissa Khedher",
+        "date_naissance": "1980-04-01"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722300",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "anna-pic": {
       "identifiants": {
         "an": "PA794270",
@@ -643,6 +883,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719388",
       "verifie_le": "2026-08-26"
     },
+    "anne-blanc": {
+      "identifiants": {
+        "an": "PA718990",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Anne Blanc",
+        "date_naissance": "1966-07-20"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718990",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "anne-brugnera": {
       "identifiants": {
         "an": "PA721328",
@@ -661,6 +921,46 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721328",
       "verifie_le": "2026-08-26"
+    },
+    "anne-christine-lang": {
+      "identifiants": {
+        "an": "PA643205",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Anne-Christine Lang",
+        "date_naissance": "1961-08-10"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643205",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "anne-france-brunet": {
+      "identifiants": {
+        "an": "PA720116",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Anne-France Brunet",
+        "date_naissance": "1962-06-12"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720116",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "anne-genetet": {
       "identifiants": {
@@ -699,6 +999,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA774954",
       "verifie_le": "2026-08-26"
+    },
+    "anne-laure-cattelot": {
+      "identifiants": {
+        "an": "PA720520",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Anne-Laure Cattelot",
+        "date_naissance": "1988-10-25"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720520",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "anne-laurence-petel": {
       "identifiants": {
@@ -816,6 +1136,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794222",
       "verifie_le": "2026-08-26"
     },
+    "annick-girardin": {
+      "identifiants": {
+        "an": "PA337633",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Annick Girardin",
+        "date_naissance": "1964-08-03"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA337633",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "annie-chapelier": {
       "identifiants": {
         "an": "PA719448",
@@ -912,6 +1252,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794330",
       "verifie_le": "2026-08-26"
+    },
+    "anthony-cellier": {
+      "identifiants": {
+        "an": "PA719440",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Anthony Cellier",
+        "date_naissance": "1975-06-01"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719440",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "antoine-armand": {
       "identifiants": {
@@ -1125,6 +1485,66 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795050",
       "verifie_le": "2026-08-26"
+    },
+    "aude-amadou": {
+      "identifiants": {
+        "an": "PA720124",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Aude Amadou",
+        "date_naissance": "1980-02-29"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720124",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "aude-bono-vandorme": {
+      "identifiants": {
+        "an": "PA718756",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Aude Bono-Vandorme",
+        "date_naissance": "1962-08-03"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718756",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "audrey-dufeu": {
+      "identifiants": {
+        "an": "PA720046",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Audrey Dufeu",
+        "date_naissance": "1980-06-03"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720046",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "auguste-evrard": {
       "identifiants": {
@@ -1360,6 +1780,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA796090",
       "verifie_le": "2026-08-26"
     },
+    "barbara-bessot-ballot": {
+      "identifiants": {
+        "an": "PA722312",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Barbara Bessot Ballot",
+        "date_naissance": "1972-04-13"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722312",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "barbara-pompili": {
       "identifiants": {
         "an": "PA609520",
@@ -1513,6 +1953,46 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA796118",
       "verifie_le": "2026-08-26"
     },
+    "benedicte-petelle": {
+      "identifiants": {
+        "an": "PA722090",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Bénédicte Pételle",
+        "date_naissance": "1971-06-04"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722090",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "benedicte-peyrol": {
+      "identifiants": {
+        "an": "PA718736",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Bénédicte Peyrol",
+        "date_naissance": "1991-03-23"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718736",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "benedicte-taurine": {
       "identifiants": {
         "an": "PA718860",
@@ -1550,6 +2030,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722382",
       "verifie_le": "2026-08-26"
+    },
+    "benjamin-griveaux": {
+      "identifiants": {
+        "an": "PA721560",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Benjamin Griveaux",
+        "date_naissance": "1977-12-29"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721560",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "benjamin-haddad": {
       "identifiants": {
@@ -1667,6 +2167,66 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794878",
       "verifie_le": "2026-08-26"
+    },
+    "benoit-potterie": {
+      "identifiants": {
+        "an": "PA720590",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Benoit Potterie",
+        "date_naissance": "1967-07-23"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720590",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "benoit-simian": {
+      "identifiants": {
+        "an": "PA719592",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Benoit Simian",
+        "date_naissance": "1983-05-27"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719592",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "berangere-abba": {
+      "identifiants": {
+        "an": "PA720242",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Bérangère Abba",
+        "date_naissance": "1976-10-22"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720242",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "berangere-couillard": {
       "identifiants": {
@@ -1805,6 +2365,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720190",
       "verifie_le": "2026-08-26"
     },
+    "blandine-brocard": {
+      "identifiants": {
+        "an": "PA721336",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/brocard-blandine"
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Blandine Brocard",
+        "date_naissance": "1981-11-03"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721336",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "boris-vallaud": {
       "identifiants": {
         "an": "PA719930",
@@ -1823,6 +2403,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719930",
       "verifie_le": "2026-08-26"
+    },
+    "brigitte-bourguignon": {
+      "identifiants": {
+        "an": "PA608083",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Brigitte Bourguignon",
+        "date_naissance": "1959-03-21"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA608083",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "brigitte-klinkert": {
       "identifiants": {
@@ -1862,6 +2462,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720446",
       "verifie_le": "2026-08-26"
     },
+    "brune-poirson": {
+      "identifiants": {
+        "an": "PA721872",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Brune Poirson",
+        "date_naissance": "1982-09-01"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721872",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "bruno-bilde": {
       "identifiants": {
         "an": "PA720822",
@@ -1880,6 +2500,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720822",
       "verifie_le": "2026-08-26"
+    },
+    "bruno-bonnell": {
+      "identifiants": {
+        "an": "PA721344",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Bruno Bonnell",
+        "date_naissance": "1958-10-06"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721344",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "bruno-clavet": {
       "identifiants": {
@@ -1901,6 +2541,26 @@
       "verifie_le": "2026-09-02",
       "origine": "derivee"
     },
+    "bruno-le-maire": {
+      "identifiants": {
+        "an": "PA331481",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Bruno Le Maire",
+        "date_naissance": "1969-04-15"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA331481",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "bruno-nestor-azerot": {
       "identifiants": {
         "an": "PA610634",
@@ -1919,6 +2579,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA610634",
       "verifie_le": "2026-09-08",
+      "origine": "derivee"
+    },
+    "bruno-questel": {
+      "identifiants": {
+        "an": "PA643127",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Bruno Questel",
+        "date_naissance": "1966-12-21"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643127",
+      "verifie_le": "2026-09-09",
       "origine": "derivee"
     },
     "bruno-retailleau": {
@@ -1978,6 +2658,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793330",
       "verifie_le": "2026-08-26"
     },
+    "buon-tan": {
+      "identifiants": {
+        "an": "PA721690",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Buon Tan",
+        "date_naissance": "1967-03-10"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721690",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "camille-galliard-minier": {
       "identifiants": {
         "an": "PA719736",
@@ -2016,6 +2716,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795616",
       "verifie_le": "2026-08-26"
+    },
+    "carole-bureau-bonnard": {
+      "identifiants": {
+        "an": "PA720622",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Carole Bureau-Bonnard",
+        "date_naissance": "1965-08-09"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720622",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "carole-grandjean": {
       "identifiants": {
@@ -2188,6 +2908,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793680",
       "verifie_le": "2026-08-26"
     },
+    "catherine-daufes-roux": {
+      "identifiants": {
+        "an": "PA719484",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Catherine Daufès-Roux",
+        "date_naissance": "1963-04-24"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719484",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "catherine-dellong-meng": {
       "identifiants": {
         "an": "PA841059",
@@ -2246,6 +2986,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA404656",
       "verifie_le": "2026-08-26"
     },
+    "catherine-fabre": {
+      "identifiants": {
+        "an": "PA719570",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Catherine Fabre",
+        "date_naissance": "1978-09-19"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719570",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "catherine-ibled": {
       "identifiants": {
         "an": "PA795954",
@@ -2284,6 +3044,46 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA796114",
       "verifie_le": "2026-08-26"
+    },
+    "catherine-kamowski": {
+      "identifiants": {
+        "an": "PA719994",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Catherine Kamowski",
+        "date_naissance": "1958-04-08"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719994",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "catherine-osson": {
+      "identifiants": {
+        "an": "PA720492",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Catherine Osson",
+        "date_naissance": "1974-02-07"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720492",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "catherine-procaccia": {
       "identifiants": {
@@ -2324,6 +3124,66 @@
       "verifie_le": "2026-09-02",
       "origine": "derivee"
     },
+    "cathy-racon-bouzon": {
+      "identifiants": {
+        "an": "PA718944",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Cathy Racon-Bouzon",
+        "date_naissance": "1976-11-22"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718944",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "cecile-delpirou": {
+      "identifiants": {
+        "an": "PA722218",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Cécile Delpirou",
+        "date_naissance": "1964-03-23"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722218",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "cecile-muschotti": {
+      "identifiants": {
+        "an": "PA721656",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Cécile Muschotti",
+        "date_naissance": "1987-10-30"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721656",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "cecile-rilhac": {
       "identifiants": {
         "an": "PA720900",
@@ -2362,6 +3222,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA608695",
       "verifie_le": "2026-08-26"
     },
+    "cedric-roussel": {
+      "identifiants": {
+        "an": "PA718902",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Cédric Roussel",
+        "date_naissance": "1972-10-10"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718902",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "cedric-villani": {
       "identifiants": {
         "an": "PA722260",
@@ -2380,6 +3260,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722260",
       "verifie_le": "2026-09-08",
+      "origine": "derivee"
+    },
+    "celia-de-lavergne": {
+      "identifiants": {
+        "an": "PA719310",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Célia de Lavergne",
+        "date_naissance": "1979-11-21"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719310",
+      "verifie_le": "2026-09-09",
       "origine": "derivee"
     },
     "celine-calvez": {
@@ -2439,6 +3339,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841893",
       "verifie_le": "2026-09-02",
+      "origine": "derivee"
+    },
+    "cendra-motin": {
+      "identifiants": {
+        "an": "PA719850",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Cendra Motin",
+        "date_naissance": "1975-01-29"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719850",
+      "verifie_le": "2026-09-09",
       "origine": "derivee"
     },
     "cendrine-chaze": {
@@ -2652,6 +3572,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793322",
       "verifie_le": "2026-08-26"
     },
+    "christelle-dubos": {
+      "identifiants": {
+        "an": "PA719660",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Christelle Dubos",
+        "date_naissance": "1976-03-26"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719660",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "christelle-minard": {
       "identifiants": {
         "an": "PA643104",
@@ -2807,6 +3747,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794718",
       "verifie_le": "2026-08-26"
     },
+    "christine-hennion": {
+      "identifiants": {
+        "an": "PA722094",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Christine Hennion",
+        "date_naissance": "1955-08-23"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722094",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "christine-le-nabour": {
       "identifiants": {
         "an": "PA719756",
@@ -2863,6 +3823,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA608172",
       "verifie_le": "2026-08-26"
+    },
+    "christophe-arend": {
+      "identifiants": {
+        "an": "PA720310",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Christophe Arend",
+        "date_naissance": "1975-08-12"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720310",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "christophe-barthes": {
       "identifiants": {
@@ -2921,6 +3901,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793772",
       "verifie_le": "2026-08-26"
     },
+    "christophe-blanchet": {
+      "identifiants": {
+        "an": "PA719024",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/blanchet-christophe"
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Christophe Blanchet",
+        "date_naissance": "1973-04-09"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719024",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "christophe-bouillon": {
       "identifiants": {
         "an": "PA267233",
@@ -2939,6 +3939,126 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267233",
       "verifie_le": "2026-09-08",
+      "origine": "derivee"
+    },
+    "christophe-castaner": {
+      "identifiants": {
+        "an": "PA605131",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Christophe Castaner",
+        "date_naissance": "1966-01-03"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605131",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "christophe-di-pompeo": {
+      "identifiants": {
+        "an": "PA720438",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Christophe Di Pompeo",
+        "date_naissance": "1964-07-15"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720438",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "christophe-euzet": {
+      "identifiants": {
+        "an": "PA719616",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Christophe Euzet",
+        "date_naissance": "1967-04-02"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719616",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "christophe-jerretie": {
+      "identifiants": {
+        "an": "PA719060",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Christophe Jerretie",
+        "date_naissance": "1979-08-31"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719060",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "christophe-leclercq": {
+      "identifiants": {
+        "an": "PA784314",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Christophe Leclercq",
+        "date_naissance": "1967-02-26"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA784314",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "christophe-lejeune": {
+      "identifiants": {
+        "an": "PA722320",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Christophe Lejeune",
+        "date_naissance": "1969-03-22"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722320",
+      "verifie_le": "2026-09-09",
       "origine": "derivee"
     },
     "christophe-marion": {
@@ -3018,6 +4138,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795326",
       "verifie_le": "2026-08-26"
+    },
+    "claire-bouchet": {
+      "identifiants": {
+        "an": "PA267337",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Claire Bouchet",
+        "date_naissance": "1954-01-09"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267337",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "claire-guichard": {
       "identifiants": {
@@ -3250,6 +4390,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA345722",
       "verifie_le": "2026-08-26"
     },
+    "coralie-dubost": {
+      "identifiants": {
+        "an": "PA719684",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Coralie Dubost",
+        "date_naissance": "1983-03-04"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719684",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "corentin-le-fur": {
       "identifiants": {
         "an": "PA840979",
@@ -3386,6 +4546,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795422",
       "verifie_le": "2026-08-26"
     },
+    "damien-pichereau": {
+      "identifiants": {
+        "an": "PA721372",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Damien Pichereau",
+        "date_naissance": "1988-01-28"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721372",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "daniel-grenon": {
       "identifiants": {
         "an": "PA795540",
@@ -3442,6 +4622,46 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841801",
       "verifie_le": "2026-09-02",
+      "origine": "derivee"
+    },
+    "daniele-cazarian": {
+      "identifiants": {
+        "an": "PA721352",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Danièle Cazarian",
+        "date_naissance": "1965-08-31"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721352",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "daniele-herin": {
+      "identifiants": {
+        "an": "PA718794",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Danièle Hérin",
+        "date_naissance": "1947-01-14"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718794",
+      "verifie_le": "2026-09-09",
       "origine": "derivee"
     },
     "daniele-obono": {
@@ -3677,6 +4897,26 @@
       "verifie_le": "2026-09-08",
       "origine": "sourcee"
     },
+    "delphine-o": {
+      "identifiants": {
+        "an": "PA721956",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Delphine O",
+        "date_naissance": "1985-12-25"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721956",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "denis-bernaert": {
       "identifiants": {
         "an": "PA795572",
@@ -3734,6 +4974,46 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720146",
       "verifie_le": "2026-08-26"
+    },
+    "denis-sommer": {
+      "identifiants": {
+        "an": "PA719420",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Denis Sommer",
+        "date_naissance": "1957-09-23"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719420",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "didier-baichere": {
+      "identifiants": {
+        "an": "PA721776",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Didier Baichère",
+        "date_naissance": "1970-08-20"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721776",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "didier-le-gac": {
       "identifiants": {
@@ -3831,6 +5111,26 @@
       "verifie_le": "2026-09-02",
       "origine": "derivee"
     },
+    "dimitri-houbron": {
+      "identifiants": {
+        "an": "PA720454",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Dimitri Houbron",
+        "date_naissance": "1991-02-12"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720454",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "dino-cinieri": {
       "identifiants": {
         "an": "PA267429",
@@ -3868,6 +5168,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720932",
       "verifie_le": "2026-08-26"
+    },
+    "dominique-david": {
+      "identifiants": {
+        "an": "PA719710",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Dominique David",
+        "date_naissance": "1963-02-27"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719710",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "dominique-de-legge": {
       "identifiants": {
@@ -4160,6 +5480,46 @@
       "verifie_le": "2026-09-02",
       "origine": "derivee"
     },
+    "elisabeth-toutut-picard": {
+      "identifiants": {
+        "an": "PA719540",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Élisabeth Toutut-Picard",
+        "date_naissance": "1954-12-17"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719540",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "elise-fajgeles": {
+      "identifiants": {
+        "an": "PA721564",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Élise Fajgeles",
+        "date_naissance": "1970-07-06"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721564",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "elise-leboucher": {
       "identifiants": {
         "an": "PA795108",
@@ -4277,6 +5637,26 @@
       "verifie_le": "2026-09-08",
       "origine": "derivee"
     },
+    "emilie-chalas": {
+      "identifiants": {
+        "an": "PA719748",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Émilie Chalas",
+        "date_naissance": "1977-10-18"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719748",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "emilie-chandler": {
       "identifiants": {
         "an": "PA795508",
@@ -4295,6 +5675,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795508",
       "verifie_le": "2026-08-26"
+    },
+    "emilie-guerel": {
+      "identifiants": {
+        "an": "PA721792",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Émilie Guerel",
+        "date_naissance": "1983-12-18"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721792",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "emmanuel-blairy": {
       "identifiants": {
@@ -4488,6 +5888,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719318",
       "verifie_le": "2026-08-26"
+    },
+    "emmanuelle-fontaine-domeizel": {
+      "identifiants": {
+        "an": "PA718706",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Emmanuelle Fontaine-Domeizel",
+        "date_naissance": "1973-08-28"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718706",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "emmanuelle-hoffman": {
       "identifiants": {
@@ -4836,6 +6256,46 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720386",
       "verifie_le": "2026-08-26"
     },
+    "fabien-gouttefarde": {
+      "identifiants": {
+        "an": "PA719330",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Fabien Gouttefarde",
+        "date_naissance": "1978-09-27"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719330",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "fabien-matras": {
+      "identifiants": {
+        "an": "PA721800",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Fabien Matras",
+        "date_naissance": "1984-09-12"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721800",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "fabien-roussel": {
       "identifiants": {
         "an": "PA720692",
@@ -4992,6 +6452,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719186",
       "verifie_le": "2026-08-26"
     },
+    "fannette-charvier": {
+      "identifiants": {
+        "an": "PA719170",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Fannette Charvier",
+        "date_naissance": "1984-12-31"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719170",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "fanny-dombre-coste": {
       "identifiants": {
         "an": "PA606573",
@@ -5069,6 +6549,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795156",
       "verifie_le": "2026-08-26"
     },
+    "fiona-lazaar": {
+      "identifiants": {
+        "an": "PA720916",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Fiona Lazaar",
+        "date_naissance": "1985-09-19"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720916",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "flavien-termet": {
       "identifiants": {
         "an": "PA840737",
@@ -5107,6 +6607,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794418",
       "verifie_le": "2026-08-26"
+    },
+    "florence-granjus": {
+      "identifiants": {
+        "an": "PA722062",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Florence Granjus",
+        "date_naissance": "1962-05-17"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722062",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "florence-herouin-leautey": {
       "identifiants": {
@@ -5148,6 +6668,46 @@
       "verifie_le": "2026-09-02",
       "origine": "derivee"
     },
+    "florence-morlighem": {
+      "identifiants": {
+        "an": "PA720516",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Florence Morlighem",
+        "date_naissance": "1970-04-10"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720516",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "florence-provendier": {
+      "identifiants": {
+        "an": "PA722194",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Florence Provendier",
+        "date_naissance": "1965-10-28"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722194",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "florent-boudie": {
       "identifiants": {
         "an": "PA606507",
@@ -5166,6 +6726,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA606507",
       "verifie_le": "2026-08-26"
+    },
+    "florian-bachelier": {
+      "identifiants": {
+        "an": "PA719770",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Florian Bachelier",
+        "date_naissance": "1979-04-05"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719770",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "florian-chauche": {
       "identifiants": {
@@ -5224,6 +6804,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795794",
       "verifie_le": "2026-09-08",
+      "origine": "derivee"
+    },
+    "francis-chouat": {
+      "identifiants": {
+        "an": "PA760658",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Francis Chouat",
+        "date_naissance": "1948-12-20"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA760658",
+      "verifie_le": "2026-09-09",
       "origine": "derivee"
     },
     "francis-dubois": {
@@ -5303,6 +6903,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335758",
       "verifie_le": "2026-08-26"
     },
+    "francois-andre": {
+      "identifiants": {
+        "an": "PA606675",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "François André",
+        "date_naissance": "1967-07-19"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA606675",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "francois-asselineau": {
       "identifiants": {
         "an": null,
@@ -5342,6 +6962,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719118",
       "verifie_le": "2026-08-26"
     },
+    "francois-de-rugy": {
+      "identifiants": {
+        "an": "PA332747",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "François de Rugy",
+        "date_naissance": "1973-12-06"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA332747",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "francois-hollande": {
       "identifiants": {
         "an": "PA1654",
@@ -5360,6 +7000,46 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1654",
       "verifie_le": "2026-09-02",
+      "origine": "derivee"
+    },
+    "francois-jolivet": {
+      "identifiants": {
+        "an": "PA719778",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/jolivet-francois"
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "François Jolivet",
+        "date_naissance": "1966-03-21"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719778",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "francois-michel-lambert": {
+      "identifiants": {
+        "an": "PA605518",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "François-Michel Lambert",
+        "date_naissance": "1966-08-24"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605518",
+      "verifie_le": "2026-09-09",
       "origine": "derivee"
     },
     "francois-piquemal": {
@@ -5440,6 +7120,26 @@
       "verifie_le": "2026-09-02",
       "origine": "derivee"
     },
+    "francoise-ballet-blu": {
+      "identifiants": {
+        "an": "PA722082",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Françoise Ballet-Blu",
+        "date_naissance": "1964-03-09"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722082",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "francoise-buffet": {
       "identifiants": {
         "an": "PA794798",
@@ -5458,6 +7158,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794798",
       "verifie_le": "2026-08-26"
+    },
+    "francoise-dumas": {
+      "identifiants": {
+        "an": "PA606202",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Françoise Dumas",
+        "date_naissance": "1960-04-12"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA606202",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "frank-giletti": {
       "identifiants": {
@@ -5496,6 +7216,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793416",
       "verifie_le": "2026-08-26"
+    },
+    "frederic-barbier": {
+      "identifiants": {
+        "an": "PA642724",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Frédéric Barbier",
+        "date_naissance": "1960-08-30"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA642724",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "frederic-boccaletti": {
       "identifiants": {
@@ -5652,6 +7392,46 @@
       "verifie_le": "2026-09-02",
       "origine": "derivee"
     },
+    "frederique-dumas": {
+      "identifiants": {
+        "an": "PA721194",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Frédérique Dumas",
+        "date_naissance": "1963-05-18"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721194",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "frederique-lardet": {
+      "identifiants": {
+        "an": "PA721434",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Frédérique Lardet",
+        "date_naissance": "1966-09-01"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721434",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "frederique-meunier": {
       "identifiants": {
         "an": "PA719272",
@@ -5787,6 +7567,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA842187",
       "verifie_le": "2026-09-02",
+      "origine": "derivee"
+    },
+    "gael-le-bohec": {
+      "identifiants": {
+        "an": "PA719728",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Gaël Le Bohec",
+        "date_naissance": "1977-11-04"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719728",
+      "verifie_le": "2026-09-09",
       "origine": "derivee"
     },
     "gaetan-dussausaye": {
@@ -6001,6 +7801,46 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793964",
       "verifie_le": "2026-08-26"
     },
+    "gregory-besson-moreau": {
+      "identifiants": {
+        "an": "PA718876",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Grégory Besson-Moreau",
+        "date_naissance": "1982-07-07"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718876",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "gregory-galbadon": {
+      "identifiants": {
+        "an": "PA720198",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Grégory Galbadon",
+        "date_naissance": "1973-01-21"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720198",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "guillaume-bigot": {
       "identifiants": {
         "an": "PA842001",
@@ -6157,6 +7997,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721262",
       "verifie_le": "2026-08-26"
     },
+    "gwendal-rouillard": {
+      "identifiants": {
+        "an": "PA343493",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Gwendal Rouillard",
+        "date_naissance": "1976-04-20"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA343493",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "hadrien-clouet": {
       "identifiants": {
         "an": "PA793736",
@@ -6234,6 +8094,26 @@
       "verifie_le": "2026-09-08",
       "origine": "derivee"
     },
+    "helene-zannier": {
+      "identifiants": {
+        "an": "PA720318",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Hélène Zannier",
+        "date_naissance": "1972-09-19"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720318",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "hendrik-davi": {
       "identifiants": {
         "an": "PA793452",
@@ -6290,6 +8170,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA642988",
       "verifie_le": "2026-08-26"
+    },
+    "herve-pellois": {
+      "identifiants": {
+        "an": "PA607595",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Hervé Pellois",
+        "date_naissance": "1951-04-17"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607595",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "herve-saulignac": {
       "identifiants": {
@@ -6387,6 +8287,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841167",
       "verifie_le": "2026-09-02",
+      "origine": "derivee"
+    },
+    "hugues-renson": {
+      "identifiants": {
+        "an": "PA721824",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Hugues Renson",
+        "date_naissance": "1978-02-11"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721824",
+      "verifie_le": "2026-09-09",
       "origine": "derivee"
     },
     "huguette-bello": {
@@ -6523,6 +8443,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795774",
       "verifie_le": "2026-08-26"
     },
+    "isabelle-muller-quoy": {
+      "identifiants": {
+        "an": "PA721254",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Isabelle Muller-Quoy",
+        "date_naissance": "1967-11-08"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721254",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "isabelle-perigault": {
       "identifiants": {
         "an": "PA795406",
@@ -6541,6 +8481,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795406",
       "verifie_le": "2026-08-26"
+    },
+    "isabelle-rauch": {
+      "identifiants": {
+        "an": "PA720552",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/rauch-isabelle-7394"
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Isabelle Rauch",
+        "date_naissance": "1968-08-10"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720552",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "isabelle-santiago": {
       "identifiants": {
@@ -6580,6 +8540,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643134",
       "verifie_le": "2026-08-26"
     },
+    "jacqueline-dubois": {
+      "identifiants": {
+        "an": "PA719162",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Jacqueline Dubois",
+        "date_naissance": "1957-05-28"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719162",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "jacqueline-maquet": {
       "identifiants": {
         "an": "PA334116",
@@ -6598,6 +8578,66 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA334116",
       "verifie_le": "2026-08-26"
+    },
+    "jacques-krabal": {
+      "identifiants": {
+        "an": "PA605084",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Jacques Krabal",
+        "date_naissance": "1948-04-10"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605084",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "jacques-maire": {
+      "identifiants": {
+        "an": "PA722178",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Jacques Maire",
+        "date_naissance": "1962-04-04"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722178",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "jacques-marilossian": {
+      "identifiants": {
+        "an": "PA721946",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Jacques Marilossian",
+        "date_naissance": "1958-07-26"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721946",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "jacques-oberti": {
       "identifiants": {
@@ -6619,6 +8659,106 @@
       "verifie_le": "2026-09-02",
       "origine": "derivee"
     },
+    "jacques-rey": {
+      "identifiants": {
+        "an": "PA721438",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Jacques Rey",
+        "date_naissance": "1942-10-17"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721438",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "jacques-savatier": {
+      "identifiants": {
+        "an": "PA722078",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Jacques Savatier",
+        "date_naissance": "1952-10-23"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722078",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "jean-baptiste-djebbari": {
+      "identifiants": {
+        "an": "PA722236",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Jean-Baptiste Djebbari",
+        "date_naissance": "1982-02-26"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722236",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "jean-baptiste-moreau": {
+      "identifiants": {
+        "an": "PA719242",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Jean-Baptiste Moreau",
+        "date_naissance": "1977-02-14"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719242",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "jean-bernard-sempastous": {
+      "identifiants": {
+        "an": "PA720780",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Jean-Bernard Sempastous",
+        "date_naissance": "1964-08-05"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720780",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "jean-carles-grelier": {
       "identifiants": {
         "an": "PA267318",
@@ -6637,6 +8777,66 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267318",
       "verifie_le": "2026-08-26"
+    },
+    "jean-charles-colas-roy": {
+      "identifiants": {
+        "an": "PA719740",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Jean-Charles Colas-Roy",
+        "date_naissance": "1978-05-02"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719740",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "jean-charles-larsonneur": {
+      "identifiants": {
+        "an": "PA719396",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Jean-Charles Larsonneur",
+        "date_naissance": "1984-01-24"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719396",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "jean-claude-leclabart": {
+      "identifiants": {
+        "an": "PA722228",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Jean-Claude Leclabart",
+        "date_naissance": "1954-12-04"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722228",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "jean-claude-raux": {
       "identifiants": {
@@ -6678,6 +8878,26 @@
       "verifie_le": "2026-09-02",
       "origine": "derivee"
     },
+    "jean-francois-cesarini": {
+      "identifiants": {
+        "an": "PA721860",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Jean-François Cesarini",
+        "date_naissance": "1970-09-30"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721860",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "jean-francois-coulomme": {
       "identifiants": {
         "an": "PA795136",
@@ -6697,6 +8917,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795136",
       "verifie_le": "2026-08-26"
     },
+    "jean-francois-eliaou": {
+      "identifiants": {
+        "an": "PA719692",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Jean-François Eliaou",
+        "date_naissance": "1956-08-13"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719692",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "jean-francois-lovisolo": {
       "identifiants": {
         "an": "PA795216",
@@ -6715,6 +8955,46 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795216",
       "verifie_le": "2026-08-26"
+    },
+    "jean-francois-mbaye": {
+      "identifiants": {
+        "an": "PA720870",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Jean François Mbaye",
+        "date_naissance": "1979-01-01"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720870",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "jean-francois-portarrieu": {
+      "identifiants": {
+        "an": "PA719528",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/portarrieu-jean-francois"
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Jean-François Portarrieu",
+        "date_naissance": "1965-10-14"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719528",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "jean-francois-rousset": {
       "identifiants": {
@@ -6753,6 +9033,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721062",
       "verifie_le": "2026-08-26"
+    },
+    "jean-jacques-bridey": {
+      "identifiants": {
+        "an": "PA672",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Jean-Jacques Bridey",
+        "date_naissance": "1953-05-07"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA672",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "jean-jacques-gaultier": {
       "identifiants": {
@@ -6850,6 +9150,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643089",
       "verifie_le": "2026-08-26"
+    },
+    "jean-louis-touraine": {
+      "identifiants": {
+        "an": "PA334768",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Jean-Louis Touraine",
+        "date_naissance": "1945-10-08"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA334768",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "jean-luc-bourgeaux": {
       "identifiants": {
@@ -6966,6 +9286,46 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722134",
       "verifie_le": "2026-08-26"
     },
+    "jean-michel-clement": {
+      "identifiants": {
+        "an": "PA336439",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Jean-Michel Clément",
+        "date_naissance": "1954-10-31"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA336439",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "jean-michel-fauvergue": {
+      "identifiants": {
+        "an": "PA721702",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Jean-Michel Fauvergue",
+        "date_naissance": "1957-01-31"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721702",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "jean-michel-jacques": {
       "identifiants": {
         "an": "PA720354",
@@ -6984,6 +9344,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720354",
       "verifie_le": "2026-08-26"
+    },
+    "jean-michel-mis": {
+      "identifiants": {
+        "an": "PA719952",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Jean-Michel Mis",
+        "date_naissance": "1967-07-28"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719952",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "jean-paul-dufregne": {
       "identifiants": {
@@ -7450,6 +9830,26 @@
       "verifie_le": "2026-09-02",
       "origine": "derivee"
     },
+    "joachim-son-forget": {
+      "identifiants": {
+        "an": "PA721174",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Joachim Son-Forget",
+        "date_naissance": "1983-04-15"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721174",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "joaquim-pueyo": {
       "identifiants": {
         "an": "PA608011",
@@ -7875,6 +10275,26 @@
       "verifie_le": "2026-09-08",
       "origine": "derivee"
     },
+    "julien-borowczyk": {
+      "identifiants": {
+        "an": "PA719980",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Julien Borowczyk",
+        "date_naissance": "1979-05-02"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719980",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "julien-dive": {
       "identifiants": {
         "an": "PA712015",
@@ -8206,6 +10626,46 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794582",
       "verifie_le": "2026-08-26"
     },
+    "laetitia-avia": {
+      "identifiants": {
+        "an": "PA721624",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Laetitia Avia",
+        "date_naissance": "1985-10-29"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721624",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "laetitia-romeiro-dias": {
+      "identifiants": {
+        "an": "PA722022",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Laëtitia Romeiro Dias",
+        "date_naissance": "1981-01-15"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722022",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "laetitia-saint-paul": {
       "identifiants": {
         "an": "PA720138",
@@ -8322,6 +10782,26 @@
       "verifie_le": "2026-09-08",
       "origine": "derivee"
     },
+    "laurence-gayte": {
+      "identifiants": {
+        "an": "PA720806",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Laurence Gayte",
+        "date_naissance": "1965-09-25"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720806",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "laurence-heydel-grillere": {
       "identifiants": {
         "an": "PA793190",
@@ -8378,6 +10858,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794442",
       "verifie_le": "2026-08-26"
+    },
+    "laurence-vanceunebrock": {
+      "identifiants": {
+        "an": "PA718728",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Laurence Vanceunebrock",
+        "date_naissance": "1970-05-06"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718728",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "laurent-alexandre": {
       "identifiants": {
@@ -8457,6 +10957,46 @@
       "verifie_le": "2026-09-02",
       "origine": "derivee"
     },
+    "laurent-pietraszewski": {
+      "identifiants": {
+        "an": "PA720512",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Laurent Pietraszewski",
+        "date_naissance": "1966-11-19"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720512",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "laurent-saint-martin": {
+      "identifiants": {
+        "an": "PA720878",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Laurent Saint-Martin",
+        "date_naissance": "1985-06-22"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720878",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "laurent-wauquiez": {
       "identifiants": {
         "an": "PA267285",
@@ -8475,6 +11015,46 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267285",
       "verifie_le": "2026-08-26"
+    },
+    "laurianne-rossi": {
+      "identifiants": {
+        "an": "PA721600",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Laurianne Rossi",
+        "date_naissance": "1984-05-18"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721600",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "lenaick-adam": {
+      "identifiants": {
+        "an": "PA721036",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Lénaïck Adam",
+        "date_naissance": "1992-02-19"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721036",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "leo-walter": {
       "identifiants": {
@@ -8648,6 +11228,46 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793656",
       "verifie_le": "2026-08-26"
+    },
+    "loic-dombreval": {
+      "identifiants": {
+        "an": "PA718894",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Loïc Dombreval",
+        "date_naissance": "1966-04-16"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718894",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "loic-kervran": {
+      "identifiants": {
+        "an": "PA719052",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/kervran-loic"
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Loïc Kervran",
+        "date_naissance": "1984-02-11"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719052",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "loic-prud-homme": {
       "identifiants": {
@@ -8861,6 +11481,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793444",
       "verifie_le": "2026-08-26"
     },
+    "manuel-valls": {
+      "identifiants": {
+        "an": "PA267622",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Manuel Valls",
+        "date_naissance": "1962-08-13"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267622",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "manuela-keclard-mondesir": {
       "identifiants": {
         "an": "PA721012",
@@ -8899,6 +11539,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841613",
       "verifie_le": "2026-09-02",
+      "origine": "derivee"
+    },
+    "marc-delatte": {
+      "identifiants": {
+        "an": "PA718694",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Marc Delatte",
+        "date_naissance": "1961-05-24"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718694",
+      "verifie_le": "2026-09-09",
       "origine": "derivee"
     },
     "marc-ferracci": {
@@ -8998,6 +11658,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794686",
       "verifie_le": "2026-08-26"
     },
+    "marie-ange-magne": {
+      "identifiants": {
+        "an": "PA722244",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Marie-Ange Magne",
+        "date_naissance": "1987-11-20"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722244",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "marie-ange-rousselot": {
       "identifiants": {
         "an": "PA795888",
@@ -9075,6 +11755,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA332523",
       "verifie_le": "2026-08-26"
+    },
+    "marie-christine-verdier-jouclas": {
+      "identifiants": {
+        "an": "PA721542",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Marie-Christine Verdier-Jouclas",
+        "date_naissance": "1965-03-19"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721542",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "marie-france-lorho": {
       "identifiants": {
@@ -9291,6 +11991,26 @@
       "verifie_le": "2026-09-02",
       "origine": "derivee"
     },
+    "marie-silin": {
+      "identifiants": {
+        "an": "PA721768",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Marie Silin",
+        "date_naissance": "1978-10-04"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721768",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "marie-sophie-bernadeau": {
       "identifiants": {
         "an": "PA793924",
@@ -9309,6 +12029,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793924",
       "verifie_le": "2026-09-02",
+      "origine": "derivee"
+    },
+    "marie-tamarelle-verhaeghe": {
+      "identifiants": {
+        "an": "PA719350",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Marie Tamarelle-Verhaeghe",
+        "date_naissance": "1962-09-27"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719350",
+      "verifie_le": "2026-09-09",
       "origine": "derivee"
     },
     "marietta-karamanli": {
@@ -9387,6 +12127,26 @@
       "preuve": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
       "verifie_le": "2026-08-28"
     },
+    "marion-lenne": {
+      "identifiants": {
+        "an": "PA721450",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Marion Lenne",
+        "date_naissance": "1974-11-20"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721450",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "marjolaine-meynier-millefert": {
       "identifiants": {
         "an": "PA719882",
@@ -9443,6 +12203,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA822617",
       "verifie_le": "2026-09-02",
+      "origine": "derivee"
+    },
+    "martine-leguille-balloy": {
+      "identifiants": {
+        "an": "PA722008",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Martine Leguille-Balloy",
+        "date_naissance": "1957-09-06"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722008",
+      "verifie_le": "2026-09-09",
       "origine": "derivee"
     },
     "martine-wonner": {
@@ -9813,6 +12593,26 @@
       "verifie_le": "2026-09-02",
       "origine": "derivee"
     },
+    "michel-delpon": {
+      "identifiants": {
+        "an": "PA719258",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Michel Delpon",
+        "date_naissance": "1949-08-13"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719258",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "michel-gonord": {
       "identifiants": {
         "an": "PA841869",
@@ -9929,6 +12729,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793724",
       "verifie_le": "2026-08-26"
     },
+    "michele-crouzet": {
+      "identifiants": {
+        "an": "PA721808",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Michèle Crouzet",
+        "date_naissance": "1967-08-31"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721808",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "michele-martinez": {
       "identifiants": {
         "an": "PA794770",
@@ -10025,6 +12845,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794094",
       "verifie_le": "2026-08-26"
     },
+    "mickael-nogal": {
+      "identifiants": {
+        "an": "PA719520",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Mickaël Nogal",
+        "date_naissance": "1990-11-26"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719520",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "mikaele-seo": {
       "identifiants": {
         "an": "PA757225",
@@ -10062,6 +12902,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719294",
       "verifie_le": "2026-08-26"
+    },
+    "mireille-robert": {
+      "identifiants": {
+        "an": "PA718810",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Mireille Robert",
+        "date_naissance": "1962-03-01"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718810",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "moerani-frebault": {
       "identifiants": {
@@ -10103,6 +12963,26 @@
       "verifie_le": "2026-09-08",
       "origine": "derivee"
     },
+    "monica-michel-brassart": {
+      "identifiants": {
+        "an": "PA719130",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Monica Michel-Brassart",
+        "date_naissance": "1955-04-16"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719130",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "monique-griseti": {
       "identifiants": {
         "an": "PA840757",
@@ -10142,6 +13022,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA331835",
       "verifie_le": "2026-08-26"
     },
+    "monique-limon": {
+      "identifiants": {
+        "an": "PA719858",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Monique Limon",
+        "date_naissance": "1953-12-05"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719858",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "mounir-belhamiti": {
       "identifiants": {
         "an": "PA719910",
@@ -10160,6 +13060,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719910",
       "verifie_le": "2026-08-26"
+    },
+    "mounir-mahjoubi": {
+      "identifiants": {
+        "an": "PA717167",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Mounir Mahjoubi",
+        "date_naissance": "1984-03-01"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717167",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "muriel-ressiguier": {
       "identifiants": {
@@ -10181,6 +13101,26 @@
       "verifie_le": "2026-09-08",
       "origine": "derivee"
     },
+    "muriel-roques-etienne": {
+      "identifiants": {
+        "an": "PA721538",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Muriel Roques-Etienne",
+        "date_naissance": "1979-03-05"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721538",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "murielle-lepvraud": {
       "identifiants": {
         "an": "PA793532",
@@ -10199,6 +13139,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793532",
       "verifie_le": "2026-08-26"
+    },
+    "mustapha-laabid": {
+      "identifiants": {
+        "an": "PA719842",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Mustapha Laabid",
+        "date_naissance": "1969-03-29"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719842",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "nadege-abomangoli": {
       "identifiants": {
@@ -10256,6 +13216,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840857",
       "verifie_le": "2026-09-02",
+      "origine": "derivee"
+    },
+    "naima-moutchou": {
+      "identifiants": {
+        "an": "PA720908",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Naïma Moutchou",
+        "date_naissance": "1980-11-04"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720908",
+      "verifie_le": "2026-09-09",
       "origine": "derivee"
     },
     "natalia-pouzyreff": {
@@ -10354,6 +13334,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793872",
       "verifie_le": "2026-08-26"
     },
+    "nathalie-sarles": {
+      "identifiants": {
+        "an": "PA719972",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Nathalie Sarles",
+        "date_naissance": "1962-04-17"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719972",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "nathalie-serre": {
       "identifiants": {
         "an": "PA722308",
@@ -10372,6 +13372,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722308",
       "verifie_le": "2026-08-26"
+    },
+    "nicolas-demoulin": {
+      "identifiants": {
+        "an": "PA719830",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Nicolas Démoulin",
+        "date_naissance": "1972-07-22"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719830",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "nicolas-dragon": {
       "identifiants": {
@@ -10605,6 +13625,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720342",
       "verifie_le": "2026-08-26"
     },
+    "nicole-trisse": {
+      "identifiants": {
+        "an": "PA720394",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Nicole Trisse",
+        "date_naissance": "1963-06-29"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720394",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "oceane-godard": {
       "identifiants": {
         "an": "PA840939",
@@ -10682,6 +13722,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA642935",
       "verifie_le": "2026-08-26"
     },
+    "olivier-damaisin": {
+      "identifiants": {
+        "an": "PA720268",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Olivier Damaisin",
+        "date_naissance": "1966-08-05"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720268",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "olivier-dussopt": {
       "identifiants": {
         "an": "PA330357",
@@ -10720,6 +13780,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA609332",
       "verifie_le": "2026-08-26"
     },
+    "olivier-gaillard": {
+      "identifiants": {
+        "an": "PA719480",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Olivier Gaillard",
+        "date_naissance": "1967-02-28"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719480",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "olivier-marleix": {
       "identifiants": {
         "an": "PA606098",
@@ -10739,6 +13819,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA606098",
       "verifie_le": "2026-08-26"
     },
+    "olivier-serva": {
+      "identifiants": {
+        "an": "PA720960",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/serva-olivier"
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Olivier Serva",
+        "date_naissance": "1974-06-21"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720960",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "olivier-veran": {
       "identifiants": {
         "an": "PA642788",
@@ -10757,6 +13857,46 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA642788",
       "verifie_le": "2026-08-26"
+    },
+    "pacome-rupin": {
+      "identifiants": {
+        "an": "PA721616",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Pacôme Rupin",
+        "date_naissance": "1985-01-25"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721616",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "pascal-bois": {
+      "identifiants": {
+        "an": "PA720576",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Pascal Bois",
+        "date_naissance": "1959-12-03"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720576",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "pascal-jenft": {
       "identifiants": {
@@ -10875,6 +14015,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718710",
       "verifie_le": "2026-08-26"
     },
+    "pascale-fontenel-personne": {
+      "identifiants": {
+        "an": "PA721384",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Pascale Fontenel-Personne",
+        "date_naissance": "1962-05-26"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721384",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "pascale-got": {
       "identifiants": {
         "an": "PA331973",
@@ -10913,6 +14073,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793688",
       "verifie_le": "2026-08-26"
+    },
+    "patrice-anato": {
+      "identifiants": {
+        "an": "PA721278",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Patrice Anato",
+        "date_naissance": "1976-03-14"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721278",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "patrice-martin": {
       "identifiants": {
@@ -11068,6 +14248,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795664",
       "verifie_le": "2026-08-26"
     },
+    "paul-molac": {
+      "identifiants": {
+        "an": "PA607619",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/molac-paul"
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Paul Molac",
+        "date_naissance": "1962-05-21"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607619",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "paul-vannier": {
       "identifiants": {
         "an": "PA795596",
@@ -11186,6 +14386,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA796070",
       "verifie_le": "2026-08-26"
     },
+    "perrine-goulet": {
+      "identifiants": {
+        "an": "PA720560",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/goulet-perrine"
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Perrine Goulet",
+        "date_naissance": "1978-03-19"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720560",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "philippe-ballard": {
       "identifiants": {
         "an": "PA794562",
@@ -11223,6 +14443,46 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793624",
       "verifie_le": "2026-08-26"
+    },
+    "philippe-chalumeau": {
+      "identifiants": {
+        "an": "PA719790",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Philippe Chalumeau",
+        "date_naissance": "1963-11-08"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719790",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "philippe-chassaing": {
+      "identifiants": {
+        "an": "PA719250",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Philippe Chassaing",
+        "date_naissance": "1972-05-18"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719250",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "philippe-dunoyer": {
       "identifiants": {
@@ -11281,6 +14541,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794658",
       "verifie_le": "2026-08-26"
     },
+    "philippe-folliot": {
+      "identifiants": {
+        "an": "PA267673",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Philippe Folliot",
+        "date_naissance": "1963-07-14"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267673",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "philippe-frei": {
       "identifiants": {
         "an": "PA719190",
@@ -11337,6 +14617,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720174",
       "verifie_le": "2026-08-26"
+    },
+    "philippe-huppe": {
+      "identifiants": {
+        "an": "PA719700",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Philippe Huppé",
+        "date_naissance": "1968-02-12"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719700",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "philippe-juvin": {
       "identifiants": {
@@ -11432,6 +14732,46 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719672",
       "verifie_le": "2026-08-26"
+    },
+    "pierre-alain-raphan": {
+      "identifiants": {
+        "an": "PA721888",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Pierre-Alain Raphan",
+        "date_naissance": "1983-04-06"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721888",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "pierre-cabare": {
+      "identifiants": {
+        "an": "PA719496",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Pierre Cabaré",
+        "date_naissance": "1957-12-12"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719496",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "pierre-cazeneuve": {
       "identifiants": {
@@ -11549,6 +14889,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793852",
       "verifie_le": "2026-08-26"
     },
+    "pierre-person": {
+      "identifiants": {
+        "an": "PA721568",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Pierre Person",
+        "date_naissance": "1989-01-22"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721568",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "pierre-pribetich": {
       "identifiants": {
         "an": "PA840955",
@@ -11587,6 +14947,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720586",
       "verifie_le": "2026-08-26"
+    },
+    "pierre-venteau": {
+      "identifiants": {
+        "an": "PA722240",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Pierre Venteau",
+        "date_naissance": "1974-08-26"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722240",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "pierre-yves-cadalen": {
       "identifiants": {
@@ -11723,6 +15103,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795438",
       "verifie_le": "2026-08-26"
     },
+    "ramlati-ali": {
+      "identifiants": {
+        "an": "PA724827",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Ramlati Ali",
+        "date_naissance": "1961-05-28"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA724827",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "raphael-arnault": {
       "identifiants": {
         "an": "PA842105",
@@ -11741,6 +15141,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA842105",
       "verifie_le": "2026-09-02",
+      "origine": "derivee"
+    },
+    "raphael-gauvain": {
+      "identifiants": {
+        "an": "PA721364",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Raphaël Gauvain",
+        "date_naissance": "1973-04-10"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721364",
+      "verifie_le": "2026-09-09",
       "origine": "derivee"
     },
     "raphael-gerard": {
@@ -11918,6 +15338,46 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA817211",
       "verifie_le": "2026-08-26"
     },
+    "richard-ferrand": {
+      "identifiants": {
+        "an": "PA606171",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Richard Ferrand",
+        "date_naissance": "1962-07-01"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA606171",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "richard-lioger": {
+      "identifiants": {
+        "an": "PA720378",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Richard Lioger",
+        "date_naissance": "1957-09-18"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720378",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "robert-le-bourgeois": {
       "identifiants": {
         "an": "PA841837",
@@ -11975,6 +15435,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795084",
       "verifie_le": "2026-08-26"
+    },
+    "rodrigue-kokouendo": {
+      "identifiants": {
+        "an": "PA721644",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Rodrigue Kokouendo",
+        "date_naissance": "1974-03-08"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721644",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "roger-chudeau": {
       "identifiants": {
@@ -12070,6 +15550,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA842195",
       "verifie_le": "2026-09-02",
+      "origine": "derivee"
+    },
+    "romain-grau": {
+      "identifiants": {
+        "an": "PA720790",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Romain Grau",
+        "date_naissance": "1974-06-21"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720790",
+      "verifie_le": "2026-09-09",
       "origine": "derivee"
     },
     "romain-tonussi": {
@@ -12190,6 +15690,46 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722150",
       "verifie_le": "2026-08-26"
     },
+    "said-ahamada": {
+      "identifiants": {
+        "an": "PA718954",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Saïd Ahamada",
+        "date_naissance": "1972-11-07"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718954",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "samantha-cazebonne": {
+      "identifiants": {
+        "an": "PA721166",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Samantha Cazebonne",
+        "date_naissance": "1971-08-10"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721166",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "sandra-delannoy": {
       "identifiants": {
         "an": "PA840119",
@@ -12268,6 +15808,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794762",
       "verifie_le": "2026-08-26"
     },
+    "sandrine-josso": {
+      "identifiants": {
+        "an": "PA720038",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/josso-sandrine"
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Sandrine Josso",
+        "date_naissance": "1975-09-19"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720038",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "sandrine-lalanne": {
       "identifiants": {
         "an": "PA795390",
@@ -12306,6 +15866,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719412",
       "verifie_le": "2026-08-26"
+    },
+    "sandrine-morch": {
+      "identifiants": {
+        "an": "PA719456",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Sandrine Mörch",
+        "date_naissance": "1961-11-13"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719456",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "sandrine-nosbe": {
       "identifiants": {
@@ -12404,6 +15984,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794930",
       "verifie_le": "2026-08-26"
+    },
+    "sebastien-cazenove": {
+      "identifiants": {
+        "an": "PA720814",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Sébastien Cazenove",
+        "date_naissance": "1976-12-28"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720814",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "sebastien-chenu": {
       "identifiants": {
@@ -12660,6 +16260,26 @@
       "verifie_le": "2026-09-07",
       "origine": "relue"
     },
+    "sereine-mauborgne": {
+      "identifiants": {
+        "an": "PA721726",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Sereine Mauborgne",
+        "date_naissance": "1972-05-03"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721726",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "serge-letchimy": {
       "identifiants": {
         "an": "PA337483",
@@ -12718,6 +16338,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794004",
       "verifie_le": "2026-08-26"
     },
+    "severine-gipson": {
+      "identifiants": {
+        "an": "PA719326",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Séverine Gipson",
+        "date_naissance": "1970-12-13"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719326",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "sheherazade-bentorki": {
       "identifiants": {
         "an": "PA841531",
@@ -12738,6 +16378,46 @@
       "verifie_le": "2026-09-02",
       "origine": "derivee"
     },
+    "sira-sylla": {
+      "identifiants": {
+        "an": "PA722118",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Sira Sylla",
+        "date_naissance": "1980-03-14"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722118",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "sonia-krimi": {
+      "identifiants": {
+        "an": "PA720202",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Sonia Krimi",
+        "date_naissance": "1982-12-20"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720202",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "sophia-chikirou": {
       "identifiants": {
         "an": "PA791812",
@@ -12756,6 +16436,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA791812",
       "verifie_le": "2026-08-26"
+    },
+    "sophie-beaudouin-hubiere": {
+      "identifiants": {
+        "an": "PA722170",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Sophie Beaudouin-Hubiere",
+        "date_naissance": "1972-11-20"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722170",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "sophie-blanc": {
       "identifiants": {
@@ -12894,6 +16594,26 @@
       "verifie_le": "2026-09-08",
       "origine": "derivee"
     },
+    "souad-zitouni": {
+      "identifiants": {
+        "an": "PA721864",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Souad Zitouni",
+        "date_naissance": "1974-04-23"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721864",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "soumya-bourouaha": {
       "identifiants": {
         "an": "PA720838",
@@ -12970,6 +16690,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722000",
       "verifie_le": "2026-08-26"
+    },
+    "stephane-claireaux": {
+      "identifiants": {
+        "an": "PA702054",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Stéphane Claireaux",
+        "date_naissance": "1964-06-23"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA702054",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "stephane-delautrette": {
       "identifiants": {
@@ -13108,6 +16848,26 @@
       "verifie_le": "2026-09-02",
       "origine": "derivee"
     },
+    "stephane-teste": {
+      "identifiants": {
+        "an": "PA720854",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Stéphane Testé",
+        "date_naissance": "1968-05-10"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720854",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "stephane-travert": {
       "identifiants": {
         "an": "PA607395",
@@ -13126,6 +16886,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607395",
       "verifie_le": "2026-08-26"
+    },
+    "stephane-trompille": {
+      "identifiants": {
+        "an": "PA718682",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Stéphane Trompille",
+        "date_naissance": "1982-12-01"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718682",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "stephane-viry": {
       "identifiants": {
@@ -13165,6 +16945,46 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721170",
       "verifie_le": "2026-08-26"
     },
+    "stephanie-atger": {
+      "identifiants": {
+        "an": "PA721674",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Stéphanie Atger",
+        "date_naissance": "1975-10-11"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721674",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "stephanie-do": {
+      "identifiants": {
+        "an": "PA721718",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Stéphanie Do",
+        "date_naissance": "1979-12-20"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721718",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "stephanie-galzy": {
       "identifiants": {
         "an": "PA793892",
@@ -13183,6 +17003,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793892",
       "verifie_le": "2026-08-26"
+    },
+    "stephanie-kerbarh": {
+      "identifiants": {
+        "an": "PA721514",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Stéphanie Kerbarh",
+        "date_naissance": "1975-07-31"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721514",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "stephanie-rist": {
       "identifiants": {
@@ -13281,6 +17121,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717379",
       "verifie_le": "2026-08-26"
     },
+    "sylvain-templier": {
+      "identifiants": {
+        "an": "PA720246",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Sylvain Templier",
+        "date_naissance": "1971-12-27"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720246",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "sylvie-bonnet": {
       "identifiants": {
         "an": "PA719968",
@@ -13299,6 +17159,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719968",
       "verifie_le": "2026-08-26"
+    },
+    "sylvie-charriere": {
+      "identifiants": {
+        "an": "PA721218",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Sylvie Charrière",
+        "date_naissance": "1961-05-15"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721218",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "sylvie-dezarnaud": {
       "identifiants": {
@@ -13535,6 +17415,26 @@
       "verifie_le": "2026-09-02",
       "origine": "derivee"
     },
+    "thierry-michels": {
+      "identifiants": {
+        "an": "PA720738",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Thierry Michels",
+        "date_naissance": "1960-08-27"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720738",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "thierry-perez": {
       "identifiants": {
         "an": "PA841199",
@@ -13553,6 +17453,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841199",
       "verifie_le": "2026-09-02",
+      "origine": "derivee"
+    },
+    "thierry-solere": {
+      "identifiants": {
+        "an": "PA346876",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Thierry Solère",
+        "date_naissance": "1971-08-17"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA346876",
+      "verifie_le": "2026-09-09",
       "origine": "derivee"
     },
     "thierry-sother": {
@@ -13652,6 +17572,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794322",
       "verifie_le": "2026-08-26"
     },
+    "thomas-mesnier": {
+      "identifiants": {
+        "an": "PA719072",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Thomas Mesnier",
+        "date_naissance": "1986-03-04"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719072",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "thomas-portes": {
       "identifiants": {
         "an": "PA796062",
@@ -13729,6 +17669,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793632",
       "verifie_le": "2026-08-26"
     },
+    "typhanie-degois": {
+      "identifiants": {
+        "an": "PA721398",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Typhanie Degois",
+        "date_naissance": "1993-01-06"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721398",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "ugo-bernalicis": {
       "identifiants": {
         "an": "PA720430",
@@ -13748,6 +17708,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720430",
       "verifie_le": "2026-08-26"
     },
+    "valeria-faure-muntian": {
+      "identifiants": {
+        "an": "PA719960",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Valéria Faure-Muntian",
+        "date_naissance": "1984-09-02"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719960",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "valerie-bazin-malgras": {
       "identifiants": {
         "an": "PA718884",
@@ -13766,6 +17746,66 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718884",
       "verifie_le": "2026-08-26"
+    },
+    "valerie-gomez-bassac": {
+      "identifiants": {
+        "an": "PA721784",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Valérie Gomez-Bassac",
+        "date_naissance": "1969-07-16"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721784",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "valerie-oppelt": {
+      "identifiants": {
+        "an": "PA720108",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Valérie Oppelt",
+        "date_naissance": "1973-12-10"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720108",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "valerie-petit": {
+      "identifiants": {
+        "an": "PA720500",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Valérie Petit",
+        "date_naissance": "1976-06-23"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720500",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "valerie-rabault": {
       "identifiants": {
@@ -13806,6 +17846,26 @@
       "verifie_le": "2026-09-02",
       "origine": "derivee"
     },
+    "valerie-thomas": {
+      "identifiants": {
+        "an": "PA720830",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Valérie Thomas",
+        "date_naissance": "1968-01-21"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720830",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "veronique-de-montchalin": {
       "identifiants": {
         "an": "PA719376",
@@ -13824,6 +17884,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719376",
       "verifie_le": "2026-08-26"
+    },
+    "veronique-hammerer": {
+      "identifiants": {
+        "an": "PA719652",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Véronique Hammerer",
+        "date_naissance": "1968-11-04"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719652",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "veronique-louwagie": {
       "identifiants": {
@@ -14017,6 +18097,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794410",
       "verifie_le": "2026-08-26"
     },
+    "vincent-thiebaut": {
+      "identifiants": {
+        "an": "PA722336",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/thiebaut-vincent"
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Vincent Thiébaut",
+        "date_naissance": "1972-05-23"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722336",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "violette-spillebout": {
       "identifiants": {
         "an": "PA794486",
@@ -14170,6 +18270,26 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA330008",
       "verifie_le": "2026-08-26"
     },
+    "xavier-paluszkiewicz": {
+      "identifiants": {
+        "an": "PA720402",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Xavier Paluszkiewicz",
+        "date_naissance": "1972-12-13"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720402",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "xavier-roseren": {
       "identifiants": {
         "an": "PA721458",
@@ -14264,6 +18384,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720054",
       "verifie_le": "2026-08-26"
+    },
+    "yannick-kerlogot": {
+      "identifiants": {
+        "an": "PA719230",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Yannick Kerlogot",
+        "date_naissance": "1970-05-12"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719230",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
     },
     "yannick-monnet": {
       "identifiants": {
@@ -14362,6 +18502,46 @@
       "verifie_le": "2026-09-08",
       "origine": "derivee"
     },
+    "yves-blein": {
+      "identifiants": {
+        "an": "PA608641",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Yves Blein",
+        "date_naissance": "1954-10-12"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA608641",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
+    "yves-daniel": {
+      "identifiants": {
+        "an": "PA607155",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Yves Daniel",
+        "date_naissance": "1954-07-31"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607155",
+      "verifie_le": "2026-09-09",
+      "origine": "derivee"
+    },
     "zahia-hamdane": {
       "identifiants": {
         "an": "PA841947",
@@ -14380,6 +18560,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841947",
       "verifie_le": "2026-09-02",
+      "origine": "derivee"
+    },
+    "zivka-park": {
+      "identifiants": {
+        "an": "PA720944",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Zivka Park",
+        "date_naissance": "1985-01-22"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720944",
+      "verifie_le": "2026-09-09",
       "origine": "derivee"
     }
   },

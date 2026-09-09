@@ -15,9 +15,135 @@
   },
   "membres": [
     {
+      "membre_id": "adrien-taquet",
+      "nom": "Adrien Taquet",
+      "portefeuille": "Secrétariat d'État après de la ministre des solidarités et de la santé",
+      "debut": "2019-01-26",
+      "fin": "2020-02-16",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "adrien-taquet",
+      "nom": "Adrien Taquet",
+      "portefeuille": "Secrétariat d'État auprès du ministre des solidarités et de la santé",
+      "debut": "2020-02-17",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "agnes-pannier-runacher",
       "nom": "Agnès Pannier-Runacher",
       "portefeuille": "Secrétariat d'État auprès du ministre de l'économie et des finances",
+      "debut": "2018-10-17",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "amelie-de-montchalin",
+      "nom": "Amélie de Montchalin",
+      "portefeuille": "Secrétariat d'État auprès du ministre de l'Europe et des affaires étrangères, chargé des affaires européennes",
+      "debut": "2019-04-02",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "annick-girardin",
+      "nom": "Annick Girardin",
+      "portefeuille": "Ministère des outre-mer",
+      "debut": "2017-06-22",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "benjamin-griveaux",
+      "nom": "Benjamin Griveaux",
+      "portefeuille": "Secrétariat d'État, auprès du ministre de l'économie et des finances",
+      "debut": "2017-06-22",
+      "fin": "2017-11-24",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "benjamin-griveaux",
+      "nom": "Benjamin Griveaux",
+      "portefeuille": "Secrétariat d'État auprès du Premier ministre, porte-parole du Gouvernement",
+      "debut": "2017-11-25",
+      "fin": "2019-03-27",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "brune-poirson",
+      "nom": "Brune Poirson",
+      "portefeuille": "Secrétariat d'État auprès du ministre d'État, ministre de la transition écologique et solidaire",
+      "debut": "2017-06-22",
+      "fin": "2019-07-16",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "brune-poirson",
+      "nom": "Brune Poirson",
+      "portefeuille": "Secrétariat d'État auprès de la ministre de la transition écologique et solidaire",
+      "debut": "2019-07-17",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "bruno-le-maire",
+      "nom": "Bruno Le Maire",
+      "portefeuille": "Ministère de l'économie et des finances",
+      "debut": "2017-06-22",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "christelle-dubos",
+      "nom": "Christelle Dubos",
+      "portefeuille": "Secrétariat d'État auprès de la ministre des solidarités et de la santé",
+      "debut": "2018-10-17",
+      "fin": "2020-02-16",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "christelle-dubos",
+      "nom": "Christelle Dubos",
+      "portefeuille": "Secrétariat d'État auprès du ministre des solidarités et de la santé",
+      "debut": "2020-02-17",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "christophe-castaner",
+      "nom": "Christophe Castaner",
+      "portefeuille": "Secrétariat d'État, auprès du Premier ministre, chargé des relations avec le Parlement, porte-parole du Gouvernement",
+      "debut": "2017-06-22",
+      "fin": "2017-11-24",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "christophe-castaner",
+      "nom": "Christophe Castaner",
+      "portefeuille": "Secrétariat d'État, auprès du Premier ministre, chargé des relations avec le Parlement",
+      "debut": "2017-11-25",
+      "fin": "2018-10-16",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "christophe-castaner",
+      "nom": "Christophe Castaner",
+      "portefeuille": "Ministère de l'intérieur",
       "debut": "2018-10-17",
       "fin": "2020-07-06",
       "actif": false,
@@ -60,6 +186,15 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "francois-de-rugy",
+      "nom": "François de Rugy",
+      "portefeuille": "Ministère de la transition écologique et solidaire",
+      "debut": "2018-09-05",
+      "fin": "2019-07-16",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "gabriel-attal",
       "nom": "Gabriel Attal",
       "portefeuille": "Secrétariat d'État auprès du ministre de l'éducation nationale et de la jeunesse",
@@ -74,6 +209,60 @@
       "portefeuille": "Ministère de l'action et des comptes publics",
       "debut": "2017-06-22",
       "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "jean-baptiste-djebbari",
+      "nom": "Jean-Baptiste Djebbari",
+      "portefeuille": "Secrétariat d’État auprès de la ministre de la transition écologique et solidaire, chargé des transports",
+      "debut": "2019-09-04",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "laurent-pietraszewski",
+      "nom": "Laurent Pietraszewski",
+      "portefeuille": "Secrétariat d'État auprès de la ministre des solidarités et de la santé, chargé des retraites",
+      "debut": "2019-12-18",
+      "fin": "2020-02-16",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "laurent-pietraszewski",
+      "nom": "Laurent Pietraszewski",
+      "portefeuille": "Secrétariat d'État auprès du ministre des solidarités et de la santé, chargé des retraites",
+      "debut": "2020-02-17",
+      "fin": "2020-05-19",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "laurent-pietraszewski",
+      "nom": "Laurent Pietraszewski",
+      "portefeuille": "Secrétariat d’État auprès du ministre des solidarités et de la santé, chargé des retraites et auprès de la ministre du travail, chargé de la protection de la santé des salariés contre l'épidémie de covid-19",
+      "debut": "2020-05-20",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "mounir-mahjoubi",
+      "nom": "Mounir Mahjoubi",
+      "portefeuille": "Secrétariat d'État, auprès du Premier ministre, chargé du numérique",
+      "debut": "2017-06-22",
+      "fin": "2018-10-16",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "mounir-mahjoubi",
+      "nom": "Mounir Mahjoubi",
+      "portefeuille": "Ministère auprès du ministre de l'économie et des finances et du ministre de l'action et des comptes publics, chargé du numérique",
+      "debut": "2018-10-17",
+      "fin": "2019-03-27",
       "actif": false,
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
@@ -167,7 +356,7 @@
         },
         {
           "acteur_ref": "PA605131",
-          "membre_id": null
+          "membre_id": "christophe-castaner"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/code_securite_interieure",
@@ -219,7 +408,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         },
         {
           "acteur_ref": "PA607846",
@@ -349,7 +538,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-534",
@@ -423,7 +612,7 @@
         },
         {
           "acteur_ref": "PA605131",
-          "membre_id": null
+          "membre_id": "christophe-castaner"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/scrutin_second_tour_municipales_2020",
@@ -583,7 +772,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         },
         {
           "acteur_ref": "PA1872",
@@ -639,7 +828,7 @@
         },
         {
           "acteur_ref": "PA605131",
-          "membre_id": null
+          "membre_id": "christophe-castaner"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-328",
@@ -705,7 +894,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_covid-19_economie_finances",
@@ -939,7 +1128,7 @@
         },
         {
           "acteur_ref": "PA605131",
-          "membre_id": null
+          "membre_id": "christophe-castaner"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-390",
@@ -989,7 +1178,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfr2_2020",
@@ -1037,7 +1226,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         },
         {
           "acteur_ref": "PA607846",
@@ -1109,7 +1298,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/remuneration_mandataires_sociaux",
@@ -1183,7 +1372,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/dispositions_relatives_offres_public_titres",
@@ -1347,7 +1536,7 @@
         },
         {
           "acteur_ref": "PA720512",
-          "membre_id": null
+          "membre_id": "laurent-pietraszewski"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/systeme_universel_retraite",
@@ -1377,7 +1566,7 @@
         },
         {
           "acteur_ref": "PA720512",
-          "membre_id": null
+          "membre_id": "laurent-pietraszewski"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/systeme_universel_de_retraite",
@@ -1833,7 +2022,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         },
         {
           "acteur_ref": "PA607846",
@@ -1975,7 +2164,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-766",
@@ -2097,7 +2286,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-740",
@@ -2167,7 +2356,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/regimes_professionnels_retraite_supplementaire",
@@ -2247,7 +2436,7 @@
         },
         {
           "acteur_ref": "PA605131",
-          "membre_id": null
+          "membre_id": "christophe-castaner"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-610",
@@ -2335,7 +2524,7 @@
         },
         {
           "acteur_ref": "PA605131",
-          "membre_id": null
+          "membre_id": "christophe-castaner"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/renouveau_vie_democratique-organique",
@@ -2387,7 +2576,7 @@
         },
         {
           "acteur_ref": "PA605131",
-          "membre_id": null
+          "membre_id": "christophe-castaner"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/renouveau_vie_democratique-pjl",
@@ -2413,7 +2602,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/activites_et_surveillance_institutions_retraite",
@@ -2461,7 +2650,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         },
         {
           "acteur_ref": "PA717161",
@@ -2701,7 +2890,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         },
         {
           "acteur_ref": "PA702191",
@@ -2751,7 +2940,7 @@
         },
         {
           "acteur_ref": "PA332747",
-          "membre_id": null
+          "membre_id": "francois-de-rugy"
         },
         {
           "acteur_ref": "PA717161",
@@ -2781,7 +2970,7 @@
         },
         {
           "acteur_ref": "PA605131",
-          "membre_id": null
+          "membre_id": "christophe-castaner"
         },
         {
           "acteur_ref": "PA717153",
@@ -2789,7 +2978,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-76",
@@ -3005,7 +3194,7 @@
         },
         {
           "acteur_ref": "PA332747",
-          "membre_id": null
+          "membre_id": "francois-de-rugy"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-1165",
@@ -3129,7 +3318,7 @@
         },
         {
           "acteur_ref": "PA332747",
-          "membre_id": null
+          "membre_id": "francois-de-rugy"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/energie_climat",
@@ -3201,7 +3390,7 @@
         },
         {
           "acteur_ref": "PA605131",
-          "membre_id": null
+          "membre_id": "christophe-castaner"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/entree_fonction_deputes_europeens_2019",
@@ -3375,7 +3564,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/creation_taxe_services_numeriques",
@@ -3447,7 +3636,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-1128",
@@ -3521,7 +3710,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-1074",
@@ -3885,7 +4074,7 @@
         },
         {
           "acteur_ref": "PA332747",
-          "membre_id": null
+          "membre_id": "francois-de-rugy"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/creation_afb-oncfs",
@@ -3911,7 +4100,7 @@
         },
         {
           "acteur_ref": "PA332747",
-          "membre_id": null
+          "membre_id": "francois-de-rugy"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/modification_loi_2010-837",
@@ -3963,7 +4152,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfr_2018",
@@ -4489,7 +4678,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/Croissance_transformation_des_entreprises",
@@ -4535,7 +4724,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1674",
@@ -5021,7 +5210,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1433",
@@ -5115,7 +5304,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1608",
@@ -5763,7 +5952,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/deuxieme_collectif_budgetaire_2017",
@@ -5789,7 +5978,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1252",
@@ -5837,7 +6026,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         },
         {
           "acteur_ref": "PA607846",
@@ -6065,7 +6254,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1180",
@@ -6365,7 +6554,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1107",
@@ -6681,7 +6870,7 @@
         },
         {
           "acteur_ref": "PA331481",
-          "membre_id": null
+          "membre_id": "bruno-le-maire"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-484",
@@ -7003,8 +7192,53 @@
   "sources": [
     {
       "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722086",
+      "synchro_le": "2026-09-09T14:03:51+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://data.assemblee-nationale.fr/",
+      "synchro_le": "2026-09-09T14:03:51+0000"
+    },
+    {
+      "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA759832",
-      "synchro_le": "2026-09-04T12:57:33+0000"
+      "synchro_le": "2026-09-09T14:03:32+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721670",
+      "synchro_le": "2026-09-09T14:06:40+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA337633",
+      "synchro_le": "2026-09-09T14:06:37+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721560",
+      "synchro_le": "2026-09-09T14:06:40+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721872",
+      "synchro_le": "2026-09-09T14:09:31+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA331481",
+      "synchro_le": "2026-09-09T14:03:43+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719660",
+      "synchro_le": "2026-09-09T14:03:44+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605131",
+      "synchro_le": "2026-09-09T14:03:43+0000"
     },
     {
       "type": "nosdeputes",
@@ -7014,7 +7248,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA345619",
-      "synchro_le": "2026-09-04T12:41:57+0000"
+      "synchro_le": "2026-09-09T11:23:54+0000"
     },
     {
       "type": "nosdeputes",
@@ -7024,7 +7258,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717161",
-      "synchro_le": "2026-09-04T12:55:17+0000"
+      "synchro_le": "2026-09-09T14:02:48+0000"
     },
     {
       "type": "nosdeputes",
@@ -7034,7 +7268,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335758",
-      "synchro_le": "2026-09-04T13:05:25+0000"
+      "synchro_le": "2026-09-09T14:05:39+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA332747",
+      "synchro_le": "2026-09-09T14:06:05+0000"
     },
     {
       "type": "nosdeputes",
@@ -7044,7 +7283,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722190",
-      "synchro_le": "2026-09-04T12:57:06+0000"
+      "synchro_le": "2026-09-09T14:03:17+0000"
     },
     {
       "type": "nosdeputes",
@@ -7054,7 +7293,22 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607846",
-      "synchro_le": "2026-09-04T12:56:54+0000"
+      "synchro_le": "2026-09-09T14:02:48+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722236",
+      "synchro_le": "2026-09-09T14:04:19+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720512",
+      "synchro_le": "2026-09-09T14:06:08+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717167",
+      "synchro_le": "2026-09-09T14:03:50+0000"
     },
     {
       "type": "nosdeputes",
@@ -7064,7 +7318,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA330357",
-      "synchro_le": "2026-09-04T13:03:37+0000"
+      "synchro_le": "2026-09-09T14:05:14+0000"
     },
     {
       "type": "nosdeputes",
@@ -7074,7 +7328,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA642788",
-      "synchro_le": "2026-09-04T12:56:50+0000"
+      "synchro_le": "2026-09-09T14:02:59+0000"
     },
     {
       "type": "nosdeputes",
@@ -7084,12 +7338,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607395",
-      "synchro_le": "2026-09-04T13:05:30+0000"
+      "synchro_le": "2026-09-09T14:05:54+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-04T13:31:09+0000",
+    "genere_le": "2026-09-09T14:29:25+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": []
   }
