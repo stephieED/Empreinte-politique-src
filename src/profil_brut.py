@@ -113,6 +113,23 @@ NOM_SANS_LEGISLATURE = "sans-legislature"
 #: Un nom de tranche sûr : ni séparateur de chemin, ni `..`, ni nom caché.
 _NOM_SUR = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
 
+#: Marque d'une tranche **dérivée** : le manifeste la déclare sans fichier, et
+#: elle se relit dans `raw_data/amendements_an_figes/` (#691).
+#:
+#: POURQUOI UNE MARQUE, ET PAS UNE DEVINETTE. Une tranche absente d'un profil
+#: dont le manifeste l'annonce est aujourd'hui une **panne**
+#: (`PartitionIllisible`), et c'est ce qui protège d'un profil republié amputé.
+#: Aller chercher l'archive « au cas où le fichier manquerait » effacerait
+#: cette distinction : une tranche perdue se lirait comme une tranche dérivée.
+#: Le manifeste doit donc le DIRE, et le silence reste une panne.
+CLE_TRANCHE_DERIVEE = "derivee"
+
+#: L'acteur dont la tranche se dérive. Porté par le manifeste lui-même, et non
+#: résolu par une jointure : `profil_brut` ne connaît pas
+#: `raw_data/correspondance_acteurs_an.json` et n'a pas à l'apprendre pour
+#: relire un profil.
+CLE_ACTEUR_TRANCHE = "acteur_ref"
+
 
 class PartitionIllisible(RuntimeError):
     """Le socle annonce des tranches qui manquent, sont illisibles ou ne
@@ -302,7 +319,7 @@ def recomposer(socle: dict[str, Any], tranches: dict[str, list[Any]]) -> dict[st
     """
     manifeste = _manifeste(socle)
     declarees = manifeste.get("tranches") or []
-    noms = [str(t.get("fichier", ""))[: -len(".json")] for t in declarees]
+    noms = [_nom_declaree(t) for t in declarees]
 
     restes: list[list[Any]] = []
     for nom, declaree in zip(noms, declarees):
@@ -434,16 +451,79 @@ def charger_socle(chemin: Path) -> Optional[dict[str, Any]]:
     return document if isinstance(document, dict) else None
 
 
+def _nom_declaree(declaree: dict[str, Any]) -> str:
+    """Le nom sous lequel une tranche déclarée est rangée.
+
+    **Une seule définition**, partagée par `charger_tranches`, `recomposer` et
+    `iter_amendements_du_profil` : ces trois-là indexaient le même manifeste par
+    le même calcul recopié, et une tranche dérivée — qui n'a pas de `fichier` —
+    aurait divergé chez l'un des trois sans que rien ne le dise.
+    """
+    if declaree.get(CLE_TRANCHE_DERIVEE):
+        return nom_tranche(declaree.get("legislature"))
+    fichier = str(declaree.get("fichier") or "")
+    if not fichier.endswith(".json") or not _NOM_SUR.match(fichier[: -len(".json")]):
+        raise PartitionIllisible(f"nom de tranche refusé : {fichier!r}.")
+    return fichier[: -len(".json")]
+
+
+def _amendements_derives(declaree: dict[str, Any]) -> list[Any]:
+    """La tranche que le manifeste déclare dérivable de l'archive figée (#691).
+
+    Import différé : `tranches_amendements_figees` ouvre des archives de
+    plusieurs centaines de Mo, et la très grande majorité des lecteurs de ce
+    module n'a aucune tranche dérivée à relire.
+
+    Toute impossibilité lève `PartitionIllisible`, comme pour un fichier
+    manquant : une tranche annoncée et non relisible est une panne, jamais une
+    liste vide. C'est la même règle qu'ailleurs dans ce module, et c'est elle
+    qui empêche de republier un profil amputé.
+    """
+    import tranches_amendements_figees as figees
+
+    legislature = str(declaree.get("legislature") or "")
+    acteur = declaree.get(CLE_ACTEUR_TRANCHE)
+    if not legislature:
+        raise PartitionIllisible(
+            "tranche dérivée sans `legislature` : rien ne dit quelle archive lire."
+        )
+    if not acteur:
+        raise PartitionIllisible(
+            f"tranche dérivée sans `{CLE_ACTEUR_TRANCHE}` (législature {legislature}) : "
+            "l'archive s'interroge par acteur, et ce module ne résout pas les slugs."
+        )
+    try:
+        amendements = figees.reconstruire_tranche(acteur, legislature)
+    except (OSError, json.JSONDecodeError) as exc:
+        raise PartitionIllisible(
+            f"archive figée illisible pour la législature {legislature} ({exc})."
+        ) from exc
+    if amendements is None:
+        raise PartitionIllisible(
+            f"acteur {acteur} inconnu de l'archive de la législature {legislature} : "
+            "une tranche déclarée dérivée doit être dérivable."
+        )
+    return amendements
+
+
 def charger_tranches(chemin_socle_: Path, socle: dict[str, Any]) -> dict[str, list[Any]]:
-    """Charge les tranches déclarées par un socle."""
+    """Charge les tranches déclarées par un socle.
+
+    Une tranche marquée `derivee` ne vient pas du disque : elle se reconstruit
+    depuis `raw_data/amendements_an_figes/` (#691). Le `nombre` que le manifeste
+    annonce n'est pas repris — c'est `recomposer` qui le confronte au compte
+    obtenu, et un contrôle qui lirait sa conclusion dans le document contrôlé ne
+    contrôlerait rien (#576, #579).
+    """
     dossier = dossier_tranches_du_socle(chemin_socle_)
     manifeste = _manifeste(socle)
     tranches: dict[str, list[Any]] = {}
     for declaree in (manifeste.get("tranches") or []):
-        fichier = str(declaree.get("fichier") or "")
-        if not fichier.endswith(".json") or not _NOM_SUR.match(fichier[: -len(".json")]):
-            raise PartitionIllisible(f"nom de tranche refusé : {fichier!r}.")
-        chemin = dossier / fichier
+        nom = _nom_declaree(declaree)
+        if declaree.get(CLE_TRANCHE_DERIVEE):
+            tranches[nom] = _amendements_derives(declaree)
+            continue
+        chemin = dossier / f"{nom}.json"
         try:
             contenu = _lire_json(chemin)
         except (OSError, json.JSONDecodeError) as exc:
@@ -452,7 +532,7 @@ def charger_tranches(chemin_socle_: Path, socle: dict[str, Any]) -> dict[str, li
             contenu = contenu.get(CLE_PARTITIONNEE)
         if not isinstance(contenu, list):
             raise PartitionIllisible(f"tranche sans liste `{CLE_PARTITIONNEE}` : {chemin}.")
-        tranches[fichier[: -len(".json")]] = contenu
+        tranches[nom] = contenu
     return tranches
 
 
@@ -492,10 +572,15 @@ def iter_amendements_du_profil(chemin: Path) -> Iterator[dict[str, Any]]:
     manifeste = _manifeste(document)
     del document
     for declaree in (manifeste.get("tranches") or []):
-        fichier = str(declaree.get("fichier") or "")
-        if not fichier.endswith(".json") or not _NOM_SUR.match(fichier[: -len(".json")]):
-            raise PartitionIllisible(f"nom de tranche refusé : {fichier!r}.")
-        chemin_tranche = dossier / fichier
+        nom = _nom_declaree(declaree)
+        if declaree.get(CLE_TRANCHE_DERIVEE):
+            derivee = _amendements_derives(declaree)
+            for amendement in derivee:
+                if isinstance(amendement, dict):
+                    yield amendement
+            del derivee
+            continue
+        chemin_tranche = dossier / f"{nom}.json"
         try:
             contenu = _lire_json(chemin_tranche)
         except (OSError, json.JSONDecodeError) as exc:
