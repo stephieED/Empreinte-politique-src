@@ -189,9 +189,12 @@ fait pas échouer la lecture, il rend un index vide (#683, #510).
 
 **Il n'écrit aucun profil** — il prépare la matière que `merge-and-pivot`
 consomme à la passe pivot (`--enrich-parltrack` →
-`src/normalize_parltrack_dumps.py` → `textes_portes[]` et `amendements[]` des
-profils MEP). Les deux derniers dumps sont **lus et testés mais pas encore
-stockés** : leur place dans le pivot se décide au lot suivant de #683.
+`src/normalize_parltrack_dumps.py`). Depuis le lot 2 de #683, les cinq dumps
+alimentent `votes[]`, `amendements[]`, `textes_portes[]` et `interventions[]`
+des **7 candidats déclarés à identifiant européen** — les listes que la fiche a
+déjà, jamais un bloc parallèle. L'enrichissement a lieu **dans**
+`_normaliser_en_pivot`, avant la dérivation de la couverture : un champ dérivé
+ne peut pas décrire des listes qui changent après lui.
 
 **Les trois dumps que ParlTrack publie et que ce job ne prend pas**, chacun pour
 une raison mesurée : `ep_meps` fait doublon avec `extract-ue-officiel` ;

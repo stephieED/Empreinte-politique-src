@@ -244,11 +244,26 @@ Format d'un profil pivot v1 :
                                              # vote (date, texte, sort, type_vote…) conservé tel
                                              # quel quand aucune législature n'a pu être résolue.
                                              # Ni supprimé ni doté d'une clé inventée (§2.5).
+                                             # #683 — il porte "institution": "parlement_europeen"
+                                             # sur un vote du PE, qui n'a JAMAIS de scrutin_id :
+                                             # l'index partagé est keyé `an:<leg>:<num>` et
+                                             # `decomposer_id` refuse tout autre préfixe. Le
+                                             # marqueur n'est pas décoratif — c'est lui que
+                                             # `couverture_profil.bornes_europeennes` lit pour
+                                             # dire quelle borne s'applique à quelle part de la
+                                             # liste. Idem dans `amendement_non_resolu`, et sous
+                                             # `interventions[].source.institution`.
         }
     ],
     "textes_portes": [                       # dossiers dont l'élu est auteur ou rapporteur
         {
             "titre": "Proposition de loi ...",
+            # "institution": "parlement_europeen"
+                                             # FACULTATIF (#683) — présent sur les seules entrées
+                                             # du Parlement européen. Son absence signifie
+                                             # « Assemblée nationale », qui est le cas de 100 %
+                                             # des entrées écrites avant ce lot : l'écrire
+                                             # partout aurait été un backfill sans fait nouveau.
             "dossier_id": "DLR5L15N37607",   # identifiant AN du dossier législatif (#639).
                                              # Même nom que gouvernements textes[].dossier_id :
                                              # c'est la seule clé qui rattache un texte porté
@@ -463,7 +478,18 @@ COLLECTE_THEME_SEUL = "theme_seul"
 #: toujours présente ferait de la forme pleine une valeur parmi d'autres, alors
 #: qu'elle est le défaut, et rendrait les 16 242 entrées déjà publiées
 #: rétroactivement « non déclarées ».
-KNOWN_COLLECTES_INTERVENTION: frozenset[str] = frozenset({COLLECTE_THEME_SEUL})
+#: #683 — la source ne publie **aucun** verbatim, et ce n'est pas notre run qui
+#: l'a écarté. `theme_seul` dit « le verbatim n'a pas été demandé » (un fait sur
+#: le run) ; celui-ci dit « il n'existe pas chez la source » (un fait sur la
+#: source). Les confondre rangerait sous une décision de collecte ce que le
+#: Parlement européen ne publie pas — deux absences qui ne se confondent
+#: jamais (§2 règle 5).
+COLLECTE_SANS_VERBATIM_SOURCE = "sans_verbatim_source"
+
+KNOWN_COLLECTES_INTERVENTION: frozenset[str] = frozenset({
+    COLLECTE_THEME_SEUL,
+    COLLECTE_SANS_VERBATIM_SOURCE,
+})
 
 # Ordre canonique de `chambres` (#493). Il rend la liste **stable** d'un run à
 # l'autre — sans lui, l'ordre suivrait celui des mandats, que la fusion additive

@@ -769,6 +769,8 @@ def _normaliser_en_pivot(
     resolutions: Any = perimetre.RESOLUTIONS_PAR_DEFAUT,
     scrutins_index: Optional[ScrutinsIndex],
     decisions: Optional[tuple[str, ...]] = None,
+    enrich_parltrack: bool = False,
+    journal: Optional[dict[str, Any]] = None,
 ) -> Optional[dict[str, Any]]:
     """Normalise le brut FR et/ou le mandat européen en un seul pivot.
 
@@ -853,6 +855,29 @@ def _normaliser_en_pivot(
 
     if pivot_profile is None:
         return None
+
+    # #683 — L'ENRICHISSEMENT EUROPÉEN A LIEU ICI, ET PAS CHEZ L'APPELANT.
+    #
+    # Il y vivait, et deux choses en découlaient. La couverture est dérivée
+    # douze lignes plus bas, sur les listes « arrêtées » : un profil européen
+    # publiait donc `couverture.amendements` calculée **avant** l'arrivée de ses
+    # 525 amendements — une couverture qui décrit un profil que le fichier ne
+    # contient pas. Et le chemin de collecte normal, lui, n'enrichissait pas du
+    # tout : seul `--pivot-only` le faisait, si bien que les deux chemins ne
+    # produisaient pas le même pivot.
+    #
+    # La couverture est un champ dérivé (§4) : il se recalcule après tout ce qui
+    # change les listes, et la seule façon de le garantir est que rien ne les
+    # change après lui.
+    if journal is not None:
+        journal["parltrack"] = "n/a"
+    if enrich_parltrack and mandat_ue:
+        mep_id = mandat_ue.get("identifiant_pe")
+        if mep_id is not None:
+            statut = _enrich_pivot_with_parltrack_safe(pivot_profile, int(mep_id))
+            if journal is not None:
+                journal["parltrack"] = statut
+            _tprint(f"  ParlTrack MEP {mep_id} : {statut}")
 
     # #539 — la couverture est dérivée en DERNIER, une fois les listes et la
     # provenance arrêtées, et elle n'est jamais fusionnée : elle décrit le run,
@@ -1072,23 +1097,20 @@ def process_candidat(
         # drapeaux ne décrivent donc rien. La décision se lit dans le brut
         # (`meta.collecte_ecartee`, #539) et, à défaut, dans la provenance —
         # le job roster porte les deux `--skip-*` en dur (#357).
+        journal: dict[str, Any] = {}
         pivot_profile = _normaliser_en_pivot(
             profile, mandat_ue,
             nom=nom, effective_slug=effective_slug, parti=parti, provenance=provenance,
             chambre=chambre, scrutins_index=scrutins_index, decisions=None,
             resolutions=getattr(args, "resolutions", perimetre.RESOLUTIONS_PAR_DEFAUT),
+            enrich_parltrack=getattr(args, "enrich_parltrack", False), journal=journal,
         )
 
         if pivot_profile is None:
             _tprint(f"— {nom} ({effective_slug}) : aucune source normalisable en --pivot-only.")
             return {"nom": nom, "slug": effective_slug, "statut": "non_normalisable", "parltrack": "n/a"}
 
-        parltrack_statut = "n/a"
-        if getattr(args, "enrich_parltrack", False) and mandat_ue:
-            mep_id = mandat_ue.get("identifiant_pe")
-            if mep_id is not None:
-                parltrack_statut = _enrich_pivot_with_parltrack_safe(pivot_profile, int(mep_id))
-                _tprint(f"  ParlTrack MEP {mep_id} : {parltrack_statut}")
+        parltrack_statut = journal.get("parltrack", "n/a")
 
         pivot_path = pivot_dir / f"{effective_slug}.pivot.json"
         existing_pivot = None
@@ -1344,6 +1366,7 @@ def process_candidat(
             nom=nom, effective_slug=effective_slug, parti=parti, provenance=provenance,
             chambre=chambre, scrutins_index=scrutins_index, decisions=decisions,
             resolutions=getattr(args, "resolutions", perimetre.RESOLUTIONS_PAR_DEFAUT),
+            enrich_parltrack=getattr(args, "enrich_parltrack", False),
         )
         if pivot_profile is not None:
             pivot_path = pivot_dir / f"{effective_slug}.pivot.json"
