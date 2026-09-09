@@ -20,11 +20,16 @@ les charger, ni à les faire grossir. -->
   diverged from the real one would prove nothing about what it was built to prove, and that
   failure is unrecoverable — you cannot learn afterwards what it did not exercise. It
   replaces no test: #788 was a half-second unit test, and this mode exists for what no test
-  can see, orchestration. A requested slug outside the scope is **named**
+  can see, orchestration. **And it is not a short loop: measured, a test run costs 51 min
+  against 1 h 15** — `merge-and-pivot` is half of it and cannot shrink, since it redoes both
+  pivot passes, the aggregates and the four guards over the **whole corpus**, which is
+  exactly what the run exists to exercise. The gain is a third, not three quarters, and it
+  lands on the half that fails early. A requested slug outside the scope is **named**
   (`TEST_SLUG_INTROUVABLE`) and an empty scope fails at the matrix job
   (`TEST_PERIMETRE_VIDE`), never an hour later — otherwise "you mistyped it" reads as
   "nothing to collect" (#510, #771).
-  → `docs/decisions/run-de-test-perimetre-reduit-792.md`
+  → `docs/decisions/run-de-test-perimetre-reduit-792.md`,
+    `docs/decisions/cout-reel-du-run-de-test-792.md`
 - **An artifact that was published and did not arrive is a failure, not an absent source
   (#786).** Run `34241352524` is **green and collected nobody**: its four extraction
   downloads left within the same second and all took a **403 "secondary rate limit"** on
