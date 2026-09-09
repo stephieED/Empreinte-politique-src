@@ -137,6 +137,28 @@ Convention d'écriture : `AGENTS.md` §8.
 
 ## Known bugs
 
+- **La méthodologie porte cinq chiffres écrits à la main, mesurés sur un corpus
+  de 27 fiches (#328).** `MethodologyPage.jsx` affiche « 1 160 positions de
+  dernière lecture », « 711 des 1 160 », « le banc seul en couvre 719 et le
+  gouvernement seul 916 » — le manifeste en publie **30** aujourd'hui, et rien
+  ne recalcule ces nombres. Ils ne sont pas faux par construction, ils sont
+  **invérifiables** : aucune sortie ne les porte, aucun test ne les tient. La
+  page `/couverture` montre la sortie du problème — tout ce qu'elle affiche
+  vient de `couverture.json`, mesuré au build, et un test refuse un nombre à
+  trois chiffres dans son JSX. La même mécanique reste à appliquer à la
+  méthodologie.
+
+- **Un bloc de la fiche candidat bascule en sombre sur une page qui reste
+  claire.** `index.css` déclare `color-scheme: light` sur `:root`, et
+  `CandidateProfile.css` porte pourtant un `@media (prefers-color-scheme: dark)`
+  sur `.cp-gc`. Vérifié au navigateur le 09/09/2026 en `colorScheme: 'dark'` :
+  `body` reste `#f7f6f4` quand `.cp-gc` prend `--rail: #1f2027` et
+  `--parl: #8fb3e8` — une figure foncée au milieu d'une page claire. Deux
+  sorties possibles, et le choix est éditorial : retirer le bloc (l'interface
+  assume d'être claire) ou porter un vrai thème sombre sur toute l'interface.
+  `FriseCouverture.css` s'abstient en attendant, et son commentaire dit
+  pourquoi.
+
 - **Un moment de séance sans grammaire plus fine sous lui reste publié comme un
   sujet (#710).** Le critère structurel de #710 écarte les créneaux de questions
   parce que la source range dessous des points `QG_1_1`/`QOSD_1_1`/`QPM_1_1` ;

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import Brand from './Brand';
+import PiedDeSite from './PiedDeSite';
 import '../styles/shell.css';
 import './StaticPage.css';
 
@@ -36,6 +37,7 @@ export default function StaticPage({ eyebrow, title, tagline, updated, sections 
             ))}
           </div>
         </main>
+        <PiedDeSite />
       </div>
     </div>
   );

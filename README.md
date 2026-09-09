@@ -144,6 +144,13 @@ vers les deux index partagés. Pourquoi, et ce que ça a fait gagner :
 
 ## Ce que la couverture ne couvre pas encore
 
+Le site le publie, et pas seulement ce fichier : **[« Ce que contient ce corpus »](https://empreinte-politique.fr/couverture)**
+(`/couverture`) montre, pour les trois populations publiées, ce que le dépôt
+porte et depuis quand, puis par liste les fiches où elle manque. Deux tiers des
+limites de couverture étaient jusque-là recopiés à l'identique sous chaque fiche,
+où ils se lisaient comme des faits sur la personne affichée (#328).
+→ [`docs/decisions/page-couverture-commune-328.md`](docs/decisions/page-couverture-commune-328.md)
+
 - **Groupes** : seuls les **12 groupes** déclarés dans
   `raw_data/groupes_reels.json` sont produits, pas tous ceux qui existent — une
   fiche par groupe **et par législature**. Les **5 groupes de la XVIIe** y sont

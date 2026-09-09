@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 263 décisions
+gouverne sans avoir à fouiller les 264 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -436,7 +436,7 @@ Le mentionnent sans le gouverner : [`absences-publiees-comme-faits-556-558-560`]
 | [`meta.warnings[]` déclare son destinataire, dans un jumeau typé et aligné (#642) (2026-08-31)](decisions/destinataire-avertissements-642.md) | `MOTIFS_DEFAUT_COLLECTE`, `MOTIFS_JAMAIS_PANNE`, `MOTIFS_PANNE` |
 | [L'européen entre dans les listes que la fiche a déjà (#683, lot 2)](decisions/stockage-europeen-dans-les-listes-existantes-683.md) | `bornes_europeennes` |
 
-Le mentionnent sans le gouverner : [`couverture-remplacee-par-liste-602`](decisions/couverture-remplacee-par-liste-602.md), [`fiches-groupe-17e-legislature-700`](decisions/fiches-groupe-17e-legislature-700.md), [`lecture-dumps-parltrack-683`](decisions/lecture-dumps-parltrack-683.md), [`preuve-de-borne-dite-une-fois-328`](decisions/preuve-de-borne-dite-une-fois-328.md).
+Le mentionnent sans le gouverner : [`couverture-remplacee-par-liste-602`](decisions/couverture-remplacee-par-liste-602.md), [`fiches-groupe-17e-legislature-700`](decisions/fiches-groupe-17e-legislature-700.md), [`lecture-dumps-parltrack-683`](decisions/lecture-dumps-parltrack-683.md), [`pied-de-site-et-section-6-328`](decisions/pied-de-site-et-section-6-328.md), [`preuve-de-borne-dite-une-fois-328`](decisions/preuve-de-borne-dite-une-fois-328.md).
 
 ## `src/download_watchdog.py`
 

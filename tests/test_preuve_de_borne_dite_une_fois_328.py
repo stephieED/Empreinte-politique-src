@@ -75,20 +75,47 @@ def test_la_preuve_reste_portee_par_chaque_etat(profil: str) -> None:
     bloc = profil[profil.index("export function couvertureDesListes") :]
     bloc = bloc[: bloc.index("\n}")]
     assert "preuve," in bloc
-    assert "preuve: null" not in bloc
+    # `borne ? null : e.preuve` est la SEULE mise à null tolérée, et elle porte
+    # sur une preuve qui n'est pas supprimée mais déplacée sur `/couverture`
+    # (#328). Toute autre annulerait un fait propre à la personne.
+    assert bloc.count("null") == bloc.count("borne ? null : e.preuve ?? null") + bloc.count("?? null")
 
 
-def test_la_memoire_est_remise_a_zero_par_liste(profil: str) -> None:
-    """Deux listes différentes peuvent partager une borne — chacune la dit une fois.
+def test_la_memoire_est_desormais_celle_de_la_SECTION(profil: str) -> None:
+    """La mémoire est partagée entre les listes — et c'est le renversement de #328.
 
-    Le `Set` est déclaré DANS le `map` des listes. Déclaré au-dessus, la borne
-    AMO30 disparaîtrait de « Votes » parce que « Mandats et fonctions » l'a déjà
+    #802 l'avait délibérément remise à zéro par liste : partagée, la borne AMO30
+    aurait disparu de « Votes » parce que « Mandats et fonctions » l'avait déjà
     écrite, alors que ce sont deux listes indépendantes.
+
+    CETTE RAISON TOMBE AVEC LA BORNE. Les preuves de borne ne sont plus rendues
+    du tout (`ETATS_PORTANT_LA_BORNE`) : elles vivent sur `/couverture`. Ce qui
+    reste est propre à la personne ou au run — « aucun acteur AMO30 pour X »,
+    « extraction du groupe Senat:LR suspendue » —, identique d'une liste à
+    l'autre, et se répétait cinq fois pour rien : 700 mots sur la fiche
+    Retailleau, dont 140 par liste pour le seul certificat de suspension.
     """
     bloc = profil[profil.index("export function couvertureDesListes") :]
     bloc = bloc[: bloc.index("\n}")]
     avant_map = bloc[: bloc.index("return LISTES_COUVERTES.map")]
-    assert "new Set()" not in avant_map, "la mémoire est partagée entre les listes"
+    assert "new Set()" in avant_map, "la mémoire est redevenue locale à une liste"
+
+
+def test_la_borne_de_source_n_est_plus_rendue_sur_la_fiche(profil: str) -> None:
+    """Elle ne dit rien de la personne : elle dit ce que l'Assemblée publie.
+
+    Le discriminant est l'ÉTAT, garanti par `couverture_profil._deriver` qui
+    attache `borne.preuve` à `couvert` et `hors_couverture` et bascule sur
+    `fait_etabli` dès que la preuve devient propre à la personne — pas une
+    reconnaissance du texte de la preuve, qui serait une jointure par
+    ressemblance (#639).
+    """
+    assert "export const ETATS_PORTANT_LA_BORNE" in profil
+    bloc = profil[profil.index("export const ETATS_PORTANT_LA_BORNE") :]
+    assert "'couvert'" in bloc[:200] and "'hors_couverture'" in bloc[:200]
+    calcul = profil[profil.index("export function couvertureDesListes") :]
+    calcul = calcul[: calcul.index("\n}")]
+    assert "ETATS_PORTANT_LA_BORNE.has(e.etat)" in calcul
 
 
 def test_le_rendu_saute_la_repetition_et_rien_d_autre(fiche: str) -> None:

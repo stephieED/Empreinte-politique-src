@@ -1,6 +1,7 @@
 import { Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { DEFAULT_CANDIDATE_ID, DEFAULT_GROUP_ID, DEFAULT_GOVERNMENT_ID } from '../../data';
+import { SOURCE_BADGE_VERIFIED } from '../../utils/lecture';
 import './landing.css';
 
 function CheckIcon() {
@@ -41,11 +42,13 @@ const PIPELINE_STEPS = [
     content: <code className="hero-pipeline-sample">{'{ vote: "pour", texte: "PJL exemple" }'}</code>,
   },
   {
-    key: 'fait-verifie',
-    label: 'Fait vérifié',
+    key: 'fait-source',
+    /* « Vérifié » disait que nous contrôlons la donnée. Nous ne la contrôlons
+       pas : nous la publions avec le lien vers la source qui la porte (#328). */
+    label: 'Fait sourcé',
     content: (
       <span className="hero-pipeline-verified">
-        <CheckIcon /> Source vérifiée
+        <CheckIcon /> {SOURCE_BADGE_VERIFIED}
       </span>
     ),
   },

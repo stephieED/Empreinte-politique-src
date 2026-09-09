@@ -251,8 +251,22 @@ export function emptyListMessage(cause, motif) {
  * parle de NOUS. « Non vérifié » ferait porter le doute sur les 484 132
  * amendements eux-mêmes, qui viennent tous de l'open data de l'Assemblée
  * nationale — ce serait un jugement sur la donnée, pas un constat sur la page.
+ *
+ * ET « VÉRIFIÉE » EST TOMBÉ POUR LA MÊME RAISON, DANS L'AUTRE SENS (#328).
+ * Le badge est vrai quand un `source_url` existe et qu'il est publié : il
+ * n'atteste NI une vérification que nous ne faisons pas, NI une autorité qu'il
+ * ne mesure pas. « Source officielle » a été écarté sur mesure — sur les 23 499
+ * liens publiés des 32 fiches candidats, des 19 fiches de groupe et des 10
+ * fiches de gouvernement, 22 988 pointent vers l'Assemblée ou le Parlement
+ * européen, mais **511 pointent vers nosdeputes.fr**, un tiers (Regards
+ * Citoyens) : le mot aurait été faux 511 fois. Reste le seul mot qui ne dit que
+ * ce que le badge fait — il mène à la source.
+ *
+ * Que la source fasse foi parce qu'elle est institutionnelle est une phrase
+ * vraie, argumentée, et qui se dit UNE fois : en méthodologie et dans le bloc
+ * Sources de l'accueil, pas en trois mots répétés sous chaque fait.
  */
-export const SOURCE_BADGE_VERIFIED = 'Source vérifiée';
+export const SOURCE_BADGE_VERIFIED = 'Source';
 export const SOURCE_BADGE_UNPUBLISHED = 'Lien de source non publié';
 
 export function sourceBadge(sourceUrl) {
