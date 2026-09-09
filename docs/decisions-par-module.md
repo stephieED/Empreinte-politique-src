@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 264 décisions
+gouverne sans avoir à fouiller les 265 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -207,7 +207,7 @@ Le mentionnent sans le gouverner : [`fenetre-historique-donnees`](decisions/fene
 | --- | --- |
 | [`meta.warnings[]` déclare son destinataire, dans un jumeau typé et aligné (#642) (2026-08-31)](decisions/destinataire-avertissements-642.md) | `AVERTISSEMENTS_HERITES`, `Avertissement`, `DESTINATAIRES_AVERTISSEMENT`, `PREFIXES_HERITES`, `avertissement`, `deriver_avertissements` |
 
-Le mentionnent sans le gouverner : [`amendements-zero-pas-de-hard-fail`](decisions/amendements-zero-pas-de-hard-fail.md), [`bloc-sans-fond-484`](decisions/bloc-sans-fond-484.md), [`couverture-dossiers-hors-couverture-vs-zero`](decisions/couverture-dossiers-hors-couverture-vs-zero.md), [`liste-candidats-declares-753`](decisions/liste-candidats-declares-753.md), [`profil-de-groupe-lecture-329`](decisions/profil-de-groupe-lecture-329.md), [`retrait-senat-528`](decisions/retrait-senat-528.md), [`union-warnings-extinction-600`](decisions/union-warnings-extinction-600.md), [`verification-bout-en-bout-legislatures-figees`](decisions/verification-bout-en-bout-legislatures-figees.md).
+Le mentionnent sans le gouverner : [`amendements-zero-pas-de-hard-fail`](decisions/amendements-zero-pas-de-hard-fail.md), [`bloc-sans-fond-484`](decisions/bloc-sans-fond-484.md), [`constats-parltrack-perimes-683`](decisions/constats-parltrack-perimes-683.md), [`couverture-dossiers-hors-couverture-vs-zero`](decisions/couverture-dossiers-hors-couverture-vs-zero.md), [`liste-candidats-declares-753`](decisions/liste-candidats-declares-753.md), [`profil-de-groupe-lecture-329`](decisions/profil-de-groupe-lecture-329.md), [`retrait-senat-528`](decisions/retrait-senat-528.md), [`union-warnings-extinction-600`](decisions/union-warnings-extinction-600.md), [`verification-bout-en-bout-legislatures-figees`](decisions/verification-bout-en-bout-legislatures-figees.md).
 
 ## `src/budget_collecte.py`
 
@@ -698,7 +698,7 @@ Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambr
 
 ## `src/merge_profile.py`
 
-58 décision(s) le gouvernent ; le module en cite 5.
+59 décision(s) le gouvernent ; le module en cite 5.
 
 | Décision | Nomme |
 | --- | --- |
@@ -714,6 +714,7 @@ Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambr
 | [Ce que la normalisation a le droit de faire : la table de relations collecté → publié (#545) (2026-08-28)](decisions/collecte-vs-publie-545.md) | `_pivot_vote_key` |
 | [Un index Syceron en cache est un parsage en cache, et l'existence n'y est pas la conformité (#719) (2026-09-02)](decisions/conformite-index-syceron-719.md) | `backfill_sujet_seance` |
 | [Les consommateurs de `chambre` migrés vers `chambres`, et le garde-fou qui datera son retrait (#494) (2026-08-20)](decisions/consommateurs-chambres-migres.md) | `_prefer_non_empty`, `merge_pivot_profile`, `merge_raw_profile` |
+| [Un constat « aucune donnée » ne survit pas à l'arrivée de données (#683, lot 3)](decisions/constats-parltrack-perimes-683.md) | `FAMILLES_WARNINGS`, `clean_stale_interventions`, `clean_stale_textes_portes`, `merge_pivot_profile`, `retirer_constats_parltrack_perimes`, `unir_warnings` |
 | [La corroboration porte sur les chambres publiées, pas sur la complétude des mandats — et la condition de retrait de `chambre` devient atteignable (#486) (2026-08-30)](decisions/corroboration-chambres-publiees-486.md) | `FAMILLES_WARNINGS`, `_prefer_non_empty`, `backfill_mandat_chambre`, `merge_pivot_profile` |
 | [Ce qu'une liste vide veut dire : les quatre états de couverture (#539) (2026-08-28)](decisions/couverture-listes-539.md) | `_prefer_non_empty` |
 | [La couverture se remplace à la maille où #539 la publie, et un cas non tranchable se déclare (#602) (2026-08-30)](decisions/couverture-remplacee-par-liste-602.md) | `FAMILLES_WARNINGS`, `_prefer_non_empty`, `fusionner_couverture` |
