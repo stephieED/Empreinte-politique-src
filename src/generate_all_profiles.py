@@ -1315,7 +1315,15 @@ def process_candidat(
     # profil relu monolithique et réécrit ici migre donc de lui-même, sans
     # qu'aucun octet ne se perde : `charger_profil_brut` a rendu la liste
     # entière, `ecrire_profil_brut` la range.
-    ecrire_profil_brut(out_dir, effective_slug, profile)
+    # L'ACTEUR EST TRANSMIS À L'ÉCRITURE (#691) : c'est lui qui autorise le
+    # marquage des tranches de législature close en `derivee`, et donc leur
+    # non-écriture. Sans lui, rien n'est marqué et le comportement est celui
+    # d'avant — le défaut penche du bon côté.
+    _entree_acteur = _entree_correspondance(effective_slug) or {}
+    ecrire_profil_brut(
+        out_dir, effective_slug, profile,
+        acteur_ref=(_entree_acteur.get("identifiants") or {}).get("an"),
+    )
     _manifest_append(getattr(args, "manifest_out", None), json_path.name)
 
     # Optionnel : écriture du profil pivot v1 (--pivot)

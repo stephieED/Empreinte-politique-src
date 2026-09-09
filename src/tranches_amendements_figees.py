@@ -83,17 +83,27 @@ DIR_ARCHIVES = Path("raw_data") / "amendements_an_figes"
 NOM_STORE = "amendements.json.gz"
 NOM_INDEX_ACTEUR = "index_par_acteur.json.gz"
 
-#: Mémo par législature. **Par législature et libérable**, jamais global :
-#: l'archive de la XVIe pèse 4,7 Go en clair et une relecture entière a déjà
-#: déclenché l'OOM killer sur un run réel
-#: (`docs/decisions/amendements-legislatures-figees.md`).
-_MEMO: dict[str, tuple[dict[str, Any], dict[str, Any]]] = {}
+#: Mémos par législature, **et séparés par fichier**. Deux raisons, dont une
+#: mesurée à la dure :
+#:
+#: - par législature et libérables, jamais globaux — l'archive de la XVIe pèse
+#:   4,7 Go en clair et une relecture entière a déjà déclenché l'OOM killer sur
+#:   un run réel (`docs/decisions/amendements-legislatures-figees.md`) ;
+#: - **séparés**, parce que `signatures()` n'a besoin que de l'index par acteur
+#:   (10,5 Mo pour la XVe) quand `reconstruire_tranche()` a besoin du store
+#:   (5,7 Mo gzippés, plusieurs centaines en clair). Les charger ensemble
+#:   faisait payer le store à tout appelant qui ne fait que compter — et un
+#:   essai de marquage sur `mathilde-panot`, qui touche les législatures 15 et
+#:   16, s'est fait tuer par l'OOM killer sur une machine à 7 Go.
+_MEMO_STORE: dict[str, dict[str, Any]] = {}
+_MEMO_ACTEURS: dict[str, dict[str, Any]] = {}
 
 
 def vider_memo() -> None:
     """Libère les archives chargées — pour les tests, et pour un appelant qui
     a fini une législature avant d'attaquer la suivante."""
-    _MEMO.clear()
+    _MEMO_STORE.clear()
+    _MEMO_ACTEURS.clear()
 
 
 def _normaliser_nil(valeur: Any) -> Any:
@@ -124,24 +134,51 @@ def archive_disponible(legislature: str, dir_archives: Optional[Path] = None) ->
     return (base / NOM_STORE).is_file() and (base / NOM_INDEX_ACTEUR).is_file()
 
 
+def _charger(
+    memo: dict[str, dict[str, Any]], nom: str, legislature: str,
+    dir_archives: Optional[Path],
+) -> dict[str, Any]:
+    cle = str(legislature)
+    if cle not in memo:
+        chemin = chemin_archive(cle, dir_archives) / nom
+        with gzip.open(chemin, "rt", encoding="utf-8") as fichier:
+            memo[cle] = json.load(fichier)
+    return memo[cle]
+
+
+def charger_index_acteurs(
+    legislature: str, dir_archives: Optional[Path] = None
+) -> dict[str, Any]:
+    """`acteur → [{uid, role_signataire}, …]`. Le petit fichier.
+
+    C'est celui-ci, et lui seul, dont a besoin quiconque veut **compter** ou
+    **marquer** — pas le store des amendements.
+    """
+    return _charger(_MEMO_ACTEURS, NOM_INDEX_ACTEUR, legislature, dir_archives)
+
+
+def charger_store(
+    legislature: str, dir_archives: Optional[Path] = None
+) -> dict[str, Any]:
+    """`uid → l'amendement`. Le gros fichier, à ne charger que pour reconstruire."""
+    return _charger(_MEMO_STORE, NOM_STORE, legislature, dir_archives)
+
+
 def charger_archive(
     legislature: str, dir_archives: Optional[Path] = None
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """`(store, index_par_acteur)` d'une législature figée.
 
+    Charge **les deux**. Préférer `charger_index_acteurs` quand il ne s'agit
+    que de compter : le store coûte plusieurs centaines de Mo en clair.
+
     Lève `FileNotFoundError` si l'archive manque : ce module ne rend jamais un
     couple vide, qui se lirait comme « ce membre n'a signé aucun amendement ».
     """
-    cle = str(legislature)
-    if cle in _MEMO:
-        return _MEMO[cle]
-    base = chemin_archive(cle, dir_archives)
-    with gzip.open(base / NOM_STORE, "rt", encoding="utf-8") as fichier:
-        store = json.load(fichier)
-    with gzip.open(base / NOM_INDEX_ACTEUR, "rt", encoding="utf-8") as fichier:
-        par_acteur = json.load(fichier)
-    _MEMO[cle] = (store, par_acteur)
-    return _MEMO[cle]
+    return (
+        charger_store(legislature, dir_archives),
+        charger_index_acteurs(legislature, dir_archives),
+    )
 
 
 def _cle_acteur(acteur_ref: Any) -> Optional[str]:
@@ -165,7 +202,7 @@ def signatures(
     cle = _cle_acteur(acteur_ref)
     if cle is None:
         return None
-    _, par_acteur = charger_archive(legislature, dir_archives)
+    par_acteur = charger_index_acteurs(legislature, dir_archives)
     entrees = par_acteur.get(cle)
     if entrees is None:
         return None
@@ -188,7 +225,7 @@ def reconstruire_tranche(
     entrees = signatures(acteur_ref, legislature, dir_archives)
     if entrees is None:
         return None
-    store, _ = charger_archive(legislature, dir_archives)
+    store = charger_store(legislature, dir_archives)
     tranche: list[dict[str, Any]] = []
     for entree in entrees:
         brut = store.get(entree["uid"])
