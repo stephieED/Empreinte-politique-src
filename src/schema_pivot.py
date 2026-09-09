@@ -113,6 +113,15 @@ Format d'un profil pivot v1 :
                                              # source propre donc sans borne propre.
                                              # Bloc absent = profil publié avant #539.
                                              # Fabrique unique : couverture_profil.deriver().
+                                             # #683 — une entrée peut porter "source"
+                                             # ("parlement_europeen"), FACULTATIF, dont
+                                             # l'absence signifie « Assemblée nationale » :
+                                             # c'est le cas de 100 % des entrées écrites
+                                             # avant ce champ. Il départage deux écrivains
+                                             # dont l'un a interrogé une source que l'autre
+                                             # n'a pas interrogée (merge_profile,
+                                             # _sources_couvertes) — jamais le texte de la
+                                             # preuve, qui n'est pas un identifiant.
         "votes": [
             {
                 "etat": "couvert",           # ETATS_COUVERTURE, fermé — vocabulaire aligné sur

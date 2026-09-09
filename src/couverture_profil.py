@@ -651,11 +651,22 @@ def _entree(
     *,
     cause: Optional[str] = None,
     portee: Optional[dict[str, Any]] = None,
+    source: Optional[str] = None,
 ) -> dict[str, Any]:
-    """Une entrée de couverture, clés dans un ordre stable (git le lit)."""
+    """Une entrée de couverture, clés dans un ordre stable (git le lit).
+
+    `source` (#683) nomme l'institution dont l'entrée décrit la couverture. Il
+    est **facultatif et son absence signifie « Assemblée nationale »**, ce qui
+    est le cas de 100 % des entrées écrites avant ce champ — l'écrire partout
+    aurait été un backfill sans fait nouveau. Il n'est pas décoratif : c'est lui
+    que `merge_profile._sources_couvertes` lit pour départager deux écrivains
+    dont l'un a interrogé une source que l'autre n'a pas interrogée.
+    """
     entree: dict[str, Any] = {"etat": etat}
     if cause is not None:
         entree["cause"] = cause
+    if source is not None:
+        entree["source"] = source
     if portee is not None:
         entree["portee"] = portee
     entree["preuve"] = preuve
@@ -1045,6 +1056,7 @@ def deriver(
                 _preuve_europeenne(liste, fin),
                 constate_le,
                 portee={"debut": debut, "fin": fin},
+                source=INSTITUTION_PE,
             )
         )
 
