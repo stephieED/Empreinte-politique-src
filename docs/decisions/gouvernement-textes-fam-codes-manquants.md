@@ -1,6 +1,10 @@
 <a id="gouvernement-textes-fam-codes-manquants"></a>
 # `gouvernement_textes` : 3 `fam_code` manquants excluaient 42 % des textes ; `adopte_cmp` ajouté à la nomenclature (#397) (2026-08-18)
 
+`2026-08-18`
+
+> **En bref** — 3 `fam_code` manquants excluaient 42 % des textes ; `adopte_cmp` ajouté à la nomenclature.
+
 **Contexte** : la revue de l'audit `audit_pipeline_20260817T153911Z` a montré
 518 warnings sur les profils de gouvernement, dont **473 du seul type
 `gouvernement_textes`**. Dépliés, ils provenaient de **3 `fam_code` distincts

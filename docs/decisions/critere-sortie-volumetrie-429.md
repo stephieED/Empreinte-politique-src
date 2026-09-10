@@ -1,6 +1,10 @@
 <a id="critere-sortie-volumetrie-429"></a>
 # Le critère de sortie de l'épic volumétrie était écrit sur la mauvaise grandeur (#429) (2026-08-28)
 
+`2026-08-28`
+
+> **En bref** — aucune limite GitHub ne porte sur l'arbre de travail ; le critère est récrit sur le dépôt et le blob.
+
 > **La contrainte de volume a une raison, et elle est écrite depuis le 30/08/2026** :
 > [`donnees-versionnees-integrite.md`](donnees-versionnees-integrite.md). Ce critère
 > mesure le coût d'une propriété d'intégrité, il ne la remet pas en cause.

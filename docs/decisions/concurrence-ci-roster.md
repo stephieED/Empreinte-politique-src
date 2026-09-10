@@ -1,6 +1,10 @@
 <a id="concurrence-ci-roster"></a>
 # Réduction du pic de jobs concurrents `generate-data.yml` : séquencement + cache AN partagé (2026-08-12)
 
+`2026-08-12`
+
+> **En bref** — réduction du pic de jobs concurrents : séquencement et cache AN partagé.
+
 **Contexte** : #222 (sous-issue du diagnostic #217/#221) — `extract-roster-groupes`
 (#192) est le 5ᵉ job du graphe, lancé en parallèle des 4 jobs d'extraction
 historiques. `extract-an` et `extract-roster-groupes` téléchargent chacun,

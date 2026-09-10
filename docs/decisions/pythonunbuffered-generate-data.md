@@ -1,6 +1,10 @@
 <a id="pythonunbuffered-generate-data"></a>
 # `PYTHONUNBUFFERED` global sur `generate-data.yml` : stdout fiable en CI non-TTY (#259) (2026-08-13)
 
+`2026-08-13`
+
+> **En bref** — CPython bufferise `stdout` dès que la sortie n'est pas un TTY.
+
 **Contexte** : CPython bufferise `stdout` par blocs (pas par ligne) dès qu'il
 détecte une sortie non-TTY — le cas de tout step GitHub Actions — alors que
 `stderr` n'est jamais bufferisé. Les `print()` de progression (ex.

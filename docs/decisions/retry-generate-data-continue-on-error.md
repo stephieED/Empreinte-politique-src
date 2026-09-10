@@ -1,6 +1,10 @@
 <a id="retry-generate-data-continue-on-error"></a>
 # Étendre `retry-generate-data.yml` aux échecs de job `continue-on-error` masqués par une conclusion de run `success` (#245) (2026-08-13)
 
+`2026-08-13`
+
+> **En bref** — un échec de job `continue-on-error` masqué par une conclusion de run `success` déclenche quand même le retry.
+
 **Contexte** : [[retry-generate-data-preemption]] (#230) détecte la
 signature de préemption runner au niveau job, mais le job `detect-and-retry`
 n'était invoqué que sur `github.event.workflow_run.conclusion == 'failure'`.

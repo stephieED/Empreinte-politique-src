@@ -1,6 +1,10 @@
 <a id="gouvernement-textes-non-ecrasement"></a>
 # Profils de gouvernement : ne jamais réécrire sur une collecte incomplète, et cache dossiers dédié (#427) (2026-08-18)
 
+`2026-08-18`
+
+> **En bref** — ne jamais réécrire un profil de gouvernement sur une collecte incomplète ; cache dossiers dédié.
+
 **Contexte** : `merge-and-pivot` était le seul job de `generate-data.yml` sans
 aucun `actions/cache`. Il re-téléchargeait les trois archives de dossiers
 (~33 Mo) à chaque run — repéré en validant [[cache-cle-amendements-separee]]

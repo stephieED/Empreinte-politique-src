@@ -1,6 +1,10 @@
 <a id="cache-amendements-forme-dedupliquee"></a>
 # Cache amendements stocké et lu sous forme dédupliquée (#377) (2026-08-17)
 
+`2026-08-17`
+
+> **En bref** — le cache amendements est stocké et relu sous forme dédupliquée : correctif de l'OOM.
+
 **Contexte** : correctif de l'OOM diagnostiqué dans
 [[oom-lecture-amendements-par-candidat]]. Le mécanisme de déduplication
 existait déjà (`_aggregate_amendements_index`, écrit pour committer les

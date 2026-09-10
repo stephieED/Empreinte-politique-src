@@ -1,5 +1,9 @@
 # `synchro_sources` publie la dernière récupération réussie, et pas son origine (#600) (2026-08-30)
 
+`2026-08-30`
+
+> **En bref** — une date en retard sur le profil est un fait (la source n'a pas été re-collectée), pas une anomalie ; l'origine cache/réseau n'existe pas et ne sera pas publiée sans lecteur.
+
 Le champ n'avait pas de définition écrite. Il en a maintenant une, et elle a été
 choisie contre une lecture qui paraissait plus rigoureuse.
 

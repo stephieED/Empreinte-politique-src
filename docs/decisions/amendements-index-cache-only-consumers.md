@@ -1,6 +1,10 @@
 <a id="amendements-index-cache-only-consumers"></a>
 # Bascule d'`extract-an`/`extract-roster-groupes` vers la lecture cache-only des amendements (#252) (2026-08-13)
 
+`2026-08-13`
+
+> **En bref** — `extract-an` et `extract-roster-groupes` lisent les amendements en cache seul.
+
 **Contexte** : sous-issue 4/6 du plan d'architecture #248, bloquée par #250
 ([[amendements-index-cache-only-split]]) et #251
 ([[amendements-index-job-dedie-ci]]). C'est ce changement qui élimine

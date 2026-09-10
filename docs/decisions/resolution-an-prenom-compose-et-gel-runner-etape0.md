@@ -1,6 +1,10 @@
 <a id="resolution-an-prenom-compose-et-gel-runner-etape0"></a>
 # Bug de résolution AN pour les prénoms composés, et gel runner déplacé sur l'étape 0 (run #47) (2026-08-17)
 
+`2026-08-17`
+
+> **En bref** — bug de résolution AN sur les prénoms composés, et gel runner déplacé sur l'étape 0.
+
 **Contexte** : run `#47` de `generate-data.yml`, premier run réel après
 [[mandats-officiels-an-369]] (étape 4). Résultat inattendu : les échecs
 `extract-an` persistent (6/7 députés), mais plus du tout au même endroit que

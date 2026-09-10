@@ -1,6 +1,10 @@
 <a id="direction-artistique-empreinte"></a>
 # Direction artistique de `web/UI_finale` : brief, itérations et alternatives écartées (2026-08-14)
 
+`2026-08-14`
+
+> **En bref** — direction artistique de `web/UI_finale` : brief, itérations, et les alternatives écartées.
+
 **Contexte** : refonte de la direction artistique de `web/UI_finale` (CONTRECHAMP),
 pensée pour trois cibles emboîtées — des citoyens français en âge de voter,
 engagés et avec une appétence tech/data/analytics (cœur de cible ayant guidé

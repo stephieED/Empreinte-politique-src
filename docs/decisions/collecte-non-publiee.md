@@ -2,6 +2,10 @@
 <a id="roster-jamais-ecrit-vide"></a>
 # Un timeout ne peut plus écraser le roster, et rien de collecté ne reste non publié (#511) (2026-08-20)
 
+`2026-08-20`
+
+> **En bref** — rien de collecté ne reste non publié (seuil 0), et un timeout ne peut plus écrire un roster vide.
+
 Run `32405297873` (20/08/2026, 18:49 → 19:10), **conclusion `success`**, 16 jobs
 sur 16 verts, commit `68bc094` poussé sur `main`. Dans `merge-and-pivot`, étape
 « Normalisation pivot roster-driven » :

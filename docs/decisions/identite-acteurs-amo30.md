@@ -1,6 +1,10 @@
 <a id="identite-acteurs-amo30"></a>
 # `_build_acteur_identite_index` : couvrir les élu⋅e⋅s dont le mandat est terminé via `AMO30`, pas en combinant `AMO20` par législature (#354) (2026-08-16)
 
+`2026-08-16`
+
+> **En bref** — couvrir les élu·es dont le mandat est terminé via `AMO30`, pas en combinant `AMO20` par législature.
+
 **Contexte** : sous-issue 3/6 de #351. `_build_acteur_identite_index`
 utilisait `AMO10` ("deputes_actifs_mandats_actifs_organes"), limité aux
 ~577 député⋅e⋅s actifs de la législature en cours — aucune entrée pour un élu

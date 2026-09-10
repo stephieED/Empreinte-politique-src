@@ -1,6 +1,10 @@
 <a id="retrait-nosdeputes-529"></a>
 # NosDéputés sort du pipeline (#529, lot 5 de l'épic « une seule source AN ») (2026-08-27)
 
+`2026-08-27`
+
+> **En bref** — le profil brut vient entièrement de l'open data AN.
+
 **C'est un lot de retrait, pas de migration.** Chaque chemin qui passait par
 NosDéputés.fr avait déjà migré, lot après lot : l'identité vers le référentiel
 AMO30 (#355 puis #369 étape 4), les votes et les amendements vers l'open data

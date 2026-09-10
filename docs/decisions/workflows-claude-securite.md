@@ -1,6 +1,10 @@
 <a id="workflows-claude-securite"></a>
 # Workflows Claude : garde d'auteur, asymétrie de sandbox levée, marketplace non épinglé (#415) (2026-08-18)
 
+`2026-08-18`
+
+> **En bref** — garde d'auteur sur `issue_comment`, asymétrie de sandbox levée, marketplace non épinglé.
+
 **Contexte** : le dépôt est public et `claude.yml` / `claude-code-review.yml`
 se déclenchent tous deux sur `issue_comment`, event qui s'exécute toujours dans
 le contexte du dépôt de base, avec accès aux secrets. Ni l'un ni l'autre ne

@@ -1,6 +1,10 @@
 <a id="collecte-vide-necrase-jamais"></a>
 # Une collecte vide n'écrase jamais une collecte non vide (#465) (2026-08-20)
 
+`2026-08-20`
+
+> **En bref** — sous `--no-merge`, un champ revenu vide ne remplace jamais un champ non vide — par champ, jamais par profil.
+
 En mode écrasement (`--no-merge`), la fusion additive ne protège plus rien. Or
 une **sous-collecte** peut échouer sans que le profil écrit n'ait l'air anormal :
 identité introuvable, endpoint en panne, archive indisponible. Le profil part

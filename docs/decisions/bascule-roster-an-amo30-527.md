@@ -1,6 +1,10 @@
 <a id="bascule-roster-an-amo30-527"></a>
 # La bascule : le roster des groupes AN vient d'AMO30 (#527, lot 1b de l'épic « une seule source AN ») (2026-08-26)
 
+`2026-08-26`
+
+> **En bref** — une ligne bascule, trois conséquences qu'elle ne porte pas seule.
+
 **Ce lot bascule, et ne fait que cela.** Le lot 1 (#526) avait posé la source à
 côté de celle en place, derrière un drapeau baissé, précisément pour que la
 bascule soit une décision prise seule. La voici :

@@ -1,6 +1,10 @@
 <a id="bornage-execute-567"></a>
 # La coupure d'historique a tourné pour la première fois — et `--preparer` n'avait jamais imprimé sa procédure (#567) (2026-08-28)
 
+`2026-08-28`
+
+> **En bref** — douze tests de motifs textuels ne valaient pas une exécution.
+
 Sous-issue 1 de #566. `tests/test_borner_historique_donnees.py` comptait douze
 tests, **tous des recherches de motifs dans le texte du script**. Ils restent
 entiers : eux seuls disent que le script ne pousse jamais, qu'il ne réécrit pas

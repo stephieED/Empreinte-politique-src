@@ -1,5 +1,9 @@
 # Un lien profond démarre l'application, pas la page d'erreur de GitHub, 07/09/2026
 
+`2026-09-07`
+
+> **En bref** — mesuré en production au commit déployé `df5a9ba5` : `/` répondait **200**, `/candidats` et `/candidats/<slug>` répondaient **404**, et `/404.html` aussi ; l'application route côté client (`BrowserRouter`) quand Pages sert des **fichiers** et n'a **aucune règle de réécriture**, si bien que le site n'était navigable qu'en partant de la racine — un favori, un lien partagé, une entrée d'historique ou un simple **F5 sur une fiche** tombaient sur la page d'erreur de GitHub ; `dist/404.html` reçoit donc le contenu de `dist/index.html`, seul mécanisme disponible, et la copie est faite par le **build** (`scripts/spa-fallback.mjs`) et non par `deploy-pages.yml`, parce que le workflow ne fait que téléverser `dist/` et qu'un `dist/` publié autrement doit porter le même repli ; le repli **échoue bruyamment** si `index.html` manque ; **ce qui reste assumé** : le statut HTTP demeure **404** sur un lien profond — le lecteur voit la bonne page, un robot voit une erreur —, le corriger demandant un hébergement qui réécrit ou un routage par fragment qui abîmerait les URL ; défaut **ancien et sans rapport avec le lot du jour**, apparu avec le déploiement Pages et vu seulement parce qu'une fiche a été rafraîchie. 5 tests, trois mutations vérifiées échouantes, et le repli éprouvé contre un serveur reproduisant Pages.
+
 Ancres : `spa-fallback.mjs`, `deploy-pages.yml`, `BrowserRouter`.
 
 ## Contexte

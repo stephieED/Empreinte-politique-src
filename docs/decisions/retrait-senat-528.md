@@ -1,6 +1,10 @@
 <a id="retrait-senat-528"></a>
 # Le Sénat sort du périmètre, et le job qui concluait vert sans rien produire est retiré (#528, lot 3 de l'épic « une seule source AN ») (2026-08-26)
 
+`2026-08-26`
+
+> **En bref** — décision éditoriale, pas technique ; coût mesuré quasi nul sur le corpus publié.
+
 **La décision est éditoriale, elle a été prise, et elle est ici.** Elle n'a pas
 été déduite d'une panne : `archive.nossenateurs.fr` sert un certificat expiré
 depuis le 24/08/2026 (#516) et c'est ce qui a posé la question, pas ce qui y

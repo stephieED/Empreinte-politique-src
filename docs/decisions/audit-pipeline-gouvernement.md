@@ -1,6 +1,10 @@
 <a id="audit-pipeline-gouvernement"></a>
 # `audit_pipeline.py` : intégration du rapport gouvernement (#321, sous-issue 5/6 de #316) (2026-08-15)
 
+`2026-08-15`
+
+> **En bref** — le rapport gouvernement entre dans `audit_pipeline.py`, à parité avec profils et groupes.
+
 **Contexte** : `audit_pipeline.py` compilait jusqu'ici uniquement les audits
 profils (`audit_pivot_dataset.py`) et groupes (`audit_groupe_dataset.py`,
 #178). #321 étend la vue d'ensemble compilée à `audit_gouvernement_dataset.py`

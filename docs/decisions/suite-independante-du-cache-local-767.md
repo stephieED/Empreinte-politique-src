@@ -2,6 +2,8 @@
 
 `2026-09-10`
 
+> **En bref** — treize tests passaient ou échouaient selon qu'un répertoire de cache **local** existait, `.cache/acteurs_historique_an/` : **verts en CI** dont le checkout est vide, **rouges chez la propriétaire** au moment précis où elle vérifie qu'elle n'a rien cassé ; **ma première re-mesure était fausse** — j'avais lié `.cache` par un **lien symbolique**, or le garde-fou de #721 compare des chemins **résolus**, si bien que ma reproduction avait désarmé le contrôle qu'elle prétendait exercer, et j'ai annoncé « 1 échec, pas 13 » avant de retrouver les treize avec une vraie copie ; **le garde-fou n'était pas en cause** — il diagnostique en nommant le fichier lu et l'idiome à appliquer, et son commentaire dit qu'il ne redirige pas **exprès**, une redirection globale ayant été essayée puis écartée parce qu'elle casse les dix tests qui isolent par `chdir` ; d'où une fixture `autouse` **par fichier**, qui pointe `ACTEURS_HISTORIQUE_CACHE_DIR` vers un répertoire jetable **et vide le mémo de module aux deux bouts** — `_ACTEURS_HISTORIQUE_INDEX_MEMO` est un `dict` partagé qui, rempli par un test voisin, rend le vrai référentiel **sans rouvrir un fichier**, donc sans que le garde-fou puisse le voir. Vérifié **dans les deux mondes** : 4 372 passés cache présent, 4 372 passés cache absent — un correctif vert d'un côté et rouge de l'autre n'aurait fait que déplacer la dépendance. Ne traite pas #791, même famille sur `raw_data/*.json`, rencontrée trois fois aujourd'hui.
+
 ## Contexte
 
 La suite passait ou échouait selon qu'un répertoire de cache **local** existait.

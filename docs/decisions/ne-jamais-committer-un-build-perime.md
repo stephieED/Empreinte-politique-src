@@ -1,6 +1,10 @@
 <a id="ne-jamais-committer-un-build-perime"></a>
 # Ne jamais committer un build produit avec du code périmé (#390) (2026-08-17)
 
+`2026-08-17`
+
+> **En bref** — ne jamais committer un build produit avec du code périmé : le checkout d'un job de fusion date du déclenchement.
+
 **Contexte** : run `#266`. `merge-and-pivot` fait `actions/checkout` sans
 `ref`, donc sur le SHA de `main` figé au **déclenchement** du run — alors que
 le job ne démarre qu'après les 5 jobs d'extraction, ~18 min plus tard. La PR

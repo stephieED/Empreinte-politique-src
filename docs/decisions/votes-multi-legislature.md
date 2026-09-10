@@ -1,6 +1,10 @@
 <a id="votes-multi-legislature"></a>
 # Votes : agrégation des législatures 14 à 17, index dédupliqué, 14/15/16 figées (#403) (2026-08-18)
 
+`2026-08-18`
+
+> **En bref** — 14/15/16 figées et committées.
+
 **Contexte** : les votes ne couvraient qu'**une seule législature par profil**,
 et en pratique toujours la 16e — 86 des 87 profils bruts, aucun en 17e. Le jeu
 de données s'arrêtait donc en **juin 2024**, sur la législature en cours.

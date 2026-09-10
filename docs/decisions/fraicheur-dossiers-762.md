@@ -1,5 +1,9 @@
 # L'archive vivante se reprend au changement de semaine, les mortes jamais (#762), 07/09/2026
 
+`2026-09-07`
+
+> **En bref** — `.cache/dossiers_an` porte une clé **hebdomadaire** doublée d'un `restore-keys`, et `ensure_dossiers_zip_downloaded` court-circuite sur `is_file()` sans qu'aucun appelant ne passe `force_download` : au changement de semaine le préfixe restaure le répertoire de la semaine d'avant, rien n'est repris, et il repart sous la clé neuve — **la rotation se désamorce elle-même**, exactement #749 appliqué aux dossiers, pour **cinq consommateurs** (`commissions_dossiers.json`, le statut des textes de gouvernement, `scrutins_dossiers.json`, `textes_dossiers_an`, `candidate_profile`) ; une étape reprend donc les archives **vivantes** quand `cache-hit != 'true'`, et **elles seules** — une législature dissoute ne produit plus d'acte, et reprendre les 15e et 16e coûterait **23 Mo par semaine pour un contenu identique** contre 9,8 pour la 17e ; l'option inverse de l'issue — purger les 33 Mo pour éviter « la machinerie qui distingue actives et figées » — est écartée parce que **cette machinerie existait déjà** (`ensure_dossiers_zip_downloaded` prend une législature et un `force_download`) : il n'y avait qu'un ensemble à déclarer, et il l'est **à côté des archives** plutôt qu'emprunté à `AN_SCRUTINS_LEGISLATURES_FIGEES`, les actives s'en déduisant par différence ; **défaut trouvé en relisant l'ordre des étapes** : sans la garde `!inputs.cold_start`, la reprise téléchargeait 9,8 Mo que le `rm -rf .cache` suivant effaçait ; le **dégât actuel est probablement nul** (session suspendue, comme #749) et un levier opérateur existait déjà — ce lot rend la reprise automatique. 12 tests, quatre mutations vérifiées échouantes.
+
 Ancres : `rafraichir_dossiers_actifs`, `rafraichir_dossiers_actifs.py`,
 `AN_DOSSIERS_LEGISLATURES_ACTIVES`, `AN_DOSSIERS_LEGISLATURES_FIGEES`,
 `ensure_dossiers_zip_downloaded`, `AN_DOSSIERS_ARCHIVES`.

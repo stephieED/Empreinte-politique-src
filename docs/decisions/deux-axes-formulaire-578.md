@@ -1,6 +1,10 @@
 <a id="deux-axes-formulaire-578"></a>
 # Un paramètre commandait ce qu'il ne nommait pas (#578) (2026-08-29)
 
+`2026-08-29`
+
+> **En bref** — le formulaire de lancement porte deux axes disjoints — ce qu'on fait des profils écrits, qui on collecte — plus le cache ; `roster_limit` ne commande plus de politique.
+
 Trois défauts, une seule faute. `overwrite_profiles` commandait `--no-merge`
 sans le nommer ; le rafraîchissement de l'existant dépendait de la présence de
 `--limit` ; et `roster_limit=0` rafraîchissait **moins** que `20`. Le lot des

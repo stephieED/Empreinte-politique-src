@@ -1,5 +1,9 @@
 # Un profil publie tous ses mandats de député, et le compteur devient un témoin de couverture (#640) (2026-08-31)
 
+`2026-08-31`
+
+> **En bref** — le mandat électif était reconstruit depuis le couple unique `mandat_debut`/`mandat_fin` d'`identite_an` alors que le même objet portait `nb_mandats` (379 des 457 profils concernés publiaient moins que leur propre compteur, 612 mandats manquants) ; AMO30 porte bien l'historique (3 954 mandats ASSEMBLEE pour 3 117 acteurs, plus ancien 2002-06-19), regroupé sur `(legislature, dateDebut)` — jamais sur la seule législature, qui unirait les deux mandats de Bertrand Petit séparés par une élection annulée — pour 613 périodes nouvelles sur 393 profils, 26 écarts résiduels nommés et 18 doublons hérités que la fusion additive ne peut pas retirer.
+
 `src/candidate_profile.py` reconstruisait le mandat électif d'un député depuis
 un **couple unique** de dates porté par `identite_an` —
 `mandat_debut`/`mandat_fin`, ceux du mandat courant. Le même objet portait

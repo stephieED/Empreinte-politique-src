@@ -1,6 +1,10 @@
 <a id="roster-unique-par-run-518"></a>
 # Un seul roster par run, une reprise sur ce qui est retentable, et des échecs qu'on peut lire (#518) (2026-08-24)
 
+`2026-08-24`
+
+> **En bref** — le roster transite par artifact ; reprise seulement sur ce qui est retentable.
+
 **Ce qui est réparé ici n'est pas la panne d'une source : c'est le fait qu'un
 run puisse mourir neuf fois sur la même requête, et qu'on ne puisse pas dire
 après coup ce qu'il a refusé de publier.**

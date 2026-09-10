@@ -1,5 +1,9 @@
 # Téléchargement AN : trois modes de défaillance, un seul principe — ne jamais jeter un préfixe valide (#443) (2026-08-19)
 
+`2026-08-19`
+
+> **En bref** — trois modes de défaillance du téléchargement AN, un seul principe : ne jamais jeter un préfixe valide.
+
 **Contexte** : `data.assemblee-nationale.fr` ne tombe pas en panne, il **change
 de mode de défaillance**, et assez vite pour qu'une mesure de quelques minutes
 induise en erreur. Relevé le 18/08/2026 sur `Amendements_XV.json.zip` (648 Mo),

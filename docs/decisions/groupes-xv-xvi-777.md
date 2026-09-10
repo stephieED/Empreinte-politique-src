@@ -2,6 +2,8 @@
 
 `2026-09-08`
 
+> **En bref** — #706 parlait de 2 groupes sans fiche puis de 4 ; remesuré sur les **27 candidats déclarés** avec `correspondance_sigles_an` pour autorité, c'est **19 couples touchés, 4 couverts, 15 sans fiche** — l'écart vient de la population, passée de 13 à 27, et le chiffre du ROADMAP porte lui aussi sur les 13 d'alors ; **le sigle ne se déduit pas, et deux cas sur huit l'ont prouvé** : le mandat dit « Ecolo - NUPES » quand l'organe s'appelle `ECOLO`, « GDR - NUPES » quand il s'appelle `GDR-NUPES`, d'où huit organes relus un par un dans l'index AMO30 ; **LaREM XVe sort sur une mesure** — 343 membres et 227 profils à collecter pour **un** bénéficiaire déjà publié, contre 72 pour les sept autres et six candidats servis —, et le chiffre qui tranche n'est pas le disque mais `merge-and-pivot`, seul job qui écrit : marge tombant de ×2,0 à ×1,5 sur son timeout de 60, quand un job tué par son timeout n'écrit rien (#498) ; **vérifié après coup**, le run `34241352524` a publié les sept fiches en **21,6 min**, marge ×2,8 ; reprise conditionnée à #691 ; sept gardes figeaient un nombre (« 10 entrées », « {16, 17} », « 456 membres ») et lisent désormais ce qu'elles vérifient — l'une cachait un `TypeError` sur `effectif_publie: null`, l'état normal d'une entrée non encore parue ; **ce que le lot n'a pas produit** : les 72 profils, le run n'ayant récupéré aucun artifact d'extraction.
+
 ## Le périmètre, remesuré
 
 #706 parlait de 2 groupes sans fiche, puis de 4 après relecture. Mesuré le

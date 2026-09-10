@@ -1,6 +1,10 @@
 <a id="cle-fusion-textes-portes-668"></a>
 # Une clé de fusion en `a or b` change d'identité quand `a` se remplit (#668) (2026-08-31)
 
+`2026-08-31`
+
+> **En bref** — le rang 2 de #639 a réparé `source_url`, `null` sur 472 / 472 textes portés, et la clé `source_url or (titre, date_min, legislature)` a basculé de branche sous les entrées déjà publiées : 940 entrées pour 472 dossiers réellement collectés, **468 doublons** en ligne sur 22 profils (l'issue en comptait 471, écart re-mesuré — 3 sont des dossiers distincts partageant un titre, `ludovic-mendes` portant la proposition de loi `DLR5L17N51626` **et** son rapport `DLR5L17N51485`) ; la clé passe sur `dossier_id`, l'identifiant AN publié depuis #639 et déjà porté au brut par `dossiers_legislatifs[].id`, `source_url` en sort (0 repli portant deux `dossier_id` distincts, et 4 entrées identifiées n'ont pas d'URL) ; le `or` subsiste pour les entrées sans identifiant — le supprimer les effondrerait sur une clé `None` (#432) — et ce qui neutralise la bascule est la **reprise**, `clean_stale_textes_portes`, qui existait sous ce nom pour ce motif mais départageait sur un critère de schéma que les deux versions satisfont **et n'était appelée nulle part** : 940 → 472, exactement les 472 dossiers collectés, 468 retirées à déclarer par `allow_declared_losses` ; motif cherché ailleurs et **mesuré** — `_pivot_amendement_key` (6 091 732), `_pivot_vote_key` (1 312 951) et `_pivot_intervention_key` (16 242) sont à 100 % sur leur branche principale, donc aucune ne peut basculer, ce que la mesure constate sans le garantir ; l'extension d'`audit_diff_profils` aux **apparitions** est nommée et laissée hors lot (périmètre #649).
+
 **Régression en ligne.** Introduite par le rang 2 de #639 (PR #651), révélée par
 le premier run qui l'exécute (`33395056902`, 31/08/2026), publiée sur le site.
 

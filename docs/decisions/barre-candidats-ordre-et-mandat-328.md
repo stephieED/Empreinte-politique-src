@@ -2,6 +2,10 @@
 
 # La barre des candidats : ordre alphabétique, et ce que la fiche peut montrer (#328) (2026-09-09)
 
+`2026-09-09`
+
+> **En bref** — **le tri est fait à la source** (`sync-data.mjs`) et l'UI n'en refait aucun, deux tris pour une même liste étant deux listes qui divergeront ; il porte sur `nom`, **ce que le lecteur lit**, et non sur un patronyme reconstruit — découper « Le Pen » ou « Dupont-Aignan » demanderait une règle que la source ne donne pas —, avec `sensitivity: 'base'` pour que « Édouard Philippe » se range avec les E ; **une pastille grisée dit que la fiche ne porte ni mandat à l'Assemblée ni fonction gouvernementale**, donc ni vote ni intervention ni amendement à publier — un fait sur CE QUE LA FICHE MONTRE et jamais un rang (§2 règle 1), tenu par trois choses : la pastille reste cliquable et sélectionnable (ni `disabled`, ni retrait), son infobulle écrit ce que le grisé veut dire, et la teinte est celle des métadonnées (5,5:1, AA) et non une couleur de jugement ; **deux faits, aucun deviné** — `chambres` contient `"AN"` (champ dérivé, #493) ou un mandat de catégorie `fonction_gouvernementale` —, et **le Parlement européen n'est pas l'Assemblée** : quatre candidats y ont toute leur carrière et aucun intitulé ne le dirait ; mesuré sur les 30 candidats du manifeste, **16 ont l'un des deux, 14 n'ont ni l'un ni l'autre**, et **Ségolène Royal n'est pas grisée** malgré zéro vote publié parce que le critère porte sur ce qu'elle a EXERCÉ et non sur ce que nous avons COLLECTÉ ; coût mesuré : `sync-data.mjs` lit les 30 profils (39,8 Mo) et passe de 6 à **8,4 s** ; **alternative écartée** — les masquer comme une candidature déclinée, ce qui ferait porter à l'interface un jugement de pertinence et rendrait invisible un fait publiable. 9 tests neufs.
+
 ## Le contexte
 
 Deux demandes de la propriétaire, le 09/09/2026 : ranger les pastilles par ordre

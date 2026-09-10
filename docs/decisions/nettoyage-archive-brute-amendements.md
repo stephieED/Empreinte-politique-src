@@ -1,6 +1,10 @@
 <a id="nettoyage-archive-brute-amendements"></a>
 # Suppression de l'archive brute `amendements.zip` après construction de l'index (#264) (2026-08-17)
 
+`2026-08-17`
+
+> **En bref** — l'archive brute `amendements.zip` est supprimée après construction de l'index, succès comme échec.
+
 **Contexte** : `_download_and_build_amendement_index` téléchargeait
 `amendements.zip` (283-618 Mo selon la législature), le parsait, puis ne le
 supprimait jamais — ni après succès, ni après échec. Constaté sur le run #32

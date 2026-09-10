@@ -2,6 +2,10 @@
 
 # « Les grands chiffres » : la mise en œuvre, et les trois constats qu'elle corrige (#328) (2026-09-02)
 
+`2026-09-02`
+
+> **En bref** — le bloc de tête est écrit : `grandsChiffres()` et `pistesDuParcours()` dans `profilCandidat.js`, `GrandsChiffres` dans `CandidateProfile.jsx`, les sélecteurs `.cp-gc*` dans sa feuille. La vue de « L'essentiel » est retirée — section, `Point`, 25 sélecteurs CSS, 5 tests — mais **le vivier reste calculé et testé**, parce que la décision de la veille prévoit qu'un vrai résumé prenne la place libérée ; son retrait est à la charge de ce lot-là. Trois constats de la maquette sont corrigés par la mesure : le cas « ni l'un ni l'autre » vaut **3 des 13** et non 4 (`jordan-bardella` a un siège européen, donc une colonne), l'empreinte par commission saisie est **inerte** faute de `pivot_data/commissions_dossiers.json`, jamais produit, et la barre des textes ne publie **que ce qui est parvenu au moins en commission** (§6), en disant ce qu'elle écarte. Le rôle range le texte, jamais l'institution seule : replier `rapporteur` sur le Parlement afficherait « 3 propositions de loi » pour 2 propositions et 1 rapport. **20 tests, 9 mutations vérifiées échouantes** ; aucun runner JS dans le dépôt, donc ni mise en page, ni responsive, ni contraste, ni clavier.
+
 [`les-grands-chiffres-fiche-candidat-328`](les-grands-chiffres-fiche-candidat-328.md)
 a figé les arbitrages en maquette, sans une ligne de code. Ce fichier consigne ce
 que l'écriture a appris — **la maquette avait raison sur la forme et tort sur

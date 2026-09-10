@@ -1,6 +1,10 @@
 <a id="quality-gate-gouvernements"></a>
 # `check_quality_gate.py` : section gouvernements (§5), couverture ministérielle proxy par `portefeuille` (#212) (2026-08-14)
 
+`2026-08-14`
+
+> **En bref** — section gouvernements du quality gate : couverture ministérielle approchée par `portefeuille`.
+
 **Contexte** : #212 (plan #184) demandait d'intégrer les profils de
 gouvernement au quality gate CI sur le modèle de la section groupes
 existante (`_report_groupes`, §4) : hard fail sur structure cassée, soft

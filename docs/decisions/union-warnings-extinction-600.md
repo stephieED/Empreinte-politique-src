@@ -1,5 +1,9 @@
 # L'union des avertissements peut ressusciter un démenti, et deux familles Syceron s'éteignent (#600) (2026-08-30)
 
+`2026-08-30`
+
+> **En bref** — unir les warnings des deux écrivains fait ressusciter les démentis ; une intervention Syceron publiée éteint les deux familles de #560, les questions ne comptant pas.
+
 `merge_raw_profile` et `merge_pivot_profile` faisaient `merged = dict(new)` : le
 bloc `meta` du **dernier écrivain** était pris entier, et les `warnings` de
 l'autre source **disparaissaient purement**. Le lot #600 les unit.

@@ -1,6 +1,10 @@
 <a id="deploy-pages-declencheur-donnees"></a>
 # Publication du site après un run de données : le commit du bot n'émet aucun événement `push` (#416) (2026-08-18)
 
+`2026-08-18`
+
+> **En bref** — un commit poussé par le `GITHUB_TOKEN` n'émet aucun événement `push` : la publication du site doit être déclenchée autrement.
+
 **Contexte** : les données du site sont figées **au build**. `npm run build`
 = `npm run sync-data && vite build`, et `web/UI_finale/scripts/sync-data.mjs`
 copie `pivot_data/` + `raw_data/candidats.json` vers

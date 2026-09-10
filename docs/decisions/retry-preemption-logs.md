@@ -1,6 +1,10 @@
 <a id="retry-preemption-logs"></a>
 # `gh api .../logs` sans `--allow-escape-sequences` : cause racine de l'inefficacité du retry automatique sur les runs #26-28 (#236) (2026-08-13)
 
+`2026-08-13`
+
+> **En bref** — `gh api .../logs` sans `--allow-escape-sequences` : cause racine de l'inefficacité du retry.
+
 **Contexte** : [[retry-generate-data-preemption]] (#230) a ajouté
 `retry-generate-data.yml`, qui détecte la signature de préemption runner via
 `gh api repos/${REPO}/actions/jobs/<id>/logs` (deux points d'appel). Sur les

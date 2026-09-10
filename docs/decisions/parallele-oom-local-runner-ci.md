@@ -1,6 +1,10 @@
 <a id="parallele-oom-local-runner-ci"></a>
 # Parallèle RAM entre l'exécution locale et les runners GitHub Actions hébergés, diagnostic ajouté (2026-08-17)
 
+`2026-08-17`
+
+> **En bref** — la RAM d'une exécution locale et celle d'un runner hébergé se comparent : le diagnostic vaut pour les deux.
+
 **Contexte** : suite à [[oom-lecture-amendements-par-candidat]] (ci-dessous) —
 plusieurs OOM réels confirmés en local (`journalctl -k`) sur `extract-an`/
 `extract-roster-groupes`, cause identifiée précisément (rechargement complet

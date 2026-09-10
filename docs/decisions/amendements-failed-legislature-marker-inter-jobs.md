@@ -1,6 +1,10 @@
 <a id="amendements-failed-legislature-marker-inter-jobs"></a>
 # Marqueur disque inter-jobs pour le cache d'échec amendements par législature (#246) (2026-08-13)
 
+`2026-08-13`
+
+> **En bref** — marqueur disque inter-jobs pour l'échec d'une législature d'amendements.
+
 **Contexte** : [[amendements-retry-blocage-legislature]] (#239) mémorise en
 mémoire process (`_amendements_failed_legislatures`) qu'une législature
 d'amendements a définitivement échoué, pour que seul le premier candidat

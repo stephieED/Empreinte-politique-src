@@ -1,6 +1,10 @@
 <a id="normalisation-fonction-mandats-agreges"></a>
 # Normalisation de `par_fonction` dans `mandats_agreges`, et requalification du défaut « catégorie commission » (#379) (2026-08-17)
 
+`2026-08-17`
+
+> **En bref** — normalisation de `par_fonction` : deux référentiels aux conventions typographiques différentes comptaient à part.
+
 **Défaut 1 — casse de `fonction` (corrigé)** : depuis [[mandats-officiels-an-369]],
 les mandats proviennent de deux référentiels aux conventions typographiques
 différentes — NosDéputés écrit `"membre"`, l'Assemblée nationale `"Membre"`.

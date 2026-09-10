@@ -2,6 +2,8 @@
 
 `2026-09-09`
 
+> **En bref** — le mode de #792 a été exercé pour la première fois (run `34323318020`) et a fait ce qu'il annonçait — **2 shards au lieu de 27**, roster à **1 shard** plafonné à 8, quatre garde-fous verts, **aucun commit** — mais il a duré **51 minutes** quand j'en avais annoncé « ~20-25 », chiffre **jamais mesuré** ; la cause est structurelle : **`merge-and-pivot` fait la moitié du run (25,8 min) et ne peut pas être réduit**, puisqu'il refait les deux passes pivot, les agrégats et les quatre contrôles sur **tout le corpus** — c'est précisément ce qu'un run de test vient exercer, le réduire supprimerait ce qu'on cherche à vérifier —, et quatre autres jobs (amendements AN 7,6 min, UE 7,5, ParlTrack 6,8, matrice roster 6,8) ne dépendent pas du périmètre des candidats ; **gain réel : 1 h 15 → 51 min, un tiers et non les trois quarts**, portant sur la moitié qui échoue vite — une matrice mal calculée ou un artifact qui n'arrive pas (#786) se voit en 25 min contre 55, un défaut *dans* la fusion coûte le même temps qu'avant ; ce que ça change n'est pas l'utilité du mode (il venait d'exercer le chemin d'écriture de #691 sans rien committer, juste avant le run qui supprime 5,55 Go) mais **ce qu'on peut lui demander : il n'y a pas de boucle courte dans ce pipeline**, et la seule qui le soit reste le test unitaire ; l'alternative « aval seul » de #792 reste écartée pour la seule raison qui tenait — elle n'aurait pas vu #786 —, son coût annoncé étant faux lui aussi.
+
 ## Contexte
 
 Le mode de test de #792 a été exercé pour la première fois le 09/09/2026, run

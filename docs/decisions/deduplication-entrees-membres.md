@@ -1,6 +1,10 @@
 <a id="deduplication-entrees-membres"></a>
 # `membres[]` publiait deux fois le même fait : dédupliquer sans effacer les changements de portefeuille (#480) (2026-08-20)
 
+`2026-08-20`
+
+> **En bref** — dédupliquer `membres[]` sans effacer un changement de portefeuille.
+
 Mesuré sur `main` à `3a8455a`, en reconstruisant les 10 rosters depuis
 `pivot_data/profiles/` — donc **après** [[parlementaire-en-mission-nest-pas-ministre]] :
 115 entrées `membres[]` pour 95 personnes, dont **2 entrées strictement

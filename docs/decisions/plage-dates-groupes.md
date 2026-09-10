@@ -1,6 +1,10 @@
 <a id="plage-dates-groupes"></a>
 # Tableau croisé des plages temporelles par groupe (#318, sous-issue 2/6 de #316) (2026-08-15)
 
+`2026-08-15`
+
+> **En bref** — tableau croisé des plages temporelles par groupe.
+
 **Contexte** : `audit_groupe_dataset.py` avait un tableau croisé des
 *volumes* par groupe (`compute_tableau_croise_groupes`, #174) mais rien
 sur la *période* couverte. #316 demande le symétrique pour les trois

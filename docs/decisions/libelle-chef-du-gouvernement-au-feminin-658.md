@@ -1,6 +1,10 @@
 <a id="libelle-chef-du-gouvernement-au-feminin-658"></a>
 # Le libellé d'organe du chef du gouvernement s'accorde en genre, la qualité jamais (#658) (2026-08-31)
 
+`2026-08-31`
+
+> **En bref** — `/gouvernements/BORNE` affichait « Non renseigné » alors qu'Élisabeth Borne figure dans ses propres `membres[]` : son mandat porte `label = "Première ministre"` (libellé de l'organe `PO791580`, accordé) et `fonction = "Premier ministre"` (qualité, jamais accordée), et le libellé était comparé par égalité stricte, sans même la normalisation typographique appliquée à la qualité trois lignes plus bas ; le balayage des **1 162 mandats `MINISTERE` de l'archive AMO30** (3 117 fiches acteur) tranche la question ouverte — `libQualite` n'a **que 9 valeurs, toutes au masculin**, donc une ministre déléguée est bien reconnue et `_normalise_fonction` n'a aucune raison d'être relâchée — tandis que le genre se joue sur le libellé d'organe, d'où une liste fermée relue et datée (`LABELS_PORTEFEUILLE_PREMIER_MINISTRE_OBSERVES`) plutôt qu'une règle de genre ; le double verrou de #474 reste entier et n'est pas théorique au féminin (`yannick-chenevard`, publié, porte « Première ministre » / `en mission`), 0 membre publié manqué côté qualité (260 mandats, toutes classées) ; la seule qualité restée non classée, « Haut-commissaire », est ajoutée à la liste blanche sur un motif qui est une **lecture du référentiel et non une appréciation institutionnelle** — ses 4 mandats (2 personnes) sont rangés `typeOrgane == "MINISTERE"` sous des organes de `codeType == "MINISTERE"`, celui de Jean-Paul Delevoye étant intitulé « Ministère des solidarités et de la santé – Retraites » — pour un delta mesuré de **0 mandat, 0 personne et 0 fiche** (ni Hirsch ni Delevoye n'a de profil publié : c'est un pré-positionnement verrouillé par un test) ; `premier_ministre` passe de 3/10 à **4/10** fiches, `BORNE` seule bougeant.
+
 **Contexte** : `/gouvernements/BORNE` affichait « Premier ministre : Non
 renseigné » alors qu'Élisabeth Borne figure dans les `membres[]` de sa propre
 fiche. Son mandat `MINISTERE`, dans `pivot_data/profiles/elisabeth-borne.pivot.json` :

@@ -1,6 +1,10 @@
 <a id="interventions-senat-501"></a>
 # `extract-senat` ne collecte plus d'interventions : la collecte n'en retenait aucune, par construction (#501) (2026-08-20)
 
+`2026-08-20`
+
+> **En bref** — tout chemin de collecte déclare ce qu'il fait des interventions.
+
 Fait suite à #498/#500, qui a borné la collecte d'interventions d'`extract-an`
 par un budget de temps mur. #501 traite le même défaut sur le troisième chemin
 de collecte — et arrive à une autre conclusion, parce que la mesure diffère.

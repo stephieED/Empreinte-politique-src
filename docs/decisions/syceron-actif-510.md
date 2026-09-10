@@ -1,6 +1,10 @@
 <a id="syceron-actif-510"></a>
 # Syceron activé, repli NosDéputés retiré, index tranché par acteur (#510) (2026-08-27)
 
+`2026-08-27`
+
+> **En bref** — un repli qui remplace la source primaire masque sa panne.
+
 Décision d'opérateur, prise sur les mesures du 26/08 rappelées ci-dessus, et
 demandée en ces termes : « active le drapeau et retire le repli vers
 nosdéputés ». Les deux moitiés vont ensemble et n'auraient pas de sens séparées

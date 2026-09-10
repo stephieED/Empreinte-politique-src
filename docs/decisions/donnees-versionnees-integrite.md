@@ -1,6 +1,10 @@
 <a id="donnees-versionnees-integrite"></a>
 # Pourquoi les données vivent dans git : l'intégrité de ce que le site montre (2026-08-30)
 
+`2026-08-30`
+
+> **En bref** — la propriété protégée est que toute modification de ce que le site montre soit un événement public, attribué et daté ; `raw_data/` est une archive, pas un cache (38 mandats irrécupérables mesurés sur #484).
+
 ## Ce que cette entrée corrige
 
 **Ce choix n'avait jamais été écrit.** Recherche du 30/08/2026 dans `docs/decisions/`, `AGENTS.md` et `ROADMAP.md` sur « piratage », « stockage externe », « hébergement », « bucket », « pourquoi versionner » : aucune occurrence.

@@ -2,6 +2,10 @@
 
 # La règle de lecture quitte la fiche pour la méthodologie, parce qu'elle est désormais appliquée (#328) (2026-09-10)
 
+`2026-09-10`
+
+> **En bref** — relue à l'écran, la section « ce qu'il a voté » portait **quatre énoncés de règle avant la moindre figure**, dont la dernière lecture écrite **deux fois** — en étiquette du chiffre et en phrase entière sous la figure. #711 avait exigé cette phrase sur la fiche parce que la méthodologie **annonçait** une règle que rien n'appliquait ; depuis #711 c'est le **code** qui l'applique (`isWholeTextVote` et le repli sur la date, dans `utils/lecture.js`), et une promesse non tenue ne peut plus réapparaître en silence — il faudrait retirer l'implémentation, et les tests qui la gardent échoueraient. **#711 est donc renversé sur la place de sa phrase, jamais sur son fond** : restent sur la fiche `LAST_READING_LABEL` — sans elle le lecteur compare des textes à des votes — et le renvoi vers `/methodologie#votes` posé sous la figure ; le raisonnement vit là où il s'argumente. C'est `DESIGN_SYSTEM` §7 règle 2 appliquée : l'étiquette est les deux mots, la phrase était le paragraphe. **Écarté** : une phrase courte de remplacement, qui ne dirait rien que l'étiquette ne dise et rouvrirait ce que le lot ferme. Trois tests suivent, chacun disant pourquoi.
+
 ## Le contexte
 
 `docs/decisions/derniere-lecture-retenue-711.md` a corrigé un défaut précis :

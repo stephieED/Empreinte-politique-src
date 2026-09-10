@@ -1,6 +1,10 @@
 <a id="gouvernement-roster-desambiguisation"></a>
 # `gouvernement_roster.py` : désambiguïsation par libellé exact + garde-fou de période, pas l'inverse (#209) (2026-08-14)
 
+`2026-08-14`
+
+> **En bref** — désambiguïsation par libellé exact puis garde-fou de période, jamais l'inverse.
+
 **Contexte** : `mandats[].categorie == "fonction_gouvernementale"` (déjà peuplé
 par `candidate_profile.py` depuis `AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip`,
 voir [[hors-perimetre]] § "Ministerial function") porte un `label` du type

@@ -1,6 +1,10 @@
 <a id="limit-sample"></a>
 # Déploiement progressif de l'extraction roster-driven : --limit vs --sample (2026-08-12)
 
+`2026-08-12`
+
+> **En bref** — déploiement progressif de l'extraction roster-driven : `--limit` contre `--sample`.
+
 **Contexte** : #190 branche la liste roster-driven (#188) dans
 `generate_all_profiles.py` (`--candidats raw_data/roster_candidats.json`).
 Avant d'ouvrir l'extraction aux ~750 membres complets, une sous-issue CI

@@ -1,6 +1,10 @@
 <a id="shardage-extract-roster-groupes"></a>
 # Shardage de `extract-roster-groupes` en 8 tranches, découpées par modulo (#394) (2026-08-18)
 
+`2026-08-18`
+
+> **En bref** — `extract-roster-groupes` shardé en 8 tranches par modulo.
+
 **Contexte** : `extract-roster-groupes` traitait les 752 membres du roster dans
 un job unique. Après [[index-amendements-sharde-par-acteur]] (#392), le coût
 marginal mesuré est de **5,05 s/membre** (contre 11,7 s avant, [[budget-roster-mesure]] #376),

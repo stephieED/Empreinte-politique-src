@@ -1,6 +1,10 @@
 <a id="volumetrie-arbre-de-travail-nest-pas-depot"></a>
 # Volumétrie : l'arbre de travail n'est pas le dépôt, et la photo n'est pas le coût (2026-08-19)
 
+`2026-08-19`
+
+> **En bref** — l'arbre de travail n'est pas le dépôt, et une photo instantanée n'est pas un coût.
+
 `audit_volumetrie_profils.py` comparait un total d'**arbre de travail** aux
 seuils GitHub, qui portent sur le **dépôt** — ce qu'on clone, donc l'historique
 compressé. L'écart n'est pas marginal : les profils JSON se déltifient

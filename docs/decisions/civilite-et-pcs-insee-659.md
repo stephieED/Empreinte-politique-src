@@ -1,6 +1,10 @@
 <a id="civilite-et-pcs-insee-659"></a>
 # La civilité et la nomenclature PCS de l'INSEE traversaient le pipeline sans y laisser de trace (#659) (2026-08-31)
 
+`2026-08-31`
+
+> **En bref** — `etatCivil.ident.civ` était rangée dans l'index d'identité depuis #556 et s'arrêtait là, `profession.socProcINSEE` n'était pas lue du tout : re-mesuré sur les 3 117 fiches AMO30, la civilité est renseignée **3 117/3 117** (M. 2 106, Mme 1 011) et les deux niveaux de la nomenclature PCS de l'INSEE **2 177/3 117**, toujours renseignés ou absents **ensemble** ; les trois champs atteignent `identite` (clés facultatives, comme `identifiants` et `provenance_champs`), publiés **verbatim** parce que c'est la source qui classe — une catégorisation construite ici serait un acte éditorial (§2 règle 1) —, avec « non classé » (940 fiches au marqueur `xsi:nil`) tenu distinct de la famille « Sans profession déclarée » (85 fiches), le contresens exact de #556 ; le regroupement des variantes typographiques est laissé à qui agrège, purement typographique et jamais sémantique ; `NOM_INDEX_IDENTITE` passe en `v4` sans quoi le cache restauré rendrait l'index d'avant, et `validate_profil()` refuse désormais un non-`str` sur `CHAMPS_IDENTITE_TEXTE_LIBRE`, seul contrôle capable de voir le marqueur là où `audit_diff_profils` ne compare que la présence du bloc (#649).
+
 Deux champs qu'AMO30 renseigne, que le pipeline lisait ou traversait, et qu'il
 ne publiait pas. Trouvé en cherchant ce qu'une fiche de groupe peut dire de sa
 composition (temps 2 de l'épic #324, issue #594) ; c'est le motif du

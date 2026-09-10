@@ -1,6 +1,10 @@
 <a id="collecte-vs-publie-545"></a>
 # Ce que la normalisation a le droit de faire : la table de relations collecté → publié (#545) (2026-08-28)
 
+`2026-08-28`
+
+> **En bref** — chaque liste déclare les chemins bruts dont elle somme les longueurs ; seuil 0.
+
 Quatre garde-fous tournent maintenant avant le commit de `merge-and-pivot`.
 Le quatrième — `src/audit_collecte_vs_publie.py` — ne surveille pas une
 nouvelle donnée : il surveille l'**espace entre** les trois autres.

@@ -1,6 +1,10 @@
 <a id="correspondance-acteurs-an-525"></a>
 # La correspondance slug ↔ acteur AN devient un artefact committé (#525, lot 2 de l'épic « une seule source AN ») (2026-08-26)
 
+`2026-08-26`
+
+> **En bref** — un artefact committé et vérifié, jamais une heuristique de noms.
+
 ## 1. Le problème
 
 Les **slugs NosDéputés sont les identifiants de profil** du dépôt :

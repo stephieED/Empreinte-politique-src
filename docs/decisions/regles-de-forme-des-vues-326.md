@@ -2,6 +2,10 @@
 
 # Ce qu'une vue doit au lecteur : sept règles de forme, et ce que chacune a coûté (#326) — 02/09/2026
 
+`2026-09-02`
+
+> **En bref** — `AGENTS.md` §2 dit ce qui est **interdit**, `DESIGN_SYSTEM.md` dit la palette et le ton ; **ni l'un ni l'autre ne disait ce qu'une vue doit au lecteur** — mesuré le 02/09/2026, le mot « lecteur » n'apparaissait **pas une fois** dans les 208 lignes du design system. Les sept règles arbitrées en maquette sur la fiche candidat sont extraites du lot où elles étaient enfouies et rendues transversales, chacune **avec son coût**. La première est neuve et sans équivalent dans §2, qui ne dit jamais ce qui est **inutile** : *un chiffre dont le lecteur ne peut rien tirer ne se publie pas* — la répartition des votes a été retirée alors qu'elle était vraie, collectée et conforme aux huit règles, après instruction de **cinq pistes** dont deux tombaient sous §2 et une sur l'absence de rattachement sourcé (#639). Suivent : *le texte explicatif est un aveu d'échec* (ligne d'introduction réduite **trois fois**, jusqu'à cinq mots ; vaut aussi pour les noms, « Coup d'œil » et « L'essentiel » écartés) ; *seuls les nombres sont en gros* ; *chaque mesure compte contre son propre total* ; *aucun seuil arbitraire ne décide qu'il y a un fait* (un P90 sélectionne toujours 10 % des dossiers, donc il ne peut **jamais** se taire) ; *quand le volume ne distingue pas deux intentions, c'est la date qui range* ; *deux absences ne se confondent jamais*. Elles **s'ajoutent** à §2 sans l'amender — §2 est non négociable, celles-ci s'affinent — et `DESIGN_SYSTEM.md` gagne une §6 bis qui les énonce et renvoie ici. Appliquées à la seule fiche candidat : #329 et #330 ne sont pas relues à leur aune, et la règle 1 n'a pas de test, parce que « le lecteur ne peut rien en tirer » est un jugement.
+
 ## Contexte : deux documents, et un trou entre les deux
 
 `AGENTS.md` §2 dit ce qui est **interdit** — pas de score, pas de taux

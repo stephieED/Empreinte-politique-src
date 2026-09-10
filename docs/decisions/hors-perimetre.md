@@ -1,6 +1,10 @@
 <a id="hors-perimetre"></a>
 # Deferred / out-of-scope investigations
 
+`en continu`
+
+> **En bref** — investigations menées puis écartées : Sénat open data, textes UE, portefeuille ministériel, agenda, maires…
+
 Findings from explored sources that led to a "not now" verdict, with full
 rationale — kept here rather than in `ROADMAP.md` so the reasoning survives
 even if the backlog entry itself is reworded or dropped.

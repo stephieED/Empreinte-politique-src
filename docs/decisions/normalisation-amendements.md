@@ -1,6 +1,10 @@
 <a id="normalisation-amendements"></a>
 # Normaliser les amendements : le coût n'est pas l'amendement, c'est sa liste de cosignataires (#431) (2026-08-19)
 
+`2026-08-19`
+
+> **En bref** — mapping par membre, index partagé par législature.
+
 Un amendement est **identique pour tous ses signataires** — `texte_vise`,
 `sort`, `date`, `numero`, `type_deposant`, `premier_signataire` et
 `co_signataires`. Seul le `role_signataire` est propre au membre.

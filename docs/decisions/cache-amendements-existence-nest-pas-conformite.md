@@ -1,6 +1,10 @@
 <a id="cache-amendements-existence-nest-pas-conformite"></a>
 # L'existence d'un cache n'est pas la preuve de son contenu — et #447 n'avait pas de seconde cause (2026-08-19)
 
+`2026-08-19`
+
+> **En bref** — l'existence d'un répertoire de cache ne prouve rien de son contenu : vérifier aussi le format de clé.
+
 ## Ce que #447 soupçonnait, et ce que la mesure dit
 
 Le dernier commentaire de #447 (19/08 18:58Z) concluait que la couverture `uid`

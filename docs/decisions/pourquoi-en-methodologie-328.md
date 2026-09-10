@@ -2,6 +2,10 @@
 
 # Le « pourquoi » descend en méthodologie, la fiche garde la limite (#328) (2026-09-09)
 
+`2026-09-09`
+
+> **En bref** — un audit de la **page rendue** (titres de textes et de commissions exclus, ce sont des libellés de source) a mesuré **1 772 mots de notre copie** sur `jerome-guedj`, dont six blocs au-dessus de DESIGN_SYSTEM §7 règle 2 — le critère de « Ce qu'il a voté » à **58 mots** en tête — et deux modes d'emploi qui ne s'accordaient même pas sur le vouvoiement ; arbitrage de la propriétaire : le raisonnement va en méthodologie, la fiche garde la limite et le lien, et **chaque section de la fiche a son ancre, une seule** (`fonctions`, `propose`, `votes`, `ecarts`, `interventions`, `couverture`) — « Textes portés » et « Amendements » étaient deux sections pour un seul emplacement et sont réunies sous « Ce qui est proposé » ; **le critère des votes perd la règle de dernière lecture**, publiée SOUS la figure là où #711 la veut, et c'est cette répétition qui le portait à 58 mots ; **les trois refus gardent leur phrase et perdent leur `pourquoi`** (71 mots), qui n'est pas recopié — les deux pages rendent le même `STATED_REFUSALS` ; **les preuves de borne ne bougent pas**, ce sont des preuves et non de la copie ; mesuré après : **1 562 mots, 210 de moins**, aucun bloc au-dessus de 27, et un test refuse un critère au-delà de 22 mots comme un renvoi vers une ancre inexistante ; **alternative écartée** — raccourcir sans créer d'ancres, deux fois moins de travail et le coût déplacé sur le lecteur, qui rouvre douze sections pour retrouver la règle. 8 tests neufs.
+
 ## Le contexte
 
 `DESIGN_SYSTEM.md` §7 règle 2 dit : « Le texte explicatif est un aveu d'échec.

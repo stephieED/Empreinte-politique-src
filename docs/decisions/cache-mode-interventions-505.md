@@ -1,6 +1,10 @@
 <a id="cache-mode-interventions-505"></a>
 # La clé de cache AN porte le MODE, et le job roster ne l'écrit plus (#505) (2026-08-20)
 
+`2026-08-20`
+
+> **En bref** — un job n'écrit jamais la clé d'un contenu qu'il ne produit pas.
+
 Troisième reprise de #412 §2.3 → #424 → #498. À chaque fois la même forme : un
 job écrit la clé hebdomadaire d'un contenu qu'il ne produit pas, `actions/cache`
 saute la sauvegarde de ceux qui l'ont réellement téléchargé, et tout est

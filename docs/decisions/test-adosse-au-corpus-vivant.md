@@ -1,6 +1,10 @@
 <a id="test-adosse-au-corpus-vivant"></a>
 # Un test d'acceptation adossé au corpus vivant rougit quand la donnée s'améliore (#457) (2026-08-20)
 
+`2026-08-20`
+
+> **En bref** — un test d'acceptation adossé au corpus vivant rougit quand la donnée s'améliore : fixtures figées.
+
 Les vérifications d'acceptation de #209 (`tests/test_gouvernement_roster.py`)
 lisaient `pivot_data/profiles/` directement, pour confronter
 `build_gouvernement_roster` à de vrais profils plutôt qu'à des cas fabriqués.

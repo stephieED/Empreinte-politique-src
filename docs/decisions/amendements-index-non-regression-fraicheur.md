@@ -1,6 +1,10 @@
 <a id="amendements-index-non-regression-fraicheur"></a>
 # Non-régression sur échec de reconstruction d'un index amendements + indicateur de fraîcheur (#253) (2026-08-13)
 
+`2026-08-13`
+
+> **En bref** — un échec de reconstruction ne régresse pas l'index en place, et la fraîcheur devient un indicateur.
+
 **Contexte** : sous-issue 5/6 du plan d'architecture #248, bloquée par #251
 ([[amendements-index-job-dedie-ci]]). Objectif : garantir qu'un échec
 définitif de reconstruction d'une législature dans `_download_and_build_amendement_index`

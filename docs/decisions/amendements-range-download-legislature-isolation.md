@@ -1,6 +1,10 @@
 <a id="amendements-range-download-legislature-isolation"></a>
 # Téléchargement par plages (Range) + isolation par législature pour les amendements officiels (#241) (2026-08-13)
 
+`2026-08-13`
+
+> **En bref** — téléchargement par plages (Range) et isolation par législature.
+
 **Contexte** : #239 (voir [[amendements-retry-blocage-legislature]] ci-dessous)
 a corrigé le blocage CI en mémorisant en mémoire process qu'une législature a
 définitivement échoué pour le run courant, et en réduisant le timeout de

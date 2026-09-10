@@ -1,6 +1,10 @@
 <a id="gouvernement-textes-fam-codes-archives"></a>
 # `gouvernement_textes` : 3 derniers `fam_code` mappés ; `TSORTF02` tranché sur données réelles (#402) (2026-08-18)
 
+`2026-08-18`
+
+> **En bref** — les 3 derniers `fam_code` mappés, `TSORTF02` tranché sur données réelles plutôt que sur un libellé ambigu.
+
 **Contexte** : l'ingestion des archives XV/XVI (#400) a fait apparaître 3
 `fam_code` absents de `_FAM_CODE_STATUT_MAP`. Suite directe de #397, même
 nature — mais l'enjeu n'était plus le volume, il était de **ne pas deviner le

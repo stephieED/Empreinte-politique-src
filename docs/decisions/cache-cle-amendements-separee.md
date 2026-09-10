@@ -1,6 +1,10 @@
 <a id="cache-cle-amendements-separee"></a>
 # Cache CI : clé propre aux amendements, et chemins énumérés pour les jobs AN (#424) (2026-08-18)
 
+`2026-08-18`
+
+> **En bref** — deux jobs qui partagent une clé se privent mutuellement de sauvegarde.
+
 **Contexte** : `extract-amendements-an`, `extract-an` et `extract-roster-groupes`
 partageaient la clé `public-data-cache-an-<semaine>` avec `path: .cache`. Le
 premier étant séquencé en tête, il écrivait la **clé exacte** de la semaine ;

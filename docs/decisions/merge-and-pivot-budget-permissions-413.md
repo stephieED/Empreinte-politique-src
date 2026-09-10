@@ -1,6 +1,10 @@
 <a id="merge-and-pivot-budget-permissions-413"></a>
 # `merge-and-pivot` : garde-fou #390 hors `main`, entrées de configuration, budget de temps mur, permissions (#413) (2026-08-18)
 
+`2026-08-18`
+
+> **En bref** — `merge-and-pivot` : garde-fou de code périmé hors `main`, entrées de configuration, budget de temps mur, permissions scopées.
+
 **Contexte** : sous-issue 2/6 de [[revue-workflows-ci-342]], sur le job de fusion
 de `generate-data.yml`, le budget annoncé en tête de fichier et le scoping des
 permissions. Suite directe de [[concurrence-shards-extraction-412]].

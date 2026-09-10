@@ -1,6 +1,10 @@
 <a id="licences"></a>
 # Audit des sources de données et de leurs licences, pour les Mentions légales (#288) (2026-08-14)
 
+`2026-08-14`
+
+> **En bref** — audit des sources et de leurs licences : ce que le partage à l'identique impose au corpus publié.
+
 **Contexte** : sous-issue 1/3 du plan #140. L'ancien `web/old/v3/mentions-legales.html`
 ne couvre que NosDéputés/NosSénateurs, Parltrack et Wikipédia, alors que le pipeline
 actuel interroge aussi l'Open Data de l'Assemblée nationale, l'Open Data du Parlement

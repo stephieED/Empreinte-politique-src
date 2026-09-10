@@ -2,6 +2,10 @@
 
 # Une preuve de borne se dit une fois par liste (#328) (2026-09-09)
 
+`2026-09-09`
+
+> **En bref** — un audit de verbosité de la fiche a trouvé autre chose que de la verbosité : la **même preuve de borne s'imprimait deux fois par ligne** dans « Ce qu'on n'a pas pu lire » — **148 mots en double** sur `jerome-guedj` et `marine-le-pen`, **197** sur `edouard-philippe` —, parce que `couverture_profil._deriver` écrit deux entrées par liste (« couvert depuis », « hors couverture jusqu'au ») et qu'une même borne explique les deux ; **le dédoublonnage ne pouvait PAS se faire à la source** : la première entrée porte une preuve différente dès qu'un fait « hors AN » est établi, et sur les 27 candidats déclarés, 135 listes portant au moins une preuve, **69 répètent la même mais 35 en portent de différentes** — supprimer la seconde effacerait un fait dans la moitié des lignes concernées ; la preuve reste donc sur chaque état et c'est l'affichage qui ne répète pas (`preuveDejaDite`), la marque disant « ne la répète pas » et non « cet état n'a pas de preuve » ; **le détail qui décide de la justesse** est que la mémoire est remise à zéro par liste — partagée, la borne AMO30 disparaîtrait de « Votes » parce que « Mandats et fonctions » l'a déjà écrite —, et un test le tient parce que c'est la seule façon de se tromper qui ne se voie pas à l'écran sur un profil ordinaire ; **aucun texte n'est touché**, la réduction des six blocs au-dessus de la limite de DESIGN_SYSTEM §7 règle 2 étant un lot séparé. 5 tests neufs, suite complète à 4 271, 0 échec.
+
 ## Le contexte
 
 Un audit de verbosité de la fiche candidat, demandé le 09/09/2026, a trouvé

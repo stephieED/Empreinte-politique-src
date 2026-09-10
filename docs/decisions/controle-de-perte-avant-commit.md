@@ -1,6 +1,10 @@
 <a id="controle-de-perte-avant-commit"></a>
 # Le contrôle de perte était écrit, documenté, et branché sur rien (#460) (2026-08-19)
 
+`2026-08-19`
+
+> **En bref** — le contrôle de perte était écrit, documenté, et branché sur rien : il tourne maintenant avant le commit.
+
 Le run `32288588518` a effacé **les 789 interventions du corpus**, et avec elles
 647 `tags_thematiques` et 497 `tags_thematiques_agreges` — des champs
 **publiés** (AGENTS.md §6). La section « thèmes » d'un profil de groupe s'est

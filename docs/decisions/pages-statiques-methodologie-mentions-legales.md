@@ -1,6 +1,10 @@
 <a id="pages-statiques-methodologie-mentions-legales"></a>
 # Pages Méthodologie et Mentions légales dans web/UI_finale (#289, plan #140) (2026-08-14)
 
+`2026-08-14`
+
+> **En bref** — pages Méthodologie et Mentions légales portées dans `web/UI_finale`, sur un composant partagé.
+
 **Contexte** : sous-issue 2/3 du plan #140, portant `web/old/v3/methodologie.html`
 et `mentions-legales.html` dans `web/UI_finale`. Bloquée par #288 pour le
 contenu Mentions légales — voir [[licences]] pour le texte validé, repris

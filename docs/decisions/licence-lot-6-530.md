@@ -1,6 +1,10 @@
 <a id="licence-lot-6-530"></a>
 # Le versant AN passe en Licence Ouverte, et `meta.licence_donnees` devient un champ dérivé (#530, lot 6 de l'épic « une seule source AN ») (2026-08-27)
 
+`2026-08-27`
+
+> **En bref** — « plus rien ne vient de NosDéputés » ne vaut pas « Licence Ouverte » : `meta.licence_donnees` devient un champ dérivé.
+
 **Ce lot clôt l'épic #523, et il aurait été très facile de le clore faux.** La
 formule qui vient à l'esprit — « plus rien ne vient de NosDéputés, donc le
 corpus est sous Licence Ouverte » — est inexacte deux fois. Sur un produit dont

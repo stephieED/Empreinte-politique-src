@@ -1,6 +1,10 @@
 <a id="normalisation-votes"></a>
 # Normaliser les votes : une liste partagée, un mapping, et deux invariants devenus des jointures (#432) (2026-08-19)
 
+`2026-08-19`
+
+> **En bref** — liste partagée, mapping par membre, deux invariants devenus des jointures.
+
 Un scrutin est **identique pour tous ses votants** — `texte`, `date`, `sort`,
 `type_vote`, `source_url`. Seule la `position` est propre au membre. Le méta
 complet était pourtant recopié dans chaque profil ayant voté : mesuré sur les

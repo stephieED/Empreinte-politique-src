@@ -1,6 +1,10 @@
 <a id="seuil-couverture-groupe"></a>
 # Seuil de couverture de groupe (`--groupe-min-members`) : conservé faute de chiffres réels à pleine échelle (2026-08-12)
 
+`2026-08-12`
+
+> **En bref** — `--groupe-min-members` conservé, faute de chiffres réels à pleine échelle.
+
 **Contexte** : #193 demande de recalibrer `--groupe-min-members` (`check_quality_gate.py`,
 défaut 1, cf. `generate-data.yml:413`) maintenant que la couverture roster est censée
 approcher 100 % (post #188/#190/#191), ce seuil absolu ayant été pensé à l'origine

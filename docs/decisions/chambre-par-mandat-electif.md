@@ -1,6 +1,10 @@
 <a id="chambre-par-mandat-electif"></a>
 # La chambre est un fait du mandat, pas du profil : `mandats[].chambre` estampillée à la collecte (#492) (2026-08-20)
 
+`2026-08-20`
+
+> **En bref** — la chambre est un fait du mandat, estampillé à la collecte, pas une propriété du profil.
+
 Sous-issue C de l'épic **#486**, après #488 (sous-issue B). Ne touche pas à
 `chambre` au niveau profil (sous-issue D, `needs-human`), ne corrige pas le
 profil de Mélenchon (#484), n'ajoute aucun mandat à aucun profil.

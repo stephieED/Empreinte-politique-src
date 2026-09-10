@@ -1,6 +1,10 @@
 <a id="oom-lecture-amendements-par-candidat"></a>
 # OOM persistant : lecture per-candidat de l'index amendements, tentative de mémoïsation revertée (2026-08-17)
 
+`2026-08-17`
+
+> **En bref** — OOM par relecture de l'index amendements à chaque candidat ; mémoïsation tentée puis revertée (fuite entre tests).
+
 **Contexte** : après [[oom-reconstruction-amendements-figees]] (ci-dessous),
 `build_amendements_index.py` ne rechargeait plus les index déjà figés — mais
 l'OOM a persisté sur un run local suivant (`extract-an` puis

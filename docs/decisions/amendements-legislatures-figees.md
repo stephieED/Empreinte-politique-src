@@ -1,6 +1,10 @@
 <a id="amendements-legislatures-figees"></a>
 # Index amendements des législatures 15/16 : construction manuelle hors CI, committée (2026-08-13)
 
+`2026-08-13`
+
+> **En bref** — construits hors CI, committés, jamais re-téléchargés.
+
 **Contexte** : le job CI dédié `extract-amendements-an` ([[amendements-index-job-dedie-ci]],
 #251) a échoué sur son tout premier run réel pour les législatures 15 et 16 —
 `IncompleteRead` répété dès le premier segment de `Amendements_XV.json.zip`

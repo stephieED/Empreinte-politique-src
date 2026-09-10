@@ -1,6 +1,12 @@
 <a id="resilience-generate-data-shutdown-signal"></a>
 # Résilience de `generate-data.yml` face aux `shutdown signal` runner : continue-on-error généralisé, watchdog réseau, retry générique sur `_get_payload`, retry `retry-generate-data.yml` non-régressif, et appels NosDéputés morts pour les députés (dossiers, votes) (2026-08-16)
 
+`2026-08-16`
+
+<a id="dossiers-legislatifs-nosdeputes-vs-an-officiel"></a><a id="get-payload-retry"></a><a id="dossiers-legislatifs-nosdeputes-vs-an-officiel"></a><a id="get-payload-retry"></a>
+
+> **En bref** — continue-on-error généralisé, watchdog réseau, retry générique, appels NosDéputés morts retirés.
+
 **Contexte** : investigation déclenchée par des échecs répétés d'`extract-an`
 et `extract-roster-groupes`, tous avec la même signature `shutdown signal`
 déjà documentée ([[retry-generate-data-preemption]], #217/#221/#228) —

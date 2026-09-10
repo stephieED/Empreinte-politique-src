@@ -4,6 +4,10 @@
 <a id="frontiere-vs-panne-560"></a>
 # Trois absences publiées comme des faits (#556, #558, #560) (2026-08-29)
 
+`2026-08-29`
+
+> **En bref** — une absence décidée, bornée par la source ou marquée en XML n'est pas un fait ; filtrage à la lecture, pas champ par champ.
+
 Un seul lot pour trois issues, et pas par commodité : elles partagent
 `src/candidate_profile.py` et `src/couverture_profil.py`, et surtout la **même
 faute de fond**. Une absence produite par une **décision**, par une **frontière

@@ -1,6 +1,10 @@
 <a id="senat-periode-debut"></a>
 # Groupes Sénat : ne pas renseigner `senat_periode_debut` dans `groupes_reels.json` (2026-08-12)
 
+`2026-08-12`
+
+> **En bref** — une valeur inventée vaut moins qu'une absence.
+
 **Contexte** : #191 durcit `group_profile.py`/`generate_group_profiles.py` pour une
 couverture de profils quasi complète (post #190). À couverture quasi complète, les
 2 groupes Sénat de `groupes_reels.json` (`Senat:LR`, `Senat:SER`) exposent un effet

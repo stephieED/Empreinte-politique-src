@@ -1,6 +1,10 @@
 <a id="bascule-identite-an-primaire"></a>
 # `fetch_identity` : identité (bio) des députés basculée sur l'AN comme source primaire, mandats/groupe restent sur NosDéputés (#355) (2026-08-16)
 
+`2026-08-16`
+
+> **En bref** — l'identité (bio) des députés bascule sur l'AN comme source primaire ; mandats et groupe restent sur NosDéputés.
+
 **Contexte** : sous-issue 4/6 de #351, une fois l'index identité AN étendu
 (#352), les `organeRef` résolus (#353) et la couverture multi-législatures
 en place (#354). L'énoncé demandait de « basculer `fetch_identity` vers la

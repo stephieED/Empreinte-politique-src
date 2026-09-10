@@ -1,5 +1,9 @@
 # Quelle source a rempli quel champ, et quand — un bloc à côté d'`identite` (#603) (2026-08-30)
 
+`2026-08-30`
+
+> **En bref** — `meta.provenance_champs` décrit `identite` seule, champ par champ ; dérivé après la fusion et jamais fusionné, l'inconnu se publie `source: null`, et `sources[0]` aurait attribué 2 597 des 2 612 champs à une source retirée depuis #529.
+
 Lot 4 de l'épic #598, et le seul qui **ouvre le schéma publié**. AGENTS.md §2.2
 demande qu'un fait publié remonte à sa source primaire ; sur les listes c'est
 acquis — une entrée porte son `source_url`, et la fusion est additive. Sur

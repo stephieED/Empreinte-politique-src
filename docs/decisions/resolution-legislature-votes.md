@@ -1,6 +1,10 @@
 <a id="resolution-legislature-votes"></a>
 # Où vit la liste dédupliquée des scrutins : un fichier partagé, pas un par entité (#432) (2026-08-19)
 
+`2026-08-19`
+
+> **En bref** — la liste dédupliquée des scrutins vit dans un fichier partagé, pas un par entité.
+
 La normalisation des votes (#432) sépare un scrutin — identique pour tous ses
 votants — du mapping qui, seul, est propre au membre. Restait à trancher **où
 vit la liste dédupliquée** : un fichier partagé, ou un par entité (candidat,

@@ -1,5 +1,9 @@
 # Le sort d'un texte entre dans la fiche, à côté de son stade et jamais à sa place (#743 dans #328), 07/09/2026
 
+`2026-09-07`
+
+> **En bref** — la demande était de **remplacer les étiquettes du sankey** par `textes_portes[].sort`, publié depuis #747 (423 entrées, 423 avec un sort) ; la mesure l'a décalée : **aucune barre n'est homogène en sort** — celle « non adopté » d'Édouard Philippe porte 2 navette, **1 adopté via 49.3** et 1 retiré, la barre finale « promulgué » de Gabriel Attal porte 6 CMP, 5 adoptés, **4 adoptés via 49.3** et 3 promulgués —, une étiquette ne pouvant nommer un sort qu'en mentant sur les autres, parce que la cascade a le **stade** pour axe et que le sort est **orthogonal** ; confrontation complète sur les 423 : **un seul désaccord**, le 49.3 de Philippe, où la figure écrit « non adopté » sur un texte adopté sans vote ; d'où le sort **par la liste** — deux faits, deux places, la pastille gardant le stade —, ce qui fait lire la barre « non adopté » de Jean-Luc Mélenchon comme **4 rejetés, 1 retiré, 1 en navette** là où elle donnait six textes indistincts ; le **49.3 nommé à côté de la figure et jamais dedans** (5 textes sur 414, quatre fondus dans « promulgué »), en **fait procédural** et en compte seul (§2 règle 4, §6) ; une **sélection par sort ne voile rien**, un segment agrégeant matière × porte ; le vocabulaire **déménage dans `utils/lecture.js`** — mêmes 9 valeurs que `KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL`, `depose` et `rejete_49_3` déclarés bien qu'absents du corpus —, et un sort nul affiche son **motif**, jamais un défaut (§2 règle 5) ; premier test du dépôt qui compare **le frozenset Python au dictionnaire JS**.
+
 Ancres : `LIBELLE_SORT_TEXTE`, `MOTIF_SORT`, `SORTS_PROCEDURE_49_3`,
 `estProcedure49_3`, `cascadeDesTextes`, `textesDeLaSelection`, `croise`,
 `ListeCascade`, `Cascade`, `KNOWN_SORTS_TEXTE_PORTE`,

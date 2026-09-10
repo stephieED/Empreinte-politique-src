@@ -541,6 +541,23 @@ et aucun acteur dans le profil qu'AMO30 a produit. En désaccord, aucune entrée
 le slug est nommé, la §5b bloquera, et un humain arbitre.
 → `docs/decisions/boucle-perimetre-candidats-757.md`.
 
+### J'ai écrit une décision : mettre l'index à jour
+
+```bash
+python3 scripts/generer_index_decisions.py
+python3 scripts/generer_index_decisions.py --verifier
+```
+
+`docs/technical_decisions.md` est **généré** depuis les fichiers de
+`docs/decisions/` (#840) — il ne s'édite pas à la main. Chaque décision porte
+son titre, sa date et son résumé `> **En bref** — …` ; le script les assemble,
+de la plus récente à la plus ancienne.
+
+C'est ce qui supprime les conflits : un lot n'écrit que **son** fichier, que
+personne d'autre ne touche. `--verifier` ne modifie rien, sortie 1 si l'index a
+dérivé.
+→ `docs/decisions/index-decisions-genere-840.md`.
+
 ### Régénérer la table « ce module → ces décisions »
 
 ```bash

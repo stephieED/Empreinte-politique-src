@@ -1,6 +1,10 @@
 <a id="syceron-acteur-ref-nu-510"></a>
 # Syceron publie l'identifiant d'orateur NU, et n'a donc jamais rien indexé (#510) (2026-08-20)
 
+`2026-08-20`
+
+> **En bref** — la source primaire des interventions n'avait donc jamais rien indexé.
+
 **État relu le 20/08/2026 à 19:34 UTC ; `origin/main` = `d7d8fb1`** (le run
 `32405297873` a abouti et commité `68bc094` pendant l'instruction ; PR #509
 mergée). Les mesures de corpus ci-dessous portent sur cette ref.

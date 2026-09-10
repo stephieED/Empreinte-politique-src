@@ -1,6 +1,10 @@
 <a id="gouvernement-doc-cloture"></a>
 # Documentation upkeep de clôture, vue Gouvernement (#214, plan #184) (2026-08-14)
 
+`2026-08-14`
+
+> **En bref** — passe documentaire de clôture de la vue Gouvernement, sans anticiper de fonctionnalité non livrée.
+
 **Contexte** : #214 demandait une passe finale de mise à jour documentaire
 une fois #207-#213 réellement mergées, sans anticiper de fonctionnalité non
 livrée. Les PR #207-#213 avaient déjà fait leur propre upkeep `AGENTS.md §8`

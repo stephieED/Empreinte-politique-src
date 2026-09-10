@@ -1,6 +1,10 @@
 <a id="budgets-extract-an-perimes-546"></a>
 # Le correctif de #540 validé en conditions réelles, et les deux budgets qu'il a périmés (#546) (2026-08-27)
 
+`2026-08-27`
+
+> **En bref** — le correctif de #540 validé en conditions réelles a périmé les deux budgets qui le bornaient.
+
 Deux runs complets se sont succédé le 27/08, encadrant la fusion du correctif
 de #540. C'est leur **écart** qui est instructif, pas chacun pris isolément.
 

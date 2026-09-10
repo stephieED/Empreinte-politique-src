@@ -1,6 +1,10 @@
 <a id="syceron"></a>
 # Syceron : remplacement du scraping NosDéputés pour les débats en séance (2026-08-07)
 
+`2026-08-07`
+
+> **En bref** — Syceron remplace le scraping NosDéputés pour les débats en séance.
+
 **Contexte** : l'enrichissement des `interventions[]` avec le texte intégral des prises de
 parole reposait jusqu'ici sur les métadonnées extraites via l'API NosDéputés (titre,
 date, type) sans le texte complet des débats.
