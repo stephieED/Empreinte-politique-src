@@ -86,6 +86,18 @@ elective mandate** (38/38, 85/85, 60/60 on `LR`, `REN`, `LFI` — re-elected in
   *source* to AMO30 and published nothing. Only `groupes[]` decides what a run
   writes. A note pointing at a lot that did something else spares everyone from
   checking.
+- **`groupe_id` always carries its legislature, and `succede_a` is a non-empty
+  list (#815).** Seven ids of eighteen lacked the suffix — `AN:REN`, `AN:SOC`,
+  `AN:RN`, `AN:LFI`, `AN:LR`, `AN:EPR`, `AN:DR` — a leftover from when
+  `groupes_reels.json` described **one** legislature and the sigle was enough.
+  A returning sigle makes the reference ambiguous: declaring `LR` for the XVᵉ
+  turns `AN:LR` into two sheets. The list exists because a **merge** has two
+  predecessors and a **split** is not a replacement — `AD` leaves `DR` on
+  11/09/2024 while `DR` carries on. **The file holds two lists** (`groupes[]`,
+  the only one that decides what a run writes, and
+  `correspondance_sigles_an.groupes`); fixing one and not the other is
+  invisible. The old shape is refused **by name** at both stages, never
+  tolerated.
 - **`succede_a` is an assertion of this repo, and the schema forbids it a
   `source_url`.** The Assembly opens and closes organs (`PO800508` closed
   09/06/2024, `PO845425` opened 18/07/2024); it never chains them. Exact mirror
