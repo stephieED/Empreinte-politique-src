@@ -387,14 +387,18 @@ def test_la_16e_et_la_17e_nont_aucune_collision_sur_larchive_reduite(index, tmp_
     assert set(origines.values()) == {"fabrique"}
 
 
-def test_les_cinq_rosters_de_la_17e_entrent_en_entier(actif):
+def test_les_rosters_de_la_17e_entrent_en_entier(actif):
     """Le défaut mesuré par #708 : 156 des 461 entrées écartées, 33,8 %.
 
     Avec la fixture (12 entrées de table seulement) la proportion n'est pas
     celle du corpus réel — ce qui se vérifie ici est **l'invariant** : plus
-    aucun membre n'est écarté faute de slug, sur les 5 groupes de la 17e.
+    aucun membre n'est écarté faute de slug, quel que soit le nombre de
+    groupes déclarés sur la 17e. Ils étaient cinq, ils sont sept depuis #815 ;
+    le total suit la table plutôt qu'une constante, sans quoi déclarer un
+    groupe de plus ferait échouer un test qui ne parle pas de lui.
     """
     total = 0
+    attendus = 0
     for entree in an_roster.charger_correspondance_sigles(CONFIG):
         if entree["legislature"] != "17":
             continue
@@ -408,4 +412,5 @@ def test_les_cinq_rosters_de_la_17e_entrent_en_entier(actif):
         assert rapport["membres_sans_slug"] == []
         assert all(m["slug"] for m in membres)
         total += len(membres)
-    assert total == 461
+        attendus += entree["effectif_amo30"]
+    assert total == attendus

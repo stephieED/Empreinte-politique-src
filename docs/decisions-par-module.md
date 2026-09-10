@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 267 décisions
+gouverne sans avoir à fouiller les 268 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -74,7 +74,7 @@ Le mentionnent sans le gouverner : [`lectures-pipeline-par-projection-635`](deci
 
 ## `src/an_roster.py`
 
-9 décision(s) le gouvernent ; le module en cite 3.
+10 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
@@ -87,6 +87,7 @@ Le mentionnent sans le gouverner : [`lectures-pipeline-par-projection-635`](deci
 | [Le Sénat sort du périmètre, et le job qui concluait vert sans rien produire est retiré (#528, lot 3 de l'épic « une seule source AN ») (2026-08-26)](decisions/retrait-senat-528.md) | `AN_ROSTER_ACTIF` |
 | [Le roster des groupes AN est dérivé d'AMO30, derrière un drapeau baissé (#526, lot 1 de l'épic « une seule source AN ») (2026-08-26)](decisions/roster-an-derive-amo30-526.md) | `AN_ROSTER_ACTIF`, `RosterAnIndisponible`, `fetch_full_roster_an` |
 | [Un membre de roster sans correspondance relue reçoit un slug, et la collision reste un refus (#708) (2026-09-02)](decisions/slug-fabrique-membre-de-roster-708.md) | `MOTIFS_SLUG_NON_ATTRIBUE`, `resoudre_slugs` |
+| [Trois fiches, et six lignées qui remontent enfin (#815, lot 2)](decisions/trois-fiches-de-continuite-815.md) | `est_mandat_de_transit` |
 
 ## `src/audit_collecte_non_publiee.py`
 
