@@ -85,6 +85,23 @@ l'acteur déclaré doit être celui que le profil porte, et le fait négatif
 (`ecart: "hors_an"`) exige que les deux sources se taisent — pas de `P4123`, et
 aucun acteur dans le profil qu'AMO30 a produit. En désaccord, aucune entrée : la
 §5b bloquera en nommant le slug, et un humain arbitrera.
+
+Les décisions qui gouvernent ce module
+--------------------------------------
+Cinq le nomment ; la liste complète et à jour est dans
+`docs/decisions-par-module.md`. Ces trois-là portent le contrat :
+
+- `docs/decisions/correspondance-acteurs-an-525.md` — la table est un artefact
+  **relu**, jamais recalculé : une entrée existante est reconduite telle quelle,
+  et §6 interdit de la combler depuis `identite.source_url`.
+- `docs/decisions/entree-derivee-correspondance-715.md` (#715) et
+  `docs/decisions/liste-candidats-declares-753.md` (#753) — les deux passes
+  additives et hors ligne (`--completer-derivees`, `--completer-candidats`) :
+  ce qu'elles écrivent gèle un slug ou le source, jamais ne le prouve.
+- `docs/decisions/lectures-du-depot-dans-les-tests-791.md` (#791) —
+  l'emplacement de la table se déclare à UN endroit
+  (`correspondance_acteurs_an.CHEMIN_PAR_DEFAUT`) : un littéral recopié échappe
+  au réglage de la suite, qui sert une table figée.
 """
 
 from __future__ import annotations

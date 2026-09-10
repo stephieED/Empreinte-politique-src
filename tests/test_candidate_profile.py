@@ -2554,8 +2554,14 @@ def test_download_and_build_amendement_index_disk_marker_from_different_run_is_i
 
     monkeypatch.setenv("GITHUB_RUN_ID", "31694500982")
 
-    marker_path = _amendements_failed_marker_path("17")
     with patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path):
+        # Le chemin du marqueur se calcule DANS le `patch`, pas avant (#791) :
+        # `_amendements_failed_marker_path` dérive de `AMENDEMENTS_CACHE_DIR`,
+        # donc l'appeler d'abord rendait `.cache/amendements_an/17/failed_run_id`
+        # — le cache RÉEL du dépôt, que ce test créait puis écrivait. Le
+        # garde-fou de #721 ne le voyait pas : il ne coupait que `builtins.open`,
+        # et `Path.write_text` passe par `io.open`.
+        marker_path = _amendements_failed_marker_path("17")
         marker_path.parent.mkdir(parents=True, exist_ok=True)
         marker_path.write_text("99999999999", encoding="utf-8")  # run_id d'un run précédent
 

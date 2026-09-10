@@ -60,6 +60,24 @@ les charger, ni à les faire grossir. -->
   Watch CLI/function **defaults** pointing into the repo. Test-only deps go in
   `requirements-dev.txt`.
   → `docs/decisions/ci-tests-pytest.md`
+- **No test opens a `.json` of `raw_data/` without declaring it — and a guard must cut
+  `builtins.open`, `io.open` **and** `Path.open`, because none of the three catches the
+  other two (#791).** `Path.open()` calls `io.open`; `builtins.open` is a different
+  reference to the same function, so patching one leaves the other intact. Measured on the
+  full suite, 10/09/2026: of the 144 tests opening a watched repo file, **40** reached one
+  through `builtins.open` and **105** through `pathlib` (one test both ways) — the #721
+  cache guard had the same hole
+  from the day it was written, and one test was walking through it. What a run rewrites
+  (`candidats.json`, `correspondance_acteurs_an.json`, `resolutions_candidats.json`) is
+  read from a frozen fixture under `tests/fixtures/`. What is a **committed configuration**
+  whose validity is itself the subject of a test — `groupes_reels.json`,
+  `gouvernements_reels.json`, `candidats.json` — is declared file by file with
+  `pytestmark = pytest.mark.lit_reference_committee("<path>")`, and the guard **accepts the
+  declaration only if the path is in the `sparse-checkout` of `tests.yml`**: what CI does
+  not download, a test reads only locally, on whatever a run left there. Clear module memos
+  at **both** ends of the fixture (#767): a memo left full serves a neighbour's table
+  without reopening a file, so the guard never sees it.
+  → `docs/decisions/lectures-du-depot-dans-les-tests-791.md`
 - **A cache key is a freshness policy only until someone adds `restore-keys` (#749).** The
   amendements index went **18 days** without a single rebuild: #249 made the weekly key the
   *only* staleness mechanism (§3d's 7-day threshold is documented as aligned on it),

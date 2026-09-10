@@ -21,13 +21,21 @@ suite le fait déjà.
 Le sparse-checkout du workflow de tests couvre l'autre moitié de la règle
 (le corpus vivant est absent du disque en CI) ; celle-ci couvre le réseau.
 
-Ce fichier porte depuis un **second** garde-fou, sans rapport avec le premier :
-le hook `pytest_runtest_makereport` de la fin du fichier, qui nomme la cause
-probable quand un test échoue sur un fichier que le sparse-checkout ne
-télécharge pas. Son docstring porte le pourquoi.
+Ce fichier en porte deux autres, sans rapport avec le premier :
+
+- **les fichiers du dépôt qui bougent sous la suite** — le `.cache/` du poste
+  (#721) et les `.json` de `raw_data/` qu'un run réécrit (#791). Le filtre est
+  posé sur les **trois** portes d'ouverture (`builtins.open`, `io.open`,
+  `Path.open`), parce qu'aucune n'attrape les deux autres ;
+- le hook `pytest_runtest_makereport` de la fin du fichier, qui nomme la cause
+  probable quand un test échoue sur un fichier que le sparse-checkout ne
+  télécharge pas.
+
+Chacun porte son pourquoi à l'endroit où il est écrit.
 """
 
 import builtins
+import io
 import os
 import sys
 from functools import lru_cache
@@ -76,15 +84,16 @@ def _reseau_coupe(monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# Deuxième garde-fou : aucun test ne lit le cache du POSTE (#721).
+# Deuxième garde-fou : aucun test ne lit les FICHIERS DU DÉPÔT qui bougent
+# sous lui — le cache du poste (#721) et les `.json` de `raw_data/` (#791).
 # ---------------------------------------------------------------------------
 #
-# Les onze constantes de cache du dépôt valent `Path(".cache") / ...` — un
-# chemin RELATIF au répertoire courant, donc la racine du dépôt quand pytest
-# tourne en local. En CI, `tests.yml` fait un checkout partiel, `.cache/`
-# n'existe pas, la lecture échoue et le repli s'applique. Sur un poste qui a
-# déjà lancé une collecte, la même lecture RÉUSSIT et sert des données réelles
-# à la place de la fixture.
+# LE CACHE DU POSTE (#721). Les onze constantes de cache du dépôt valent
+# `Path(".cache") / ...` — un chemin RELATIF au répertoire courant, donc la
+# racine du dépôt quand pytest tourne en local. En CI, `tests.yml` fait un
+# checkout partiel, `.cache/` n'existe pas, la lecture échoue et le repli
+# s'applique. Sur un poste qui a déjà lancé une collecte, la même lecture
+# RÉUSSIT et sert des données réelles à la place de la fixture.
 #
 # Mesuré le 02/09/2026 : six tests — les quatre de `test_budget_interventions`
 # et deux de `test_candidate_profile` — rendaient **688** interventions là où
@@ -94,7 +103,38 @@ def _reseau_coupe(monkeypatch):
 # depuis #719 parce que le cache du poste est périmé donc rejeté : deux raisons
 # accidentelles, aucune bonne.
 #
-# Ce garde-fou DIAGNOSTIQUE, il ne redirige pas. Réécrire les constantes vers un
+# LES `.json` DE `raw_data/` (#791). Même piège, sur une troisième population.
+# `raw_data/candidats.json`, `raw_data/correspondance_acteurs_an.json`,
+# `raw_data/resolutions_candidats.json` sont RÉÉCRITS par chaque run de
+# `generate-data.yml` et committés par le bot. Le run `34278343461` a ajouté
+# dans la nuit l'entrée sourcée d'Asselineau : trois tests écrits le 08/09 sont
+# passés au rouge le lendemain, en local seulement — le sparse-checkout de
+# `tests.yml` ne matérialise pas ces fichiers, donc la CI ne les voit jamais.
+#
+# CE QUI RESTE LISIBLE, ET SEULEMENT AINSI. Deux `.json` de `raw_data/` sont des
+# CONFIGURATIONS éditoriales committées à la main — `groupes_reels.json`,
+# `gouvernements_reels.json` — et la suite porte des tests dont le SUJET est
+# leur validité (`test_repository_groupes_reels_json_is_valid`). Les figer
+# reviendrait à valider une copie, c'est-à-dire à désarmer le test. Ils restent
+# donc lisibles, mais **jamais par accident** : le fichier de test le déclare
+# par `pytest.mark.lit_reference_committee("raw_data/<fichier>.json")`, et le
+# garde-fou n'accepte cette déclaration que si le chemin est couvert par le
+# `sparse-checkout` de `tests.yml`. C'est la condition qui manquait : un fichier
+# absent du checkout n'est pas lu par la CI, donc un test qui le lit ne tourne
+# qu'ici, sur ce qu'un run a laissé.
+#
+# POURQUOI TROIS POINTS D'INTERCEPTION ET PAS UN. `monkeypatch.setattr(builtins,
+# "open", ...)` n'attrape PAS `pathlib` : `Path.open()` appelle `io.open`, et
+# `builtins.open` en est une AUTRE référence — patcher l'une laisse l'autre
+# intacte (vérifié sur CPython 3.12). Mesuré le 10/09/2026 sur la suite
+# complète : des 144 tests qui ouvrent un fichier du dépôt sous surveillance,
+# **41** passent par `builtins.open` et **103** par `pathlib`. Le garde-fou de
+# #721 avait donc le même trou depuis son écriture, et un test le traversait :
+# `test_candidate_profile.py::test_download_and_build_amendement_index_disk_
+# marker_from_different_run_is_ignored` lisait `.cache/amendements_an/17/
+# failed_run_id` sans être arrêté.
+#
+# CE GARDE-FOU DIAGNOSTIQUE, IL NE REDIRIGE PAS. Réécrire les constantes vers un
 # répertoire jetable a été essayé et cassait dix tests qui isolent déjà leur
 # cache par `monkeypatch.chdir(tmp_path)` : leur `.cache` relatif suit le
 # répertoire courant, et une constante rendue absolue le leur retire. L'idiome
@@ -103,9 +143,49 @@ def _reseau_coupe(monkeypatch):
 #: Le cache réel du poste — celui qu'aucun test ne doit lire.
 CACHE_DU_DEPOT = (Path(__file__).resolve().parents[1] / ".cache").resolve()
 
+#: `raw_data/` du dépôt, et la seule branche que ce garde-fou laisse à un autre :
+#: `raw_data/profiles/`, déjà couverte par le hook de diagnostic du bas de ce
+#: fichier (elle est exclue du checkout EXPRÈS, #473, et le message à donner
+#: n'est pas le même).
+RAW_DATA_DU_DEPOT = (Path(__file__).resolve().parents[1] / "raw_data").resolve()
+PROFILS_DU_DEPOT = RAW_DATA_DU_DEPOT / "profiles"
+
+#: Le marqueur par lequel un fichier de test déclare lire une configuration
+#: committée. Enregistré dans `pytest_configure` — le dépôt n'a pas de
+#: `pytest.ini`, et un marqueur non déclaré ne serait qu'un avertissement.
+MARQUEUR_REFERENCE = "lit_reference_committee"
+
 
 class CacheDuPosteLuDansUnTest(AssertionError):
     """Levée quand un test ouvre un fichier du cache réel du dépôt (#721)."""
+
+
+class RawDataDuDepotLuDansUnTest(AssertionError):
+    """Levée quand un test ouvre un `.json` de `raw_data/` sans le déclarer (#791)."""
+
+
+class ReferenceCommitteeHorsChecKout(AssertionError):
+    """Levée quand un marqueur autorise un chemin que la CI ne télécharge pas (#791)."""
+
+
+def _texte_du_chemin(fichier):
+    """Le chemin sous forme de `str`, ou `None` si l'argument n'en porte pas.
+
+    `open(3)` réouvre un descripteur : il n'y a rien à examiner.
+    """
+    if isinstance(fichier, int):
+        return None
+    texte = os.fspath(fichier) if hasattr(fichier, "__fspath__") else fichier
+    if isinstance(texte, bytes):
+        texte = texte.decode("utf-8", "replace")
+    return texte if isinstance(texte, str) else None
+
+
+def _resolu(texte):
+    try:
+        return Path(texte).resolve()
+    except (OSError, ValueError):
+        return None
 
 
 def _sous_le_cache_du_depot(fichier) -> bool:
@@ -115,25 +195,86 @@ def _sous_le_cache_du_depot(fichier) -> bool:
     ouverture de fichier coûterait cher pour un cas qui ne se produit presque
     jamais.
     """
-    if isinstance(fichier, int):  # descripteur déjà ouvert : aucun chemin à lire
+    texte = _texte_du_chemin(fichier)
+    if texte is None or ".cache" not in texte:
         return False
-    texte = os.fspath(fichier) if hasattr(fichier, "__fspath__") else fichier
-    if isinstance(texte, bytes):
-        texte = texte.decode("utf-8", "replace")
-    if not isinstance(texte, str) or ".cache" not in texte:
-        return False
+    resolu = _resolu(texte)
+    return resolu is not None and CACHE_DU_DEPOT in (resolu, *resolu.parents)
+
+
+def _json_de_raw_data_du_depot(fichier):
+    """Le chemin résolu si `fichier` est un `.json` de `raw_data/`, sinon `None`.
+
+    `raw_data/profiles/` est rendu `None` : il a son propre diagnostic.
+    """
+    texte = _texte_du_chemin(fichier)
+    if texte is None or "raw_data" not in texte or not texte.endswith(".json"):
+        return None
+    resolu = _resolu(texte)
+    if resolu is None or RAW_DATA_DU_DEPOT not in resolu.parents:
+        return None
+    if PROFILS_DU_DEPOT in (resolu, *resolu.parents):
+        return None
+    return resolu
+
+
+def _chemins_declares(item) -> frozenset:
+    """Les chemins que les marqueurs du test autorisent, résolus.
+
+    Chaque chemin doit être couvert par le `sparse-checkout` de `tests.yml` :
+    sinon la CI ne le télécharge pas, le test ne tourne qu'en local, et la
+    déclaration servirait à masquer #791 au lieu de le nommer. La liste blanche
+    illisible (`None`) ne fait pas échouer — c'est le cas des tests qui la
+    détournent eux-mêmes.
+    """
+    declares = []
+    blanche = _liste_blanche_sparse_checkout()
+    for marqueur in item.iter_markers(MARQUEUR_REFERENCE):
+        for brut in marqueur.args:
+            relatif = str(brut).strip("/")
+            if blanche is not None and relatif not in blanche:
+                raise ReferenceCommitteeHorsChecKout(
+                    f"`{MARQUEUR_REFERENCE}(\"{relatif}\")` autorise un fichier "
+                    "que le `sparse-checkout` de `.github/workflows/tests.yml` ne "
+                    "télécharge pas : en CI ce test ne lirait rien, il ne tournerait "
+                    "qu'en local, sur ce qu'un run y a laissé (#791). Inscrire le "
+                    "chemin dans la liste blanche, ou figer une fixture."
+                )
+            declares.append((RACINE_DEPOT / relatif).resolve())
+    return frozenset(declares)
+
+
+def _message_raw_data(resolu) -> str:
     try:
-        resolu = Path(texte).resolve()
-    except (OSError, ValueError):
-        return False
-    return CACHE_DU_DEPOT in (resolu, *resolu.parents)
+        relatif = resolu.relative_to(RACINE_DEPOT).as_posix()
+    except ValueError:  # pragma: no cover - `resolu` est sous la racine par construction
+        relatif = str(resolu)
+    return (
+        f"Ce test lit {relatif} — le fichier RÉEL du dépôt, pas une fixture "
+        "(#791). Chaque run de `generate-data.yml` réécrit les `.json` de "
+        "`raw_data/`, et le `sparse-checkout` de `tests.yml` n'en matérialise "
+        "qu'une partie : ce test passera ou échouera selon ce qu'un run a "
+        "laissé, et la CI ne le verra pas. Lire une fixture figée sous "
+        "`tests/fixtures/` (pour la table de correspondance, pointer "
+        "`correspondance_acteurs_an.CHEMIN_PAR_DEFAUT` vers "
+        "`tests/fixtures/correspondance_acteurs_an_extrait.json` et vider le "
+        f"mémo aux deux bouts) ; si le SUJET du test est ce fichier committé, "
+        f"le déclarer par `pytest.mark.{MARQUEUR_REFERENCE}(\"{relatif}\")` — "
+        "ce qui exige qu'il soit dans le `sparse-checkout`."
+    )
 
 
 @pytest.fixture(autouse=True)
-def _cache_du_poste_hors_de_portee(monkeypatch):
-    ouvrir_reel = builtins.open
+def _fichiers_du_depot_hors_de_portee(request, monkeypatch):
+    """Coupe les trois portes d'ouverture de fichier, pour toute la suite.
 
-    def _filtrer(fichier, *args, **kwargs):
+    `builtins.open`, `io.open` et `pathlib.Path.open` : trois références, deux
+    chemins d'appel réels, et aucun n'attrape les autres. La restauration est
+    celle de `monkeypatch`, donc garantie même si le test lève.
+    """
+    autorises = _chemins_declares(request.node)
+
+    def _verifier(fichier):
         if _sous_le_cache_du_depot(fichier):
             raise CacheDuPosteLuDansUnTest(
                 f"Ce test lit {fichier} — le cache RÉEL du poste, pas sa fixture "
@@ -143,9 +284,114 @@ def _cache_du_poste_hors_de_portee(monkeypatch):
                 "avec `monkeypatch.chdir(tmp_path)`, ou règle la constante de "
                 "cache du module vers un `tmp_path`."
             )
-        return ouvrir_reel(fichier, *args, **kwargs)
+        resolu = _json_de_raw_data_du_depot(fichier)
+        if resolu is not None and resolu not in autorises:
+            raise RawDataDuDepotLuDansUnTest(_message_raw_data(resolu))
 
-    monkeypatch.setattr(builtins, "open", _filtrer)
+    ouvrir_builtins = builtins.open
+    ouvrir_io = io.open
+    ouvrir_path = Path.open
+
+    def _filtrer_builtins(fichier, *args, **kwargs):
+        _verifier(fichier)
+        return ouvrir_builtins(fichier, *args, **kwargs)
+
+    def _filtrer_io(fichier, *args, **kwargs):
+        _verifier(fichier)
+        return ouvrir_io(fichier, *args, **kwargs)
+
+    def _filtrer_path(self, *args, **kwargs):
+        _verifier(self)
+        return ouvrir_path(self, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "open", _filtrer_builtins)
+    monkeypatch.setattr(io, "open", _filtrer_io)
+    monkeypatch.setattr(Path, "open", _filtrer_path)
+
+
+# ---------------------------------------------------------------------------
+# Le corollaire du garde-fou : ce que les tests lisent à la place (#791).
+# ---------------------------------------------------------------------------
+#
+# Refuser sans donner de remplaçant ferait échouer 46 tests qui ne demandaient
+# rien au contenu réel : ils traversaient `charger_correspondance()` ou
+# `declare_hors_an_par_identifiant()` sur leur chemin par DÉFAUT, sans jamais
+# regarder ce qui en sortait. Les défauts sont donc réglés ici, pour toute la
+# suite, sur des fixtures figées — un test qui veut une autre table continue de
+# poser la sienne, comme `test_correspondance_acteurs_an.py` le fait déjà.
+#
+# LE PIÈGE DE #767, ET IL SE REFERME AUX DEUX BOUTS. `correspondance_acteurs_an`
+# et `perimetre_candidats` mémoïsent par chemin dans un `dict` de module — pas
+# un `lru_cache`, rien qui s'annule tout seul. Un mémo non vidé À L'ENTRÉE sert
+# au test la table qu'un voisin a chargée ; non vidé À LA SORTIE, il la sert au
+# suivant. Dans les deux cas, aucun fichier n'est rouvert, donc le garde-fou
+# ci-dessus ne voit rien : c'est exactement le trou qu'il est censé fermer.
+
+#: Table de correspondance figée — 13 entrées, déjà utilisée par quatre fichiers
+#: de tests qui la nomment explicitement.
+FIXTURE_CORRESPONDANCE = (
+    Path(__file__).resolve().parent / "fixtures" / "correspondance_acteurs_an_extrait.json")
+
+#: `raw_data/resolutions_candidats.json` n'existe sur AUCUN disque du dépôt : il
+#: est écrit par le job de tête d'un run (#757) et n'est pas committé. Le défaut
+#: de CLI pointe pourtant dessus, `declare_hors_an_par_identifiant` rattrape
+#: l'`OSError` de l'absence — mais pas l'`AssertionError` du garde-fou. La
+#: fixture rend le même verdict (« aucune résolution ») en le déclarant.
+FIXTURE_RESOLUTIONS = (
+    Path(__file__).resolve().parent / "fixtures" / "resolutions_candidats_neutre.json")
+
+#: `(module, attribut, valeur)`. Réglés sur les modules **déjà importés** : le
+#: conftest n'importe rien de `src/` pour lui-même, sans quoi il paierait
+#: l'import de toute la chaîne à chaque session, y compris pour les tests qui
+#: n'en touchent aucun.
+_DEFAUTS_FIGES = (
+    ("correspondance_acteurs_an", "CHEMIN_PAR_DEFAUT", FIXTURE_CORRESPONDANCE),
+    ("build_correspondance_acteurs_an", "CHEMIN_PAR_DEFAUT", FIXTURE_CORRESPONDANCE),
+    ("check_quality_gate", "CORRESPONDANCE_PAR_DEFAUT", FIXTURE_CORRESPONDANCE),
+    ("perimetre_candidats", "RESOLUTIONS_PAR_DEFAUT", str(FIXTURE_RESOLUTIONS)),
+)
+
+#: `(module, fonction)` — les mémos de module à vider aux DEUX bouts.
+_MEMOS_A_VIDER = (
+    ("correspondance_acteurs_an", "vider_memo"),
+    ("perimetre_candidats", "vider_memo_resolutions"),
+    ("generate_all_profiles", "vider_index_groupes_suspendus"),
+)
+
+
+def _vider_les_memos() -> None:
+    for nom_module, nom_fonction in _MEMOS_A_VIDER:
+        module = sys.modules.get(nom_module)
+        vider = getattr(module, nom_fonction, None) if module else None
+        if callable(vider):
+            vider()
+
+
+@pytest.fixture(autouse=True)
+def _referentiels_figes(monkeypatch):
+    """Les chemins par défaut des référentiels pointent vers des fixtures.
+
+    Placée après le garde-fou dans l'ordre de définition, donc appliquée dans
+    le même ordre : si un jour elle cessait de mordre, c'est le garde-fou qui
+    le dirait, pas un test qui verdirait en silence.
+    """
+    _vider_les_memos()
+    for nom_module, attribut, valeur in _DEFAUTS_FIGES:
+        module = sys.modules.get(nom_module)
+        if module is not None and hasattr(module, attribut):
+            monkeypatch.setattr(module, attribut, valeur)
+    yield
+    _vider_les_memos()
+
+
+def pytest_configure(config):
+    """Déclare le marqueur — sans `pytest.ini`, il ne serait qu'un avertissement."""
+    config.addinivalue_line(
+        "markers",
+        f"{MARQUEUR_REFERENCE}(chemin): ce fichier de test lit une configuration "
+        "committée de `raw_data/`, et le chemin est dans le `sparse-checkout` de "
+        "`tests.yml` (#791).",
+    )
 
 
 # ---------------------------------------------------------------------------

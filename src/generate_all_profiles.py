@@ -729,6 +729,21 @@ _MEMBRES_GROUPES_SUSPENDUS: Optional[dict[str, dict[str, Any]]] = None
 _VERROU_GROUPES_SUSPENDUS = threading.Lock()
 
 
+def vider_index_groupes_suspendus() -> None:
+    """Oublie l'index des groupes suspendus. Utile aux tests, sans effet ailleurs.
+
+    Ce mémo est construit UNE fois par processus. Dans un run, c'est ce qu'on
+    veut. Dans la suite, il faisait qu'un seul test lisait réellement
+    `raw_data/groupes_reels.json` et que les onze suivants consommaient sa
+    lecture sans rouvrir de fichier — donc sans que le garde-fou de #791 puisse
+    les voir. Le vider aux deux bouts rend chaque test comptable de ce qu'il
+    lit (le piège de #767).
+    """
+    global _MEMBRES_GROUPES_SUSPENDUS
+    with _VERROU_GROUPES_SUSPENDUS:
+        _MEMBRES_GROUPES_SUSPENDUS = None
+
+
 def _groupe_suspendu_du_slug(slug: str) -> Optional[couverture_profil.GroupeSuspendu]:
     """Le gel d'extraction qui explique les listes vides de ce profil (#558).
 
