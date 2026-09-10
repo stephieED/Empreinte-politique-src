@@ -295,12 +295,28 @@ def test_la_teinte_d_un_banc_est_declaree_une_seule_fois(feuille):
         assert jeton in _corps(feuille, regle, "\n}"), f"{regle} lit la déclaration"
 
 
-def test_le_bloc_a_ses_deux_themes(feuille):
-    """Le lecteur a trois états — clair, sombre, et le défaut système qui ne
-    marque rien. Une couleur définie seulement sous `[data-theme]` ne s'applique
-    jamais dans l'état non marqué."""
-    assert "@media (prefers-color-scheme: dark) {\n  :root:not([data-theme='light']) .cp-gc {" in feuille
-    assert ":root[data-theme='dark'] .cp-gc {" in feuille
+def test_aucune_feuille_ne_porte_de_theme_sombre(feuille):
+    """L'UI n'a pas de mode nuit — `index.css` déclare `color-scheme: light` et
+    aucun script ne pose `data-theme`. `.cp-gc` en portait pourtant un fragment,
+    seul de tout `src/` : douze variables qui ne rendaient rien, mesurées au
+    pixel près identiques sous les deux préférences système. Le lot
+    institutionnel devait le doubler pour `--pe` et `--senat` ; il le retire.
+    Un mode nuit se décide pour la fiche entière ou ne se décide pas
+    (docs/decisions/bloc-sombre-mort-retire-328.md)."""
+    assert "prefers-color-scheme" not in feuille
+    assert "[data-theme='dark']" not in feuille
+
+    racine = Path(__file__).resolve().parents[1] / "web" / "UI_finale" / "src"
+    porteurs = [
+        chemin.relative_to(racine).as_posix()
+        for chemin in sorted(racine.rglob("*.css"))
+        if "prefers-color-scheme" in chemin.read_text(encoding="utf-8")
+        or "[data-theme=" in chemin.read_text(encoding="utf-8")
+    ]
+    assert porteurs == [], (
+        "un thème sombre laissé sur un seul bloc repeint ce bloc et rien d'autre : "
+        f"{porteurs}"
+    )
 
 
 def test_les_colonnes_ont_une_gouttiere(feuille):
