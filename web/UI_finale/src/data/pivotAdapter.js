@@ -763,7 +763,7 @@ function segmentsDeSort(bloc) {
 
 /*
  * `true` seulement si TOUS les membres entrent et sortent aux mêmes dates. Sur
- * `AN:SOC`, les 31 membres sont entrés le 29 juin 2022 et sortis le 9 juin
+ * `AN:SOC:16`, les 31 membres sont entrés le 29 juin 2022 et sortis le 9 juin
  * 2024 : la composition n'a pas bougé, et c'est ce qui autorise à rapporter
  * tous les comptes de la page au même effectif.
  */

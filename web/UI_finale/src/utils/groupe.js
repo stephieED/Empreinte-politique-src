@@ -12,7 +12,7 @@
  * STRUCTURELLEMENT INUTILISABLE. Ses sections s'appelaient « Cohésion de vote »,
  * « Empreinte thématique », « Amendements déposés » : le vocabulaire du schéma,
  * pas les questions de quelqu'un qui cherche à comprendre un groupe. Et son fait
- * le plus important — sur 3 843 scrutins, la cohésion de `AN:SOC` n'est
+ * le plus important — sur 3 843 scrutins, la cohésion de `AN:SOC:16` n'est
  * mesurable que sur 341 — était enterré en fin de section « Vérification ».
  *
  * L'ordre est donc celui des questions, une seule focale à la fois, l'interne
@@ -52,7 +52,7 @@ import {
  * décrit celle en cours (#653). Trois compteurs prétendaient au présent et
  * mesuraient en réalité la carrière ULTÉRIEURE des membres : `effectif.actuel`
  * égalait, exactement, le nombre de membres portant un mandat électif ouvert —
- * 38/38 sur `AN:LR`, 85/85 sur `AN:REN`, 60/60 sur `AN:LFI`, c'est-à-dire les
+ * 38/38 sur `AN:LR:16`, 85/85 sur `AN:REN:16`, 60/60 sur `AN:LFI:16`, c'est-à-dire les
  * réélu⋅es de 2024, pas les membres du groupe en juin 2024.
  *
  * Les noms longs (`a_la_date_de_reference`) sont longs exprès. Ce module les
@@ -90,7 +90,7 @@ export function dateDeReference(groupe) {
  * Le dénominateur publié est le nombre d'entrées de `membres[]` — la couverture
  * disponible de la fiche —, jamais `meta.couverture_roster.roster_total`, qui
  * compte des membres dont aucun profil n'est publié. Les deux diffèrent : 75
- * sur 76 pour `AN:LFI`, 169 sur 193 pour `AN:REN`.
+ * sur 76 pour `AN:LFI:16`, 169 sur 193 pour `AN:REN:16`.
  */
 export function effectifDuGroupe(groupe) {
   const bloc = groupe?.effectif || {};
@@ -182,9 +182,9 @@ export const POSITIONS_EXPRIMEES = ['pour', 'contre', 'abstention'];
  * l'écrit (§2 règle 1).
  *
  * Elle a atterri le 01/09/2026, au commit de données `693b076d` : **5 des 7
- * fiches la portent** — `AN:REN` en `majorite`, `AN:LFI`/`AN:LR`/`AN:RN`/`AN:SOC`
+ * fiches la portent** — `AN:REN:16` en `majorite`, `AN:LFI:16`/`AN:LR:16`/`AN:RN:16`/`AN:SOC:16`
  * en `opposition`, toutes sourcées sur l'archive AMO30 avec leur `verifie_le`.
- * `AN:SOC` réunit ses deux organes successifs (`SOC` puis `SOC-A`), qui portent
+ * `AN:SOC:16` réunit ses deux organes successifs (`SOC` puis `SOC-A`), qui portent
  * la même valeur. Les 2 fiches du Sénat restent sans posture : elles sont gelées
  * depuis #516 et ne seront pas régénérées — `postureDuGroupe` y rend
  * `declaree: false`, et le rendu l'écrit. Il ne la simule pas, il ne la dérive
@@ -278,7 +278,7 @@ export function postureDuGroupe(groupe) {
  *
  * Le contraire a un coût mesuré : la maquette de cette refonte rangeait
  * « représentant suppléant » nulle part et publiait 1 351 sièges simples pour
- * `AN:SOC` là où la fiche en porte 1 352. Un libellé perdu ne se voit pas.
+ * `AN:SOC:16` là où la fiche en porte 1 352. Un libellé perdu ne se voit pas.
  *
  * `AGENTS.md` §5 interdit d'agréger un taux d'adoption sur des types de
  * déposant différents ; la même raison vaut ici, et la page l'écrit : un rapport
@@ -369,7 +369,7 @@ export function classeDeFonction(libelle) {
  * fiche. `total` permet au rendu de vérifier que rien n'a été perdu : la somme
  * des classes retrouve la somme des `par_fonction`, par construction.
  *
- * Mesuré au commit `e40d0d32`, sur `AN:SOC` : 13 présidences, 17 rapports, 16
+ * Mesuré au commit `e40d0d32`, sur `AN:SOC:16` : 13 présidences, 17 rapports, 16
  * secrétariats et vice-présidences, 1 352 sièges simples, 0 autre — 1 398 au
  * total, soit exactement la somme des `par_fonction` de ses 615 mandats
  * agrégés.
@@ -422,9 +422,9 @@ export function fonctionsDuGroupe(groupe) {
  * croire à un seuil légal.
  *
  * Le fait le plus important de la fiche est ce rapport, et il était enterré :
- * mesuré au commit `e40d0d32`, `AN:SOC` publie 3 843 scrutins agrégés dont
- * 341 mesurables — `AN:LFI` 615 sur 3 973, `AN:REN` 523 sur 4 099, `AN:RN` 751
- * sur 4 108, `AN:LR` 185 sur 3 832.
+ * mesuré au commit `e40d0d32`, `AN:SOC:16` publie 3 843 scrutins agrégés dont
+ * 341 mesurables — `AN:LFI:16` 615 sur 3 973, `AN:REN:16` 523 sur 4 099, `AN:RN:16` 751
+ * sur 4 108, `AN:LR:16` 185 sur 3 832.
  *
  * En dessous du seuil, RIEN n'est publié — pas même approché. Ce n'est pas une
  * lacune de collecte : les autres scrutins sont là, ils ne permettent
@@ -458,7 +458,7 @@ export function quorumDeLaFiche(groupe) {
  * dans le calcul — les compter ferait de la cohésion un taux de présence
  * déguisé (§2 règle 3).
  *
- * Mesuré au commit `e40d0d32` sur `AN:SOC` : 293 des 341 scrutins mesurables
+ * Mesuré au commit `e40d0d32` sur `AN:SOC:16` : 293 des 341 scrutins mesurables
  * d'une seule voix, 48 partagés, dont 23 où des membres ont voté pour et
  * d'autres contre.
  *
@@ -695,7 +695,7 @@ export function grandesLois(scrutins, comparaison, sigleDuGroupe, limite = NB_GR
  *  - NUANCE : l'une est une abstention face à une position exprimée. Une
  *    abstention n'est pas un vote contraire.
  *
- * Mesuré au commit `e40d0d32`, depuis `AN:SOC` : LFI 269 communs (230 · 12 ·
+ * Mesuré au commit `e40d0d32`, depuis `AN:SOC:16` : LFI 269 communs (230 · 12 ·
  * 27), RN 231 (79 · 46 · 106), REN 237 (36 · 177 · 24), LR 123 (22 · 81 · 20).
  * La décomposition renverse la lecture : SOC et RN ne sont opposés que 46 fois,
  * mais en nuance 106 — un décompte brut aurait affiché « 152 divergences ».
@@ -771,13 +771,13 @@ export function convergences(comparaison, sigleDuGroupe) {
  *
  * Aucun pourcentage n'est affiché, et c'est délibéré : un taux d'adoption
  * comparé entre groupes mesurerait surtout la posture de chacun. Mesuré au
- * commit `e40d0d32`, XVIe législature : `AN:REN` fait adopter 30 686
+ * commit `e40d0d32`, XVIe législature : `AN:REN:16` fait adopter 30 686
  * amendements, les quatre autres fiches 21 558 à elles toutes, alors qu'elles en
  * déposent 386 810 contre 142 143.
  *
  * Depuis le commit de données `693b076d`, la XVIe législature se sépare en deux
- * blocs réels : `majorite` ne contient que `AN:REN`, `opposition` réunit
- * `AN:SOC`, `AN:RN`, `AN:LFI` et `AN:LR`. `minoritaire` reste une posture que le
+ * blocs réels : `majorite` ne contient que `AN:REN:16`, `opposition` réunit
+ * `AN:SOC:16`, `AN:RN:16`, `AN:LFI:16` et `AN:LR:16`. `minoritaire` reste une posture que le
  * vocabulaire connaît et qu'aucune fiche de cette législature ne porte — elle
  * est nommée plutôt que tue (§2 règle 5).
  *
@@ -863,7 +863,7 @@ export function ordonnerGroupesPourComparaison(comparaison, sigleDuGroupe) {
  *
  * Mesuré au commit `c6edee05` le 31/08/2026 : 448 des 468 profils
  * `roster_groupe` portent au moins une étiquette, les 5 fiches AN en publient
- * de 1 554 (`AN:SOC`) à 4 303 (`AN:REN`), et `nb_membres_porteurs` y monte
+ * de 1 554 (`AN:SOC:16`) à 4 303 (`AN:REN:16`), et `nb_membres_porteurs` y monte
  * jusqu'à 99. Les 2 fiches Sénat en portent 0, parce qu'elles sont conservées
  * et jamais régénérées (#528) — c'est `ListeVide` qui le dit, pas un zéro.
  *
