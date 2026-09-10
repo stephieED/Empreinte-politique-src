@@ -587,14 +587,30 @@ def test_le_bloc_identite_entier_est_parcouru_pas_seulement_les_trois_mesures():
     assert profil["identite"]["date_naissance"] == "1952-04-06"
 
 
-def test_la_migration_refuse_de_tourner_sans_referentiel_prouve_charge(tmp_path):
+def test_la_migration_refuse_de_tourner_sans_referentiel_prouve_charge(
+    tmp_path, monkeypatch
+):
     """**Le garde-fou du script.**
 
     Sans AMO30 mesuré, `etablir_fait_hors_an` rend une panne (condition C1,
     #484), et les 4 profils qui publient « jamais élu·e à l'Assemblée
     nationale » basculeraient en « nous n'avons pas réussi à collecter » — le
     contresens que ce lot corrige, produit par le script qui le corrige.
+
+    ## Pourquoi ce test DIT son monde au lieu d'en hériter (#767)
+
+    Le cache AMO30 se lit à `Path(".cache") / …`, **relatif au répertoire
+    courant**. Sans `chdir`, ce test constatait celui du poste : vert sur une
+    machine vierge et sur la CI, rouge dès qu'une collecte locale avait tourné —
+    c'est-à-dire au moment précis où on vérifie qu'on n'a rien cassé.
+
+    `monkeypatch.chdir(tmp_path)` est l'idiome que dix autres tests appliquent
+    déjà, et que `conftest` nomme : le garde-fou de #721 **diagnostique** la
+    lecture du cache du poste, il ne la redirige pas. Sans ce `chdir`, il levait
+    ici `CacheDuPosteLuDansUnTest` — c'est-à-dire qu'il faisait exactement son
+    travail.
     """
+    monkeypatch.chdir(tmp_path)
     with pytest.raises(SystemExit) as echec:
         mig.migrer_pivots(tmp_path, {}, {}, constate_le=LE_JOUR, ecrire=False)
     assert "fait_etabli" in str(echec.value)
