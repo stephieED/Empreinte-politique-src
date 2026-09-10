@@ -98,6 +98,11 @@ INVENTAIRE_STEPS = {
     # entrée de cache. Ce job reste le seul écrivain de la clé AN.
     ("extract-an", 3): True,
     ("merge-and-pivot", 0): True,   # dossiers : produits par ce job (#427)
+    # #827 : les documents européens. Ce job est bien leur écrivain — c'est
+    # `enregistrer_resolveur_europarl()`, en fin de `generate_all_profiles`,
+    # qui pose `.cache/europarl/documents_doceo.json`. Il sauvegarde donc ce
+    # qu'il remplit, ce qu'exige la règle de #505.
+    ("merge-and-pivot", 1): True,
 }
 
 # Jobs autorisés à cacher `.cache` EN BLOC. Le seul l'était `extract-senat`,
