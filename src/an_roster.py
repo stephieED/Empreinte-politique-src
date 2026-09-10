@@ -163,6 +163,7 @@ import json
 import sys
 import threading
 import zipfile
+from datetime import date as _date, timedelta as _timedelta
 from pathlib import Path
 from typing import Any, Iterable, Optional
 
@@ -720,15 +721,77 @@ def organes_du_groupe(
     return [ref for _, ref in sorted(trouves)]
 
 
+def _contigus(fin: Optional[str], debut_suivant: Optional[str]) -> bool:
+    """Deux mandats se touchent-ils, ou y a-t-il une interruption entre eux ?
+
+    Contigus quand le second commence **au plus tard le lendemain** du premier
+    — un mandat qui finit le 15/03 et reprend le 16/03 n'est pas une
+    interruption, c'est un changement d'organe.
+
+    **Le seuil d'un jour n'est pas un choix : il se lit dans les données.**
+    Mesuré le 10/09/2026 sur les 1 604 couples (acteur, groupe) des groupes
+    configurés, index AMO30 `index_groupes_politiques.json` :
+
+    | Écart entre deux mandats | Occurrences |
+    | --- | ---: |
+    | exactement 1 jour | **67** |
+    | 2 à 30 jours | **0** |
+    | 31 jours et plus | 48 |
+
+    La seule valeur sous 30 jours est `1`. La distribution est bimodale, et il
+    n'y a aucune zone grise à trancher : au-delà d'un jour, c'est une absence.
+    """
+    if fin is None or debut_suivant is None:
+        return False
+    try:
+        return _date.fromisoformat(str(debut_suivant)) <= _date.fromisoformat(str(fin)) + _timedelta(days=1)
+    except ValueError:
+        return False
+
+
+def fusionner_intervalles(
+    periodes: list[tuple[Optional[str], Optional[str]]],
+) -> list[tuple[Optional[str], Optional[str]]]:
+    """Les périodes d'appartenance d'un acteur, **interruptions conservées**.
+
+    Les mandats qui se chevauchent ou se touchent sont recollés ; ceux que
+    sépare une interruption réelle restent distincts. C'est ce que
+    `_fusionner_periodes` écrase en une enveloppe, et ce que #809 publie.
+
+    Une période ouverte (`fin is None`) absorbe tout ce qui la suit : rien ne
+    commence après ce qui n'a pas fini.
+    """
+    datees = sorted((d, f) for d, f in periodes if d)
+    if not datees:
+        return []
+    fusionnees: list[tuple[Optional[str], Optional[str]]] = []
+    debut_courant, fin_courante = datees[0]
+    for debut, fin in datees[1:]:
+        if fin_courante is None or _contigus(fin_courante, debut) or str(debut) <= str(fin_courante):
+            if fin_courante is not None and (fin is None or str(fin) > str(fin_courante)):
+                fin_courante = fin
+            continue
+        fusionnees.append((debut_courant, fin_courante))
+        debut_courant, fin_courante = debut, fin
+    fusionnees.append((debut_courant, fin_courante))
+    return fusionnees
+
+
 def _fusionner_periodes(
     periodes: list[tuple[Optional[str], Optional[str]]],
 ) -> tuple[Optional[str], Optional[str]]:
-    """Recolle les mandats successifs d'un acteur en une période unique.
+    """L'ENVELOPPE des mandats d'un acteur — bornes extérieures, trous compris.
 
     `mandat_debut` = le plus ancien début connu ; `mandat_fin` = la fin la plus
     tardive, et **`None` l'emporte** — un mandat ouvert ne se referme pas
     parce qu'un mandat antérieur, lui, s'est terminé. C'est le cas
     `SOC`/`SOC-A`, et le cas d'un membre qui quitte puis revient.
+
+    **Ce que l'enveloppe recouvre, et qui a motivé #809** : 33 membres de 8
+    fiches y étaient dits dans leur groupe pendant qu'ils étaient au
+    gouvernement, jusqu'à **571 jours** masqués. Les bornes restent publiées —
+    elles sont exactes en tant que bornes — mais `fusionner_intervalles` rend
+    désormais le détail, et c'est lui que la fiche publie sous `periodes[]`.
     """
     debuts = [d for d, _ in periodes if d]
     debut = min(debuts) if debuts else None
@@ -908,9 +971,15 @@ def deriver_membres_organes(
     membres: list[dict[str, Any]] = []
     for acteur_ref in sorted(par_acteur):
         entree = par_acteur[acteur_ref]
-        debut, fin = _fusionner_periodes(entree.pop("_periodes"))
+        brutes = entree.pop("_periodes")
+        debut, fin = _fusionner_periodes(brutes)
         entree["mandat_debut"] = debut
         entree["mandat_fin"] = fin
+        # #809 — l'enveloppe reste publiée, le détail l'accompagne. Une seule
+        # période veut dire « aucune interruption », pas « on ne sait pas ».
+        entree["mandat_periodes"] = [
+            {"debut": d, "fin": f} for d, f in fusionner_intervalles(brutes)
+        ]
         # Même champ dérivé que `filter_roster_by_sigle` : un membre est actif
         # tant qu'aucune fin de mandat n'est publiée.
         entree["actif"] = not fin

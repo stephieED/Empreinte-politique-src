@@ -358,8 +358,8 @@ def test_appartenances_depuis_roster_renomme_et_ecarte_les_sans_slug():
         {"slug": "bob", "mandat_debut": "2023-01-30", "mandat_fin": None},
     ])
     assert table == {
-        "alice": {"debut": "2022-06-29", "fin": "2024-06-09"},
-        "bob": {"debut": "2023-01-30", "fin": None},
+        "alice": {"debut": "2022-06-29", "fin": "2024-06-09", "periodes": None},
+        "bob": {"debut": "2023-01-30", "fin": None, "periodes": None},
     }
 
 
@@ -2471,3 +2471,105 @@ def test_l_ancienne_valeur_reste_valide_a_la_lecture():
 
     assert "cloture_legislature" in ORIGINES_DATE_REFERENCE
     assert "derniere_appartenance_close" in ORIGINES_DATE_REFERENCE
+
+
+# ---------------------------------------------------------------------------
+# #809 — l'appartenance n'est plus une enveloppe
+# ---------------------------------------------------------------------------
+
+def test_les_periodes_du_roster_atteignent_la_fiche():
+    """Le cas Dussopt : 571 jours au gouvernement, masqués par l'enveloppe."""
+    table = appartenances_depuis_roster([{
+        "slug": "olivier-dussopt",
+        "mandat_debut": "2022-06-29", "mandat_fin": "2024-06-09",
+        "mandat_periodes": [
+            {"debut": "2022-06-29", "fin": "2022-07-20"},
+            {"debut": "2024-02-11", "fin": "2024-06-09"},
+        ],
+    }])
+    assert len(table["olivier-dussopt"]["periodes"]) == 2
+
+
+def test_un_membre_absent_a_la_date_de_reference_n_est_plus_compte_present():
+    """L'enveloppe le disait présent ; les périodes disent qu'il ne l'était pas.
+
+    Aucun compteur publié n'était faux au 09/09/2026 — vérifié sur les 18
+    groupes — mais par coïncidence de dates, les dates de référence ne tombant
+    dans aucun trou. Un défaut qui ne se voit pas parce que les dates s'y
+    prêtent reste un défaut.
+    """
+    from group_profile import _appartenance_couvre
+
+    membre = {
+        "debut_dans_groupe": "2022-06-29", "fin_dans_groupe": "2024-06-09",
+        "periodes": [
+            {"debut": "2022-06-29", "fin": "2022-07-20"},
+            {"debut": "2024-02-11", "fin": "2024-06-09"},
+        ],
+    }
+    assert _appartenance_couvre(membre, "2023-06-01") is False, "il était ministre"
+    assert _appartenance_couvre(membre, "2022-07-01") is True
+    assert _appartenance_couvre(membre, "2024-06-09") is True
+
+
+def test_sans_periodes_l_enveloppe_reste_le_repli():
+    """Les fiches publiées avant #809 ne portent pas la clé : exiger celle-ci
+    ferait sortir des compteurs à zéro sur des données qui n'ont pas changé."""
+    from group_profile import _appartenance_couvre
+
+    membre = {"debut_dans_groupe": "2022-06-29", "fin_dans_groupe": "2024-06-09"}
+    assert _appartenance_couvre(membre, "2023-06-01") is True
+
+
+def test_une_periode_ouverte_couvre_jusqu_a_aujourd_hui():
+    from group_profile import _appartenance_couvre
+
+    membre = {
+        "debut_dans_groupe": "2024-07-19", "fin_dans_groupe": None,
+        "periodes": [{"debut": "2024-07-19", "fin": None}],
+    }
+    assert _appartenance_couvre(membre, "2026-09-10") is True
+
+
+def test_les_periodes_ne_peuvent_pas_contredire_l_enveloppe():
+    """Une contradiction entre deux champs du même membre ne se rattrape nulle
+    part en aval : c'est le seul contenu d'entrée que le schéma valide."""
+    from schema_groupe import make_empty_profil_groupe, validate_profil_groupe
+
+    profil = make_empty_profil_groupe("AN:SOC:16", "SOC", "Socialistes", "AN", "16")
+    profil["membres"] = [{
+        "membre_id": "alice",
+        "debut_dans_groupe": "2022-06-29", "fin_dans_groupe": "2024-06-09",
+        "periodes": [{"debut": "2023-01-01", "fin": "2024-06-09"}],
+    }]
+    erreurs = validate_profil_groupe(profil)
+    assert any("l'enveloppe le 2022-06-29" in e for e in erreurs)
+
+
+def test_une_liste_de_periodes_vide_est_refusee():
+    """Elle dirait « aucune appartenance connue » sur un membre qui en a une ;
+    c'est l'ABSENCE de clé qui dit « non collectées » (§2 règle 5)."""
+    from schema_groupe import make_empty_profil_groupe, validate_profil_groupe
+
+    profil = make_empty_profil_groupe("AN:SOC:16", "SOC", "Socialistes", "AN", "16")
+    profil["membres"] = [{
+        "membre_id": "alice",
+        "debut_dans_groupe": "2022-06-29", "fin_dans_groupe": "2024-06-09",
+        "periodes": [],
+    }]
+    assert any("liste non vide" in e for e in validate_profil_groupe(profil))
+
+
+def test_deux_periodes_coherentes_passent():
+    from schema_groupe import make_empty_profil_groupe, validate_profil_groupe
+
+    profil = make_empty_profil_groupe("AN:REN:16", "REN", "Renaissance", "AN", "16")
+    profil["membres"] = [{
+        "membre_id": "olivier-dussopt",
+        "debut_dans_groupe": "2022-06-29", "fin_dans_groupe": "2024-06-09",
+        "periodes": [
+            {"debut": "2022-06-29", "fin": "2022-07-20"},
+            {"debut": "2024-02-11", "fin": "2024-06-09"},
+        ],
+    }]
+    assert validate_profil_groupe(profil) == []

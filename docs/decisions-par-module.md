@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 278 décisions
+gouverne sans avoir à fouiller les 279 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -74,7 +74,7 @@ Le mentionnent sans le gouverner : [`lectures-pipeline-par-projection-635`](deci
 
 ## `src/an_roster.py`
 
-10 décision(s) le gouvernent ; le module en cite 3.
+11 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
@@ -82,6 +82,7 @@ Le mentionnent sans le gouverner : [`lectures-pipeline-par-projection-635`](deci
 | [`debut_dans_groupe` se lit sur le mandat de groupe, plus sur le premier mandat électif (#653) (2026-08-31)](decisions/dates-appartenance-groupe-653.md) | `deriver_membres_organes`, `organes_du_groupe` |
 | [L'effectif d'un groupe dans le temps : `min_historique` et `max_historique` portent leur date (#702) — 01/09/2026](decisions/effectif-du-groupe-dans-le-temps-702.md) | `_fusionner_periodes` |
 | [Une entrée dérivée gèle un slug fabriqué, elle ne prouve plus rien (#715) (2026-09-02)](decisions/entree-derivee-correspondance-715.md) | `resoudre_slugs` |
+| [L'appartenance publiée cesse d'être une enveloppe (#809)](decisions/periodes-appartenance-809.md) | `_fusionner_periodes` |
 | [La position politique d'un groupe est celle que l'Assemblée déclare, lue dans une table committée (#686) (2026-09-01)](decisions/position-politique-groupes-686.md) | `VERSION_INDEX_GP` |
 | [NosDéputés sort du pipeline (#529, lot 5 de l'épic « une seule source AN ») (2026-08-27)](decisions/retrait-nosdeputes-529.md) | `AN_ROSTER_ACTIF`, `RosterAnInactif` |
 | [Le Sénat sort du périmètre, et le job qui concluait vert sans rien produire est retiré (#528, lot 3 de l'épic « une seule source AN ») (2026-08-26)](decisions/retrait-senat-528.md) | `AN_ROSTER_ACTIF` |
@@ -622,7 +623,7 @@ Le mentionnent sans le gouverner : [`audit-pipeline-gouvernement`](decisions/aud
 
 ## `src/group_profile.py`
 
-26 décision(s) le gouvernent ; le module en cite 4.
+27 décision(s) le gouvernent ; le module en cite 4.
 
 | Décision | Nomme |
 | --- | --- |
@@ -644,6 +645,7 @@ Le mentionnent sans le gouverner : [`audit-pipeline-gouvernement`](decisions/aud
 | [Normaliser les amendements : le coût n'est pas l'amendement, c'est sa liste de cosignataires (#431) (2026-08-19)](decisions/normalisation-amendements.md) | `_aggregate_amendements` |
 | [Normalisation de `par_fonction` dans `mandats_agreges`, et requalification du défaut « catégorie commission » (#379) (2026-08-17)](decisions/normalisation-fonction-mandats-agreges.md) | `_aggregate_mandats`, `_normalize_fonction_mandat` |
 | [Normaliser les votes : une liste partagée, un mapping, et deux invariants devenus des jointures (#432) (2026-08-19)](decisions/normalisation-votes.md) | `_votes_de_legislature` |
+| [L'appartenance publiée cesse d'être une enveloppe (#809)](decisions/periodes-appartenance-809.md) | `_appartenance_couvre` |
 | [Un profil de roster ne porte pas une liste que sa propre collecte déclare écartée — purge des 49 `textes_portes` résiduels (#747)](decisions/purge-textes-portes-roster-747.md) | `BLOCS_LUS_MEMBRE` |
 | [Résoudre la `legislature` d'un vote : deux mécanismes, pas un seul (#432) (2026-08-19)](decisions/resolution-legislature-deux-mecanismes-432.md) | `_votes_de_legislature` |
 | [Restaurer 789 interventions sans revenir sur le reste du schéma (#460) (2026-08-19)](decisions/restauration-interventions.md) | `aggregate_tags_thematiques` |
@@ -927,7 +929,7 @@ Le mentionnent sans le gouverner : [`deduplication-entrees-membres`](decisions/d
 
 ## `src/schema_groupe.py`
 
-6 décision(s) le gouvernent ; le module en cite 3.
+7 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
@@ -936,6 +938,7 @@ Le mentionnent sans le gouverner : [`deduplication-entrees-membres`](decisions/d
 | [L'effectif d'un groupe dans le temps : `min_historique` et `max_historique` portent leur date (#702) — 01/09/2026](decisions/effectif-du-groupe-dans-le-temps-702.md) | `valeur_borne_effectif`, `validate_profil_groupe` |
 | [Les 5 groupes de la XVIIe entrent dans `groupes[]`, et leur succession est déclarée comme une relecture (#700) (2026-09-01)](decisions/fiches-groupe-17e-legislature-700.md) | `ETABLISSEMENTS_SUCCESSION`, `POSITIONS_POLITIQUES_GROUPE`, `_valider_succede_a` |
 | [L'origine de la date de référence nomme le critère, plus un événement (#808)](decisions/origine-date-reference-nomme-le-critere-808.md) | `ORIGINES_DATE_REFERENCE`, `ORIGINE_DATE_REFERENCE_CLOTURE`, `ORIGINE_DATE_REFERENCE_CLOTURE_HERITEE` |
+| [L'appartenance publiée cesse d'être une enveloppe (#809)](decisions/periodes-appartenance-809.md) | `validate_profil_groupe` |
 | [La position politique d'un groupe est celle que l'Assemblée déclare, lue dans une table committée (#686) (2026-09-01)](decisions/position-politique-groupes-686.md) | `POSITIONS_POLITIQUES_GROUPE`, `resumer_position_politique` |
 
 Le mentionnent sans le gouverner : [`audit-champs-deplaces-726`](decisions/audit-champs-deplaces-726.md), [`audit-plages-temporelles`](decisions/audit-plages-temporelles.md), [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`dates-appartenance-groupe-653`](decisions/dates-appartenance-groupe-653.md), [`pivot-freshness-timestamps-stables`](decisions/pivot-freshness-timestamps-stables.md), [`plage-dates-groupes`](decisions/plage-dates-groupes.md).
