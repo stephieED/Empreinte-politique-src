@@ -211,6 +211,11 @@ too long. Sorting is the agent's work, not hers.
   lines; a table is scanned. Applies to issue rundowns, before/after
   measurements, options with their costs.
 - **No paragraph over four lines.** Break it, or turn it into a table.
+- **Every time is given in Paris time.** The GitHub API returns UTC, suffixed
+  `Z`; the owner's machine is `Europe/Paris`. Convert before quoting a
+  `createdAt`, a job timestamp or a log line — `TZ=Europe/Paris date -d "<iso>"`.
+  A duration needs no conversion, an instant does. Quoted raw, a two-hour shift
+  turns an ordinary wait into an anomaly, and it was the owner who caught it.
 - **Every figure names its population.** "20 members of the two Senate group
   files", never "20 senators". A correct figure on the wrong population is an
   error, not an approximation.
