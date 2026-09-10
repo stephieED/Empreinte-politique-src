@@ -307,7 +307,7 @@ def test_date_reference_est_la_cloture_quand_tout_est_referme():
         {"debut_dans_groupe": "2022-06-29", "fin_dans_groupe": "2023-10-18"},
     ]
     assert _deriver_date_reference(membres, "2026-08-31T10:00:00+0000") == {
-        "date": "2024-06-09", "origine": "cloture_legislature",
+        "date": "2024-06-09", "origine": "derniere_appartenance_close",
     }
 
 
@@ -676,7 +676,7 @@ def test_build_groupe_profile_legislature_close_compte_a_la_cloture():
             "nosdeputes:parti": {"debut": "2022-06-29", "fin": "2023-10-18"},
         },
     )
-    assert g["date_reference"] == {"date": "2024-06-09", "origine": "cloture_legislature"}
+    assert g["date_reference"] == {"date": "2024-06-09", "origine": "derniere_appartenance_close"}
     assert g["effectif"]["a_la_date_de_reference"] == 1
     assert len(g["membres"]) == 2
     assert validate_profil_groupe(g) == []
@@ -2429,3 +2429,45 @@ def test_les_exclusions_se_publient_sous_le_nom_de_signatures():
     ])
     assert agreges["nb_signatures_hors_periode_ecartees"] == 1
     assert "nb_hors_periode_ecartes" not in agreges
+
+
+# ---------------------------------------------------------------------------
+# #808 — l'étiquette nomme le critère, plus un événement
+# ---------------------------------------------------------------------------
+
+def test_l_origine_nomme_la_derniere_appartenance_et_non_la_cloture():
+    """`NG-15` s'arrête au 11/09/2018 ; la XVe se clôt le 21/06/2022.
+
+    L'ancienne valeur annonçait un événement que deux fiches sur douze n'ont
+    jamais connu — 3 ans 9 mois d'écart pour celle-ci. Le chiffre était juste,
+    la phrase qui l'accompagnait ne l'était pas (§2 règle 2).
+    """
+    from group_profile import _deriver_date_reference
+
+    membres = [
+        {"debut_dans_groupe": "2017-06-27", "fin_dans_groupe": "2018-09-11"},
+        {"debut_dans_groupe": "2017-06-27", "fin_dans_groupe": "2018-06-30"},
+    ]
+    bloc = _deriver_date_reference(membres, "2026-09-10T00:00:00+0000")
+    assert bloc == {"date": "2018-09-11", "origine": "derniere_appartenance_close"}
+
+
+def test_une_appartenance_ouverte_garde_la_date_de_generation():
+    from group_profile import _deriver_date_reference
+
+    membres = [
+        {"debut_dans_groupe": "2024-07-19", "fin_dans_groupe": None},
+        {"debut_dans_groupe": "2024-07-19", "fin_dans_groupe": "2025-01-10"},
+    ]
+    bloc = _deriver_date_reference(membres, "2026-09-10T00:00:00+0000")
+    assert bloc["origine"] == "generation"
+
+
+def test_l_ancienne_valeur_reste_valide_a_la_lecture():
+    """Les 14 fiches qui la portent doivent valider jusqu'à leur régénération :
+    sans ce repli, le portail échouerait sur des fichiers que personne n'a
+    touchés."""
+    from schema_groupe import ORIGINES_DATE_REFERENCE
+
+    assert "cloture_legislature" in ORIGINES_DATE_REFERENCE
+    assert "derniere_appartenance_close" in ORIGINES_DATE_REFERENCE

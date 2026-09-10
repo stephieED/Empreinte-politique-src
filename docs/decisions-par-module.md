@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 277 décisions
+gouverne sans avoir à fouiller les 278 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -927,7 +927,7 @@ Le mentionnent sans le gouverner : [`deduplication-entrees-membres`](decisions/d
 
 ## `src/schema_groupe.py`
 
-5 décision(s) le gouvernent ; le module en cite 3.
+6 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
@@ -935,6 +935,7 @@ Le mentionnent sans le gouverner : [`deduplication-entrees-membres`](decisions/d
 | [Tous les comptes d'une fiche de groupe se rapportent à une date, et elle est publiée (#653) (2026-08-31)](decisions/date-de-reference-des-comptes-de-groupe-653.md) | `validate_profil_groupe` |
 | [L'effectif d'un groupe dans le temps : `min_historique` et `max_historique` portent leur date (#702) — 01/09/2026](decisions/effectif-du-groupe-dans-le-temps-702.md) | `valeur_borne_effectif`, `validate_profil_groupe` |
 | [Les 5 groupes de la XVIIe entrent dans `groupes[]`, et leur succession est déclarée comme une relecture (#700) (2026-09-01)](decisions/fiches-groupe-17e-legislature-700.md) | `ETABLISSEMENTS_SUCCESSION`, `POSITIONS_POLITIQUES_GROUPE`, `_valider_succede_a` |
+| [L'origine de la date de référence nomme le critère, plus un événement (#808)](decisions/origine-date-reference-nomme-le-critere-808.md) | `ORIGINES_DATE_REFERENCE`, `ORIGINE_DATE_REFERENCE_CLOTURE`, `ORIGINE_DATE_REFERENCE_CLOTURE_HERITEE` |
 | [La position politique d'un groupe est celle que l'Assemblée déclare, lue dans une table committée (#686) (2026-09-01)](decisions/position-politique-groupes-686.md) | `POSITIONS_POLITIQUES_GROUPE`, `resumer_position_politique` |
 
 Le mentionnent sans le gouverner : [`audit-champs-deplaces-726`](decisions/audit-champs-deplaces-726.md), [`audit-plages-temporelles`](decisions/audit-plages-temporelles.md), [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`dates-appartenance-groupe-653`](decisions/dates-appartenance-groupe-653.md), [`pivot-freshness-timestamps-stables`](decisions/pivot-freshness-timestamps-stables.md), [`plage-dates-groupes`](decisions/plage-dates-groupes.md).
