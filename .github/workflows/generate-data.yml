@@ -58,6 +58,10 @@ on:
         description: "Collect floor speeches (roster: theme only)"
         type: boolean
         default: false
+      collect_dossiers_legislatifs:
+        description: "Collect roster members' carried legislative files"
+        type: boolean
+        default: false
       incomplete_read_threshold:
         description: "Network issue threshold before the gate fails"
         type: number
@@ -2218,9 +2222,28 @@ jobs:
       # Même fan-out par membre que extract-an (coût par candidat identique,
       # seul le volume change) — `roster_limit` plafonne ce volume.
       #
-      # Mode d'extraction léger (#357, sous-issue 6/6 de #351) :
-      # --skip-dossiers-legislatifs est *toujours* appliqué ici — les textes
-      # portés ne sont consommés par aucun agrégat de groupe (#349).
+      # Mode d'extraction léger (#357, sous-issue 6/6 de #351).
+      #
+      # #817 — LES DOSSIERS NON PLUS NE SONT PLUS ÉCARTÉS EN DUR, et le motif
+      # qui les écartait était le même que pour les interventions : « les textes
+      # portés ne sont consommés par aucun agrégat de groupe (#349) ». Il était
+      # faux au même titre — la §3 « Ce qu'ils proposent » de la fiche de groupe
+      # les lit, et 17 profils sur 1 035 en publiaient, tous `candidat_declare`,
+      # zéro sur les membres de roster. Mesuré le 10/09/2026 : **887 des 1 021
+      # membres roster** portent des dossiers dans l'index bulk, pour **9 895
+      # dossiers** — une fiche de groupe montrait « 1 membre sur 86 » là où elle
+      # peut en montrer la quasi-totalité.
+      #
+      # Le coût est le même qu'au-dessus, et pour la même raison : l'index
+      # `acteur → dossiers` se construit UNE FOIS par processus depuis l'archive
+      # bulk, puis c'est un `dict.get()` par membre. Mesuré : **3,0 s** de
+      # construction, **57 Mio** de RSS, sur une archive que ce job restaure
+      # déjà (`.cache/dossiers_an`, restauration seule #505). Ce n'est pas une
+      # collecte par membre.
+      #
+      # Il suit `inputs.collect_dossiers_legislatifs`, sous une case du
+      # formulaire plutôt que retiré en dur : la charge se choisit run par run,
+      # exactement comme `collect_interventions` depuis #657.
       #
       # #657 — LES INTERVENTIONS, ELLES, NE SONT PLUS ÉCARTÉES EN DUR. Elles
       # l'étaient au motif qu'aucun agrégat ne les consomme ; c'était faux :
@@ -2272,6 +2295,8 @@ jobs:
           # rendrait illisible. Le log en garde la trace, ce dont
           # retry-generate-data.yml a besoin.
           COLLECT_INTERVENTIONS: ${{ inputs.collect_interventions }}
+          # #817 : même raison, même endroit.
+          COLLECT_DOSSIERS: ${{ inputs.collect_dossiers_legislatifs }}
         run: |
           # ── DEUX AXES DISJOINTS (#578) ──────────────────────────────────
           # Axe 1 (`existing_profiles`) : ce qu'on fait des profils DÉJÀ
@@ -2330,6 +2355,11 @@ jobs:
           INTERV_FLAG=(--skip-interventions)
           [[ "$COLLECT_INTERVENTIONS" == "true" ]] && INTERV_FLAG=(--interventions-theme-seul)
           echo "Interventions : ${INTERV_FLAG[*]} (collect_interventions=${COLLECT_INTERVENTIONS})"
+          # #817 : les dossiers ne sont plus écartés EN DUR. Voir le commentaire
+          # au-dessus du step pour le motif qui est tombé.
+          DOSSIERS_FLAG=(--skip-dossiers-legislatifs)
+          [[ "$COLLECT_DOSSIERS" == "true" ]] && DOSSIERS_FLAG=()
+          echo "Dossiers législatifs : ${DOSSIERS_FLAG[*]:-collectés} (collect_dossiers_legislatifs=${COLLECT_DOSSIERS})"
           # --shard : partition déterministe par position modulo (#394). Avec
           # un seul shard (rollout progressif), 0/1 équivaut à l'absence de
           # découpage.
@@ -2356,7 +2386,7 @@ jobs:
             --workers 1 \
             --shard "${{ matrix.shard }}/${{ needs.prepare-roster-matrix.outputs.shard_total || '1' }}" \
             "${POP_FLAG[@]}" --resume \
-            "${INTERV_FLAG[@]}" --skip-dossiers-legislatifs \
+            "${INTERV_FLAG[@]}" "${DOSSIERS_FLAG[@]}" \
             --budget-collecte-secondes 0 \
             --manifest-out _manifest/profils-ecrits.txt \
             "${LIMIT_FLAG[@]}" "${MERGE_FLAG[@]}"

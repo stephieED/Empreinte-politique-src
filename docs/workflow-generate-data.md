@@ -341,11 +341,14 @@ adossée à la table [slug ↔ acteur AN](decisions/correspondance-acteurs-an-52
 La même chaîne de collecte qu'`extract-an`, mais pilotée par la **composition
 réelle** des groupes parlementaires (~750 membres) plutôt que par la liste
 éditoriale `raw_data/candidats.json` (**32 entrées, dont 13 à slug résolvable**
-depuis #753 — seules celles-là ont un shard), et en **mode léger** :
-`--skip-dossiers-legislatifs` est toujours posé ici. Les interventions, elles,
-suivent `collect_interventions` **depuis #657**, sous une forme réduite —
-`--interventions-theme-seul` collecte les débats Syceron sans leur verbatim et
-laisse les questions officielles. 8 shards découpés par modulo,
+depuis #753 — seules celles-là ont un shard), et en **mode léger**. Les deux
+axes de ce mode léger sont désormais sous le formulaire, et plus rien n'y est
+écarté en dur : les interventions suivent `collect_interventions` **depuis
+#657**, sous une forme réduite — `--interventions-theme-seul` collecte les
+débats Syceron sans leur verbatim et laisse les questions officielles —, et les
+dossiers législatifs suivent `collect_dossiers_legislatifs` **depuis #817**.
+Les deux étaient posés en dur au même motif, « aucun agrégat de groupe ne les
+consomme », faux dans les deux cas. 8 shards découpés par modulo,
 `max-parallel: 4`.
 
 **Consomme** l'artifact `roster-candidats` — régénéré seulement s'il manque — et
@@ -465,6 +468,7 @@ ensemble ou pas du tout, deux cases séparées autoriseraient « périmètre ré
 | `cold_start` | `boolean` | `false` | Purge les caches de téléchargement et re-télécharge les sources. Ne dit **rien** de la façon dont les profils sont écrits. |
 | `roster_limit` | `number` | `0` | Un plafond, et rien d'autre (`0` = pas de plafond). Ne commande aucune politique de rafraîchissement. |
 | `collect_interventions` | `boolean` | `false` | Ajoute les archives Syceron et QE/QG/QOSD à `extract-an`, et les **débats seuls, sans verbatim**, au roster (#657). |
+| `collect_dossiers_legislatifs` | `boolean` | `false` | Ajoute les **textes portés** aux membres du roster (#817). 17 profils sur 1 035 en publiaient, tous candidats déclarés ; 887 membres de roster en porteraient, pour 9 895 dossiers. Coût : 3,0 s de construction d'index, une fois par processus. |
 | `incomplete_read_threshold` | `number` | `3` | Seuil d'incidents réseau au-delà duquel le quality gate échoue. |
 | `allow_declared_losses` | `boolean` | `false` | Tolérance du contrôle de perte (#460). |
 | `allow_broken_references` | `boolean` | `false` | Tolérance de l'intégrité référentielle (#485). |
