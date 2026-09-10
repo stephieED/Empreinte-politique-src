@@ -364,34 +364,51 @@ def _valider_successions(
         if entree.get("groupe_id")
     }
     for entree in entrees:
-        cible = entree.get(CLE_SUCCESSION)
-        if cible is None:
+        cibles = entree.get(CLE_SUCCESSION)
+        if cibles is None:
             continue
         libelle = f"{entree['groupe_sigle']}-{entree['legislature']}"
-        if not isinstance(cible, str) or not cible.strip():
+        # #815 — UNE LISTE, ET RIEN D'AUTRE. Une chaîne nue est refusée
+        # explicitement plutôt que tolérée : c'est l'ancienne forme, et
+        # l'accepter en silence ferait cohabiter deux écritures du même fait
+        # dans un fichier relu à la main.
+        if not isinstance(cibles, list) or not cibles:
             raise CorrespondanceSiglesInvalide(
-                f"{libelle} : '{CLE_SUCCESSION}' doit être le `groupe_id` du "
-                f"prédécesseur, reçu : {cible!r}."
+                f"{libelle} : '{CLE_SUCCESSION}' doit être une LISTE non vide de "
+                f"`groupe_id`, reçu : {cibles!r}. Un groupe peut succéder à "
+                "plusieurs — une fusion en a deux — et la forme unique ne "
+                "savait pas l'écrire (#815)."
             )
-        if cible == entree.get("groupe_id"):
+        if len(cibles) != len(set(cibles)):
             raise CorrespondanceSiglesInvalide(
-                f"{libelle} : '{CLE_SUCCESSION}' vaut son propre `groupe_id` "
-                f"({cible!r}) — un groupe ne se succède pas à lui-même."
+                f"{libelle} : '{CLE_SUCCESSION}' nomme deux fois le même "
+                f"prédécesseur : {cibles!r}."
             )
-        predecesseur = par_groupe_id.get(cible)
-        if predecesseur is None:
-            raise CorrespondanceSiglesInvalide(
-                f"{libelle} : '{CLE_SUCCESSION}' nomme {cible!r}, qui n'est le "
-                f"`groupe_id` d'aucune entrée de {chemin}. Une succession qui "
-                "ne résout pas publierait une fiche renvoyant vers un document "
-                "inexistant (#700)."
-            )
-        if not predecesseur.get("fichier"):
-            raise CorrespondanceSiglesInvalide(
-                f"{libelle} : le prédécesseur {cible!r} n'a pas de 'fichier' — "
-                "l'affirmation de succession n'atteindrait aucune fiche "
-                "publiée (#700)."
-            )
+        for cible in cibles:
+            if not isinstance(cible, str) or not cible.strip():
+                raise CorrespondanceSiglesInvalide(
+                    f"{libelle} : '{CLE_SUCCESSION}' doit ne porter que des "
+                    f"`groupe_id`, reçu : {cible!r}."
+                )
+            if cible == entree.get("groupe_id"):
+                raise CorrespondanceSiglesInvalide(
+                    f"{libelle} : '{CLE_SUCCESSION}' vaut son propre `groupe_id` "
+                    f"({cible!r}) — un groupe ne se succède pas à lui-même."
+                )
+            predecesseur = par_groupe_id.get(cible)
+            if predecesseur is None:
+                raise CorrespondanceSiglesInvalide(
+                    f"{libelle} : '{CLE_SUCCESSION}' nomme {cible!r}, qui n'est le "
+                    f"`groupe_id` d'aucune entrée de {chemin}. Une succession qui "
+                    "ne résout pas publierait une fiche renvoyant vers un document "
+                    "inexistant (#700)."
+                )
+            if not predecesseur.get("fichier"):
+                raise CorrespondanceSiglesInvalide(
+                    f"{libelle} : le prédécesseur {cible!r} n'a pas de 'fichier' — "
+                    "l'affirmation de succession n'atteindrait aucune fiche "
+                    "publiée (#700)."
+                )
 
 
 def charger_correspondance_sigles(
@@ -568,8 +585,15 @@ def succession_publiee(
     groupe_sigle: str,
     legislature: Optional[str],
     chemin: Optional[Path] = None,
-) -> Optional[dict[str, Any]]:
-    """Le bloc `succede_a` à publier sur une fiche de groupe (#700), ou `None`.
+) -> Optional[list[dict[str, Any]]]:
+    """Les blocs `succede_a` à publier sur une fiche de groupe (#700), ou `None`.
+
+    **Une liste depuis #815**, parce qu'un groupe peut succéder à plusieurs.
+    La forme unique décrivait bien la succession simple (`LR-16` → `DR-17`) et
+    ne savait écrire ni une **fusion** — deux groupes qui n'en font qu'un —, ni
+    une **scission**, où le sortant continue d'exister : `AD` quitte `DR` le
+    11/09/2024 pendant que `DR` poursuit, et aucun des deux ne succède à
+    l'autre au sens d'un remplacement.
 
     `None` quand l'entrée ne déclare pas de prédécesseur — les 5 groupes de la
     XVIe, dont la XVe n'est pas couverte par ce dépôt. C'est un périmètre, pas
@@ -597,18 +621,21 @@ def succession_publiee(
         )
     entrees = charger_correspondance_sigles(chemin)
     entree = entree_correspondance(groupe_sigle, legislature, chemin)
-    cible = entree.get(CLE_SUCCESSION)
-    if not cible:
+    cibles = entree.get(CLE_SUCCESSION)
+    if not cibles:
         return None
     # `_valider_successions` a déjà refusé une cible qui ne résout pas : la
     # recherche ci-dessous ne peut donc pas rendre `None`.
-    predecesseur = next(e for e in entrees if e.get("groupe_id") == cible)
-    return {
-        "groupe_id": str(cible),
-        "fichier": predecesseur["fichier"],
-        "legislature": predecesseur["legislature"],
-        "sigles_an": list(predecesseur["sigles_an"]),
-        "organes_an": list(predecesseur["organes_an"]),
-        "etabli_par": ETABLI_PAR_RELECTURE_HUMAINE,
-        "verifie_le": entree["verifie_le"],
-    }
+    blocs = []
+    for cible in cibles:
+        predecesseur = next(e for e in entrees if e.get("groupe_id") == cible)
+        blocs.append({
+            "groupe_id": str(cible),
+            "fichier": predecesseur["fichier"],
+            "legislature": predecesseur["legislature"],
+            "sigles_an": list(predecesseur["sigles_an"]),
+            "organes_an": list(predecesseur["organes_an"]),
+            "etabli_par": ETABLI_PAR_RELECTURE_HUMAINE,
+            "verifie_le": entree["verifie_le"],
+        })
+    return blocs

@@ -168,7 +168,13 @@ Format d'un profil de groupe v1 :
         ]
     },
 
-    "succede_a": {                      # NOTRE AFFIRMATION, pas un champ de l'AN (#700).
+    "succede_a": [{                     # NOTRE AFFIRMATION, pas un champ de l'AN (#700).
+                                        # LISTE depuis #815 : un groupe peut succéder à
+                                        # plusieurs. La forme unique décrivait la succession
+                                        # simple (LR-16 → DR-17) et ne savait écrire ni une
+                                        # FUSION — deux groupes qui n'en font qu'un —, ni une
+                                        # SCISSION, où le sortant continue d'exister : `AD`
+                                        # quitte `DR` le 11/09/2024 pendant que `DR` poursuit.
                                         # Le groupe de la législature précédente dont celui-ci
                                         # prend la suite. L'Assemblée ouvre et ferme des organes,
                                         # elle ne les chaîne pas : cette continuité est une
@@ -189,7 +195,7 @@ Format d'un profil de groupe v1 :
         # PAS de `source_url` — et c'est un invariant de schéma, pas un oubli : une URL de
         # référentiel ici prêterait à l'affirmation une source qui ne l'écrit nulle part
         # (AGENTS.md §2 règle 2). Miroir exact de `position_politique`, qui l'exige.
-    },
+    }],
 
     "cohesion_votes": [                 # une entrée par scrutin sur lequel ≥1 membre a voté
         {
@@ -985,10 +991,27 @@ def validate_profil_groupe(profil: dict[str, Any]) -> list[str]:
     # sur du publié. Présent, il est validé.
     succede_a = profil.get("succede_a")
     if succede_a is not None:
-        if not isinstance(succede_a, dict):
-            errors.append("'succede_a' doit être un dict ou null.")
+        # #815 — une LISTE, et une chaîne ou un dict nu est refusé nommément :
+        # c'est l'ancienne forme, et l'accepter en silence ferait cohabiter deux
+        # écritures du même fait dans les fiches publiées.
+        if not isinstance(succede_a, list) or not succede_a:
+            errors.append(
+                "'succede_a' doit être une liste non vide de blocs, ou null. "
+                "Un groupe peut succéder à plusieurs — une fusion en a deux "
+                "(#815)."
+            )
+        elif not all(isinstance(bloc, dict) for bloc in succede_a):
+            errors.append("'succede_a[]' ne doit porter que des blocs.")
+        elif len({bloc.get("groupe_id") for bloc in succede_a}) != len(succede_a):
+            errors.append(
+                "'succede_a' nomme deux fois le même prédécesseur."
+            )
         else:
-            errors.extend(_valider_succede_a(succede_a, profil.get("groupe_id")))
+            for i, bloc in enumerate(succede_a):
+                errors.extend(
+                    f"succede_a[{i}] : {e}" if not e.startswith("'succede_a") else e
+                    for e in _valider_succede_a(bloc, profil.get("groupe_id"))
+                )
 
     # `date_reference` est OPTIONNELLE, jamais obligatoire (#653) : les 2 fiches
     # `groupe-Senat-*` publiées avant le lot ne la portent pas et ne seront pas

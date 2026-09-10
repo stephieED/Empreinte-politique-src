@@ -1374,18 +1374,31 @@ def _report_groupes(
         # configuration, elle, a déjà refusé une cible qui ne résout pas
         # (`groupes_config._valider_successions`) ; ce contrôle-ci est le seul
         # qui ait le répertoire publié sous la main.
+        # #815 — une LISTE : chaque prédécesseur doit atteindre sa fiche, et
+        # UN SEUL renvoi orphelin suffit à bloquer. Le contrôle portait sur un
+        # dict ; laissé tel quel après le passage en liste, il n'aurait
+        # simplement plus rien vérifié — un garde-fou muet, pas un garde-fou
+        # tolérant.
         succede_a = data.get("succede_a")
-        if isinstance(succede_a, dict):
-            fichier_predecesseur = succede_a.get("fichier")
-            if not fichier_predecesseur or not (groupes_dir / str(fichier_predecesseur)).exists():
-                hard_errors.append(
-                    f"{groupe_id}: 'succede_a.fichier' ({fichier_predecesseur!r}) "
-                    f"n'existe pas dans {groupes_dir}. Une succession qui "
-                    "n'atteint aucune fiche publiée ne s'empile sur rien (#700)."
-                )
-                rows.append({"groupe_id": groupe_id, "nom": grp.get("groupe_nom", "?"),
-                             "status": "hard", "detail": "succession orpheline"})
+        orphelin = None
+        for bloc in succede_a if isinstance(succede_a, list) else ():
+            if not isinstance(bloc, dict):
                 continue
+            fichier_predecesseur = bloc.get("fichier")
+            if not fichier_predecesseur or not (groupes_dir / str(fichier_predecesseur)).exists():
+                orphelin = fichier_predecesseur
+                break
+        if orphelin is not None or (
+            isinstance(succede_a, list) and any(not isinstance(b, dict) for b in succede_a)
+        ):
+            hard_errors.append(
+                f"{groupe_id}: 'succede_a.fichier' ({orphelin!r}) "
+                f"n'existe pas dans {groupes_dir}. Une succession qui "
+                "n'atteint aucune fiche publiée ne s'empile sur rien (#700)."
+            )
+            rows.append({"groupe_id": groupe_id, "nom": grp.get("groupe_nom", "?"),
+                         "status": "hard", "detail": "succession orpheline"})
+            continue
 
         # ── Données valides : contrôles de qualité ────────────────────────
         meta = data.get("meta") or {}

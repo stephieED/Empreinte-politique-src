@@ -67,7 +67,7 @@ CONFIG = RACINE / "raw_data" / "groupes_reels.json"
 #: l'archive plutôt que de faire confiance à cette table.
 FICHES_17E: dict[str, tuple[str, str, str]] = {
     # groupe_id: (groupe_sigle, groupe_nom, fichier)
-    "AN:EPR": ("EPR", "Ensemble pour la République", "groupe-AN-EPR-17.json"),
+    "AN:EPR:17": ("EPR", "Ensemble pour la République", "groupe-AN-EPR-17.json"),
     "AN:SOC:17": ("SOC", "Socialistes et apparentés", "groupe-AN-SOC-17.json"),
     "AN:RN:17": ("RN", "Rassemblement National", "groupe-AN-RN-17.json"),
     "AN:LFI:17": (
@@ -75,7 +75,7 @@ FICHES_17E: dict[str, tuple[str, str, str]] = {
         "La France insoumise - Nouveau Front Populaire",
         "groupe-AN-LFI-17.json",
     ),
-    "AN:DR": ("DR", "Droite Républicaine", "groupe-AN-DR-17.json"),
+    "AN:DR:17": ("DR", "Droite Républicaine", "groupe-AN-DR-17.json"),
 }
 
 
@@ -183,19 +183,29 @@ def test_la_mention_du_lot_1b_a_disparu_de_la_configuration():
 # 2. `groupe_id` : opaque, unique — jamais découpé
 # --------------------------------------------------------------------------
 
-def test_le_groupe_id_de_la_17e_casse_le_patron_chambre_sigle():
-    """Le constat, figé plutôt que corrigé.
+def test_tout_groupe_id_porte_sa_legislature():
+    """L'invariant que #815 pose, et qui n'existait pas.
 
-    `AN:EPR` et `AN:DR` n'ont pas de suffixe (sigle neuf), `AN:RN:17`,
-    `AN:SOC:17` et `AN:LFI:17` en ont un (sigle réutilisé). `groupe_id` n'est
-    donc **pas** uniformément `<chambre>:<sigle>`, contrairement à ce que
-    l'en-tête de `schema_groupe` a longtemps affirmé. C'est tenable parce que
-    rien ne le découpe : le test suivant le vérifie.
+    Le test d'origine **figeait le constat** : `AN:EPR` et `AN:DR` sans suffixe
+    (sigle neuf), `AN:RN:17` et deux autres avec (sigle réutilisé). Le suffixe
+    n'était ajouté qu'au moment où il départageait, jamais par principe — un
+    héritage du fichier d'origine, qui ne décrivait qu'une seule législature.
+
+    Ça ne tenait que tant qu'aucun sigle ne revenait : déclarer `LR` de la XVe
+    rendait `AN:LR` ambigu, et `DR-17.succede_a` pointait alors sur un sigle à
+    deux fiches. La forme est donc uniforme, et ce test le verrouille pour
+    **toutes** les entrées, pas seulement celles de la XVIIe.
     """
-    suffixes = {gid: gid.count(":") for gid in FICHES_17E}
-    assert suffixes == {
-        "AN:EPR": 1, "AN:SOC:17": 2, "AN:RN:17": 2, "AN:LFI:17": 2, "AN:DR": 1
-    }
+    from groupes_config import charger_correspondance_sigles
+
+    ids = [e["groupe_id"] for e in charger_correspondance_sigles(CONFIG)
+           if e.get("chambre", "AN") == "AN"]
+    fautifs = [gid for gid in ids if gid.count(":") != 2]
+    assert not fautifs, (
+        f"`groupe_id` sans législature : {fautifs}. Deux fiches d'un même sigle "
+        "sur deux législatures rendraient la référence ambiguë (#815)."
+    )
+    assert len(ids) == len(set(ids))
 
 
 def test_aucun_code_du_depot_ne_decoupe_un_groupe_id():
@@ -227,12 +237,15 @@ def test_les_groupe_id_publies_sont_uniques():
 # 3. `succede_a` : notre affirmation, déclarée comme telle
 # --------------------------------------------------------------------------
 
+#: #815 — les identifiants portent tous leur législature, et la succession est
+#: une LISTE. Avant, sept `groupe_id` n'avaient pas de suffixe : ceux écrits
+#: quand le fichier ne décrivait qu'une législature, où le sigle suffisait.
 SUCCESSIONS = {
-    "AN:EPR": "AN:REN",
-    "AN:SOC:17": "AN:SOC",
-    "AN:RN:17": "AN:RN",
-    "AN:LFI:17": "AN:LFI",
-    "AN:DR": "AN:LR",
+    "AN:EPR:17": ["AN:REN:16"],
+    "AN:SOC:17": ["AN:SOC:16"],
+    "AN:RN:17": ["AN:RN:16"],
+    "AN:LFI:17": ["AN:LFI:16"],
+    "AN:DR:17": ["AN:LR:16"],
 }
 
 
@@ -247,10 +260,11 @@ def test_chaque_fiche_de_la_17e_succede_a_une_fiche_du_tableau():
             entree["groupe_sigle"], entree["legislature"], CONFIG
         )
         assert bloc is not None
-        assert bloc["groupe_id"] == attendu
-        assert bloc["fichier"] in fiches_connues
-        assert bloc["fichier"] == table[attendu]["fichier"]
-        assert bloc["legislature"] == "16"
+        assert [b["groupe_id"] for b in bloc] == attendu
+        for b, cible in zip(bloc, attendu):
+            assert b["fichier"] in fiches_connues
+            assert b["fichier"] == table[cible]["fichier"]
+            assert b["legislature"] == "16"
 
 
 def test_le_bloc_publie_est_une_relecture_datee_et_ne_porte_aucune_source():
@@ -262,12 +276,12 @@ def test_le_bloc_publie_est_une_relecture_datee_et_ne_porte_aucune_source():
     d'où elle vient, et il est obligatoire.
     """
     bloc = groupes_config.succession_publiee("DR", "17", CONFIG)
-    assert bloc["etabli_par"] == schema_groupe.ETABLI_PAR_RELECTURE_HUMAINE
-    assert bloc["verifie_le"] == "2026-08-26"
+    assert bloc[0]["etabli_par"] == schema_groupe.ETABLI_PAR_RELECTURE_HUMAINE
+    assert bloc[0]["verifie_le"] == "2026-08-26"
     assert "source_url" not in bloc
     # La preuve : les organes du prédécesseur, recopiés de la table.
-    assert bloc["organes_an"] == ["PO800508"]
-    assert bloc["sigles_an"] == ["LR"]
+    assert bloc[0]["organes_an"] == ["PO800508"]
+    assert bloc[0]["sigles_an"] == ["LR"]
 
 
 def test_le_vocabulaire_detablissement_na_quune_valeur():
@@ -294,7 +308,7 @@ def test_une_succession_sans_legislature_est_refusee():
 
 def _fiche(succede_a):
     fiche = schema_groupe.make_empty_profil_groupe(
-        "AN:DR", "DR", "Droite Républicaine", "AN", "17"
+        "AN:DR:17", "DR", "Droite Républicaine", "AN", "17"
     )
     fiche["succede_a"] = succede_a
     return fiche
@@ -302,7 +316,7 @@ def _fiche(succede_a):
 
 def _bloc_valide(**surcharges):
     bloc = {
-        "groupe_id": "AN:LR",
+        "groupe_id": "AN:LR:16",
         "fichier": "groupe-AN-LR-16.json",
         "legislature": "16",
         "sigles_an": ["LR"],
@@ -318,14 +332,33 @@ def test_le_champ_absent_reste_valide():
     """Les 7 fiches publiées avant le lot ne le portent pas, et les 5 fiches de
     la XVIe ne le porteront jamais. L'exiger ferait échouer le portail sur du
     publié — même arbitrage que #686 et #653."""
-    fiche = schema_groupe.make_empty_profil_groupe("AN:LR", "LR", "Les Républicains", "AN", "16")
+    fiche = schema_groupe.make_empty_profil_groupe("AN:LR:16", "LR", "Les Républicains", "AN", "16")
     del fiche["succede_a"]
     assert schema_groupe.validate_profil_groupe(fiche) == []
     assert schema_groupe.validate_profil_groupe(_fiche(None)) == []
 
 
 def test_le_bloc_complet_est_valide():
-    assert schema_groupe.validate_profil_groupe(_fiche(_bloc_valide())) == []
+    assert schema_groupe.validate_profil_groupe(_fiche([_bloc_valide()])) == []
+
+
+def test_deux_predecesseurs_sont_valides():
+    """Une fusion en a deux, et la forme unique ne savait pas l'écrire (#815)."""
+    second = _bloc_valide(groupe_id="AN:GDR:16", fichier="groupe-AN-GDR-16.json",
+                          sigles_an=["GDR - NUPES"], organes_an=["PO800502"])
+    assert schema_groupe.validate_profil_groupe(_fiche([_bloc_valide(), second])) == []
+
+
+def test_lancienne_forme_est_refusee_nommement():
+    """Un dict nu était la forme d'avant : l'accepter ferait cohabiter deux
+    écritures du même fait dans les fiches publiées."""
+    erreurs = schema_groupe.validate_profil_groupe(_fiche(_bloc_valide()))
+    assert erreurs and "liste non vide" in erreurs[0]
+
+
+def test_le_meme_predecesseur_deux_fois_est_refuse():
+    erreurs = schema_groupe.validate_profil_groupe(_fiche([_bloc_valide(), _bloc_valide()]))
+    assert erreurs and "deux fois le même" in erreurs[0]
 
 
 @pytest.mark.parametrize(
@@ -338,7 +371,7 @@ def test_le_bloc_complet_est_valide():
         ({"fichier": "groupe-AN-LR-16"}, "fichier"),
         ({"fichier": None}, "fichier"),
         ({"groupe_id": ""}, "groupe_id"),
-        ({"groupe_id": "AN:DR"}, "ne se succède pas"),
+        ({"groupe_id": "AN:DR:17"}, "ne se succède pas"),
         ({"legislature": None}, "legislature"),
         ({"organes_an": []}, "organes_an"),
         ({"organes_an": ["PA800508"]}, "organes_an[0]"),
@@ -346,7 +379,7 @@ def test_le_bloc_complet_est_valide():
     ],
 )
 def test_un_bloc_qui_ment_est_refuse(surcharges, attendu):
-    erreurs = schema_groupe.validate_profil_groupe(_fiche(_bloc_valide(**surcharges)))
+    erreurs = schema_groupe.validate_profil_groupe(_fiche([_bloc_valide(**surcharges)]))
     assert any(attendu in e for e in erreurs), erreurs
 
 
@@ -369,13 +402,20 @@ def _entree(bloc, groupe_id):
 @pytest.mark.parametrize(
     "mutation, attendu",
     [
-        (lambda b: _entree(b, "AN:DR").__setitem__("succede_a", "AN:INEXISTANT"),
+        (lambda b: _entree(b, "AN:DR:17").__setitem__("succede_a", ["AN:INEXISTANT"]),
          "n'est le `groupe_id` d'aucune entrée"),
-        (lambda b: _entree(b, "AN:DR").__setitem__("succede_a", "AN:DR"),
+        (lambda b: _entree(b, "AN:DR:17").__setitem__("succede_a", ["AN:DR:17"]),
          "ne se succède pas"),
-        (lambda b: _entree(b, "AN:DR").__setitem__("succede_a", ""),
-         "doit être le `groupe_id`"),
-        (lambda b: _entree(b, "AN:LR").pop("fichier"),
+        (lambda b: _entree(b, "AN:DR:17").__setitem__("succede_a", [""]),
+         "ne porter que des `groupe_id`"),
+        (lambda b: _entree(b, "AN:DR:17").__setitem__("succede_a", "AN:LR:16"),
+         "doit être une LISTE non vide"),
+        (lambda b: _entree(b, "AN:DR:17").__setitem__("succede_a", []),
+         "doit être une LISTE non vide"),
+        (lambda b: _entree(b, "AN:DR:17").__setitem__(
+            "succede_a", ["AN:LR:16", "AN:LR:16"]),
+         "nomme deux fois le même"),
+        (lambda b: _entree(b, "AN:LR:16").pop("fichier"),
          "n'atteindrait aucune fiche"),
     ],
 )
@@ -428,8 +468,8 @@ def test_le_gate_bloque_une_succession_qui_natteint_aucune_fiche(tmp_path):
     document qu'il permet d'ouvrir."""
     config = _groupes_config()
     dossier = tmp_path / "groupes"
-    _publier(dossier, config["AN:DR"], succede_a=_bloc_valide())
-    chemin = _config_deux_groupes(tmp_path, [config["AN:DR"]])
+    _publier(dossier, config["AN:DR:17"], succede_a=[_bloc_valide()])
+    chemin = _config_deux_groupes(tmp_path, [config["AN:DR:17"]])
     hard, _soft, _console, _md = check_quality_gate._report_groupes(chemin, dossier, 1)
     assert len(hard) == 1
     assert "succede_a.fichier" in hard[0]
@@ -438,9 +478,9 @@ def test_le_gate_bloque_une_succession_qui_natteint_aucune_fiche(tmp_path):
 def test_le_gate_accepte_une_succession_qui_atteint_sa_fiche(tmp_path):
     config = _groupes_config()
     dossier = tmp_path / "groupes"
-    _publier(dossier, config["AN:LR"])
-    _publier(dossier, config["AN:DR"], succede_a=_bloc_valide())
-    chemin = _config_deux_groupes(tmp_path, [config["AN:LR"], config["AN:DR"]])
+    _publier(dossier, config["AN:LR:16"])
+    _publier(dossier, config["AN:DR:17"], succede_a=[_bloc_valide()])
+    chemin = _config_deux_groupes(tmp_path, [config["AN:LR:16"], config["AN:DR:17"]])
     hard, _soft, _console, _md = check_quality_gate._report_groupes(chemin, dossier, 1)
     assert hard == []
 
