@@ -122,37 +122,16 @@
   margin-bottom: 34px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) .cp-gc {
-    --parl: #8fb3e8;
-    --parl-wash: #1b2331;
-    --parl-line: #2e3f5a;
-    --parl-pale: #243043;
-    --gouv: #d9b264;
-    --gouv-wash: #2a2314;
-    --gouv-line: #4a3a1c;
-    --gouv-pale: #3a2f18;
-    --neutre: #7c7772;
-    --neutre-wash: #26251f;
-    --rail: #1f2027;
-    --gc-ombre: rgba(0, 0, 0, 0.5);
-  }
-}
-
-:root[data-theme='dark'] .cp-gc {
-  --parl: #8fb3e8;
-  --parl-wash: #1b2331;
-  --parl-line: #2e3f5a;
-  --parl-pale: #243043;
-  --gouv: #d9b264;
-  --gouv-wash: #2a2314;
-  --gouv-line: #4a3a1c;
-  --gouv-pale: #3a2f18;
-  --neutre: #7c7772;
-  --neutre-wash: #26251f;
-  --rail: #1f2027;
-  --gc-ombre: rgba(0, 0, 0, 0.5);
-}
+/* PAS DE MODE NUIT — et ce bloc en portait un fragment (#328, `bf886cda`).
+ * `src/index.css` déclare `color-scheme: light`, aucun script ne pose jamais
+ * `data-theme`, et `.cp-gc` était le seul sélecteur de tout `src/` à porter une
+ * media query de préférence sombre : douze variables qui ne rendaient rien,
+ * mesurées au pixel près identiques sous les deux préférences système. Le lot
+ * institutionnel devait les doubler pour `--pe` et `--senat` ; il les retire.
+ * Un mode nuit se décide pour la fiche entière ou ne se décide pas — il ne se
+ * laisse pas sur un bloc.
+ * → docs/decisions/bloc-sombre-mort-retire-328.md
+ */
 
 /* ── La poignée d'un pli — UNE seule forme, deux emplois ─────────────────────
  *
