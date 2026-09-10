@@ -120,8 +120,11 @@ def test_le_grise_dit_ce_qu_il_veut_dire(barre: str) -> None:
 
 def test_le_grise_n_emprunte_aucune_teinte_de_jugement() -> None:
     feuille = sans_commentaires(FEUILLE.read_text(encoding="utf-8"))
+    # L'ancre était `.cb-chip-avatar`, retiré avec les initiales : « GA » posé
+    # contre « Gabriel Attal » n'apprenait rien, et occupait 1 020 des 5 293 px
+    # du rang. Le bloc se ferme désormais sur la règle suivante du fichier.
     bloc = feuille[feuille.index(".cb-chip--sans-mandat {") :]
-    bloc = bloc[: bloc.index(".cb-chip-avatar {")]
+    bloc = bloc[: bloc.index(".cb-chip.active")]
     au_repos = bloc.split(".cb-chip--sans-mandat.active")[0]
     assert "var(--accent)" not in au_repos, (
         "le jaune signal marque la sélection, jamais un état de fiche"

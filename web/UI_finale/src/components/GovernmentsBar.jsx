@@ -1,7 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { getGovernmentsList } from '../data';
 import { useAsyncData } from '../hooks/useAsyncData';
-import { initialsOf } from '../utils/text';
 import ScrollRow from './ScrollRow';
 import './GovernmentsBar.css';
 
@@ -15,7 +14,7 @@ export default function GovernmentsBar() {
     <div className="gvb-bar">
       <span className="gvb-bar-label">Gouvernement</span>
       {loading ? (
-        <ScrollRow ariaLabel="Gouvernements (chargement)">
+        <ScrollRow replie ariaLabel="Gouvernements (chargement)">
           {Array.from({ length: 5 }).map((_, i) => (
             <div className="gvb-chip gvb-skeleton" key={i} />
           ))}
@@ -23,7 +22,7 @@ export default function GovernmentsBar() {
       ) : governments.length === 0 ? (
         <p className="gvb-empty">Aucun gouvernement disponible.</p>
       ) : (
-        <ScrollRow ariaLabel="Liste des gouvernements">
+        <ScrollRow replie ariaLabel="Liste des gouvernements">
           {governments.map((government) => {
             const active = activeGovernmentId === government.id;
             return (
@@ -34,9 +33,11 @@ export default function GovernmentsBar() {
                 aria-pressed={active}
                 className={`gvb-chip ${active ? 'active' : ''}`}
                 onClick={() => navigate(`/gouvernements/${government.id}`)}
+                title={government.title}
               >
-                <span className="gvb-chip-avatar">{initialsOf(government.title)}</span>
-                <span className="gvb-chip-label">{government.title}</span>
+                <span className="gvb-chip-label">
+                  {government.title.replace(/^Gouvernement\s+/, '')}
+                </span>
               </button>
             );
           })}

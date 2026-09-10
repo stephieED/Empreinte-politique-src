@@ -19,6 +19,7 @@
  * ratios, troncatures, listes vides et badges de source sont importés, jamais
  * redéfinis.
  */
+import { Link } from 'react-router-dom';
 import '../styles/shell.css';
 import './GroupProfile.css';
 import { BadgeSource, ListeVide, PositionVote, Troncature } from './Lecture';
@@ -845,6 +846,24 @@ export default function GroupProfile({ group }) {
             {periode(group.periode) ? ` · ${periode(group.periode)}` : null}
           </span>
         </div>
+        {/* CE QUE CETTE FICHE COUVRE, ET CE QU'ELLE NE COUVRE PAS.
+            Tant qu'aucune fiche n'agrège la lignée, celle-ci doit dire qu'elle
+            n'est qu'une tranche : rien à l'écran ne distinguait « le groupe » de
+            « le groupe sous cette législature-là », et les trois fiches SOC se
+            lisaient comme trois groupes. */}
+        {group.lignee?.length > 1 && (
+          <p className="gp-lignee">
+            <span>Cette fiche ne couvre que la {group.legislature}<sup>e</sup> législature.
+              Le même groupe en compte {group.lignee.length} :</span>
+            {group.lignee.map((f) => (f.courante ? (
+              <b key={f.id}>{f.sigle} {f.legislature}<sup>e</sup></b>
+            ) : (
+              <Link key={f.id} to={`/groupes/${f.id}`} title={f.nom}>
+                {f.sigle} {f.legislature}<sup>e</sup>
+              </Link>
+            )))}
+          </p>
+        )}
       </header>
 
       <Section

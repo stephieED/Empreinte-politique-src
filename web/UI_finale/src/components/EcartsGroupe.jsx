@@ -244,8 +244,6 @@ export default function EcartsGroupe({ ecarts, voix }) {
   return (
     <>
       <div className="cp-carte eg-carte">
-        <h3 className="eg-titre">Ses divergences</h3>
-
         {bande.length ? (
           <>
             <div className="eg-bloc">
@@ -265,21 +263,21 @@ export default function EcartsGroupe({ ecarts, voix }) {
               </div>
               <dl className="eg-dl">
                 <dt>
-                  <b>Votes utilisés pour la comparaison</b>
+                  <b>Scrutins utilisés pour la comparaison</b>
                   <em>
-                    scrutins sur l’ensemble d’un texte où ses votes et ceux de son groupe existent
-                    tous les deux · <Link to="/methodologie#ecarts">comment ils sont retenus</Link>
+                    scrutins sur l’ensemble d’un texte où les données sont complètes ·{' '}
+                    <Link to="/methodologie#ecarts">comment ils sont retenus</Link>
                   </em>
                 </dt>
                 <dd className="eg-fort">{formatNumber(bande.length)}</dd>
                 <dt>
-                  Scrutins où son groupe s’est divisé
+                  <b>Scrutins où son groupe s’est divisé</b>
                   <em>
                     ses membres exprimés n’ont pas tous voté de la même façon ·{' '}
                     <Link to="/methodologie#ecarts">le détail</Link>
                   </em>
                 </dt>
-                <dd>{formatNumber(bande.filter(groupeDivise).length)}</dd>
+                <dd className="eg-fort">{formatNumber(bande.filter(groupeDivise).length)}</dd>
               </dl>
             </div>
 

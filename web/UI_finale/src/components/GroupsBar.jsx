@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom';
 import { getGroupsList } from '../data';
 import { useGroupFilter } from '../context/GroupFilterContext';
 import { useAsyncData } from '../hooks/useAsyncData';
-import { initialsOf } from '../utils/text';
 import ScrollRow from './ScrollRow';
 import './GroupsBar.css';
 
@@ -22,7 +21,7 @@ export default function GroupsBar() {
     <div className="gb-bar">
       <span className="gb-bar-label">Groupes</span>
       {loading ? (
-        <ScrollRow ariaLabel="Groupes (chargement)">
+        <ScrollRow replie ariaLabel="Groupes (chargement)">
           {Array.from({ length: 5 }).map((_, i) => (
             <div className="gb-chip gb-skeleton" key={i} />
           ))}
@@ -30,7 +29,7 @@ export default function GroupsBar() {
       ) : groups.length === 0 ? (
         <p className="gb-empty">Aucun groupe disponible.</p>
       ) : (
-        <ScrollRow ariaLabel="Liste des groupes">
+        <ScrollRow replie ariaLabel="Liste des groupes">
           {groups.map((group) => {
             const active = selectedGroupId === group.id;
             return (
@@ -39,10 +38,16 @@ export default function GroupsBar() {
                 type="button"
                 role="listitem"
                 aria-pressed={active}
-                className={`gb-chip ${active ? 'active' : ''}`}
+                className={`gb-chip ${active ? 'active' : ''}${
+                  group.chambre === 'Senat' ? ' gb-chip--gelee' : ''
+                }`}
+                title={
+                  group.chambre === 'Senat'
+                    ? 'Fiche gelée : la collecte au Sénat est suspendue depuis le 24/08/2026, et le Sénat est hors du périmètre éditorial. La fiche existe, mais elle ne porte aucun scrutin de cohésion.'
+                    : undefined
+                }
                 onClick={() => handleClick(group)}
               >
-                <span className="gb-chip-avatar">{initialsOf(group.title)}</span>
                 <span className="gb-chip-label">{group.title}</span>
               </button>
             );

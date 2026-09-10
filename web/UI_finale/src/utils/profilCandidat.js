@@ -1207,6 +1207,11 @@ function cascadeDesTextes(publies, commissionDuDossier) {
       role: LIBELLE_ROLE_TEXTE[t.role] || t.role || null,
       url: t.source_url ?? null,
       an: t.date_max ? String(t.date_max).slice(0, 4) : null,
+      // L'INSTITUTION VOYAGE AVEC LE TEXTE, jusque dans la liste ouverte au clic
+      // sur la cascade : un projet de loi est signé comme MINISTRE, une
+      // proposition déposée comme PARLEMENTAIRE. `role` les sépare à la source
+      // (#689) et la liste les range en deux colonnes plutôt qu'en une phrase.
+      projetDeLoi: estProjetDeLoi(t),
     };
   });
   // L'ordre des matières fixe les teintes, et il suit le VOLUME : recalculé

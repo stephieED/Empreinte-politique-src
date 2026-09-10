@@ -344,11 +344,22 @@ def test_seul_le_pourquoi_des_deux_regles_part_dans_la_methodologie() -> None:
     assert "périodes politiques" in methodo
 
     fiche = sans_commentaires(FICHE.read_text(encoding="utf-8"))
-    assert "LAST_READING_RULE.phrase" in fiche
-    assert "WHOLE_TEXT_VOTE_BOUND.phrase" in fiche
+    # Les deux `phrase` ont quitté la fiche le 10/09 : la règle est APPLIQUÉE
+    # par `utils/lecture.js` depuis #711, et l'incident que #711 corrigeait — une
+    # règle annoncée que rien n'appliquait — ne peut plus se reproduire en
+    # silence. Ce qui reste sous les yeux du lecteur est l'étiquette courte du
+    # chiffre, et le renvoi vers le raisonnement.
+    assert "LAST_READING_RULE" not in fiche
+    assert "WHOLE_TEXT_VOTE_BOUND" not in fiche
+    assert "LAST_READING_LABEL" in fiche, "l'étiquette du chiffre reste sur la fiche"
+    # Le renvoi est posé SOUS LA FIGURE, donc dans le composant qui la rend —
+    # pas dans la fiche, qui ne fait que l'appeler.
+    figure = (RACINE / "web" / "UI_finale" / "src" / "components" / "VotesParPeriode.jsx").read_text(
+        encoding="utf-8",
+    )
+    assert 'to="/methodologie#votes"' in figure, "le renvoi vers le raisonnement reste"
     assert ".pourquoi" not in fiche, (
-        "le raisonnement long vit dans la méthodologie ; la fiche n'en porte "
-        "que la phrase et le renvoi"
+        "le raisonnement long vit dans la méthodologie, jamais sur la fiche"
     )
 
 

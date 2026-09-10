@@ -191,11 +191,40 @@ export async function getCandidatesList() {
 
 export async function getGroupsList() {
   const manifest = await loadManifest();
-  return manifest.groupes.map((g) => ({
-    id: g.id,
-    title: g.nom,
-    kicker: `${g.chambre === 'AN' ? 'Assemblée nationale' : 'Sénat'} · Législature ${g.legislature}`,
-  }));
+  /* UNE ENTRÉE PAR LIGNÉE, PAS PAR FICHE.
+   *
+   * Le corpus publie une fiche par groupe ET par législature : la barre
+   * affichait trois boutons « Socialistes et apparentés » que rien ne
+   * distinguait, deux « Rassemblement National », et deux « Les Républicains »
+   * dont l'un est le groupe du Sénat. `ligneeTete`, calculé par `sync-data` à
+   * partir de `succede_a`, réunit les fiches d'un même groupe ; le bouton porte
+   * le nom de la plus récente et y mène.
+   *
+   * `fiches` accompagne l'entrée parce que le FILTRE en dépend : sélectionner
+   * « Socialistes » doit retenir les candidats membres de N'IMPORTE LAQUELLE des
+   * fiches de la lignée. Ne garder que la tête aurait vidé le filtre en silence.
+   */
+  const parLignee = new Map();
+  for (const g of manifest.groupes) {
+    const cle = g.ligneeTete || g.id;
+    if (!parLignee.has(cle)) parLignee.set(cle, []);
+    parLignee.get(cle).push(g);
+  }
+  const rang = (g) => Number(g.legislature) || 0;
+  return [...parLignee.entries()].map(([cle, fiches]) => {
+    const tete = fiches.find((g) => g.id === cle) || fiches[fiches.length - 1];
+    const ordre = [...fiches].sort((a, b) => rang(a) - rang(b));
+    const legislatures = ordre.map((g) => g.legislature).filter(Boolean);
+    return {
+      id: tete.id,
+      title: tete.nom,
+      chambre: tete.chambre,
+      fiches: ordre.map((g) => g.id),
+      kicker: tete.chambre === 'AN'
+        ? `Assemblée nationale · Législature${legislatures.length > 1 ? 's' : ''} ${legislatures.join(', ')}`
+        : 'Sénat',
+    };
+  }).sort((a, b) => a.title.localeCompare(b.title, 'fr', { sensitivity: 'base' }));
 }
 
 /**
@@ -291,7 +320,20 @@ export async function getGroupProfile(id) {
     loadComparaison(entry.comparaison),
   ]);
   if (!groupe) return null;
-  return buildGroupView(groupe, scrutins, comparaison);
+  /* La lignée vient du manifeste, où `sync-data` l'a chaînée sur `succede_a` :
+   * la fiche, elle, ne connaît que son prédécesseur — jamais ses successeurs. */
+  const lignee = (entry.lignee || [entry.id])
+    .map((fid) => manifest.groupes.find((g) => g.id === fid))
+    .filter(Boolean)
+    .sort((a, b) => (Number(a.legislature) || 0) - (Number(b.legislature) || 0))
+    .map((g) => ({
+      id: g.id,
+      sigle: g.sigle,
+      nom: g.nom,
+      legislature: g.legislature,
+      courante: g.id === entry.id,
+    }));
+  return buildGroupView(groupe, scrutins, comparaison, lignee);
 }
 
 export async function getGovernmentsList() {

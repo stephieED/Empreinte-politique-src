@@ -138,10 +138,19 @@ def test_la_limite_projets_de_loi_a_disparu(profil: str, fiche: str) -> None:
 
     Le FAIT reste publié — combien de textes sont des projets de loi signés
     comme ministre —, c'est l'affirmation sur le corpus qui part.
+
+    LE FAIT A CHANGÉ DE FORME LE 10/09 : « 31 de ses 34 textes portés sont des
+    projets de loi » disait en toutes lettres ce que la liste ouverte au clic
+    sur le Sankey montre désormais, rangée en DEUX COLONNES — Assemblée et
+    Gouvernement, aux teintes de « ce que cette personne a engagé, en chiffres ».
+    Le test garde donc la distinction, pas la phrase qui la portait : une
+    assertion calée sur une formulation casse au premier mot réécrit et ne dit
+    rien du fait qu'elle prétend garder.
     """
     assert "'projets-de-loi'" not in profil, "la limite survit dans les limites déclarées"
-    assert "textes portés sont des projets de loi" in fiche, (
-        "le fait a été supprimé au lieu de la seule affirmation fausse"
+    assert "t.projetDeLoi" in fiche, (
+        "la distinction projet / proposition a été supprimée au lieu de la seule "
+        "affirmation fausse : la liste ne la rend plus"
     )
     assert "aucun champ ne la porte" not in fiche
     assert "même rôle" not in fiche

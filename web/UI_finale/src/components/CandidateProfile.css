@@ -88,11 +88,20 @@
   line-height: 1.06;
 }
 
+/* UNE SEULE LIGNE, ET LA SOURCE AU BOUT.
+   La laisse de 72 caractères coupait « Consultant · Groupe Ensemble pour la
+   République · Renaissance. Né le 16 mars 1989 à Clamart (Hauts-de-Seine). » en
+   deux, alors que l'en-tête a toute la largeur de la page. Elle est levée ; le
+   texte et son badge s'alignent sur la même base, et ne repassent à la ligne
+   que si la fenêtre les y force. */
 .cp-qui {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px 12px;
   margin: 9px 0 12px;
   font-size: 15px;
   color: #6e6a78;
-  max-width: 72ch;
 }
 
 /* ── L'essentiel ─────────────────────────────────────────────────────────── */
@@ -234,7 +243,7 @@
 }
 
 .cp-gc-carte {
-  padding: 26px 24px;
+  /* La marge vient de `.cp-carte`. */
 }
 
 /* La frise du bloc est CELLE DU PARCOURS (`.cp-frise`), pas une copie : les 24
@@ -567,10 +576,39 @@
   border: 1px solid var(--border);
   border-radius: 18px;
   box-shadow: 0 1px 10px rgba(20, 15, 40, 0.05);
+  /* LA MARGE INTÉRIEURE EST ICI, ET NULLE PART AILLEURS. Sept enveloppes la
+     redéclaraient — 26, 24, 22, 20, 18, 16 et 0 px en haut ; 26, 24 et 20 à
+     gauche —, et `.cp-carte` n'en portait aucune : douze cartes sur dix-neuf
+     n'avaient d'autre marge que celle que leur premier enfant voulait bien
+     porter. Deux exceptions restent, et elles sont NOMMÉES : une carte qui ne
+     contient que des rangs pleine largeur (`--rangs`), une figure qui touche
+     ses bords (`--nu`). */
+  padding: 22px 26px;
+}
+
+/* Les rangs portent leur propre marge et leur filet doit courir d'un bord à
+   l'autre : la carte s'efface devant eux. */
+.cp-carte--rangs {
+  padding: 0;
+}
+
+/* Une figure qui va au bord — la frise des paroles. */
+.cp-carte--nu {
+  padding: 0;
+}
+
+/* UNE LISTE VIDE N'EST PAS UNE CARTE DANS UNE CARTE. `lec-vide` dessine son
+   propre cadre ; posée dans `cp-carte`, elle rendait deux bordures, deux rayons
+   et deux marges emboîtées. Dans une carte, elle n'est plus que son texte. */
+.cp-carte > .lec-vide {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: none;
 }
 
 .cp-bloc {
-  padding: 22px 26px;
+  /* La marge vient de `.cp-carte`. */
 }
 
 .cp-note {
@@ -581,7 +619,9 @@
   font-size: 13px;
   line-height: 1.6;
   color: var(--ink);
-  max-width: 82ch;
+  /* PAS DE `max-width` : une note qualifie la figure au-dessus d'elle, et une
+     note plus étroite que sa figure se lit comme un autre bloc. La longueur de
+     ligne se règle par la brièveté du texte, pas par une laisse. */
 }
 
 .cp-note em {
@@ -591,7 +631,7 @@
 
 /* ── § 1 — la frise ──────────────────────────────────────────────────────── */
 .cp-frise {
-  padding: 24px 26px 20px;
+  /* La marge vient de `.cp-carte`. */
 }
 
 .cp-reperes {
@@ -1036,12 +1076,13 @@
 }
 
 .cp-textes {
-  padding: 22px 26px;
 }
 
 /* ── § 2 — les gouvernements ─────────────────────────────────────────────── */
 .cp-gouv {
-  padding: 20px 26px;
+  /* Un RANG dans une carte, pas une carte : son filet court d'un bord à
+     l'autre, donc il porte sa propre marge — au même fer que la carte. */
+  padding: 22px 26px;
   border-top: 1px solid var(--border);
 }
 
@@ -1565,4 +1606,191 @@
 
 .cp-methodo a:hover {
   text-decoration-color: currentcolor;
+}
+
+/* ── Les corrections de lecture du 10/09 ──────────────────────────────────── */
+
+/* Le 49.3 : la qualification suit le fait dans le même bouton, en second plan.
+   Elle tenait en trois lignes de paragraphe à côté — le « pourquoi » vit en
+   méthodologie, la fiche garde le fait et ce qu'il est. */
+.cp-ter-493-quoi {
+  margin-left: 6px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* Ce qui restait en trois `cp-bloc` — la forme des GRANDS CHIFFRES — tient sous
+   la légende de la cascade, à la taille d'une légende. */
+.cp-chute-mentions {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* La liste ouverte au clic sur la cascade se range par institution : les
+   en-têtes reprennent `cp-gc-tete-col--*` — mêmes teintes, mêmes étiquettes que
+   « ce que cette personne a engagé, en chiffres ». Sous 720 px les deux colonnes
+   s'empilent : un titre de dossier ne tient pas dans une demi-largeur mobile. */
+.cp-ter-cols {
+  display: grid;
+  grid-template-columns: 1fr;
+  column-gap: 32px;
+}
+.cp-ter-cols--deux {
+  grid-template-columns: 1fr 1fr;
+}
+.cp-ter-cols > ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cp-ter-col-nb {
+  margin-left: 8px;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 720px) {
+  .cp-ter-cols--deux {
+    grid-template-columns: 1fr;
+  }
+  /* Empilées, les deux listes ont besoin que leur en-tête reprenne la main. */
+  .cp-ter-cols > ul {
+    margin-bottom: 18px;
+  }
+}
+
+
+/* La règle de repli, en tête de la carte des votes : un dénominateur, pas un
+   titre — même graisse que les libellés d'échelle, au-dessus de la navigation. */
+.vp-regle {
+  margin: 0 0 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+
+/* ── LES MATIÈRES, DEUX MESURES ET LEUR RAPPORT ──────────────────────────────
+   Six colonnes, un nombre par colonne : empilés dans une même cellule,
+   « 26 775 » et « 59 » se lisaient « 26 77559 » — et se copiaient ainsi.
+   Le ratio est AU MILIEU, entre les deux mesures qu'il relie. */
+.cp-mat {
+  display: grid;
+  gap: 4px;
+  margin-top: 14px;
+}
+.cp-mr {
+  display: grid;
+  grid-template-columns: minmax(120px, 200px) minmax(0, 1.2fr) 74px 74px minmax(0, 0.55fr) 78px;
+  gap: 12px;
+  align-items: center;
+  font-size: 12.5px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: 3px 0;
+  color: inherit;
+  font-family: inherit;
+}
+.cp-mr--cliquable {
+  cursor: pointer;
+  border-radius: 4px;
+}
+.cp-mr--cliquable:hover .cp-mr-lib,
+.cp-mr--cliquable[aria-pressed='true'] .cp-mr-lib {
+  color: var(--ink);
+  font-weight: 700;
+}
+.cp-mr--cliquable:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.cp-mr--tete {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #b6b1bd;
+  padding-bottom: 2px;
+}
+.cp-mr-lib {
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cp-mr-rail {
+  height: 14px;
+  border-radius: 2px;
+  background: var(--border);
+  overflow: hidden;
+}
+.cp-mr--tete .cp-mr-rail,
+.cp-mr--nd span:nth-child(5) {
+  background: none;
+}
+.cp-mr-rail i {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+}
+.cp-mr-n {
+  text-align: right;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.cp-mr-n--textes {
+  color: #b6b1bd;
+}
+.cp-mr--nd .cp-mr-lib {
+  font-style: italic;
+}
+
+@media (max-width: 720px) {
+  .cp-mr {
+    grid-template-columns: 1fr 64px 64px 64px;
+    gap: 8px;
+  }
+  /* Les deux rails sautent : à 320 px, une barre de 12 px ne dit rien que le
+     nombre à côté ne dise mieux. */
+  .cp-mr-rail {
+    display: none;
+  }
+}
+
+/* Les deux sous-parties de « ce qu'on n'a pas pu lire ». La première est en
+   rangs pleine largeur, donc son intitulé reprend le fer des rangs. */
+.cp-rangs-tete {
+  padding: 20px 26px 14px;
+}
+
+.cp-signal {
+  margin-top: 14px;
+}
+.cp-signal-dl {
+  display: grid;
+  grid-template-columns: minmax(140px, 220px) minmax(0, 1fr);
+  gap: 10px 20px;
+  margin: 16px 0 0;
+  font-size: 13px;
+}
+.cp-signal-dl dt {
+  font-weight: 700;
+  color: var(--ink);
+}
+.cp-signal-dl dd {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+@media (max-width: 720px) {
+  .cp-signal-dl {
+    grid-template-columns: 1fr;
+    gap: 3px 0;
+  }
+  .cp-signal-dl dd {
+    margin-bottom: 10px;
+  }
 }

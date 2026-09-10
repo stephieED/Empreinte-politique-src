@@ -341,10 +341,13 @@ export default function ParolesParPeriode({ periodes, plafondPeriode, plafondEns
           sous chacune noyait la seule chose qui parle de cette personne — les
           quatre chiffres. */}
       <p className="cp-note pp-couverture">
-        <b>Ce que cette figure ne sait pas.</b> Sur ses {formatNumber(couverture.total)}{' '}
-        interventions collectées, {formatNumber(couverture.sujet)} portent l’intitulé officiel sous
-        lequel elles ont été prononcées, {formatNumber(couverture.verbatim)} le verbatim du compte
-        rendu et {formatNumber(couverture.fonction)} la qualité de l’orateur.
+        {/* CE QUI MANQUE, PAS CE QUI EST LÀ. « 3 951 portent l'intitulé » sur
+            3 963 se lit comme une abondance : il faut soustraire de tête pour
+            voir les 12 qui manquent, et c'est le trou que la phrase annonce. */}
+        <b>Ce que cette figure ne sait pas.</b> Sur {formatNumber(couverture.total)} interventions :{' '}
+        {formatNumber(couverture.total - couverture.sujet)} sans intitulé,{' '}
+        {formatNumber(couverture.total - couverture.verbatim)} sans verbatim,{' '}
+        {formatNumber(couverture.total - couverture.fonction)} sans la qualité de l’orateur.
         {couverture.themeSeul > 0 && (
           <>
             {' '}
