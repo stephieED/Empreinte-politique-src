@@ -29,6 +29,7 @@ import time
 import unicodedata
 from typing import Any, Optional
 
+from europarl_documents import ResolveurDocuments, reference_doceo
 from avertissements import (
     DESTINATAIRE_INTERNE,
     DESTINATAIRE_LECTEUR,
@@ -415,7 +416,11 @@ SOUS_TYPE_PAR_ACTIVITE: dict[str, str] = {
 }
 
 
-def _make_intervention(activite: str, entree: dict[str, Any]) -> dict[str, Any]:
+def _make_intervention(
+    activite: str,
+    entree: dict[str, Any],
+    resolveur: Optional[ResolveurDocuments] = None,
+) -> dict[str, Any]:
     """Convertit une activité ParlTrack en entrée pivot `interventions[]`.
 
     ## Ce que la source donne, et ce qu'elle ne donne pas
@@ -433,12 +438,20 @@ def _make_intervention(activite: str, entree: dict[str, Any]) -> dict[str, Any]:
     seule matière du corpus européen où quelqu'un dit lui-même pourquoi il a
     voté ainsi. Elles ne portent donc PAS `collecte` — leur forme est complète.
 
-    Elles ne portent pas non plus de `source_url` : **0 sur 190** en ont un chez
-    Bardella, la référence n'est dans l'intitulé qu'**1 fois sur 190**, et le
-    titre ne correspond exactement à un dossier que dans **30 %** des cas. Le
-    texte est sourcé — ParlTrack transcrit l'annexe officielle de la séance —
-    mais le lien profond manque, et cette limite se publie dans `couverture`
-    plutôt que de se combler par une URL devinée (§2 règle 2).
+    ParlTrack ne leur donne **aucun** lien : 0 des 1 801 entrées `WEXP` des 7
+    candidats déclarés porte une `url`, contre 100 % des neuf autres types
+    d'activité. Le `source_url` publié ici vient donc d'ailleurs (#827) — de la
+    référence citée dans l'intitulé, `(A8-0196/2017 - Petri Sarvamaa)`, dont
+    l'existence est **prouvée sur le portail open data** avant que l'adresse
+    publique ne soit écrite. Sans résolveur, aucune adresse n'est publiée : une
+    URL dérivée sans preuve est indétectablement fausse, le site public étant
+    derrière un pare-feu qui répond pareil à une URL vraie et à une inventée.
+
+    **Un chiffre a longtemps été cité de travers ici** : « la référence n'est
+    dans l'intitulé qu'1 fois sur 190 ». C'est exact **pour Bardella**, dont 189
+    des 190 explications n'en citent aucune. Ce n'est pas le taux du corpus, qui
+    est de **1 530 sur 1 801 (85 %)** — Philippot n'en manque que 7 sur 766. La
+    population d'un chiffre se nomme (§9).
 
     L'`intervention_id` reprend la **référence de la source** quand elle existe
     (`P10_CRE-REV(2024)07-17(2-020-0000)`), préfixée `europarl_`. Ce n'est pas
@@ -461,6 +474,11 @@ def _make_intervention(activite: str, entree: dict[str, Any]) -> dict[str, Any]:
         "mots_cles": [],
         "source_url": entree.get("source_url"),
     }
+    # #827 — l'adresse est dérivée, l'existence est prouvée. Sans résolveur
+    # (passe hors ligne, tests), rien n'est écrit : une URL non vérifiée est
+    # indétectablement fausse, et §2 règle 2 interdit de la publier.
+    if resolveur is not None and not intervention["source_url"]:
+        intervention["source_url"] = resolveur.url_verifiee(entree.get("titre"))
     texte = entree.get("texte")
     if texte:
         intervention["texte"] = texte
@@ -518,6 +536,7 @@ def enrich_pivot_with_parltrack(
     profil: dict[str, Any],
     mep_id: int,
     force_download: bool = False,
+    resolveur: Optional[ResolveurDocuments] = None,
 ) -> None:
     """Enrichit un profil pivot v1 en place avec les données ParlTrack.
 
@@ -643,7 +662,7 @@ def enrich_pivot_with_parltrack(
         if activite not in TYPE_DETAIL_PAR_ACTIVITE:
             continue
         for brut in entrees:
-            entree = _make_intervention(activite, brut)
+            entree = _make_intervention(activite, brut, resolveur)
             cle = _interv_key(entree)
             if cle not in cles_interv:
                 cles_interv.add(cle)
@@ -723,16 +742,33 @@ def enrich_pivot_with_parltrack(
             DESTINATAIRE_LECTEUR,
         ))
 
-    # #683 — les explications de vote n'ont pas de lien vers leur document.
-    sans_lien = sum(
-        1 for i in nouvelles_interv
-        if i.get("type_detail") == "explication_de_vote" and not i.get("source_url")
-    )
+    # #683, puis #827 — LE DÉNOMINATEUR A CHANGÉ DE SENS. Il comptait « toutes
+    # les explications », la source n'en liant aucune ; il compte désormais
+    # celles qui restent sans lien une fois le document cherché. Deux causes,
+    # que le message distingue parce qu'elles ne disent pas la même chose :
+    # l'intitulé ne cite aucun document (271 des 1 801 mesurées, un fait sur la
+    # source), ou le document cité n'existe pas (22, dont 17 transmis par une
+    # autre institution).
+    explications = [
+        i for i in nouvelles_interv if i.get("type_detail") == "explication_de_vote"
+    ]
+    sans_lien = [i for i in explications if not i.get("source_url")]
     if sans_lien:
+        sans_reference = sum(1 for i in sans_lien if reference_doceo(i.get("sujet")) is None)
+        introuvables = len(sans_lien) - sans_reference
+        detail = (
+            f"{sans_reference} dont l'intitulé ne cite aucun document"
+            if sans_reference else ""
+        )
+        if introuvables:
+            detail += (", " if detail else "") + (
+                f"{introuvables} dont le document cité est introuvable au Parlement"
+            )
         warnings.append(avertissement(
-            f"{WARNING_PREFIX_PARLTRACK_EXPLICATIONS_SANS_LIEN} {sans_lien} explication(s) de "
-            "vote sont publiées sans lien vers le document officiel : la source en transcrit "
-            "le texte sans en donner l'adresse.",
+            f"{WARNING_PREFIX_PARLTRACK_EXPLICATIONS_SANS_LIEN} {len(sans_lien)} des "
+            f"{len(explications)} explication(s) de vote sont publiées sans lien vers le "
+            f"document officiel ({detail}). Leur texte reste sourcé : ParlTrack transcrit "
+            "l'annexe officielle de la séance.",
             DESTINATAIRE_LECTEUR,
         ))
 

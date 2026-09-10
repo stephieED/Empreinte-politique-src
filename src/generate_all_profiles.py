@@ -970,6 +970,53 @@ def _parltrack_cache_available() -> bool:
     return any(_PARLTRACK_CACHE_DIR.glob("*.zst"))
 
 
+#: Le résolveur d'adresses européennes du run (#827), créé une fois.
+#: Un par profil rechargerait le cache 7 fois et ferait s'écraser les écritures ;
+#: un pour le run garde les 1 424 documents connus d'une personne à l'autre.
+_RESOLVEUR_EUROPARL: Any = None
+_RESOLVEUR_EUROPARL_CREE = False
+
+
+def _resolveur_europarl() -> Any:
+    """Le résolveur du run, ou `None` s'il ne peut pas exister.
+
+    Un échec de création n'interrompt rien et ne se répare pas en cours de
+    route : sans résolveur, aucune adresse n'est publiée, et les explications
+    de vote paraissent sans lien — exactement l'état d'avant #827, déclaré par
+    l'avertissement que porte déjà `enrich_pivot_with_parltrack`.
+    """
+    global _RESOLVEUR_EUROPARL, _RESOLVEUR_EUROPARL_CREE
+    if _RESOLVEUR_EUROPARL_CREE:
+        return _RESOLVEUR_EUROPARL
+    _RESOLVEUR_EUROPARL_CREE = True
+    try:
+        from europarl_documents import resolveur_par_defaut  # noqa: PLC0415
+        _RESOLVEUR_EUROPARL = resolveur_par_defaut()
+    except Exception as exc:
+        _tprint(f"  [!] résolveur d'URL européennes indisponible : {exc}")
+        _RESOLVEUR_EUROPARL = None
+    return _RESOLVEUR_EUROPARL
+
+
+def enregistrer_resolveur_europarl() -> None:
+    """Écrit le cache des documents connus. Une fois, en fin de run.
+
+    Sans cet appel, les 47 minutes d'interrogation du portail sont reperdues au
+    run suivant : le cache est ce qui rend la seconde passe gratuite.
+    """
+    if _RESOLVEUR_EUROPARL is None:
+        return
+    try:
+        _RESOLVEUR_EUROPARL.enregistrer()
+        stats = _RESOLVEUR_EUROPARL.statistiques
+        _tprint(
+            f"  URL européennes : {stats['documents_connus']} document(s) connu(s), "
+            f"{stats['requetes']} requête(s) au portail, {stats['refus_429']} refus 429."
+        )
+    except OSError as exc:
+        _tprint(f"  [!] cache des URL européennes non écrit : {exc}")
+
+
 def _enrich_pivot_with_parltrack_safe(
     pivot_profile: dict[str, Any],
     mep_id: int,
@@ -1003,7 +1050,9 @@ def _enrich_pivot_with_parltrack_safe(
     try:
         nb_tp_avant = len(pivot_profile.get("textes_portes") or [])
         nb_amd_avant = len(pivot_profile.get("amendements") or [])
-        enrich_pivot_with_parltrack(pivot_profile, mep_id=mep_id)
+        enrich_pivot_with_parltrack(
+            pivot_profile, mep_id=mep_id, resolveur=_resolveur_europarl()
+        )
         nb_tp_apres = len(pivot_profile.get("textes_portes") or [])
         nb_amd_apres = len(pivot_profile.get("amendements") or [])
         if nb_tp_apres > nb_tp_avant or nb_amd_apres > nb_amd_avant:
@@ -1995,6 +2044,11 @@ def main() -> None:
         )
     # Imprime sur stderr et annote le job ; rien à réafficher ici.
     annoncer_troncature(budget_job, "collecte du job")
+
+    # #827 — le cache des documents européens, écrit une fois pour le run.
+    # Sans lui, les 47 minutes d'interrogation du portail seraient reperdues au
+    # run suivant sur un corpus qui, lui, ne bouge pas.
+    enregistrer_resolveur_europarl()
 
     # Écriture du fichier de statut ParlTrack si demandé
     if args.parltrack_status_out:
