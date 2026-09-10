@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 269 décisions
+gouverne sans avoir à fouiller les 270 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -279,7 +279,7 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 
 ## `src/candidate_profile.py`
 
-81 décision(s) le gouvernent ; le module en cite 13.
+82 décision(s) le gouvernent ; le module en cite 13.
 
 | Décision | Nomme |
 | --- | --- |
@@ -355,6 +355,7 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 | [Le Sénat sort du périmètre, et le job qui concluait vert sans rien produire est retiré (#528, lot 3 de l'épic « une seule source AN ») (2026-08-26)](decisions/retrait-senat-528.md) | `build_profile` |
 | [Le roster des groupes AN est dérivé d'AMO30, derrière un drapeau baissé (#526, lot 1 de l'épic « une seule source AN ») (2026-08-26)](decisions/roster-an-derive-amo30-526.md) | `_ensure_acteurs_historique_zip_downloaded` |
 | [Scission du cache CI `.cache` par sous-répertoire : écartée (#374, fermée non planifiée) (2026-08-17)](decisions/scission-cache-ci-ecartee.md) | `build_profile`, `fetch_amendements_officiels` |
+| [La suite dit son monde au lieu d'en hériter (#767)](decisions/suite-independante-du-cache-local-767.md) | `ACTEURS_HISTORIQUE_CACHE_DIR`, `_ACTEURS_HISTORIQUE_INDEX_MEMO` |
 | [Syceron : remplacement du scraping NosDéputés pour les débats en séance (2026-08-07)](decisions/syceron.md) | `_build_acteur_interventions_syceron_index`, `fetch_interventions_syceron` |
 | [Syceron publie l'identifiant d'orateur NU, et n'a donc jamais rien indexé (#510) (2026-08-20)](decisions/syceron-acteur-ref-nu-510.md) | `_build_acteur_interventions_syceron_index`, `_normaliser_orateur_id_syceron`, `_parse_syceron_intervention_entry`, `_shard_path_acteur` |
 | [Syceron activé, repli NosDéputés retiré, index tranché par acteur (#510) (2026-08-27)](decisions/syceron-actif-510.md) | `RefusDrapeauInterventionsSyceron`, `_normaliser_orateur_id_syceron`, `_parse_syceron_intervention_entry`, `_read_cached_interventions_syceron_acteur` |

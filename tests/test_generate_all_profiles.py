@@ -7,6 +7,37 @@ from pathlib import Path
 
 import pytest
 
+@pytest.fixture(autouse=True)
+def _cache_amo30_isole(tmp_path_factory, monkeypatch):
+    """Le cache AMO30 de ce fichier est un répertoire jetable, jamais celui du poste (#767).
+
+    `nb_acteurs_referentiel_charge()` lit `ACTEURS_HISTORIQUE_CACHE_DIR /
+    index_identite…`, un chemin **relatif au répertoire courant**. Sur une
+    machine où une collecte a tourné, ces tests constataient donc le référentiel
+    réel : « jamais élu·e à l'Assemblée » devenait dérivable, et douze d'entre
+    eux basculaient. Verts en CI — dont le checkout est vide — et rouges chez la
+    propriétaire, au moment précis où elle vérifie qu'elle n'a rien cassé.
+
+    Le garde-fou de #721 le **diagnostiquait** déjà (`CacheDuPosteLuDansUnTest`)
+    sans le corriger : il montre qui n'applique pas l'idiome, il ne l'applique
+    pas à leur place.
+
+    Le mémo de module est vidé aux deux bouts : rempli par un test voisin, il
+    rendrait le vrai référentiel sans jamais rouvrir un fichier — donc sans que
+    le garde-fou puisse le voir. C'est un `dict` partagé, pas un `lru_cache` :
+    il se vide en place.
+    """
+    import candidate_profile
+
+    candidate_profile._ACTEURS_HISTORIQUE_INDEX_MEMO.clear()
+    monkeypatch.setattr(
+        candidate_profile,
+        "ACTEURS_HISTORIQUE_CACHE_DIR",
+        tmp_path_factory.mktemp("cache_amo30_absent"),
+    )
+    yield
+    candidate_profile._ACTEURS_HISTORIQUE_INDEX_MEMO.clear()
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import generate_all_profiles
