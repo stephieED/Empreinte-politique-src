@@ -1874,7 +1874,7 @@ def build_groupe_profile(
     amendements_index: Optional[AmendementsIndex] = None,
     appartenances: Optional[dict[str, dict[str, Any]]] = None,
     position_politique: Optional[dict[str, Any]] = None,
-    succede_a: Optional[dict[str, Any]] = None,
+    succede_a: Optional[list[dict[str, Any]]] = None,
 ) -> dict[str, Any]:
     """Construit un profil de groupe à partir d'une liste de profils individuels pivot v1.
 
@@ -2345,7 +2345,7 @@ def generate_groupe_profile_from_roster(
     scrutins_index: Optional[ScrutinsIndex] = None,
     amendements_index: Optional[AmendementsIndex] = None,
     position_politique: Optional[dict[str, Any]] = None,
-    succede_a: Optional[dict[str, Any]] = None,
+    succede_a: Optional[list[dict[str, Any]]] = None,
 ) -> dict[str, Any]:
     """Construit (et écrit si `out_path` fourni) un profil de groupe à partir d'un
     roster déjà récupéré (voir `fetch_group_roster`, ou `fetch_full_roster` +

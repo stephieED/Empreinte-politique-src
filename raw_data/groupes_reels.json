@@ -16,7 +16,7 @@
     "groupes": [
       {
         "groupe_sigle": "REN",
-        "groupe_id": "AN:REN",
+        "groupe_id": "AN:REN:16",
         "legislature": "16",
         "fichier": "groupe-AN-REN-16.json",
         "sigles_an": [
@@ -64,7 +64,7 @@
       },
       {
         "groupe_sigle": "SOC",
-        "groupe_id": "AN:SOC",
+        "groupe_id": "AN:SOC:16",
         "legislature": "16",
         "fichier": "groupe-AN-SOC-16.json",
         "sigles_an": [
@@ -101,7 +101,7 @@
       },
       {
         "groupe_sigle": "RN",
-        "groupe_id": "AN:RN",
+        "groupe_id": "AN:RN:16",
         "legislature": "16",
         "fichier": "groupe-AN-RN-16.json",
         "sigles_an": [
@@ -130,7 +130,7 @@
       },
       {
         "groupe_sigle": "LFI",
-        "groupe_id": "AN:LFI",
+        "groupe_id": "AN:LFI:16",
         "legislature": "16",
         "fichier": "groupe-AN-LFI-16.json",
         "sigles_an": [
@@ -159,7 +159,7 @@
       },
       {
         "groupe_sigle": "LR",
-        "groupe_id": "AN:LR",
+        "groupe_id": "AN:LR:16",
         "legislature": "16",
         "fichier": "groupe-AN-LR-16.json",
         "sigles_an": [
@@ -195,7 +195,7 @@
       },
       {
         "groupe_sigle": "EPR",
-        "groupe_id": "AN:EPR",
+        "groupe_id": "AN:EPR:17",
         "legislature": "17",
         "fichier": "groupe-AN-EPR-17.json",
         "sigles_an": [
@@ -218,7 +218,9 @@
         },
         "effectif_amo30": 123,
         "effectif_publie": null,
-        "succede_a": "AN:REN",
+        "succede_a": [
+          "AN:REN:16"
+        ],
         "verifie_le": "2026-08-26",
         "ecart_motif": "Publication configurée par #700 : cette entrée est désormais dans `groupes[]`, la fiche paraît au prochain run. 99 des 123 membres ont un slug dans raw_data/correspondance_acteurs_an.json ; les 24 autres n'en ont pas, et build_roster_candidats_detaille laisse tomber un membre sans slug — ils sont hors de la fiche et nommés par l'annotation ROSTER_SANS_SLUG (#527). `effectif_publie` reste null jusqu'à la parution ; la mention « lot 1b » qui figurait ici désignait #527, qui a basculé la SOURCE du roster sur AMO30 et n'a jamais publié de fiche.",
         "membres_avec_slug": 99,
@@ -249,7 +251,9 @@
         },
         "effectif_amo30": 70,
         "effectif_publie": null,
-        "succede_a": "AN:SOC",
+        "succede_a": [
+          "AN:SOC:16"
+        ],
         "verifie_le": "2026-08-26",
         "ecart_motif": "Publication configurée par #700 : cette entrée est désormais dans `groupes[]`, la fiche paraît au prochain run. 29 des 70 membres ont un slug dans raw_data/correspondance_acteurs_an.json ; les 41 autres n'en ont pas, et build_roster_candidats_detaille laisse tomber un membre sans slug — ils sont hors de la fiche et nommés par l'annotation ROSTER_SANS_SLUG (#527). `effectif_publie` reste null jusqu'à la parution ; la mention « lot 1b » qui figurait ici désignait #527, qui a basculé la SOURCE du roster sur AMO30 et n'a jamais publié de fiche.",
         "membres_avec_slug": 29,
@@ -280,7 +284,9 @@
         },
         "effectif_amo30": 131,
         "effectif_publie": null,
-        "succede_a": "AN:RN",
+        "succede_a": [
+          "AN:RN:16"
+        ],
         "verifie_le": "2026-08-26",
         "ecart_motif": "Publication configurée par #700 : cette entrée est désormais dans `groupes[]`, la fiche paraît au prochain run. 79 des 131 membres ont un slug dans raw_data/correspondance_acteurs_an.json ; les 52 autres n'en ont pas, et build_roster_candidats_detaille laisse tomber un membre sans slug — ils sont hors de la fiche et nommés par l'annotation ROSTER_SANS_SLUG (#527). `effectif_publie` reste null jusqu'à la parution ; la mention « lot 1b » qui figurait ici désignait #527, qui a basculé la SOURCE du roster sur AMO30 et n'a jamais publié de fiche.",
         "membres_avec_slug": 79,
@@ -311,7 +317,9 @@
         },
         "effectif_amo30": 73,
         "effectif_publie": null,
-        "succede_a": "AN:LFI",
+        "succede_a": [
+          "AN:LFI:16"
+        ],
         "verifie_le": "2026-08-26",
         "ecart_motif": "Publication configurée par #700 : cette entrée est désormais dans `groupes[]`, la fiche paraît au prochain run. 56 des 73 membres ont un slug dans raw_data/correspondance_acteurs_an.json ; les 17 autres n'en ont pas, et build_roster_candidats_detaille laisse tomber un membre sans slug — ils sont hors de la fiche et nommés par l'annotation ROSTER_SANS_SLUG (#527). `effectif_publie` reste null jusqu'à la parution ; la mention « lot 1b » qui figurait ici désignait #527, qui a basculé la SOURCE du roster sur AMO30 et n'a jamais publié de fiche.",
         "membres_avec_slug": 56,
@@ -319,7 +327,7 @@
       },
       {
         "groupe_sigle": "DR",
-        "groupe_id": "AN:DR",
+        "groupe_id": "AN:DR:17",
         "legislature": "17",
         "fichier": "groupe-AN-DR-17.json",
         "sigles_an": [
@@ -342,7 +350,9 @@
         },
         "effectif_amo30": 64,
         "effectif_publie": null,
-        "succede_a": "AN:LR",
+        "succede_a": [
+          "AN:LR:16"
+        ],
         "verifie_le": "2026-08-26",
         "ecart_motif": "Publication configurée par #700 : cette entrée est désormais dans `groupes[]`, la fiche paraît au prochain run. 42 des 64 membres ont un slug dans raw_data/correspondance_acteurs_an.json ; les 22 autres n'en ont pas, et build_roster_candidats_detaille laisse tomber un membre sans slug — ils sont hors de la fiche et nommés par l'annotation ROSTER_SANS_SLUG (#527). `effectif_publie` reste null jusqu'à la parution ; la mention « lot 1b » qui figurait ici désignait #527, qui a basculé la SOURCE du roster sur AMO30 et n'a jamais publié de fiche.",
         "membres_avec_slug": 42,
@@ -407,7 +417,9 @@
         "ecart_motif": "Publication configurée par #777 : organe PO800502 relu dans l'index AMO30 des groupes politiques le 2026-09-08 — sigle `GDR-NUPES` (libelleAbrev), 2022-06-28 → 2024-06-09. La fiche paraît au prochain run. 2 des 24 membres ont un slug dans raw_data/correspondance_acteurs_an.json ; les autres n'en ont pas, et build_roster_candidats_detaille laisse tomber un membre sans slug — ils sont hors de la fiche et nommés par l'annotation ROSTER_SANS_SLUG (#527). `effectif_publie` reste null jusqu'à la parution.",
         "membres_avec_slug": 2,
         "ecart_membres": [],
-        "succede_a": "AN:GDR:15"
+        "succede_a": [
+          "AN:GDR:15"
+        ]
       },
       {
         "groupe_sigle": "FI",
@@ -498,7 +510,9 @@
         "ecart_motif": "Publication configurée par #777 : organe PO758835 relu dans l'index AMO30 des groupes politiques le 2026-09-08 — sigle `SOC` (libelleAbrev), 2018-09-12 → 2022-06-21. La fiche paraît au prochain run. 17 des 36 membres ont un slug dans raw_data/correspondance_acteurs_an.json ; les autres n'en ont pas, et build_roster_candidats_detaille laisse tomber un membre sans slug — ils sont hors de la fiche et nommés par l'annotation ROSTER_SANS_SLUG (#527). `effectif_publie` reste null jusqu'à la parution.",
         "membres_avec_slug": 17,
         "ecart_membres": [],
-        "succede_a": "AN:NG:15"
+        "succede_a": [
+          "AN:NG:15"
+        ]
       },
       {
         "groupe_sigle": "EDS",
@@ -595,7 +609,7 @@
   "groupes": [
     {
       "roster_chambre": "deputes",
-      "groupe_id": "AN:REN",
+      "groupe_id": "AN:REN:16",
       "groupe_sigle": "REN",
       "groupe_nom": "Renaissance",
       "chambre": "AN",
@@ -604,7 +618,7 @@
     },
     {
       "roster_chambre": "deputes",
-      "groupe_id": "AN:SOC",
+      "groupe_id": "AN:SOC:16",
       "groupe_sigle": "SOC",
       "groupe_nom": "Socialistes et apparentés",
       "chambre": "AN",
@@ -613,7 +627,7 @@
     },
     {
       "roster_chambre": "deputes",
-      "groupe_id": "AN:RN",
+      "groupe_id": "AN:RN:16",
       "groupe_sigle": "RN",
       "groupe_nom": "Rassemblement National",
       "chambre": "AN",
@@ -622,7 +636,7 @@
     },
     {
       "roster_chambre": "deputes",
-      "groupe_id": "AN:LFI",
+      "groupe_id": "AN:LFI:16",
       "groupe_sigle": "LFI",
       "groupe_nom": "La France insoumise - NUPES",
       "chambre": "AN",
@@ -631,7 +645,7 @@
     },
     {
       "roster_chambre": "deputes",
-      "groupe_id": "AN:LR",
+      "groupe_id": "AN:LR:16",
       "groupe_sigle": "LR",
       "groupe_nom": "Les Républicains",
       "chambre": "AN",
@@ -640,7 +654,7 @@
     },
     {
       "roster_chambre": "deputes",
-      "groupe_id": "AN:EPR",
+      "groupe_id": "AN:EPR:17",
       "groupe_sigle": "EPR",
       "groupe_nom": "Ensemble pour la République",
       "chambre": "AN",
@@ -676,7 +690,7 @@
     },
     {
       "roster_chambre": "deputes",
-      "groupe_id": "AN:DR",
+      "groupe_id": "AN:DR:17",
       "groupe_sigle": "DR",
       "groupe_nom": "Droite Républicaine",
       "chambre": "AN",
