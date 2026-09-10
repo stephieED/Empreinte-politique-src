@@ -72,6 +72,21 @@ Format d'un profil de groupe v1 :
                                                      # non établie, jamais approximée depuis
                                                      # le mandat électif.
             "fin_dans_groupe": "2024-06-09",         # null = appartenance encore ouverte
+            "periodes": [                            # #809 — LE DÉTAIL QUE LES DEUX BORNES
+                {"debut": "2022-06-29",              # RECOUVRAIENT. Elles sont l'ENVELOPPE :
+                 "fin": "2022-07-20"},               # 33 membres de 8 fiches y étaient dits
+                {"debut": "2024-02-11",              # dans leur groupe pendant qu'ils étaient
+                 "fin": "2024-06-09"},               # au gouvernement, jusqu'à 571 jours
+            ],                                       # masqués (Dussopt, Beaune). Une seule
+                                                     # période = aucune interruption. Deux
+                                                     # mandats séparés d'UN jour sont recollés,
+                                                     # au-delà c'est une absence : mesuré sur
+                                                     # 1 604 couples (acteur, groupe), 67 trous
+                                                     # d'un jour, ZÉRO entre 2 et 30, 48 au-delà
+                                                     # de 31 — la distribution ne laisse aucune
+                                                     # zone grise. CLÉ ABSENTE sur une fiche
+                                                     # d'avant #809 : « ce roster ne les portait
+                                                     # pas », et l'enveloppe reste le repli.
             "present_a_la_date_de_reference": true   # le membre appartenait-il au groupe à
                                                      # `date_reference.date` ? Remplace `actif`
                                                      # (#653) : « actif » disait un présent
@@ -944,7 +959,10 @@ def validate_profil_groupe(profil: dict[str, Any]) -> list[str]:
 
     Validation structurelle de premier niveau : présence des clés obligatoires,
     types, valeur de schema_version et type_document. Ne valide pas le contenu
-    de chaque entrée cohesion_votes ou membre.
+    de chaque entrée cohesion_votes ou membre — **à une exception près**, les
+    `periodes[]` de #809, parce qu'elles peuvent contredire les bornes qu'elles
+    détaillent et qu'une contradiction publiée entre deux champs du même membre
+    ne se rattrape nulle part en aval.
 
     Args:
         profil: dict à valider.
@@ -1093,5 +1111,46 @@ def validate_profil_groupe(profil: dict[str, Any]) -> list[str]:
             errors.append("'meta.couverture_roster' doit être un dict.")
         elif isinstance(couverture_roster, dict):
             errors.extend(_valider_couverture_roster(couverture_roster))
+
+    # #809 — les périodes détaillent l'enveloppe, elles ne la contredisent pas.
+    for rang, membre in enumerate(profil.get("membres") or []):
+        if not isinstance(membre, dict):
+            continue
+        periodes = membre.get("periodes")
+        if periodes is None:
+            continue  # fiche d'avant #809 : l'enveloppe seule, c'est prévu
+        qui = membre.get("membre_id") or f"membres[{rang}]"
+        if not isinstance(periodes, list) or not periodes:
+            errors.append(
+                f"{qui} : 'periodes' doit être une liste non vide. Une liste "
+                "vide dirait « aucune appartenance connue » sur un membre qui "
+                "en a une ; c'est l'absence de clé qui dit « non collectées »."
+            )
+            continue
+        bornes = [p for p in periodes if isinstance(p, dict)]
+        if len(bornes) != len(periodes):
+            errors.append(f"{qui} : 'periodes[]' ne doit porter que des blocs.")
+            continue
+        debuts = [p.get("debut") for p in bornes]
+        if any(d is None for d in debuts):
+            errors.append(f"{qui} : une période sans début n'est pas datable.")
+            continue
+        if debuts != sorted(debuts):
+            errors.append(f"{qui} : 'periodes[]' doit être triée par début croissant.")
+        enveloppe_debut = membre.get("debut_dans_groupe")
+        if enveloppe_debut is not None and min(debuts) != enveloppe_debut:
+            errors.append(
+                f"{qui} : la première période commence le {min(debuts)}, "
+                f"l'enveloppe le {enveloppe_debut}. Les deux décrivent la même "
+                "appartenance."
+            )
+        fins = [p.get("fin") for p in bornes]
+        enveloppe_fin = membre.get("fin_dans_groupe")
+        fin_reelle = None if any(f is None for f in fins) else max(fins)
+        if enveloppe_fin != fin_reelle:
+            errors.append(
+                f"{qui} : la dernière période s'achève {fin_reelle}, "
+                f"l'enveloppe {enveloppe_fin}."
+            )
 
     return errors

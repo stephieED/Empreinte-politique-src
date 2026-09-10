@@ -70,10 +70,18 @@ elective mandate** (38/38, 85/85, 60/60 on `LR`, `REN`, `LFI` — re-elected in
   `debut_dans_groupe` laisse les deux à `null` avec son motif — ce membre n'est
   comptable à aucune date, et une borne inférieure publiée sous le nom « minimum » est
   un chiffre faux (§2 règle 5). Trois formes lues (`null`, entier nu hérité, objet), une
-  seule produite. `membres[]` ne portant qu'un intervalle par membre (#526), un départ
-  suivi d'un retour est invisible : l'amplitude est un **minorant**, et le calcul vit
-  dans `build_groupe_profile`, sur la même liste et la même fonction de présence que les
-  compteurs de #653.
+  seule produite. Le calcul vit dans `build_groupe_profile`, sur la même liste et la
+  même fonction de présence que les compteurs de #653.
+  **Depuis #809, `membres[]` porte `periodes[]`** : un départ suivi d'un retour n'est
+  plus invisible, et `_appartenance_couvre` est exact par construction là où il lisait
+  une enveloppe — 48 des 1 604 couples (acteur, groupe) ont plusieurs périodes, le plus
+  long trou faisant 1 110 jours. Deux mandats séparés d'**un** jour sont recollés, au-delà
+  c'est une absence : 67 trous d'un jour, **0** entre 2 et 30, 48 au-delà de 31, la
+  distribution ne laisse aucune zone grise. L'enveloppe reste publiée et reste le repli
+  des fiches d'avant ce lot ; la clé n'apparaît que si la source l'a donnée. C'est la
+  **seule** entrée dont `validate_profil_groupe` vérifie le contenu, parce que des
+  périodes qui contrediraient leurs bornes ne se rattraperaient nulle part en aval.
+  → `docs/decisions/periodes-appartenance-809.md`
 ### 4b. One sheet per group AND per legislature — and `succede_a` is ours, not the AN's (#700)
 
 `groupes_reels.json` carries **12 entries** since #700 (5 AN-XVIe, 5 AN-XVIIe,

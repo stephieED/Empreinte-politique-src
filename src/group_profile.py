@@ -329,11 +329,18 @@ def _derive_membre_entry(
 
     debut: Optional[str] = None
     fin: Optional[str] = None
+    periodes: Optional[list[dict[str, Any]]] = None
     if appartenance is not None:
         debut = appartenance.get("debut")
         fin = appartenance.get("fin")
+        brutes = appartenance.get("periodes")
+        if isinstance(brutes, list) and brutes:
+            periodes = [
+                {"debut": p.get("debut"), "fin": p.get("fin")}
+                for p in brutes if isinstance(p, dict)
+            ]
 
-    return {
+    membre: dict[str, Any] = {
         "membre_id": profil.get("id") or "",
         "nom": profil.get("nom") or "",
         "debut_dans_groupe": debut,
@@ -342,6 +349,13 @@ def _derive_membre_entry(
         # fois la date de référence connue : elle se dérive des dates de TOUS
         # les membres, donc aucune entrée ne peut la calculer seule (#653).
     }
+    # #809 — la clé n'apparaît QUE si la source l'a donnée. L'écrire à `null`
+    # dirait « aucune période connue » sur un membre dont on connaît les
+    # bornes ; l'omettre dit « ce roster ne les portait pas », ce qui est le
+    # fait (§2 règle 5).
+    if periodes:
+        membre["periodes"] = periodes
+    return membre
 
 
 def _appartenance_couvre(membre: dict[str, Any], date_reference: Optional[str]) -> bool:
@@ -357,9 +371,34 @@ def _appartenance_couvre(membre: dict[str, Any], date_reference: Optional[str]) 
     La borne de fin est **inclusive**. Un mandat de groupe qui se termine le
     jour de la clôture de la législature couvre ce jour : l'exclure viderait la
     fiche de ses 452 membres d'un coup, sur une convention d'intervalle.
+
+    ## #809 — les périodes priment sur l'enveloppe
+
+    Depuis #809, un membre porte `periodes[]`, et c'est **là** que la question
+    se pose : l'enveloppe recouvrait les interruptions, si bien qu'un ministre
+    absent 571 jours de son groupe était compté présent dans ce trou.
+
+    Le compteur n'était pourtant faux **sur aucune fiche** — vérifié sur les 18
+    groupes, 0 membre mal compté. Mais par coïncidence de dates : les dates de
+    référence ne tombaient dans aucun des trous. Un défaut qui ne se voit pas
+    parce que les dates s'y prêtent est exactement ce que #653 corrigeait un
+    cran plus haut, et il ne se corrige pas en espérant que ça continue.
+
+    L'enveloppe reste le repli, pour les fiches publiées avant ce lot : elles
+    ne portent pas `periodes[]`, et exiger la clé ferait sortir des compteurs à
+    zéro sur des données qui n'ont pas changé.
     """
     if not date_reference or not membre.get("debut_dans_groupe"):
         return False
+    periodes = membre.get("periodes")
+    if isinstance(periodes, list) and periodes:
+        return any(
+            p.get("debut") is not None
+            and p["debut"] <= date_reference
+            and (p.get("fin") is None or p["fin"] >= date_reference)
+            for p in periodes
+            if isinstance(p, dict)
+        )
     if membre["debut_dans_groupe"] > date_reference:
         return False
     fin = membre.get("fin_dans_groupe")
@@ -586,6 +625,9 @@ def appartenances_depuis_roster(
         membre["slug"]: {
             "debut": membre.get("mandat_debut"),
             "fin": membre.get("mandat_fin"),
+            # #809 — le détail que l'enveloppe recouvrait. Absent d'un roster
+            # d'avant ce lot : l'appelant retombe alors sur les deux bornes.
+            "periodes": membre.get("mandat_periodes"),
         }
         for membre in roster
         if membre.get("slug")
