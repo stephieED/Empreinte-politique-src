@@ -648,10 +648,34 @@ def enrich_pivot_with_parltrack(
     activites = get_activities_for_mep(mep_id, force_download=force_download)
 
     def _interv_key(i: dict[str, Any]) -> Any:
+        """La clé de déduplication d'une intervention. **Elle ne doit dépendre
+        d'aucun champ qui peut APPARAÎTRE.**
+
+        C'est le défaut que #827 a introduit et que ce lot corrige. La cascade
+        passait par `source_url` avant le contenu ; les explications de vote
+        n'ayant pas d'`intervention_id`, leur clé était le contenu **avant**
+        #827 et l'URL **après**. Deux clés pour la même entrée : la fusion
+        additive a ajouté au lieu de reconnaître, et **1 462 explications ont
+        été publiées deux fois** — l'exemplaire sans lien, puis le même avec.
+
+        `source_url` est donc retiré de la cascade. Ce n'est pas une perte de
+        pouvoir discriminant : mesuré sur les 1 019 036 interventions publiées,
+        les **3 073** entrées sans `intervention_id` portent **toutes** un sujet
+        ou un texte, donc la clé de contenu les sépare — et c'est exactement
+        cette clé qui, appliquée, rend les 1 462 doublons comme doublons.
+
+        **Le contenu ne peut pas non plus devenir une clé systématique**, et
+        c'est ce qui interdit le correctif évident : **902 457** entrées à
+        `intervention_id` DIFFÉRENTS partagent déjà une clé de contenu, les
+        interventions collectées en mode thème-seul n'ayant ni sujet ni texte.
+        Ajouter cette clé pour tout le monde fusionnerait 88 % du corpus.
+
+        L'ordre est donc : l'identifiant quand il existe, le contenu sinon.
+        Chacun est stable dans le temps ; ni l'un ni l'autre n'apparaît après
+        coup.
+        """
         if i.get("intervention_id"):
             return ("intervention_id", i["intervention_id"])
-        if i.get("source_url"):
-            return ("source_url", i["source_url"])
         return ("contenu", i.get("date"), i.get("sujet"), (i.get("texte") or "")[:50])
 
     cles_interv = {

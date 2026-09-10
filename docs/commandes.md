@@ -356,6 +356,24 @@ toutes les législatures de votes sont résolues, 1 sinon. À lancer avant de se
 fier à la clé : `numero_scrutin` repart à 1 à chaque législature.
 → `docs/decisions/resolution-legislature-votes.md`.
 
+### Une explication de vote est-elle publiée deux fois ?
+
+```bash
+python3 scripts/purger_doublons_interventions_827.py
+python3 scripts/purger_doublons_interventions_827.py --ecrire
+```
+
+Sans `--ecrire`, **rien n'est modifié** : le script nomme les profils concernés
+et compte. #827 a donné un `source_url` aux explications de vote, or leur clé de
+déduplication passait par ce champ : elles ont été publiées **deux fois**, une
+fois sans lien et une fois avec. La clé est corrigée, mais la fusion additive ne
+retire jamais ce qui est déjà publié.
+
+Ne touche que les interventions **sans** `intervention_id` : celles qui en ont
+un partagent leur clé de contenu par centaines de milliers, faute de sujet et de
+texte en mode thème-seul.
+→ `docs/decisions/cle-de-fusion-qui-depend-dun-champ-volatil-827.md`.
+
 ### Un profil de roster porte-t-il une liste que sa collecte déclare écartée ?
 
 ```bash
