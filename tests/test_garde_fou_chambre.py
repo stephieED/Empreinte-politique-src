@@ -190,6 +190,12 @@ SITES_UI: dict[tuple[str, str], str] = {
     ("scripts/couverture-corpus.mjs", "m"): MANDAT,
     ("src/utils/profilCandidat.js", "existant"): MANDAT,
     ("src/utils/profilCandidat.js", "siege"): MANDAT,
+    # #328 : la chambre voyage sur le RÔLE de la frise, à côté du banc, et
+    # `pisteDuRole` la lit pour donner sa piste — donc sa teinte et sa colonne —
+    # à un siège européen ou sénatorial. Elle vient de `siegesElectifs`, c'est-à-dire
+    # du mandat : c'est la même donnée, transportée d'un cran, jamais le scalaire
+    # `chambre` du profil que #493 met en retrait.
+    ("src/utils/profilCandidat.js", "role"): MANDAT,
     # #815 : la barre grise les deux fiches du Sénat — collecte suspendue depuis
     # le 24/08/2026, Sénat hors périmètre éditorial. La chambre lue est celle du
     # SCHÉMA DE GROUPE, portée par le manifeste, jamais le scalaire d'un profil

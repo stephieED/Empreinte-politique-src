@@ -34,6 +34,19 @@
   --gouv-wash: #f6f0e4;
   --gouv-line: #e3d2ab;
   --gouv-pale: #efe4cc;
+  /* Deux teintes de plus, et le DESIGN_SYSTEM disait « trois et pas quatre ».
+     Ce qui a changé : le corpus a ajouté deux institutions, pas deux nuances.
+     Elles sont choisies par mesure, pas au goût — contraste 6,7:1 et 5,8:1 sur
+     le fond, et ΔE ≥ 33 de chacune des deux autres ET des couleurs de vote,
+     pour qu'une institution ne se lise jamais comme une position. */
+  --pe: #514f96;
+  --pe-wash: #eeeef5;
+  --pe-line: #d4d3e4;
+  --pe-pale: #e5e5ef;
+  --senat: #8f4a6d;
+  --senat-wash: #f4edf1;
+  --senat-line: #e3d2db;
+  --senat-pale: #eee4ea;
   /* La barre de sortie d'une porte de la cascade (#328). Hors rampe d'encre :
      elle ne marque aucune étape ATTEINTE, elle constate qu'aucun acte au-delà
      n'est enregistré à la date du corpus. Un gris, donc, et pas un cran. */
@@ -265,6 +278,8 @@
 }
 
 .cp-gc-tete-col--parlement .cp-gc-bandeau { background: var(--parl); }
+.cp-gc-tete-col--senat .cp-gc-bandeau { background: var(--senat); }
+.cp-gc-tete-col--pe .cp-gc-bandeau { background: var(--pe); }
 .cp-gc-tete-col--gouvernement .cp-gc-bandeau { background: var(--gouv); }
 
 .cp-gc-col-nom {
@@ -287,6 +302,10 @@
 
 .cp-gc-tete-col--parlement .cp-gc-col-nom { color: var(--parl); background: var(--parl-wash); }
 .cp-gc-tete-col--parlement .cp-gc-col-nom i { background: var(--parl); }
+.cp-gc-tete-col--senat .cp-gc-col-nom { color: var(--senat); background: var(--senat-wash); }
+.cp-gc-tete-col--senat .cp-gc-col-nom i { background: var(--senat); }
+.cp-gc-tete-col--pe .cp-gc-col-nom { color: var(--pe); background: var(--pe-wash); }
+.cp-gc-tete-col--pe .cp-gc-col-nom i { background: var(--pe); }
 .cp-gc-tete-col--gouvernement .cp-gc-col-nom { color: var(--gouv); background: var(--gouv-wash); }
 .cp-gc-tete-col--gouvernement .cp-gc-col-nom i { background: var(--gouv); }
 
@@ -311,6 +330,22 @@
   --t3: var(--parl-line);
   --t4: var(--parl);
   --t5: var(--parl);
+}
+
+.cp-gc-cell--senat {
+  --t1: var(--senat-wash);
+  --t2: var(--senat-pale);
+  --t3: var(--senat-line);
+  --t4: var(--senat);
+  --t5: var(--senat);
+}
+
+.cp-gc-cell--pe {
+  --t1: var(--pe-wash);
+  --t2: var(--pe-pale);
+  --t3: var(--pe-line);
+  --t4: var(--pe);
+  --t5: var(--pe);
 }
 
 .cp-gc-cell--gouvernement {
@@ -672,6 +707,14 @@
 
 .cp-fs--parlement {
   background: var(--parl);
+}
+
+.cp-fs--senat {
+  background: var(--senat);
+}
+
+.cp-fs--pe {
+  background: var(--pe);
 }
 
 .cp-fs--gouvernement {

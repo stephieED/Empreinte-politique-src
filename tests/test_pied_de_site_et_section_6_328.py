@@ -165,8 +165,12 @@ def test_aucune_clause_n_est_affirmee_sans_etre_verifiee(profil: str) -> None:
 
 def test_la_qualification_ne_se_declenche_pas_sur_un_mandat_unique(profil: str) -> None:
     """« la qualification n'est pas déclarée sur 1 des mandats » d'un profil qui
-    n'en a qu'un ne décrit aucune lacune : c'est la situation ordinaire."""
-    bloc = profil[profil.index("const sansPosition = roles.filter") :]
+    n'en a qu'un ne décrit aucune lacune : c'est la situation ordinaire.
+
+    Le vivier a changé de nom avec #328 — `aLAssemblee` et non plus `roles` :
+    la phrase nomme l'Assemblée, elle ne peut donc compter que des mandats de
+    députée ou de député. Le seuil, lui, est le même."""
+    bloc = profil[profil.index("const sansPosition = aLAssemblee.filter") :]
     bloc = bloc[: bloc.index("'position-non-declaree'")]
     assert "sansPosition.length > 1" in bloc
     assert "parlementaires.length > 1" in bloc

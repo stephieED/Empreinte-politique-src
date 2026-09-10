@@ -35,7 +35,10 @@ import {
   INSTITUTION_GOUVERNEMENT,
   INSTITUTION_MISSION,
   INSTITUTION_PARLEMENT,
+  INSTITUTION_PE,
+  INSTITUTION_SENAT,
   LIBELLE_PISTE,
+  pisteDuRole,
   LIBELLE_STADE,
   POSITION_NON_DECLAREE,
   libellePosition,
@@ -124,22 +127,32 @@ function classeInstitution(role) {
   if (role.institution === INSTITUTION_GOUVERNEMENT) {
     return role.chef ? 'cp-fs--chef' : 'cp-fs--gouvernement cp-fs--motif-rayures';
   }
-  return `cp-fs--parlement cp-fs--motif-${motifPosition(role.position)}`;
+  // La TEINTE porte la chambre, le MOTIF porte la position. Un siège européen
+  // n'a pas de qualification de groupe dans le corpus : son motif est celui de
+  // la position non déclarée, et c'est un fait, pas un repli (§2 règle 5).
+  return `cp-fs--${pisteDuRole(role)} cp-fs--motif-${motifPosition(role.position)}`;
 }
 
+/* La légende ne montre QUE ce que la frise porte. Elle listait sept entrées sur
+ * toutes les fiches, y compris les quatre motifs de groupe sur un profil qui
+ * n'a jamais siégé à l'Assemblée. Chaque entrée dit à quelle piste elle
+ * appartient, et la frise ne garde que les pistes présentes. */
 const LEGENDE_FRISE = [
-  { classe: 'cp-fs--parlement cp-fs--motif-plein', label: 'Parlementaire · groupe majoritaire' },
-  { classe: 'cp-fs--parlement cp-fs--motif-diagonales', label: "Parlementaire · groupe d'opposition" },
-  { classe: 'cp-fs--parlement cp-fs--motif-points', label: 'Parlementaire · groupe minoritaire' },
-  { classe: 'cp-fs--parlement cp-fs--motif-fines-rayures', label: POSITION_NON_DECLAREE.label },
-  { classe: 'cp-fs--gouvernement cp-fs--motif-rayures', label: 'Membre du gouvernement' },
-  { classe: 'cp-fs--chef', label: 'Chef du gouvernement' },
-  { classe: 'cp-fs--mission', label: 'Parlementaire en mission auprès d’un ministère' },
+  { piste: INSTITUTION_PARLEMENT, classe: 'cp-fs--parlement cp-fs--motif-plein', label: 'Députée ou député · groupe majoritaire' },
+  { piste: INSTITUTION_PARLEMENT, classe: 'cp-fs--parlement cp-fs--motif-diagonales', label: "Députée ou député · groupe d'opposition" },
+  { piste: INSTITUTION_PARLEMENT, classe: 'cp-fs--parlement cp-fs--motif-points', label: 'Députée ou député · groupe minoritaire' },
+  { piste: INSTITUTION_PARLEMENT, classe: 'cp-fs--parlement cp-fs--motif-fines-rayures', label: POSITION_NON_DECLAREE.label },
+  { piste: INSTITUTION_SENAT, classe: 'cp-fs--senat cp-fs--motif-fines-rayures', label: 'Sénatrice ou sénateur' },
+  { piste: INSTITUTION_PE, classe: 'cp-fs--pe cp-fs--motif-fines-rayures', label: 'Députée ou député européen' },
+  { piste: INSTITUTION_GOUVERNEMENT, classe: 'cp-fs--gouvernement cp-fs--motif-rayures', label: 'Membre du gouvernement' },
+  { piste: INSTITUTION_GOUVERNEMENT, classe: 'cp-fs--chef', label: 'Chef du gouvernement' },
+  { piste: INSTITUTION_MISSION, classe: 'cp-fs--mission', label: 'Parlementaire en mission auprès d’un ministère' },
 ];
 
 function Frise({ parcours }) {
   const { roles, nbLignes, bornes } = parcours;
   if (!roles.length || !bornes) return null;
+  const pistesPresentes = new Set(roles.map(pisteDuRole));
 
   const hauteurLigne = 100 / nbLignes;
 
@@ -198,7 +211,7 @@ function Frise({ parcours }) {
       <div className="cp-legende">
         <p className="cp-legende-titre">Légende</p>
         <div className="cp-legende-grille">
-          {LEGENDE_FRISE.map((l) => (
+          {LEGENDE_FRISE.filter((l) => pistesPresentes.has(l.piste)).map((l) => (
             <span className="cp-legende-item" key={l.label}>
               <span className={`cp-legende-pave ${l.classe}`} />
               {l.label}
@@ -232,7 +245,11 @@ function Frise({ parcours }) {
             <span className="cp-role-dates">{periode(r.debut, r.fin, r.actif)}</span>
             <span className="cp-role-intitule">
               <b>{r.role}</b>
-              {r.institution === INSTITUTION_PARLEMENT && <Position position={r.position} />}
+              {/* La qualification du groupe est publiée PAR L'ASSEMBLÉE : la
+                  porter sur un mandat européen ou sénatorial ferait dire à
+                  l'Assemblée qu'elle n'a rien déclaré sur un siège dont elle ne
+                  parle pas (§2 règle 2). */}
+              {pisteDuRole(r) === INSTITUTION_PARLEMENT && <Position position={r.position} />}
               {r.detail && <span className="cp-role-detail"> · {r.detail}</span>}
             </span>
           </li>
