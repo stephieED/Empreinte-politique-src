@@ -139,6 +139,7 @@ from amendements_index import (
     DEFAULT_AMENDEMENTS_DIR,
     charger as charger_amendements,
     joindre as joindre_amendements,
+    legislature_de_id,
 )
 from scrutins_index import ScrutinsIndex, charger as charger_scrutins, decomposer_id, DEFAULT_SCRUTINS_PATH
 
@@ -1424,6 +1425,17 @@ class ContributionAmendements:
     par_type: dict[str, dict[str, Any]]
     non_resolus: int
     distincts: CumulAmendementsDistincts
+    #: #821 — **SIGNATURES** écartées parce que portant sur un amendement déposé
+    #: sous une AUTRE législature que celle de la fiche. Une par entrée
+    #: d'`amendements[]`, donc une par signataire : 657 996 sur `LR-16` pour
+    #: 126 997 amendements distincts. Comptées, jamais tues — une exclusion
+    #: muette transforme un dénominateur en donnée fausse (§2 règle 7) — et
+    #: nommées « signatures », jamais « amendements » (§6, #643).
+    hors_periode: int = 0
+    #: Signatures dont l'identifiant d'amendement ne porte pas de législature.
+    #: **Conservées** — rien ne prouve qu'elles soient hors période, et les
+    #: écarter ferait passer une ignorance pour un fait (§2 règle 5).
+    sans_legislature: int = 0
 
     def __len__(self) -> int:
         return self.nb
@@ -1439,6 +1451,7 @@ def contribution_amendements(
     amendements: Any,
     amendements_index: Optional[AmendementsIndex] = None,
     distincts: Optional[CumulAmendementsDistincts] = None,
+    legislature: Optional[str] = None,
 ) -> ContributionAmendements:
     """Réduit l'`amendements[]` d'UN membre à ce que l'agrégat en tire.
 
@@ -1463,8 +1476,30 @@ def contribution_amendements(
     par_type = {t: _stats_amendements_vides() for t in AMENDEMENTS_TYPES_DEPOSANT}
     cumul = distincts if distincts is not None else CumulAmendementsDistincts()
     non_resolus = 0
+    hors_periode = 0
+    sans_legislature = 0
 
     for entree, amendement in joindre_amendements(amendements, amendements_index):
+        # #821 — UN AMENDEMENT DÉPOSÉ AILLEURS N'EST PAS L'ACTIVITÉ DE CE
+        # GROUPE. Le filtre est celui que #403 a posé sur les votes, transposé
+        # mot pour mot : « un scrutin serait attribué à un groupe qui n'existait
+        # pas au moment du vote ». Mesuré avant correctif sur `LR-16` : 159 274
+        # amendements publiés dont **32 277 seulement** déposés sous la XVIe —
+        # 20 501 venaient de la XVIIe, c'est-à-dire d'après la dissolution du
+        # 9 juin 2024, sous un groupe qui n'existait plus.
+        #
+        # La législature se lit sur l'identifiant (`AMANR5L16…`), donnée
+        # structurelle écrite par l'Assemblée, jamais déduite d'une date.
+        # Un identifiant qui ne la porte pas n'est PAS écarté : rien ne prouve
+        # qu'il soit hors période, et l'écarter ferait passer une ignorance pour
+        # un fait (§2 règle 5). Il est compté, et le compte est déclaré.
+        if legislature:
+            leg = legislature_de_id(entree.get("amendement_id"))
+            if leg is None:
+                sans_legislature += 1
+            elif leg != str(legislature):
+                hors_periode += 1
+                continue
         if amendement is None:
             amendement = entree.get("amendement_non_resolu")
         if amendement is None and "sort" in entree:
@@ -1483,7 +1518,10 @@ def contribution_amendements(
             stats[bande] += 1
 
     nb = len(amendements) if isinstance(amendements, list) else 0
-    return ContributionAmendements(nb, total, par_type, non_resolus, cumul)
+    return ContributionAmendements(
+        nb, total, par_type, non_resolus, cumul,
+        hors_periode=hors_periode, sans_legislature=sans_legislature,
+    )
 
 
 def _aggregate_amendements(
@@ -1565,6 +1603,8 @@ def _aggregate_amendements(
     # publiaient deux.
     cumuls_absorbes: dict[int, CumulAmendementsDistincts] = {}
     non_resolus = 0
+    hors_periode = 0
+    sans_legislature = 0
 
     for profil in profils:
         amendements = profil.get("amendements")
@@ -1573,6 +1613,8 @@ def _aggregate_amendements(
             else contribution_amendements(amendements, amendements_index)
         )
         non_resolus += contribution.non_resolus
+        hors_periode += contribution.hors_periode
+        sans_legislature += contribution.sans_legislature
         for compteur in _COMPTEURS_AMENDEMENTS:
             signatures[compteur] += contribution.total[compteur]
             for type_deposant, stats in signatures_par_type.items():
@@ -1600,6 +1642,12 @@ def _aggregate_amendements(
             for type_deposant, stats in signatures_par_type.items()
         },
     }
+    # #821 — CE QUI A ÉTÉ ÉCARTÉ SE PUBLIE. Sans ces deux comptes, la fiche
+    # afficherait un chiffre plus petit qu'avant sans que rien ne dise pourquoi,
+    # et une exclusion muette transforme un dénominateur en donnée fausse
+    # (§2 règle 7).
+    total["nb_signatures_hors_periode_ecartees"] = hors_periode
+    total["nb_signatures_sans_legislature_retenues"] = sans_legislature
     return total, non_resolus
 
 
@@ -1756,6 +1804,7 @@ def projeter_profil_membre(
     document: dict[str, Any],
     amendements_index: Optional[AmendementsIndex] = None,
     distincts: Optional[CumulAmendementsDistincts] = None,
+    legislature: Optional[str] = None,
 ) -> dict[str, Any]:
     """Le profil d'un membre réduit à ce que la fiche de groupe en lit.
 
@@ -1790,7 +1839,7 @@ def projeter_profil_membre(
             ]
         elif bloc == "amendements":
             projection[bloc] = contribution_amendements(
-                valeur, amendements_index, distincts
+                valeur, amendements_index, distincts, legislature
             )
         else:
             projection[bloc] = valeur
@@ -1802,6 +1851,7 @@ def load_profil_from_file(
     amendements_index: Optional[AmendementsIndex] = None,
     projeter: bool = True,
     distincts: Optional[CumulAmendementsDistincts] = None,
+    legislature: Optional[str] = None,
 ) -> dict[str, Any]:
     """Charge un profil depuis un fichier JSON et le normalise en pivot v1 si nécessaire.
 
@@ -1852,7 +1902,7 @@ def load_profil_from_file(
         )
 
     return (
-        projeter_profil_membre(profil, amendements_index, distincts)
+        projeter_profil_membre(profil, amendements_index, distincts, legislature)
         if projeter else profil
     )
 
@@ -2110,6 +2160,29 @@ def build_groupe_profile(
     amendements_agreges, n_amendements_non_resolus = _aggregate_amendements(
         profils, amendements_index
     )
+    # #821 — CE QUI EST COMPTÉ ICI EST UNE SIGNATURE, ET LE MESSAGE LE DIT.
+    # Le compteur s'incrémente une fois par ENTRÉE d'`amendements[]`, donc une
+    # fois par signataire : 657 996 signatures écartées sur `LR-16` pour
+    # 126 997 amendements distincts. Les nommer « amendements » reproduirait
+    # exactement la confusion que #643 a corrigée (§6 : les signatures se
+    # publient sous leur nom, jamais sous celui des amendements).
+    n_hors_periode = amendements_agreges.get("nb_signatures_hors_periode_ecartees") or 0
+    if n_hors_periode:
+        warnings.append(
+            f"amendements_agreges : {n_hors_periode} signature(s) portant sur des "
+            f"amendements déposés sous une autre législature que la "
+            f"{legislature or '?'}e ont été écartées — ils appartiennent à la "
+            "carrière de leurs auteurs, pas à l'activité de ce groupe (#821, même "
+            "règle que les votes depuis #403)."
+        )
+    n_sans_leg = amendements_agreges.get("nb_signatures_sans_legislature_retenues") or 0
+    if n_sans_leg:
+        warnings.append(
+            f"amendements_agreges : {n_sans_leg} signature(s) dont l'identifiant "
+            "d'amendement ne porte pas de législature sont CONSERVÉES — rien ne "
+            "prouve qu'elles soient hors période, et les écarter ferait passer une "
+            "ignorance pour un fait (§2 règle 5)."
+        )
     if n_amendements_non_resolus:
         warnings.append(
             f"amendements_agreges : {n_amendements_non_resolus} amendement(s) "
@@ -2406,7 +2479,8 @@ def generate_groupe_profile_from_roster(
             continue
         try:
             profil = load_profil_from_file(
-                pivot_path, amendements_index, distincts=distincts
+                pivot_path, amendements_index, distincts=distincts,
+                legislature=legislature,
             )
         except (FileNotFoundError, ValueError) as exc:
             print(f"  [!] {exc}", file=sys.stderr)
@@ -2421,7 +2495,8 @@ def generate_groupe_profile_from_roster(
             continue
         try:
             profils.append(load_profil_from_file(
-                pivot_path, amendements_index, distincts=distincts
+                pivot_path, amendements_index, distincts=distincts,
+                legislature=legislature,
             ))
         except (FileNotFoundError, ValueError) as exc:
             print(f"  [!] {exc}", file=sys.stderr)
@@ -2625,7 +2700,8 @@ def main(argv: Optional[list[str]] = None) -> int:
         print(f"→ Chargement : {path}", file=sys.stderr)
         try:
             profils.append(load_profil_from_file(
-                path, amendements_index, distincts=distincts
+                path, amendements_index, distincts=distincts,
+                legislature=args.legislature,
             ))
         except (FileNotFoundError, ValueError) as exc:
             print(f"  [!] {exc}", file=sys.stderr)
