@@ -24,6 +24,11 @@
       "poids_relatif": 1.0
     },
     {
+      "tag": "accès aux services publics",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
       "tag": "accès aux soins",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
@@ -59,7 +64,22 @@
       "poids_relatif": 1.0
     },
     {
+      "tag": "application des lois egalim",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
       "tag": "approbation des comptes de la sécurité sociale pour l’année 2022",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "arnaques à maprimerénov’",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "attaque d’un fourgon pénitentiaire dans l’eure",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -70,6 +90,11 @@
     },
     {
       "tag": "avenir constitutionnel de la corse",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "avenir de biogaran",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -104,7 +129,22 @@
       "poids_relatif": 1.0
     },
     {
+      "tag": "calcul de la pension civile en polynésie française",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "campagne des élections européennes",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
       "tag": "campagne présidentielle",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "centrale à charbon de saint-avold",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -125,6 +165,11 @@
     },
     {
       "tag": "composition du nouveau gouvernement",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "convention citoyenne pour l’éducation",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -150,6 +195,11 @@
     },
     {
       "tag": "dette de la france",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "difficultés d’atos",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -244,6 +294,11 @@
       "poids_relatif": 1.0
     },
     {
+      "tag": "europe de la paix",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
       "tag": "exportation d’armes vers israël",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
@@ -294,6 +349,11 @@
       "poids_relatif": 1.0
     },
     {
+      "tag": "financement des esat",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
       "tag": "finances publiques et relations avec l’union européenne",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
@@ -305,6 +365,11 @@
     },
     {
       "tag": "fondamentaux scolaires",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "formation des médecins",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -380,6 +445,11 @@
     },
     {
       "tag": "intérêt",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "jop de paris 2024",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -529,6 +599,11 @@
       "poids_relatif": 1.0
     },
     {
+      "tag": "parcoursup",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
       "tag": "patrimoine des grandes fortunes françaises",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
@@ -560,6 +635,11 @@
     },
     {
       "tag": "plan d’économies budgétaires",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "plan écophyto",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -689,6 +769,11 @@
       "poids_relatif": 1.0
     },
     {
+      "tag": "projet de loi d’orientation agricole",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
       "tag": "projet de loi spéciale prévue par l’article 45 de la loi organique du 1er août 2001 relative aux lois de finances",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
@@ -700,6 +785,11 @@
     },
     {
       "tag": "promotion de l’emploi des personnes en situation de handicap",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "propriété foncière outre-mer",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -730,11 +820,6 @@
     },
     {
       "tag": "publique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "questions au premier ministre",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -814,7 +899,17 @@
       "poids_relatif": 1.0
     },
     {
+      "tag": "réchauffement climatique",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
       "tag": "réduction du déficit public",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "réforme de la décentralisation",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -874,6 +969,16 @@
       "poids_relatif": 1.0
     },
     {
+      "tag": "situation dans la bande de gaza",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "situation des ehpad",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
       "tag": "situation des finances publiques",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
@@ -929,6 +1034,11 @@
       "poids_relatif": 1.0
     },
     {
+      "tag": "tarif des transports aériens vers l’outre-mer",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
       "tag": "taxation des superprofits",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
@@ -940,6 +1050,11 @@
     },
     {
       "tag": "taxe sur les superprofits",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "transition écologique",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -970,6 +1085,11 @@
     },
     {
       "tag": "zones de revitalisation rurale",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "zrr",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -1008,12 +1128,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722190",
-      "synchro_le": "2026-08-27T20:19:29+0000"
+      "synchro_le": "2026-09-10T12:46:50+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-27T21:00:32+0000",
+    "genere_le": "2026-09-10T13:16:21+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "nb_candidats_declares": 1,
     "nb_candidats_avec_pivot": 1,

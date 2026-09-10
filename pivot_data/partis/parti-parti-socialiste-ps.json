@@ -241,6 +241,11 @@
       "poids_relatif": 0.5
     },
     {
+      "tag": "campagne des élections européennes",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
       "tag": "carte",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.5
@@ -1491,11 +1496,6 @@
       "poids_relatif": 0.5
     },
     {
-      "tag": "questions au premier ministre",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.5
-    },
-    {
       "tag": "rapport",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.5
@@ -1940,17 +1940,17 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1567",
-      "synchro_le": "2026-08-28T11:18:14+0000"
+      "synchro_le": "2026-09-10T12:54:21+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2650",
-      "synchro_le": "2026-08-28T11:22:30+0000"
+      "synchro_le": "2026-09-10T11:52:02+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-28T12:06:44+0000",
+    "genere_le": "2026-09-10T13:16:21+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "nb_candidats_declares": 2,
     "nb_candidats_avec_pivot": 2,

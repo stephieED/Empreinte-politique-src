@@ -59732,8 +59732,8 @@
   "tags_thematiques_agreges": [
     {
       "tag": "outils de gestion de la crise sanitaire",
-      "nb_membres_porteurs": 13,
-      "poids_relatif": 0.7647
+      "nb_membres_porteurs": 15,
+      "poids_relatif": 0.8824
     },
     {
       "tag": "mesures d’urgence pour la protection du pouvoir d’achat",
@@ -59747,6 +59747,11 @@
     },
     {
       "tag": "projet de loi de financement rectificative de la sécurité sociale pour 2023",
+      "nb_membres_porteurs": 12,
+      "poids_relatif": 0.7059
+    },
+    {
+      "tag": "vigilance sanitaire",
       "nb_membres_porteurs": 12,
       "poids_relatif": 0.7059
     },
@@ -59767,11 +59772,6 @@
     },
     {
       "tag": "réforme des retraites",
-      "nb_membres_porteurs": 10,
-      "poids_relatif": 0.5882
-    },
-    {
-      "tag": "vigilance sanitaire",
       "nb_membres_porteurs": 10,
       "poids_relatif": 0.5882
     },
@@ -59811,7 +59811,17 @@
       "poids_relatif": 0.4706
     },
     {
+      "tag": "projet de loi de finances pour 2022",
+      "nb_membres_porteurs": 8,
+      "poids_relatif": 0.4706
+    },
+    {
       "tag": "accélération des procédures liées à la construction de nouvelles installations nucléaires et fonctionnement des installations existantes",
+      "nb_membres_porteurs": 7,
+      "poids_relatif": 0.4118
+    },
+    {
+      "tag": "droit de révocation des élus",
       "nb_membres_porteurs": 7,
       "poids_relatif": 0.4118
     },
@@ -59822,6 +59832,11 @@
     },
     {
       "tag": "déclaration de politique générale du gouvernement et débat sur cette déclaration",
+      "nb_membres_porteurs": 7,
+      "poids_relatif": 0.4118
+    },
+    {
+      "tag": "fin de la recherche et de l’exploitation des hydrocarbures",
       "nb_membres_porteurs": 7,
       "poids_relatif": 0.4118
     },
@@ -59837,11 +59852,6 @@
     },
     {
       "tag": "projet de loi de financement de la sécurité sociale pour 2025",
-      "nb_membres_porteurs": 7,
-      "poids_relatif": 0.4118
-    },
-    {
-      "tag": "projet de loi de finances pour 2022",
       "nb_membres_porteurs": 7,
       "poids_relatif": 0.4118
     },
@@ -59882,16 +59892,6 @@
     },
     {
       "tag": "contrôler l’immigration, améliorer l’intégration",
-      "nb_membres_porteurs": 6,
-      "poids_relatif": 0.3529
-    },
-    {
-      "tag": "droit de révocation des élus",
-      "nb_membres_porteurs": 6,
-      "poids_relatif": 0.3529
-    },
-    {
-      "tag": "fin de la recherche et de l’exploitation des hydrocarbures",
       "nb_membres_porteurs": 6,
       "poids_relatif": 0.3529
     },
@@ -59947,6 +59947,11 @@
     },
     {
       "tag": "projet de loi de finances pour 2026",
+      "nb_membres_porteurs": 6,
+      "poids_relatif": 0.3529
+    },
+    {
+      "tag": "projet de loi de finances rectificative pour 2021",
       "nb_membres_porteurs": 6,
       "poids_relatif": 0.3529
     },
@@ -60046,11 +60051,6 @@
       "poids_relatif": 0.2941
     },
     {
-      "tag": "projet de loi de finances rectificative pour 2021",
-      "nb_membres_porteurs": 5,
-      "poids_relatif": 0.2941
-    },
-    {
       "tag": "projet de loi de programmation des finances publiques pour les années 2023 à 2027-projet de loi de finances pour 2023",
       "nb_membres_porteurs": 5,
       "poids_relatif": 0.2941
@@ -60137,6 +60137,11 @@
     },
     {
       "tag": "corps électoral de nouvelle-calédonie",
+      "nb_membres_porteurs": 4,
+      "poids_relatif": 0.2353
+    },
+    {
+      "tag": "création de la fonction de directrice ou de directeur d’école",
       "nb_membres_porteurs": 4,
       "poids_relatif": 0.2353
     },
@@ -60271,6 +60276,11 @@
       "poids_relatif": 0.2353
     },
     {
+      "tag": "protocole sanitaire dans les écoles",
+      "nb_membres_porteurs": 4,
+      "poids_relatif": 0.2353
+    },
+    {
       "tag": "protéger la population des risques liés aux pfas",
       "nb_membres_porteurs": 4,
       "poids_relatif": 0.2353
@@ -60401,6 +60411,11 @@
       "poids_relatif": 0.1765
     },
     {
+      "tag": "atténuer les inégalités d’accès à l’enseignement supérieur générées par parcoursup",
+      "nb_membres_porteurs": 3,
+      "poids_relatif": 0.1765
+    },
+    {
       "tag": "augmentation du salaire minimum",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.1765
@@ -60481,6 +60496,11 @@
       "poids_relatif": 0.1765
     },
     {
+      "tag": "lutte contre la précarité des accompagnants d’élèves handicapés",
+      "nb_membres_porteurs": 3,
+      "poids_relatif": 0.1765
+    },
+    {
       "tag": "lutte contre les dérives sectaires",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.1765
@@ -60531,6 +60551,11 @@
       "poids_relatif": 0.1765
     },
     {
+      "tag": "pouvoir d’achat des français",
+      "nb_membres_porteurs": 3,
+      "poids_relatif": 0.1765
+    },
+    {
       "tag": "programmation des finances publiques pour les années 2023 à 2027",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.1765
@@ -60546,17 +60571,17 @@
       "poids_relatif": 0.1765
     },
     {
+      "tag": "projet de loi de finances pour 2019",
+      "nb_membres_porteurs": 3,
+      "poids_relatif": 0.1765
+    },
+    {
       "tag": "projet de loi de finances pour 2023",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.1765
     },
     {
       "tag": "projet de loi de finances pour 2024",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.1765
-    },
-    {
-      "tag": "protocole sanitaire dans les écoles",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.1765
     },
@@ -60761,11 +60786,6 @@
       "poids_relatif": 0.1176
     },
     {
-      "tag": "atténuer les inégalités d’accès à l’enseignement supérieur générées par parcoursup",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.1176
-    },
-    {
       "tag": "avenir de fret sncf",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.1176
@@ -60851,6 +60871,11 @@
       "poids_relatif": 0.1176
     },
     {
+      "tag": "contrôle parental de l’accès à internet",
+      "nb_membres_porteurs": 2,
+      "poids_relatif": 0.1176
+    },
+    {
       "tag": "convocation de mathilde panot devant la justice",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.1176
@@ -60867,11 +60892,6 @@
     },
     {
       "tag": "crise du logement",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.1176
-    },
-    {
-      "tag": "création de la fonction de directrice ou de directeur d’école",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.1176
     },
@@ -60952,6 +60972,11 @@
     },
     {
       "tag": "déclarations du président de la république sur la guerre en ukraine",
+      "nb_membres_porteurs": 2,
+      "poids_relatif": 0.1176
+    },
+    {
+      "tag": "démocratiser le sport en france",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.1176
     },
@@ -61161,11 +61186,6 @@
       "poids_relatif": 0.1176
     },
     {
-      "tag": "lutte contre la précarité des accompagnants d’élèves handicapés",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.1176
-    },
-    {
       "tag": "lutte contre le blanchiment",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.1176
@@ -61326,11 +61346,6 @@
       "poids_relatif": 0.1176
     },
     {
-      "tag": "pouvoir d’achat des français",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.1176
-    },
-    {
       "tag": "priorités gouvernementales en matière de santé",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.1176
@@ -61366,7 +61381,7 @@
       "poids_relatif": 0.1176
     },
     {
-      "tag": "projet de loi de finances pour 2019",
+      "tag": "projet de loi de finances pour 2021",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.1176
     },
@@ -61851,6 +61866,11 @@
       "poids_relatif": 0.0588
     },
     {
+      "tag": "accélérer l’égalité économique et professionnelle",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.0588
+    },
+    {
       "tag": "activisme de l’association les soulèvements de la terre",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0588
@@ -62276,6 +62296,11 @@
       "poids_relatif": 0.0588
     },
     {
+      "tag": "combattre le harcèlement scolaire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.0588
+    },
+    {
       "tag": "comités sociaux et économiques de la poste",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0588
@@ -62436,11 +62461,6 @@
       "poids_relatif": 0.0588
     },
     {
-      "tag": "contrôle parental de l’accès à internet",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0588
-    },
-    {
       "tag": "contrôles dans les ehpad",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0588
@@ -62562,6 +62582,11 @@
     },
     {
       "tag": "crise énergétique pour les entreprises",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.0588
+    },
+    {
+      "tag": "création de la fonction de directeur d’école",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0588
     },
@@ -62842,11 +62867,6 @@
     },
     {
       "tag": "dématérialisation et accès aux droits",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0588
-    },
-    {
-      "tag": "démocratiser le sport en france",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0588
     },
@@ -64257,11 +64277,6 @@
     },
     {
       "tag": "projet de loi de financement de la sécurité sociale pour 2022",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0588
-    },
-    {
-      "tag": "projet de loi de finances pour 2021",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0588
     },
@@ -74632,17 +74647,17 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2150",
-      "synchro_le": "2026-09-09T17:08:52+0000"
+      "synchro_le": "2026-09-10T12:45:39+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/96742",
-      "synchro_le": "2026-09-09T17:09:03+0000"
+      "synchro_le": "2026-09-10T12:45:49+0000"
     },
     {
       "type": "parltrack",
       "url": "https://parltrack.org/dumps",
-      "synchro_le": "2026-09-09T17:26:18"
+      "synchro_le": "2026-09-10T13:04:32"
     },
     {
       "type": "nosdeputes",
@@ -74652,7 +74667,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA588884",
-      "synchro_le": "2026-09-09T17:15:40+0000"
+      "synchro_le": "2026-09-10T12:54:17+0000"
     },
     {
       "type": "nosdeputes",
@@ -74662,12 +74677,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718860",
-      "synchro_le": "2026-09-09T17:08:17+0000"
+      "synchro_le": "2026-09-10T12:46:57+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718868",
-      "synchro_le": "2026-09-09T17:09:11+0000"
+      "synchro_le": "2026-09-10T12:47:21+0000"
     },
     {
       "type": "nosdeputes",
@@ -74677,12 +74692,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719578",
-      "synchro_le": "2026-09-09T17:09:52+0000"
+      "synchro_le": "2026-09-10T12:47:16+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719676",
-      "synchro_le": "2026-09-09T17:15:30+0000"
+      "synchro_le": "2026-09-10T12:53:59+0000"
     },
     {
       "type": "nosdeputes",
@@ -74692,7 +74707,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720286",
-      "synchro_le": "2026-09-09T17:08:17+0000"
+      "synchro_le": "2026-09-10T12:45:05+0000"
     },
     {
       "type": "nosdeputes",
@@ -74702,7 +74717,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720422",
-      "synchro_le": "2026-09-09T17:08:50+0000"
+      "synchro_le": "2026-09-10T12:46:59+0000"
     },
     {
       "type": "nosdeputes",
@@ -74712,7 +74727,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720430",
-      "synchro_le": "2026-09-09T17:15:07+0000"
+      "synchro_le": "2026-09-10T12:53:35+0000"
     },
     {
       "type": "nosdeputes",
@@ -74722,7 +74737,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720846",
-      "synchro_le": "2026-09-09T17:15:04+0000"
+      "synchro_le": "2026-09-10T12:54:31+0000"
     },
     {
       "type": "nosdeputes",
@@ -74732,7 +74747,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720892",
-      "synchro_le": "2026-09-09T17:15:41+0000"
+      "synchro_le": "2026-09-10T12:54:18+0000"
     },
     {
       "type": "nosdeputes",
@@ -74742,7 +74757,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721062",
-      "synchro_le": "2026-09-09T17:16:20+0000"
+      "synchro_le": "2026-09-10T12:54:48+0000"
     },
     {
       "type": "nosdeputes",
@@ -74752,7 +74767,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721202",
-      "synchro_le": "2026-09-09T17:08:17+0000"
+      "synchro_le": "2026-09-10T12:46:59+0000"
     },
     {
       "type": "nosdeputes",
@@ -74762,12 +74777,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721210",
-      "synchro_le": "2026-09-09T17:09:53+0000"
+      "synchro_le": "2026-09-10T12:47:16+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721226",
-      "synchro_le": "2026-09-09T17:15:26+0000"
+      "synchro_le": "2026-09-10T12:54:53+0000"
     },
     {
       "type": "nosdeputes",
@@ -74777,7 +74792,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721960",
-      "synchro_le": "2026-09-09T17:08:17+0000"
+      "synchro_le": "2026-09-10T12:45:06+0000"
     },
     {
       "type": "nosdeputes",
@@ -74787,12 +74802,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722142",
-      "synchro_le": "2026-09-09T17:08:51+0000"
+      "synchro_le": "2026-09-10T12:46:59+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-09T17:43:18+0000",
+    "genere_le": "2026-09-10T13:17:23+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO) + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu) + ODbL v1.0 (ParlTrack — https://parltrack.org/dumps)",
     "profils_sources": [
       "jean-luc-melenchon",
