@@ -556,7 +556,16 @@ de `actions/checkout` seul — le dépôt porte les profils) et ~65 s d'extracti
 pour 24 membres. Sharder ×8 paie donc huit fois ces 130 s ; c'est pourquoi la
 matrice roster est en `max-parallel: 4` (#467,
 `docs/decisions/budget-roster-mesure.md`). `merge-and-pivot` : 7,5 min mesuré à
-209 profils, **non mesuré** à 752.
+209 profils, **28 min** mesuré le 10/09/2026 sur le run `34472416487`.
+
+**Son plafond est passé de 60 à 120 min avec #827**, et c'est la première
+interrogation du portail européen qui l'exige : 1 320 requêtes à 0,6 s plus 13
+blocages de 60 s, soit **47 min mesurées** pour les 1 424 documents cités par
+les explications de vote. 28 + 47 = 75 : à 60 le job aurait été tué, et le retry
+automatique serait reparti pour un second échec. Les runs suivants retombent à
+~28 min, le cache `.cache/europarl` étant restauré **sous une clé fixe** — un
+document du Parlement européen ne se périme pas, et faire expirer ce cache
+hebdomadairement ne rachèterait rien qu'une facture.
 
 La collecte des interventions se borne **elle-même** par
 `--budget-interventions-secondes` (240 s en CI, par candidat, partagé entre les

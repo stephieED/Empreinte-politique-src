@@ -2429,7 +2429,14 @@ jobs:
     needs: [extract-an, extract-ue-officiel, extract-parltrack, extract-roster-groupes]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # 60 → 120 (#827). Le job tournait en 28 min ; la PREMIÈRE interrogation du
+    # portail européen en ajoute 47, mesurées sur les 1 424 références des
+    # explications de vote — 1 320 requêtes à 0,6 s, plus 13 blocages de 60 s
+    # que le portail impose sans jamais les annoncer sur une réponse en 200.
+    # 28 + 47 = 75 : à 60 le job serait tué, et le retry automatique repartirait
+    # pour un second échec. Les runs suivants retombent à ~28 min grâce au cache
+    # restauré plus bas — sans lequel le budget serait à repayer chaque fois.
+    timeout-minutes: 120
     # actions: write — requis par le `gh workflow run deploy-pages.yml` de la
     # dernière étape (#416). Déclaré au niveau du job et non du workflow : les
     # jobs d'extraction n'ont aucune raison de pouvoir déclencher un workflow.
@@ -2562,6 +2569,20 @@ jobs:
       # ParlTrack : optionnel — continue-on-error si l'artifact est absent
       # (job extract-parltrack a échoué ou timeout). Le mode fallback est
       # géré par --enrich-parltrack dans l'étape de pivot ci-dessous.
+      # #827 — le cache des documents européens. Sans lui, chaque run repaie les
+      # 47 minutes d'interrogation du portail pour un corpus qui, lui, ne bouge
+      # pas : ce sont des documents publiés, définitifs, dont l'existence ne
+      # change plus. La clé est fixe et non hebdomadaire, contrairement aux
+      # dumps ParlTrack : un document du Parlement européen ne se périme pas,
+      # et faire expirer ce cache ne rachèterait rien qu'une facture.
+      - uses: actions/cache@v5
+        if: ${{ !inputs.cold_start }}
+        with:
+          path: .cache/europarl
+          key: public-data-cache-europarl-documents-v1
+          restore-keys: |
+            public-data-cache-europarl-
+
       - name: Download artifact ParlTrack (optionnel)
         uses: actions/download-artifact@v7
         continue-on-error: true
