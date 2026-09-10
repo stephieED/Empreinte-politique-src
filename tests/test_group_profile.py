@@ -7,6 +7,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+import group_profile  # noqa: E402  (#821)
 from group_profile import (
     BLOCS_LUS_MEMBRE,
     ContributionAmendements,
@@ -2253,3 +2254,87 @@ def test_le_pic_memoire_d_une_fiche_de_groupe_reste_sous_le_plafond_declare(tmp_
         f"d'amendements qu'elle ne doit pas garder. Au-dessus de ce plafond elle "
         f"en retient une partie : c'est le défaut de #635, qui coûtait près "
         f"d'un Gio sur la seule fiche LFI.")
+
+
+# ---------------------------------------------------------------------------
+# #821 — un agrégat d'amendements ne compte que la période de la fiche
+# ---------------------------------------------------------------------------
+
+
+def _entree_amendement(uid, sort="rejeté", type_deposant="depute"):
+    return {
+        "amendement_id": f"an:{uid}",
+        "role_signataire": "auteur_principal",
+        "amendement_non_resolu": {
+            "sort": sort, "type_deposant": type_deposant,
+            "texte_vise": "T", "date": "2023-01-01", "numero": "1",
+            "base_juridique_irrecevabilite": None, "premier_signataire": None,
+            "co_signataires": [], "source_url": None,
+        },
+    }
+
+
+def test_un_amendement_dune_autre_legislature_nentre_pas_dans_lagregat():
+    """Le filtre de #403, transposé aux amendements.
+
+    Mesuré avant correctif : `LR-16` publiait 159 274 amendements dont
+    **32 277 seulement** déposés sous la XVIe. 20 501 venaient de la XVIIe,
+    c'est-à-dire d'après la dissolution du 9 juin 2024, sous un groupe qui
+    n'existait plus.
+    """
+    amendements = [
+        _entree_amendement("AMANR5L16PO420120B0001P0D1N000001"),
+        _entree_amendement("AMANR5L16PO420120B0001P0D1N000002"),
+        _entree_amendement("AMANR5L17PO838901BTC3051P0D1N000003"),
+        _entree_amendement("AMANR5L15PO717460B0002P0D1N000004"),
+    ]
+    contribution = group_profile.contribution_amendements(
+        amendements, None, None, legislature="16"
+    )
+    assert contribution.total["nb_amendements"] == 2
+    assert contribution.hors_periode == 2
+    assert contribution.sans_legislature == 0
+
+
+def test_sans_legislature_demandee_rien_nest_ecarte():
+    """Le filtre ne s'arme que si l'appelant nomme une législature : un profil
+    lu isolément garde tout."""
+    amendements = [
+        _entree_amendement("AMANR5L16PO420120B0001P0D1N000001"),
+        _entree_amendement("AMANR5L17PO838901BTC3051P0D1N000003"),
+    ]
+    contribution = group_profile.contribution_amendements(amendements)
+    assert contribution.total["nb_amendements"] == 2
+    assert contribution.hors_periode == 0
+
+
+def test_un_identifiant_sans_legislature_est_conserve_et_compte():
+    """Rien ne prouve qu'il soit hors période. L'écarter ferait passer une
+    ignorance pour un fait (§2 règle 5) ; il est retenu, et déclaré."""
+    amendements = [
+        _entree_amendement("AMANR5L16PO420120B0001P0D1N000001"),
+        _entree_amendement("FORME-INCONNUE-0001"),
+    ]
+    contribution = group_profile.contribution_amendements(
+        amendements, None, None, legislature="16"
+    )
+    assert contribution.total["nb_amendements"] == 2, "l'entrée douteuse est retenue"
+    assert contribution.sans_legislature == 1
+    assert contribution.hors_periode == 0
+
+
+def test_les_exclusions_se_publient_sous_le_nom_de_signatures():
+    """Une entrée d'`amendements[]` est une SIGNATURE, pas un amendement.
+
+    657 996 signatures écartées sur `LR-16` pour 126 997 amendements distincts :
+    les nommer « amendements » reproduirait la confusion que #643 a corrigée
+    (§6 — les signatures se publient sous leur nom).
+    """
+    agreges, _ = group_profile._aggregate_amendements([
+        {"amendements": group_profile.contribution_amendements(
+            [_entree_amendement("AMANR5L17PO838901BTC3051P0D1N000003")],
+            None, None, legislature="16",
+        )},
+    ])
+    assert agreges["nb_signatures_hors_periode_ecartees"] == 1
+    assert "nb_hors_periode_ecartes" not in agreges

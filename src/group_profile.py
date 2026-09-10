@@ -1425,13 +1425,16 @@ class ContributionAmendements:
     par_type: dict[str, dict[str, Any]]
     non_resolus: int
     distincts: CumulAmendementsDistincts
-    #: #821 — écartés parce que déposés sous une AUTRE législature que celle de
-    #: la fiche. Compté, jamais tu : une exclusion muette transforme un
-    #: dénominateur en donnée fausse (§2 règle 7).
+    #: #821 — **SIGNATURES** écartées parce que portant sur un amendement déposé
+    #: sous une AUTRE législature que celle de la fiche. Une par entrée
+    #: d'`amendements[]`, donc une par signataire : 657 996 sur `LR-16` pour
+    #: 126 997 amendements distincts. Comptées, jamais tues — une exclusion
+    #: muette transforme un dénominateur en donnée fausse (§2 règle 7) — et
+    #: nommées « signatures », jamais « amendements » (§6, #643).
     hors_periode: int = 0
-    #: Identifiants dont la législature ne se lit pas. **Conservés** — rien ne
-    #: prouve qu'ils soient hors période, et les écarter ferait passer une
-    #: ignorance pour un fait (§2 règle 5).
+    #: Signatures dont l'identifiant d'amendement ne porte pas de législature.
+    #: **Conservées** — rien ne prouve qu'elles soient hors période, et les
+    #: écarter ferait passer une ignorance pour un fait (§2 règle 5).
     sans_legislature: int = 0
 
     def __len__(self) -> int:
@@ -1643,8 +1646,8 @@ def _aggregate_amendements(
     # afficherait un chiffre plus petit qu'avant sans que rien ne dise pourquoi,
     # et une exclusion muette transforme un dénominateur en donnée fausse
     # (§2 règle 7).
-    total["nb_hors_periode_ecartes"] = hors_periode
-    total["nb_sans_legislature_retenus"] = sans_legislature
+    total["nb_signatures_hors_periode_ecartees"] = hors_periode
+    total["nb_signatures_sans_legislature_retenues"] = sans_legislature
     return total, non_resolus
 
 
@@ -2157,21 +2160,28 @@ def build_groupe_profile(
     amendements_agreges, n_amendements_non_resolus = _aggregate_amendements(
         profils, amendements_index
     )
-    n_hors_periode = amendements_agreges.get("nb_hors_periode_ecartes") or 0
+    # #821 — CE QUI EST COMPTÉ ICI EST UNE SIGNATURE, ET LE MESSAGE LE DIT.
+    # Le compteur s'incrémente une fois par ENTRÉE d'`amendements[]`, donc une
+    # fois par signataire : 657 996 signatures écartées sur `LR-16` pour
+    # 126 997 amendements distincts. Les nommer « amendements » reproduirait
+    # exactement la confusion que #643 a corrigée (§6 : les signatures se
+    # publient sous leur nom, jamais sous celui des amendements).
+    n_hors_periode = amendements_agreges.get("nb_signatures_hors_periode_ecartees") or 0
     if n_hors_periode:
         warnings.append(
-            f"amendements_agreges : {n_hors_periode} amendement(s) déposé(s) sous "
-            f"une autre législature que la {legislature or '?'}e ont été écartés — "
-            "ils appartiennent à la carrière de leurs auteurs, pas à l'activité de "
-            "ce groupe (#821, même règle que les votes depuis #403)."
+            f"amendements_agreges : {n_hors_periode} signature(s) portant sur des "
+            f"amendements déposés sous une autre législature que la "
+            f"{legislature or '?'}e ont été écartées — ils appartiennent à la "
+            "carrière de leurs auteurs, pas à l'activité de ce groupe (#821, même "
+            "règle que les votes depuis #403)."
         )
-    n_sans_leg = amendements_agreges.get("nb_sans_legislature_retenus") or 0
+    n_sans_leg = amendements_agreges.get("nb_signatures_sans_legislature_retenues") or 0
     if n_sans_leg:
         warnings.append(
-            f"amendements_agreges : {n_sans_leg} amendement(s) dont l'identifiant "
-            "ne porte pas de législature sont CONSERVÉS — rien ne prouve qu'ils "
-            "soient hors période, et les écarter ferait passer une ignorance pour "
-            "un fait (§2 règle 5)."
+            f"amendements_agreges : {n_sans_leg} signature(s) dont l'identifiant "
+            "d'amendement ne porte pas de législature sont CONSERVÉES — rien ne "
+            "prouve qu'elles soient hors période, et les écarter ferait passer une "
+            "ignorance pour un fait (§2 règle 5)."
         )
     if n_amendements_non_resolus:
         warnings.append(
