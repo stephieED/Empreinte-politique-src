@@ -560,7 +560,14 @@ function mandatsAgregesTries(groupe, effectifDeSecours) {
  * de 15,1 Mo. Elle peut manquer — la page le dit alors, section par section,
  * plutôt que d'afficher des tableaux vides qui se liraient comme des zéros.
  */
-export function buildGroupView(groupe, scrutinsIndex = null, comparaison = null) {
+/* `lignee` : les autres fiches du MÊME groupe, dans l'ordre des législatures.
+ *
+ * Une fiche ne couvre qu'une législature (#700), et rien sur la page ne le
+ * disait : « Droite Républicaine » se lisait comme LE groupe, pas comme une
+ * tranche de son existence. Tant que la fiche agrégée par lignée n'existe pas,
+ * la vue DÉCLARE sa portée et nomme ses voisines, au lieu de laisser croire
+ * qu'elle les contient (§2 règle 5). */
+export function buildGroupView(groupe, scrutinsIndex = null, comparaison = null, lignee = []) {
   const membres = groupe.membres || [];
   const rosterTotal = groupe.meta?.couverture_roster?.roster_total
     ?? groupe.effectif?.a_la_date_de_reference ?? 0;
@@ -612,6 +619,7 @@ export function buildGroupView(groupe, scrutinsIndex = null, comparaison = null)
       groupe.chambre === 'AN' ? 'Assemblée nationale' : 'Sénat',
       groupe.legislature == null ? null : `Législature ${groupe.legislature}`,
     ].filter(Boolean).join(' · '),
+    lignee,
     periode: {
       debut: groupe.periode?.debut ?? null,
       fin: groupe.periode?.fin ?? null,

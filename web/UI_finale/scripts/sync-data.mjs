@@ -244,6 +244,70 @@ for (const file of groupeFiles) {
   }
 }
 
+/* --- LES LIGNÉES : UN BOUTON PAR GROUPE, PAS PAR FICHE ---------------------
+ *
+ * Le corpus publie une fiche par groupe ET par législature (#700). Ce n'est pas
+ * le découpage du lecteur : la barre affichait TROIS boutons « Socialistes et
+ * apparentés » que rien ne distinguait à l'écran, deux « Rassemblement
+ * National », et deux « Les Républicains » dont l'un est le groupe du Sénat.
+ *
+ * Les fiches se chaînent par `succede_a` — un fait DÉCLARÉ, établi par relecture
+ * humaine et daté, jamais une ressemblance de sigle (#639). Chaque chaîne reçoit
+ * un bouton, qui porte le nom de sa fiche la plus récente et y mène ; les autres
+ * restent accessibles depuis la fiche elle-même.
+ *
+ * DEUX FORMES DE `succede_a` SONT ACCEPTÉES, ET LES DEUX SONT NÉCESSAIRES.
+ * #815 en a fait une LISTE — une fusion a deux prédécesseurs, une scission n'est
+ * pas un remplacement. Le schéma et la config portent la forme nouvelle sur
+ * `main` ; les fiches PUBLIÉES, elles, portent encore un bloc unique : vérifié
+ * le 10/09/2026 sur les vingt fiches servies, 7 blocs et 13 `null`, aucune
+ * liste. Elles ne basculeront qu'à la fin du run en cours.
+ *
+ * Ne lire que la liste casserait donc la barre aujourd'hui, et ne lire que le
+ * bloc la casserait demain — dans les deux cas sans qu'aucune étape n'échoue :
+ * les chaînages disparaîtraient en silence et la barre reviendrait à un bouton
+ * par fiche. Les deux formes restent lues tant que les deux existent.
+ */
+const predecesseursDe = (groupe) => {
+  const sa = groupe.succede_a;
+  if (!sa) return [];
+  return (Array.isArray(sa) ? sa : [sa]).map((b) => b?.groupe_id).filter(Boolean);
+};
+
+const parGroupeId = new Map(fichesPourComparaison.map(({ id, groupe }) => [groupe.groupe_id, id]));
+const suivantDe = new Map();
+for (const { id, groupe } of fichesPourComparaison) {
+  for (const cible of predecesseursDe(groupe)) {
+    const idPrecedent = parGroupeId.get(cible);
+    if (idPrecedent) suivantDe.set(idPrecedent, id);
+  }
+}
+const aUnSuccesseur = new Set(suivantDe.keys());
+const estUnSuccesseur = new Set(suivantDe.values());
+
+const ligneeDe = new Map();
+for (const { id } of fichesPourComparaison) {
+  if (estUnSuccesseur.has(id)) continue;      // on part des têtes de chaîne
+  const chaine = [];
+  let courant = id;
+  while (courant && !chaine.includes(courant)) {
+    chaine.push(courant);
+    courant = suivantDe.get(courant);
+  }
+  for (const maillon of chaine) ligneeDe.set(maillon, chaine);
+}
+for (const g of manifestGroupes) {
+  const chaine = ligneeDe.get(g.id) || [g.id];
+  g.lignee = chaine;
+  // Le DERNIER maillon porte le bouton : c'est le nom sous lequel le groupe
+  // existe aujourd'hui, et la fiche la plus fournie.
+  g.ligneeTete = chaine[chaine.length - 1];
+}
+console.log(
+  `sync-data : ${manifestGroupes.length} fiches de groupe → `
+  + `${new Set(manifestGroupes.map((g) => g.ligneeTete)).size} lignées.`,
+);
+
 // --- comparaisons par législature (#329) ---
 // Une projection par (chambre, législature) : sigle, effectif, amendements
 // agrégés, position politique déclarée, et les positions majoritaires des seuls

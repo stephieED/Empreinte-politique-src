@@ -946,3 +946,39 @@
   gap: 16px;
   flex-wrap: wrap;
 }
+
+/* La portée de la fiche, sous l'en-tête : ce qu'elle couvre, et les autres
+   tranches du même groupe. Une mention, pas un avertissement — le fait est
+   ordinaire, c'est de le taire qui était trompeur. */
+.gp-lignee {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.gp-lignee b,
+.gp-lignee a {
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  border-radius: 999px;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
+.gp-lignee b {
+  background: var(--grp-pale, #ece6f0);
+  color: var(--ink);
+}
+.gp-lignee a {
+  border: 1px solid var(--border-strong);
+  color: var(--muted);
+  text-decoration: none;
+}
+.gp-lignee a:hover,
+.gp-lignee a:focus-visible {
+  border-color: var(--dark);
+  color: var(--ink);
+}
