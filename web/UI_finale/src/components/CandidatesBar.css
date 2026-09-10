@@ -13,12 +13,17 @@
   padding-left: 2px;
 }
 
+/* SANS AVATAR ET PLUS SERRÉE. Les initiales redisaient le nom qu'elles
+   jouxtaient, et la pastille était taillée pour les accueillir : 6 px de marge à
+   gauche, 26 px de rond, 8 px de gouttière. Mesuré sur les 30 candidats,
+   5 293 px de rang deviennent 3 900 — cinq rangs deviennent trois, et aucun nom
+   n'est raccourci. */
 .cb-chip {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 14px 6px 6px;
+  padding: 5px 12px;
   border-radius: 999px;
   background: var(--card);
   border: 1.5px solid transparent;
@@ -57,10 +62,6 @@
   border-color: var(--border-strong);
 }
 
-.cb-chip--sans-mandat .cb-chip-avatar {
-  background: #c9c4be;
-  color: #ffffff;
-}
 
 .cb-chip--sans-mandat:hover {
   box-shadow: 0 4px 14px rgba(20, 15, 40, 0.1);
@@ -71,29 +72,9 @@
   border-color: var(--dark);
 }
 
-.cb-chip--sans-mandat.active .cb-chip-avatar {
-  background: var(--accent);
-  color: var(--dark);
-}
 
-.cb-chip-avatar {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: var(--dark);
-  color: #ffffff;
-  font-size: 10px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-}
 
-.cb-chip.active .cb-chip-avatar {
-  background: var(--accent);
-  color: var(--dark);
-}
+.cb-chip.active 
 
 .cb-skeleton {
   width: 130px;

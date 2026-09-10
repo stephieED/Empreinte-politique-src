@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { getCandidatesList, getGroupsList } from '../data';
 import { useGroupFilter } from '../context/GroupFilterContext';
 import { useAsyncData } from '../hooks/useAsyncData';
-import { initialsOf } from '../utils/text';
 import ScrollRow from './ScrollRow';
 import './CandidatesBar.css';
 
@@ -23,9 +22,19 @@ export default function CandidatesBar() {
   const navigate = useNavigate();
   const { candidateId: activeCandidateId } = useParams();
 
+  /* LE FILTRE PORTE SUR LA LIGNÉE, PAS SUR SA TÊTE. « Socialistes » retient les
+   * membres des trois fiches SOC, pas seulement de la plus récente : un député
+   * de la XVe qui a quitté l'Assemblée en 2022 appartient au même groupe. */
+  const fichesDuFiltre = useMemo(
+    () => (groups || []).find((g) => g.id === selectedGroupId)?.fiches || [selectedGroupId],
+    [groups, selectedGroupId],
+  );
+
   const filtered = useMemo(
-    () => (selectedGroupId ? (candidates || []).filter((c) => c.groupIds?.includes(selectedGroupId)) : (candidates || [])),
-    [candidates, selectedGroupId],
+    () => (selectedGroupId
+      ? (candidates || []).filter((c) => (c.groupIds || []).some((id) => fichesDuFiltre.includes(id)))
+      : (candidates || [])),
+    [candidates, selectedGroupId, fichesDuFiltre],
   );
 
   const filteredGroupTitle = useMemo(
@@ -39,7 +48,7 @@ export default function CandidatesBar() {
         Candidats{filteredGroupTitle ? ` · ${filteredGroupTitle}` : ''}
       </span>
       {loading ? (
-        <ScrollRow ariaLabel="Candidats (chargement)">
+        <ScrollRow replie ariaLabel="Candidats (chargement)">
           {Array.from({ length: 6 }).map((_, i) => (
             <div className="cb-chip cb-skeleton" key={i} />
           ))}
@@ -47,7 +56,7 @@ export default function CandidatesBar() {
       ) : filtered.length === 0 ? (
         <p className="cb-empty">Aucun candidat dans ce groupe.</p>
       ) : (
-        <ScrollRow ariaLabel="Liste des candidats">
+        <ScrollRow replie ariaLabel="Liste des candidats">
           {filtered.map((candidate) => {
             const active = activeCandidateId === candidate.id;
             return (
@@ -66,7 +75,6 @@ export default function CandidatesBar() {
                     : 'Aucun mandat à l’Assemblée nationale ni fonction gouvernementale : sa fiche existe, mais elle ne porte ni vote, ni intervention, ni amendement.'
                 }
               >
-                <span className="cb-chip-avatar">{initialsOf(candidate.nom)}</span>
                 <span className="cb-chip-label">{candidate.nom}</span>
               </button>
             );

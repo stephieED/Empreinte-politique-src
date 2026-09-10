@@ -13,12 +13,14 @@
   padding-left: 2px;
 }
 
+/* Même resserrement que `.cb-chip` : sans avatar, la marge gauche de 6 px et
+   la gouttière de 8 px n'ont plus rien à loger. */
 .gvb-chip {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 14px 6px 6px;
+  padding: 5px 12px;
   border-radius: 999px;
   background: var(--card);
   border: 1.5px solid transparent;
@@ -44,24 +46,7 @@
   color: #ffffff;
 }
 
-.gvb-chip-avatar {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: var(--dark);
-  color: #ffffff;
-  font-size: 10px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-}
 
-.gvb-chip.active .gvb-chip-avatar {
-  background: var(--accent);
-  color: var(--dark);
-}
 
 .gvb-skeleton {
   width: 140px;

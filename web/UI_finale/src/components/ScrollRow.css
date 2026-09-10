@@ -10,6 +10,16 @@
   scrollbar-width: none;
 }
 
+/* Repliée : plus rien ne défile, donc ni curseur de préhension, ni capture du
+   geste tactile, ni débordement à masquer. */
+.scroll-row--replie {
+  flex-wrap: wrap;
+  overflow: visible;
+  touch-action: auto;
+  cursor: default;
+  row-gap: 8px;
+}
+
 .scroll-row::-webkit-scrollbar {
   display: none;
 }
