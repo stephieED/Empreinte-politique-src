@@ -290,11 +290,27 @@ def test_le_vocabulaire_detablissement_na_quune_valeur():
     assert schema_groupe.ETABLISSEMENTS_SUCCESSION == ("relecture_humaine",)
 
 
-def test_les_fiches_de_la_16e_ne_succedent_a_rien():
-    """`None`, pas un trou : la XVe n'est pas couverte par ce dépôt, et un
-    champ absent ne prétend rien (AGENTS.md §2 règle 5)."""
-    for sigle in ("REN", "SOC", "RN", "LFI", "LR"):
-        assert groupes_config.succession_publiee(sigle, "16", CONFIG) is None
+def test_les_lignees_remontent_jusquou_le_corpus_va():
+    """Le test d'origine figeait « la XVe n'est pas couverte par ce dépôt ».
+
+    Elle l'est depuis #777, #779 et #815 : quatre fiches de la XVIe nomment
+    désormais leur prédécesseur, et une seule n'en a pas — `RN`, qui n'avait
+    **pas de groupe** à la XVe, faute d'atteindre le seuil de constitution.
+    C'est un fait sur l'Assemblée, pas un trou de collecte : le champ reste
+    `None` et ne prétend rien (§2 règle 5).
+    """
+    attendus = {
+        "REN": "AN:LAREM:15",
+        "SOC": "AN:SOC:15",
+        "LFI": "AN:FI:15",
+        "LR": "AN:LR:15",
+        "GDR": "AN:GDR:15",
+    }
+    for sigle, cible in attendus.items():
+        bloc = groupes_config.succession_publiee(sigle, "16", CONFIG)
+        assert bloc is not None, f"{sigle}-16 devrait nommer {cible}"
+        assert [b["groupe_id"] for b in bloc] == [cible]
+    assert groupes_config.succession_publiee("RN", "16", CONFIG) is None
 
 
 def test_une_succession_sans_legislature_est_refusee():

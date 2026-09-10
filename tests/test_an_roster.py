@@ -489,7 +489,11 @@ def test_la_17e_est_servie_par_amo30(actif):
         assert rapport["date_constitution_groupes"] == "2024-07-18"
         assert all(m["legislature"] == "17" for m in membres)
         mesures[entree["groupe_sigle"]] = rapport["effectif_mesure"]
-    assert mesures == {"EPR": 123, "SOC": 70, "RN": 131, "LFI": 73, "DR": 64}
+    # #815 — SEPT groupes depuis que `GDR-17` et `ECOS-17` ferment leurs
+    # lignées. Les cinq d'origine gardent leur effectif au membre près : c'est
+    # ce qui distingue un élargissement d'une régression.
+    assert mesures == {"EPR": 123, "SOC": 70, "RN": 131, "LFI": 73, "DR": 64,
+                       "GDR": 18, "ECOS": 38}
 
 
 def test_le_perimetre_de_la_17e_est_ecrit_groupe_par_groupe():
@@ -500,7 +504,8 @@ def test_le_perimetre_de_la_17e_est_ecrit_groupe_par_groupe():
     que le lot 1b doit assumer, et elle est committée plutôt que redécouverte.
     """
     entrees = _entrees_table("17")
-    assert len(entrees) == 5
+    # #815 : sept depuis que `GDR-17` et `ECOS-17` ferment leurs lignées.
+    assert len(entrees) == 7
     total, deja = 0, 0
     for entree in entrees:
         assert entree["effectif_publie"] is None, "aucune fiche 17e n'est publiée"
@@ -509,7 +514,10 @@ def test_le_perimetre_de_la_17e_est_ecrit_groupe_par_groupe():
         assert 0 <= entree["membres_avec_slug"] <= entree["effectif_amo30"]
         total += entree["effectif_amo30"]
         deja += entree["membres_avec_slug"]
-    assert (total, deja) == (461, 305)
+    # +56 membres (GDR 18, ECOS 38), dont 39 ont déjà un profil : le lot #815
+    # en collecte 17 de plus sur la 17e. Le couple est écrit plutôt que
+    # recalculé — c'est ce qui fait qu'élargir se décide au lieu de se subir.
+    assert (total, deja) == (517, 344)
 
 
 # --------------------------------------------------------------------------
