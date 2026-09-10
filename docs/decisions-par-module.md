@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 270 décisions
+gouverne sans avoir à fouiller les 271 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -526,7 +526,7 @@ Le mentionnent sans le gouverner : [`audit-599-projection-blocs-lus-628`](decisi
 | [Cloisonnement de la branche roster, et le code 2 « suspension totale » (#524) (2026-08-26)](decisions/cloisonnement-branche-roster-524.md) | `EXIT_ROSTER_INDISPONIBLE` |
 | [Le plafond de lecture du roster, et le commit qui ne paie plus pour une source lente (#518, second incident) (2026-08-24)](decisions/plafond-roster-et-commit-518.md) | `ResultatGeneration` |
 
-Le mentionnent sans le gouverner : [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`extraction-groupe-suspendue-516`](decisions/extraction-groupe-suspendue-516.md), [`fiches-groupe-17e-legislature-700`](decisions/fiches-groupe-17e-legislature-700.md), [`gouvernement-profile-rattachement`](decisions/gouvernement-profile-rattachement.md), [`identifiants-groupes-et-successions-multiples-815`](decisions/identifiants-groupes-et-successions-multiples-815.md), [`integrite-referentielle-pivot`](decisions/integrite-referentielle-pivot.md), [`position-politique-groupes-686`](decisions/position-politique-groupes-686.md), [`roster-an-derive-amo30-526`](decisions/roster-an-derive-amo30-526.md), [`senat-periode-debut`](decisions/senat-periode-debut.md).
+Le mentionnent sans le gouverner : [`amendements-agreges-dans-la-periode-821`](decisions/amendements-agreges-dans-la-periode-821.md), [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`extraction-groupe-suspendue-516`](decisions/extraction-groupe-suspendue-516.md), [`fiches-groupe-17e-legislature-700`](decisions/fiches-groupe-17e-legislature-700.md), [`gouvernement-profile-rattachement`](decisions/gouvernement-profile-rattachement.md), [`identifiants-groupes-et-successions-multiples-815`](decisions/identifiants-groupes-et-successions-multiples-815.md), [`integrite-referentielle-pivot`](decisions/integrite-referentielle-pivot.md), [`position-politique-groupes-686`](decisions/position-politique-groupes-686.md), [`roster-an-derive-amo30-526`](decisions/roster-an-derive-amo30-526.md), [`senat-periode-debut`](decisions/senat-periode-debut.md).
 
 ## `src/generate_roster_candidats.py`
 
@@ -607,10 +607,11 @@ Le mentionnent sans le gouverner : [`audit-pipeline-gouvernement`](decisions/aud
 
 ## `src/group_profile.py`
 
-24 décision(s) le gouvernent ; le module en cite 4.
+25 décision(s) le gouvernent ; le module en cite 4.
 
 | Décision | Nomme |
 | --- | --- |
+| [Un agrégat de fiche ne compte que la période de la fiche (#821)](decisions/amendements-agreges-dans-la-periode-821.md) | `_aggregate_amendements`, `_votes_de_legislature`, `aggregate_tags_thematiques` |
 | [Un amendement cosigné n'est pas N amendements : deux grandeurs, deux noms (#643) (2026-08-31)](decisions/amendements-distincts-et-signatures-643.md) | `ContributionAmendements`, `CumulAmendementsDistincts`, `_aggregate_amendements`, `_compute_cohesion_votes`, `_member_eligibility_intervals`, `load_profil_from_file` |
 | [Un audit lit le corpus par projection, et son plafond de mémoire est dans un test (#628, 2026-08-30)](decisions/audit-599-projection-blocs-lus-628.md) | `generate_groupe_profile_from_roster` |
 | [La bascule : le roster des groupes AN vient d'AMO30 (#527, lot 1b de l'épic « une seule source AN ») (2026-08-26)](decisions/bascule-roster-an-amo30-527.md) | `_avertissement_fraicheur_an` |
@@ -1034,11 +1035,12 @@ Le mentionnent sans le gouverner : [`dossier-des-amendements-639`](decisions/dos
 
 ## `src/tranches_amendements_figees.py`
 
-5 décision(s) le gouvernent ; le module en cite 1.
+6 décision(s) le gouvernent ; le module en cite 1.
 
 | Décision | Nomme |
 | --- | --- |
 | [Les agrégats publiés entrent dans le contrôle de perte, et l'ordre de grandeur reste hors contrat (#649) (2026-08-31)](decisions/agregats-publies-controle-perte-649.md) | `signatures` |
+| [Un agrégat de fiche ne compte que la période de la fiche (#821)](decisions/amendements-agreges-dans-la-periode-821.md) | `signatures` |
 | [Un amendement cosigné n'est pas N amendements : deux grandeurs, deux noms (#643) (2026-08-31)](decisions/amendements-distincts-et-signatures-643.md) | `signatures` |
 | [« Collecté = publié » compte une tranche dérivée dans l'archive (#691, lot 3a)](decisions/audit-compte-les-tranches-derivees-691.md) | `reconstruire_tranche`, `signatures` |
 | [L'écriture marque les tranches closes, et le `nombre` vient de l'archive (#691, lot 3b)](decisions/marquage-tranches-derivees-691.md) | `reconstruire_tranche`, `signatures` |
