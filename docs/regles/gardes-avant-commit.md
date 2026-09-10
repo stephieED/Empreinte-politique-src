@@ -22,9 +22,18 @@ tolerance is **partitioned** — no input disarms another's check.
   not. **There is no ratio threshold, and adding one is settled**: the *correct* drop of
   `3c8e1f0c` (× 0,03 to × 0,21) is larger than the *defective* one of `a125e9e` (× 0,00
   to × 0,64) on every fiche, so no threshold separates them.
+  **A count does not see a swap (#823)**: an entry replaced by another leaves the total
+  unchanged. Three fields therefore declare `listes_nommees` — `tags_thematiques` on
+  profiles, `tags_thematiques_agreges` on groupes and partis — whose relevé keeps the
+  **values**, so vanished entries are **named**, even at equal count and even when the
+  count rises. Non-blocking on purpose: a derived field recomputed every run legitimately
+  swaps entries; what this adds is an **explanation**, not a second lock. Not generalised:
+  5 911 distinct values over 53 183 entries is affordable, millions of `amendements` keys
+  are not.
   → `docs/decisions/controle-de-perte-avant-commit.md`,
   `docs/decisions/perimetre-controle-perte.md`,
-  `docs/decisions/agregats-publies-controle-perte-649.md`
+  `docs/decisions/agregats-publies-controle-perte-649.md`,
+  `docs/decisions/controle-perte-nomme-les-echanges-823.md`
 - **Referential integrity (#485)**: `audit_integrite_referentielle.py`. Every published
   key resolves in the index it points at, or the commit aborts naming file and key — an
   orphan reference is a vote published with no object, on a groupe a false denominator
