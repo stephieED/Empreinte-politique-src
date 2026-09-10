@@ -1,6 +1,10 @@
 <a id="retry-generate-data-best-effort-non-bloquant"></a>
 # `retry-generate-data.yml` : le step best-effort d'extraction des inputs ne doit pas pouvoir bloquer le retry (#336) (2026-08-16)
 
+`2026-08-16`
+
+> **En bref** — un step best-effort d'extraction des inputs ne doit pas pouvoir bloquer le retry.
+
 **Contexte** : [[retry-generate-data-preemption]] (#230) déclenche le retry
 réel (step *« Re-déclencher generate-data.yml »*) uniquement via `if:
 steps.signature.outputs.matched == 'true'`, sans `always()` — GitHub Actions

@@ -1,6 +1,10 @@
 <a id="retry-push-merge-and-pivot-bash-e"></a>
 # La boucle de retry du push ne rebouclait jamais (`bash -e`) (#389) (2026-08-17)
 
+`2026-08-17`
+
+> **En bref** — la boucle de retry du push ne rebouclait jamais, faute de `defaults: shell` (`bash -e`).
+
 **Contexte** : run `#266`. Toutes les étapes de données de `merge-and-pivot`
 ont réussi ; seul le push final a échoué, et le log ne montrait qu'une
 « tentative 1/3 » là où le step en promet 3.

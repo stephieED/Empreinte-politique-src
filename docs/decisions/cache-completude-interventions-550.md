@@ -1,6 +1,10 @@
 <a id="cache-completude-interventions-550"></a>
 # La clé de cache AN porte la COMPLÉTUDE, et la sauvegarde devient explicite (#550) (2026-08-28)
 
+`2026-08-28`
+
+> **En bref** — une clé doit décrire la complétude de ce qu'elle protège.
+
 Quatrième reprise de la même forme : **une clé de cache qui ne décrit pas ce
 qu'elle protège.**
 

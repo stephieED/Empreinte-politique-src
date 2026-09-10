@@ -1,6 +1,10 @@
 <a id="web-v3-ui"></a>
 # Interfacer web/UI_finale (CONTRECHAMP) aux données réelles (2026-08-08)
 
+`2026-08-08`
+
+> **En bref** — `web/UI_finale` câblé aux données réelles, à la place des mocks.
+
 **Contexte** : `web/UI_finale` (React/Vite) était câblé sur des données mock
 (`candidates.json`/`groups.json`/`mockGenerator.js`) bien plus riches en volume
 que les données réelles disponibles : `pivot_data/` ne couvrait alors que 8

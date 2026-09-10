@@ -1,6 +1,10 @@
 <a id="amendements-zero-silencieux-acteur-ref"></a>
 # Zéro amendement silencieux quand l'acteurRef est introuvable (#265, fix 5) (2026-08-17)
 
+`2026-08-17`
+
+> **En bref** — un acteurRef introuvable ne rend plus zéro amendement en silence.
+
 **Contexte** : re-check de #265 (« Zero amendments according to audit ») après
 la résolution de [[cache-amendements-forme-dedupliquee]] (#377),
 [[nettoyage-archive-brute-amendements]] (#264) et

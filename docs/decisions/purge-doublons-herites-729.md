@@ -1,6 +1,10 @@
 <a id="purge-doublons-herites-729"></a>
 # 185 doublons hérités retirés : l'outil existait, il n'avait jamais été relancé (#729) (2026-09-04)
 
+`2026-09-04`
+
+> **En bref** — **aucun code** : `src/purge_mandats_dupliques.py` (#387) couvrait déjà le cas et n'avait pas été relancé depuis la régénération du corpus ; **185 doublons retirés sur 13 des 641 profils** (4 ignorés faute d'`acteurRef`, **9** faute d'extraction AN — déclarés, non instruits) ; le critère de #387 regarde **le profil** et non le corpus — une entrée héritée n'est retirée que si le même profil porte déjà son équivalent AN, libellé normalisé correspondant et période recouvrante —, ce qui le rend plus sûr que la détection par **libellé contradictoire** de l'instruction de #729, qui n'en voyait que **18** : le chiffre soumis à l'arbitrage était donc trop étroit, dans le sens le moins grave ; « doublon » se lit à la normalisation près, **l'AN nommant par le thème nu quand NosDéputés préfixait la nature** (`Groupe d'études polices municipales` en `commission` retirée, `Polices municipales` en `groupe_etudes` conservée) — vérifié après application sur les 185 relues depuis git : **155 semblent orphelines libellé brut à libellé brut, 0 avec `_normalize_label`**, la première mesure étant naïve et le noter évitant qu'on la refasse en paniquant ; **les 41 entrées des 13 libellés non arbitrables ne sont pas touchées** — leurs deux catégories sont héritées, NosDéputés se contredisait lui-même et aucun référentiel vivant ne tranche, elles restent marquées par `categorie_source` (#718) sans être accusées et #729 reste ouverte pour elles ; **#730 n'est pas couvert** (`gabriel-attal` et `yael-braun-pivet` rendent 0 doublon, faute d'organe AMO30 nommé `Gouvernement`) ; **rien n'a bougé dans `pivot_data/`** — il faut un run, qui **bloquera au contrôle de perte** sur `mandats`, liste stable surveillée : perte voulue, nommée d'avance, à déclarer par `allow_declared_losses` après comparaison du rapport aux 185.
+
 ## 1. Ce que le lot fait, et ce qu'il n'écrit pas
 
 **Aucun code.** `src/purge_mandats_dupliques.py` (#387) couvrait déjà ce cas ;

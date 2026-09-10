@@ -1,6 +1,10 @@
 <a id="libelles-formulaire"></a>
 # Les descriptions d'input sont des LIBELLES, pas des descriptions (2026-08-20)
 
+`2026-08-20`
+
+> **En bref** — GitHub affiche la description d'un input comme libellé du champ : ce sont des libellés, pas des descriptions.
+
 Constat de l'utilisatrice en utilisant reellement le formulaire : **GitHub
 affiche la description comme libelle du champ et masque le nom de l'input.**
 

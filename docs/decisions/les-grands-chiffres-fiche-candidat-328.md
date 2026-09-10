@@ -2,6 +2,10 @@
 
 # « Les grands chiffres » : une frise qui commande deux colonnes appariées (#328) (2026-09-02)
 
+`2026-09-02`
+
+> **En bref** — le bloc de tête de la fiche candidat, arbitré en maquette : la frise du parcours devient l'ossature et sa couleur relie chaque piste à sa colonne (bleu/bronze, le seul couple qui survive au daltonisme rouge-vert) ; la posture passe en **motifs** et distingue « non déclarée par l'Assemblée » de « non renseignée chez nous » ; les lignes sont **appariées** et ordonnées par degré d'engagement de l'acte, les tirets étant des faits (« un ministre ne vote pas », son siège est tenu par son suppléant) ; une concentration ne s'affirme que si un texte porte **plus que tous les autres réunis** — un P90 a été essayé et écarté parce qu'un percentile ne peut jamais se taire ; les dossiers se listent **par date**, jamais par volume ; l'empreinte thématique vient de la **commission saisie au fond**, sourcée, jamais d'un titre ; et la ligne « votes » est **retirée** après trois tentatives mesurées, parce que tout ce qui serait retenable y est soit interdit (§2 règles 3 et 7) soit inaffichable en un chiffre — c'est en la construisant qu'on a failli publier qu'Attal avait voté contre sa propre loi, ce qui a ouvert #711.
+
 Bloc de tête de la fiche candidat, arbitré en maquette avec la propriétaire du
 dépôt les 01 et 02/09/2026. Aucun code n'est écrit à ce jour : cette décision
 fige ce qui a été tranché pour que l'implémentation ne le redécouvre pas.

@@ -1,6 +1,10 @@
 <a id="ci-tests-pytest"></a>
 # Un job CI exécute la suite de tests : audit préalable et arbitrages (#473) (2026-08-20)
 
+`2026-08-20`
+
+> **En bref** — aucun test ne lit le corpus vivant ni le réseau ; le sparse-checkout le rend structurel.
+
 Aucun workflow n'exécutait les 1 632 tests. `grep -rln pytest .github/workflows/`
 ne renvoyait que `claude.yml`, et uniquement dans `--allowed-tools` — une
 autorisation donnée à l'agent de revue, pas un job. La suite n'était verte que si

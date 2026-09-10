@@ -1,5 +1,9 @@
 # Un code de nomenclature n'est pas une profession, et « sans activité professionnelle » n'en est pas une (#641) (2026-08-31)
 
+`2026-08-31`
+
+> **En bref** — 8 des 457 profils qui renseignent `identite.profession` publiaient un code brut `(nn) - ` ; le préfixe est retiré (3 profils) et l'énoncé d'une absence passe à `null` (5 profils), sur un critère en deux parties — la famille du code 8x **et** le libellé de la source — parce que la famille seule nullerait « Elève, étudiant » ; le filtre existe aux deux étages parce que la fusion ne fait jamais régresser un scalaire vers `null`, donc la collecte corrigée seule laisserait les cinq libellés en place indéfiniment.
+
 Mesuré le 31/08/2026 sur les 481 profils publiés : **8 des 457** qui renseignent
 `identite.profession` publiaient un code de nomenclature brut, préfixé
 `(nn) - `. Le champ est **affiché** — `pivotAdapter.js` le rend comme qualité

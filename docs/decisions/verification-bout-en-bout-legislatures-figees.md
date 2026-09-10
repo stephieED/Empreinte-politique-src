@@ -1,6 +1,10 @@
 <a id="verification-bout-en-bout-legislatures-figees"></a>
 # Vérification de bout en bout des législatures figées 15/16 (#273, clôture de l'epic #268) (2026-08-17)
 
+`2026-08-17`
+
+> **En bref** — vérification de bout en bout des législatures figées 15/16 : aucun changement de code nécessaire.
+
 **Contexte** : sous-issue 5/5 de #268, débloquée une fois #269/#270/#271/#272
 fermées. Vérification uniquement, aucun changement de code attendu — et
 aucun n'a été nécessaire.

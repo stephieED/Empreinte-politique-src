@@ -1,5 +1,9 @@
 # `--limit` + `--skip-existing` sur `extract-roster-groupes` : sélection progressive + rafraîchissement (2026-08-12)
 
+`2026-08-12`
+
+> **En bref** — conquête de couverture et rafraîchissement ne sont pas le même besoin.
+
 **Contexte** : #224 diagnostique que la combinaison `--skip-existing` +
 `--limit N` fixe (introduite par #192, voir section précédente) empêche à la
 fois la conquête progressive de couverture du roster et le rafraîchissement

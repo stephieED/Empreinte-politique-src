@@ -1,6 +1,10 @@
 <a id="pivot-freshness-timestamps-stables"></a>
 # `genere_le`/`synchro_le` des pivots ne doivent avancer que si le contenu change réellement (#343) (2026-08-16)
 
+`2026-08-16`
+
+> **En bref** — `genere_le`/`synchro_le` n'avancent que si le contenu change réellement.
+
 **Contexte** : en creusant les conséquences de l'angle mort `if: always()`
 documenté ci-dessous ([[resilience-generate-data-shutdown-signal]]), constat
 sur un run réel (`extract-an`/`extract-roster-groupes` en échec, aucune

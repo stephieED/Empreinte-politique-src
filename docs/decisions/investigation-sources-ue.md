@@ -1,4 +1,9 @@
 # Données UE — investigation des sources (2026-08-04)
+
+`2026-08-04`
+
+> **En bref** — trois pistes mesurées (ParlTrack, profils Europarl, HowTheyVote) sur le même échantillon de 3 candidats : les dumps ParlTrack sont la seule source qui attribue amendements et rapports à un député européen donné.
+
 <a id="investigation-sources-ue"></a>
 
 **Ce fichier n'est pas une doc de job.** C'est le rapport d'investigation qui a

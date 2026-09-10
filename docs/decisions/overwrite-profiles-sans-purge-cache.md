@@ -1,6 +1,10 @@
 <a id="overwrite-profiles-sans-purge-cache"></a>
 # `overwrite_profiles` : écraser les profils sans purger le cache (2026-08-19)
 
+`2026-08-19`
+
+> **En bref** — écraser les profils sans purger le cache : deux axes distincts, déjà.
+
 **Contexte** : la correction de clé des amendements (#440, préalable à #431)
 impose un premier run **en écrasement**. Les profils committés n'ont pas de
 champ `uid` ; la nouvelle clé de fusion est `uid or source_url or (numero,

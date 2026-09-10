@@ -1,6 +1,10 @@
 <a id="telechargement-an-trois-modes-defaillance"></a>
 # Régénérer l'existant : `--refresh-existing`, l'inverse de `--skip-existing` (#445) (2026-08-19)
 
+`2026-08-19`
+
+> **En bref** — `--refresh-existing`, l'inverse de `--skip-existing` : régénérer l'existant sans sauter les profils à corriger.
+
 Une correction de fond — la clé `uid` de #440 — ne concerne que les profils
 **déjà écrits**. Le job `extract-roster-groupes` posait `--skip-existing` en
 dur, et ce flag s'applique **avant** `--no-merge` : un run

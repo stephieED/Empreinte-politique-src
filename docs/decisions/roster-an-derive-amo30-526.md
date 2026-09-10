@@ -2,6 +2,10 @@
 <a id="perimetre-17e-legislature-526"></a>
 # Le roster des groupes AN est dérivé d'AMO30, derrière un drapeau baissé (#526, lot 1 de l'épic « une seule source AN ») (2026-08-26)
 
+`2026-08-26`
+
+> **En bref** — le roster AN dérivé d'AMO30 est livré derrière un drapeau baissé, avec l'écart publié entrée par entrée comme compteur de migration.
+
 > **Entrée historique.** La bascule a eu lieu le même jour (#527, section
 > ci-dessus) : le drapeau est à `True`, et l'option `--activer-roster-an`
 > mentionnée plus bas a été **retirée** au profit de `--desactiver-roster-an`.

@@ -1,6 +1,10 @@
 <a id="publication-scopee-artifacts"></a>
 # Un artifact = la contribution d'un job : ce qu'on publie décide de ce qu'on peut corriger (#450) (2026-08-19)
 
+`2026-08-19`
+
+> **En bref** — republier la ligne de base défait `--no-merge` et fait entrer les shards en collision.
+
 Le run `32277443716` (19/08/2026, sha `698a882`, `overwrite_profiles=true` +
 `roster_refresh_existing=true` + `roster_extraction_limit=0`) devait faire
 passer les 205 profils de roster sur la clé `uid` de #440. Les 8 shards ont

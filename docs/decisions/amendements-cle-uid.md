@@ -1,6 +1,10 @@
 <a id="amendements-cle-uid"></a>
 # Amendements : la clé du store est l'`uid`, jamais le `numero` (préalable à #431) (2026-08-18)
 
+`2026-08-18`
+
+> **En bref** — la clé du store d'amendements est l'`uid` AN, jamais le `numero` qui repart à 1.
+
 **Contexte** : #431 (sous-issue de l'épic volumétrie #429) prescrivait de
 normaliser `amendements[]` en écrivant dans chaque profil un mapping
 `{numero, role_signataire}` pointant vers une liste dédupliquée, en réutilisant

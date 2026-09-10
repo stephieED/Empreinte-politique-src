@@ -1,5 +1,9 @@
 # Suite du 26/08/2026 : les trois archives vérifiées, les deux défauts de parseur corrigés
 
+`2026-08-26`
+
+> **En bref** — les trois archives Syceron vérifiées au `content-length`, et les deux défauts de parseur (traversée, titre de point) corrigés.
+
 Les **trois** archives de `SYCERON_AVAILABLE_LEGISLATURES` ont été téléchargées
 et vérifiées au `content-length` (148 954 869 / 57 553 703 / 55 772 428 octets,
 2 768 comptes rendus). Ce que le 20/08 n'avait pas pu faire, faute d'une source

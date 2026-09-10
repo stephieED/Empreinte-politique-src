@@ -1,6 +1,10 @@
 <a id="taxonomie-mandats-typeorgane-an"></a>
 # Taxonomie des mandats : exploitation des `typeOrgane` AN non mappés (#382, option « mixte ») (2026-08-17)
 
+`2026-08-17`
+
+> **En bref** — la moitié du référentiel était inexploitée.
+
 **Contexte** : #369 avait mappé 3 `typeOrgane` sur ~25 (« périmètre
 minimal-invasif »). Mesuré sur 65 profils résolus AN, cela laissait
 **3 150 mandats inexploités contre 3 273 exploités** — presque la moitié du

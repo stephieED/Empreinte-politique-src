@@ -1,6 +1,10 @@
 <a id="budget-collecte-source-injoignable-514"></a>
 # Une source injoignable ne consomme plus le timeout d'un job, et son silence cesse de se lire comme un constat (#514) (2026-08-21)
 
+`2026-08-21`
+
+> **En bref** — une source injoignable ne consomme plus le timeout du job, et son silence cesse de se lire comme un constat.
+
 **État relu le 21/08/2026 à 06:40 UTC ; `origin/main` = `921d1fd`.** Toutes les
 mesures ci-dessous viennent des logs du run `32421439590` (job `extract-senat` =
 `96594132947`, job `merge-and-pivot` = `96601126605`), relus après coup —

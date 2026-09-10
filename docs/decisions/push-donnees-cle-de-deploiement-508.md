@@ -1,6 +1,10 @@
 <a id="push-donnees-cle-de-deploiement-508"></a>
 # Rétablir le check requis sans bloquer le bot : le push de données passe par une clé de déploiement (#508) (2026-08-27)
 
+`2026-08-27`
+
+> **En bref** — le push de données passe par une clé de déploiement, seul moyen de rétablir un check requis sans bloquer le bot.
+
 Le check requis `Suite complète` a été ajouté au ruleset `20260729_ruleset` le
 20/08/2026, puis **retiré le soir même** parce qu'il avait fait rejeter le push
 du bot de génération. Depuis, le dépôt tourne **sans aucun check bloquant** : le

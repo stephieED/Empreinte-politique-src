@@ -1,6 +1,10 @@
 <a id="oom-reconstruction-amendements-figees"></a>
 # OOM lors de la relecture d'un index amendements figé déjà en cache (exécution locale) (2026-08-17)
 
+`2026-08-17`
+
+> **En bref** — OOM à la relecture d'un index figé déjà en cache, en exécution locale.
+
 **Contexte** : exécution locale via `scripts/generate_data_local.sh`.
 Symptôme rapporté : la section 3d de `check_quality_gate.py` signale la
 législature 15 comme « jamais construit », alors qu'elle est bien dans

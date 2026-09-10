@@ -1,6 +1,10 @@
 <a id="mode-extraction-leger-roster"></a>
 # Mode d'extraction léger pour `extract-roster-groupes` (#357, sous-issue 6/6 de #351) (2026-08-16)
 
+`2026-08-16`
+
+> **En bref** — mode d'extraction léger pour `extract-roster-groupes`, une fois l'identité résolue côté AN.
+
 **Contexte** : une fois #355 en place (identité biographique des députés
 résolue depuis l'AN, indépendante d'un appel réseau NosDéputés préalable),
 un membre roster n'a quasiment plus besoin d'appeler nosdeputes.fr pour son

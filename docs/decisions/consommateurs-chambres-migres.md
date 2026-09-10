@@ -1,6 +1,10 @@
 <a id="consommateurs-chambres-migres"></a>
 # Les consommateurs de `chambre` migrés vers `chambres`, et le garde-fou qui datera son retrait (#494) (2026-08-20)
 
+`2026-08-20`
+
+> **En bref** — les consommateurs de `chambre` migrés vers `chambres`, avec le garde-fou qui datera le retrait du scalaire.
+
 Sous-issue **E** de l'épic **#486**, après #493 (D, PR #504) qui a créé la liste
 dérivée `chambres` et l'a fait coexister avec le scalaire « le temps de
 reprendre les consommateurs un par un ».

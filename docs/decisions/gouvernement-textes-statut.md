@@ -1,6 +1,10 @@
 <a id="gouvernement-textes-statut"></a>
 # `gouvernement_textes.py` : filtre de statut par décision de séance, pas par `codeActe`/`fam_code` seul (#210) (2026-08-14)
 
+`2026-08-14`
+
+> **En bref** — le statut d'un texte se lit sur la décision de séance, pas sur le `codeActe`/`fam_code` seul.
+
 **Contexte** : #210 (sous-issue de #184) demandait la collecte des dossiers
 législatifs d'origine gouvernementale et l'extraction de leur statut, en
 s'appuyant sur le mapping `statutConclusion.fam_code` confirmé par le spike

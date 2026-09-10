@@ -1,6 +1,10 @@
 <a id="mandats-officiels-an-369"></a>
 # Mandats commission/groupe_amitie/extra_parlementaire sourcés depuis l'AN, fetch_identity NosDéputés rendu conditionnel (#369, complet), watchdog générique sur tous les téléchargements zip (#370, complet) (2026-08-17)
 
+`2026-08-17`
+
+> **En bref** — mandats commission/groupe d'amitié/extra-parlementaire sourcés depuis l'AN ; watchdog générique sur tous les téléchargements zip.
+
 **Contexte** : run `#44` de `generate-data.yml` — tous les shards `extract-an`
 en échec, y compris les candidats non-députés (finissaient auparavant en
 15-20s). Log de Bruno Retailleau : les 8 tentatives `fetch_identity`

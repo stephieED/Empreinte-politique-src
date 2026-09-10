@@ -1,6 +1,10 @@
 <a id="gouvernement-textes-statut-49-3-rejete"></a>
 # `KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL` : ajout de `rejete_49_3` (#208, réouverte) (2026-08-14)
 
+`2026-08-14`
+
+> **En bref** — `rejete_49_3` ajouté à la nomenclature fermée : le 49.3 n'est pas qu'une voie d'adoption.
+
 **Contexte** : la nomenclature fermée des statuts de texte gouvernemental
 (#208, fusionnée dans `main`) n'anticipait le 49.3 (art. 49 al. 3 de la
 Constitution) que comme voie d'**adoption** (`statut = "adopte_49_3"`). En

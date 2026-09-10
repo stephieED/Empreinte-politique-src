@@ -1,6 +1,10 @@
 <a id="cache-fraicheur-interventions-555"></a>
 # Les `restore-keys` du cache AN traversaient les semaines : la fraîcheur ne se met pas dans la clé, elle se lit dans celle qu'on a restaurée (#555) (2026-08-28)
 
+`2026-08-28`
+
+> **En bref** — la semaine était dans la clé depuis toujours ; c'est la restauration qui la contournait.
+
 Cinquième reprise de la même famille — mais la première où **la clé ne cache
 rien**. Les quatre précédentes ont ajouté à la clé la dimension qui lui
 manquait. Ici, la semaine y est depuis toujours ; c'est la **restauration** qui

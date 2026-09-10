@@ -1,6 +1,10 @@
 <a id="instructions-une-source-plusieurs-noms"></a>
 # Une seule source d'instructions, plusieurs noms de fichiers (#612) (2026-08-30)
 
+`2026-08-30`
+
+> **En bref** — `AGENTS.md` reste le fichier ; `CLAUDE.md` et `.github/copilot-instructions.md` sont des liens symboliques vers lui. Claude Code suit le lien, vérifié ; Copilot non vérifié.
+
 ## Contexte
 
 Les outils n'attendent pas le même nom. Claude Code charge `CLAUDE.md` ; GitHub

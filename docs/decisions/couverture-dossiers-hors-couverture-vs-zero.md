@@ -1,6 +1,10 @@
 <a id="couverture-dossiers-hors-couverture-vs-zero"></a>
 # Couverture des dossiers : « hors couverture de la source » ≠ « réellement à zéro » (#399) (2026-08-18)
 
+`2026-08-18`
+
+> **En bref** — « hors couverture de la source » n'est pas « réellement à zéro » : le warning cesse d'affirmer un défaut de données.
+
 **Contexte** : le quality gate signalait « aucun texte porté malgré une
 période renseignée » pour tout gouvernement dont `textes[]` était vide. Après
 #400, il ne restait que Fillon II/III — dont la XIII<sup>e</sup> législature

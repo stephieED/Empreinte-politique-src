@@ -2,6 +2,8 @@
 
 `2026-09-09`
 
+> **En bref** — constaté sur le **run `34377413730`**, vert et committé, en lisant les profils un par un : **3 profils sur 6** (`raphael-glucksmann`, `florian-philippot`, `lydie-massard`) publiaient leurs votes du Parlement européen **sans la borne de fraîcheur** arbitrée le matin même, et **6 sur 6** portaient « ParlTrack (fallback) : dumps absents ce run » à côté de 1 977 votes venus de ces dumps ; **le garde-fou de #602 n'a pas échoué, il manquait un cas** — `extract-ue-officiel` écrit une couverture sans volet européen, `merge-and-pivot` en écrit une avec, même jour et même rang, donc la règle 4 conservait la couverture déjà publiée et les profils le déclaraient sous « couverture divergente non tranchée » ; d'où une **cinquième règle, avant la non-décision** : à date et rang égaux, l'écrivain qui couvre **strictement plus de sources** l'emporte — un sur-ensemble strict n'est pas une contradiction, il dit tout ce que l'autre dit plus une source de plus —, avec la borne explicite et testée que deux jeux de sources simplement **différents** restent non tranchables, sans quoi la règle redeviendrait le « dernier qui parle a raison » que #602 a retiré ; la source se lit sur `couverture[].source`, **facultatif et dont l'absence signifie « Assemblée nationale »** (100 % des entrées d'avant ce lot), jamais sur le texte de la preuve ; et la reprise de la veille est étendue au **troisième** constat ParlTrack — l'énumération était incomplète, pas la règle. **Aucun des deux n'aurait fait échouer un run**, et aucun n'a été trouvé par un test : seulement en relisant les profils committés. Suite complète à 4 366, 0 échec.
+
 ## Contexte
 
 Constaté sur le **run `34377413730`**, le premier à publier du matériau européen

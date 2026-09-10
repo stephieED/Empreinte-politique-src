@@ -1,5 +1,9 @@
 # Le lien code → décisions se dérive, il ne s'écrit pas à la main (2026-08-30)
 
+`2026-08-30`
+
+> **En bref** — `docs/decisions-par-module.md` est généré : une décision **gouverne** un module quand elle nomme un de ses symboles de tête, elle le **mentionne** quand elle n'écrit que le fichier ; `merge_profile.py` citait 0 des 39 décisions qui le gouvernent, et le seuil de 5 du test ferme la régression.
+
 `docs/technical_decisions.md` va des **décisions vers le code** et se lit par
 date. Rien n'allait du **code vers ses décisions**, sauf quand quelqu'un avait
 pensé à écrire le renvoi dans le module. Un agent qui ouvre un fichier de `src/`

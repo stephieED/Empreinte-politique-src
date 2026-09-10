@@ -1,6 +1,10 @@
 <a id="audit-plages-temporelles"></a>
 # Épic #316 — tableaux croisés des plages temporelles (#317/#318/#320/#321) : bilan et décisions transverses (2026-08-15)
 
+`2026-08-15`
+
+> **En bref** — tableaux croisés des plages temporelles : bilan de l'épic et décisions transverses.
+
 **Contexte** : #316 fait suite à #174 (« Amélioration de la pipeline audit »,
 clos), qui avait ajouté le tableau croisé des **volumes** par candidat
 (`compute_tableau_croise_candidats`). Ce tableau répond à « combien

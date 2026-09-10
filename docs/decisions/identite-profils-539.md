@@ -1,6 +1,10 @@
 <a id="identite-profils-539"></a>
 # Comment naît l'identité d'un profil, et où vont les identifiants de source (#539) (2026-08-28)
 
+`2026-08-28`
+
+> **En bref** — comment naît l'identité d'un profil, et pourquoi les identifiants de source ne vivent plus dans l'`id`.
+
 La question de l'issue était « comment naît un identifiant ». La réponse a été
 cadrée par une mesure qui contredisait sa prémisse : **le slug n'était déjà
 plus l'`id`.**

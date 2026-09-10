@@ -1,6 +1,10 @@
 <a id="amendements-index-cache-only-split"></a>
 # Séparer téléchargement/construction et lecture cache-only dans `_build_acteur_amendement_index` (#250) (2026-08-13)
 
+`2026-08-13`
+
+> **En bref** — téléchargement/construction et lecture cache-only séparés en deux points d'entrée.
+
 **Contexte** : sous-issue 2/6 du plan d'architecture #248, bloquée par
 [[amendements-index-budget-ci-cache-granularite]] (#249, granularité de cache
 tranchée : clé hebdomadaire existante, `.cache/amendements_an/<legislature>/

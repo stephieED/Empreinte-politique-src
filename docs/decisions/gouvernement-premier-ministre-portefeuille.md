@@ -1,6 +1,10 @@
 <a id="gouvernement-premier-ministre-portefeuille"></a>
 # `gouvernement_profile` : `premier_ministre` et `portefeuille` câblés depuis les mandats `MINISTERE` (#398) (2026-08-18)
 
+`2026-08-18`
+
+> **En bref** — deux taux à zéro documentés comme limites de source ne l'étaient plus.
+
 **Contexte** : l'audit remontait deux taux à **zéro absolu** — `premier_ministre`
 0/10, `membres[].portefeuille` 0/36 — documentés comme des limites de source.
 Les deux justifications étaient périmées : #382/#383 avaient mappé

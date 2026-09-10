@@ -1,6 +1,10 @@
 <a id="retry-generate-data-preemption"></a>
 # Retry automatique de `generate-data.yml` sur signature de préemption runner (#230) (2026-08-12)
 
+`2026-08-12`
+
+> **En bref** — retry automatique sur signature de préemption runner.
+
 **Contexte** : #217/#221/#228 (voir [[verification-billing-actions]] et
 [[ci-cd]] ci-dessous) ont établi qu'un `generate-data.yml` tué par un
 `shutdown signal` runner GitHub (préemption infra transitoire, hors contrôle

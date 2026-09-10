@@ -1,6 +1,10 @@
 <a id="defaut-collecte-vs-panne-562"></a>
 # Une exception n'est pas une preuve, et un défaut de notre code n'est pas une panne de l'Assemblée nationale (#562) (2026-08-28)
 
+`2026-08-28`
+
+> **En bref** — un `TypeError` du dépôt, attrapé, était publié comme un état de la source.
+
 Sur les **481 profils publiés** au 28/08/2026 (`f5e20b6`, run `33165786207`),
 **99** publiaient `amendements: []` avec, pour preuve de leur état de
 couverture :

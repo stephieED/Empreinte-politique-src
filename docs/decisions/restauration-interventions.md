@@ -1,6 +1,10 @@
 <a id="restauration-interventions"></a>
 # Restaurer 789 interventions sans revenir sur le reste du schéma (#460) (2026-08-19)
 
+`2026-08-19`
+
+> **En bref** — restaurer 789 interventions champ par champ, sans revenir sur le reste du schéma.
+
 Le commit de données `a125e9e` a effacé la totalité des interventions du
 corpus, brut **et** pivot, et la perte s'est propagée aux deux champs qui en
 dérivent — `tags_thematiques` des profils, `tags_thematiques_agreges` des

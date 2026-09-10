@@ -1,6 +1,10 @@
 <a id="amendements-index-job-dedie-ci"></a>
 # Job CI dédié `extract-amendements-an` : construction inconditionnelle des 3 index de législature (#251) (2026-08-13)
 
+`2026-08-13`
+
+> **En bref** — un job CI dédié construit inconditionnellement les 3 index de législature.
+
 **Contexte** : sous-issue 3/6 du plan d'architecture #248, bloquée par #250
 ([[amendements-index-cache-only-split]], qui isole
 `_download_and_build_amendement_index` comme point d'entrée réseau

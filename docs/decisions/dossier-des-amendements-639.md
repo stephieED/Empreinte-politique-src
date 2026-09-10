@@ -1,5 +1,9 @@
 # Un amendement retrouve son dossier, et la clé qu'on lui avait retirée (#639, rang 3)
 
+`2026-08-31`
+
+> **En bref** — `fetch_amendements_officiels` écrivait `record["texte_vise"] = titre` **avant** l'écriture du profil brut : 293 582 des 484 132 amendements publiés (60,6 %) n'ont plus qu'un libellé, et les 190 550 qui ont gardé leur uid de document AN ne le doivent qu'aux trous de l'index de titres (59 263 pour la seule XIVe) ; la brique qui joint le texte au dossier — `json/document/*.json`, décrit « sans rapport, à filtrer » depuis le spike #207 — porte `dossierRef` sur **21 936 de ses 21 937 uid**, avec **0 divergence** entre les trois archives, et le rattachement se fait donc d'uid à uid, jamais par libellé même à l'égalité stricte (§2 règle 2) ; le `dossier_id` vit **une fois par texte** dans une table de fichier — 484 132 amendements ne visent que 2 248 textes distincts — ce qui coûte **+0,10 Mio mesuré après écriture** sur les quatre index (+0,04 sur `15.json`) contre +5,7 Mio pour un champ par amendement ; couverture immédiate **130 244 / 484 132 (26,9 %)** sans aucune recollecte et 99,4 % des codes présents sur XV-XVII, les 353 888 restants comptés et déclarés (291 177 en attente de recollecte, 59 236 de la XIVe dont aucune archive de dossiers n'est ingérée) ; aucun index figé n'est refusé, contrairement au rang 1 — les trois portent déjà le code.
+
 *31/08/2026 — issue #639, rang 3. Les rangs 1 et 2 sont livrés
 ([[qualification-scrutins-et-cle-dossier-639]]) ; le rang 4 — le rattachement
 scrutin → dossier — n'est pas traité ici.*

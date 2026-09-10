@@ -1,6 +1,10 @@
 <a id="publication-dun-job-annule"></a>
 # Un préfixe de flux est valide, un préfixe de profil est faux (#460) (2026-08-20)
 
+`2026-08-20`
+
+> **En bref** — un préfixe de flux est valide, un préfixe de profil est faux : ce qu'un job annulé a le droit de publier.
+
 > ⚠️ **Diagnostic corrigé le 20/08/2026 — voir [[collecte-vide-necrase-jamais]] (#465).**
 > Cette entrée attribue la destruction du run `32302557156` à la publication
 > d'un job **annulé** et au `if: always()` de l'étape de publication. C'est

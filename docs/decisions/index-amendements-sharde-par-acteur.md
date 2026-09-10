@@ -1,6 +1,10 @@
 <a id="index-amendements-sharde-par-acteur"></a>
 # Index amendements shardé par acteur (#392) (2026-08-17)
 
+`2026-08-17`
+
+> **En bref** — 93 % du coût d'extraction d'un membre était la relecture de l'index.
+
 **Contexte** : la mesure de [[budget-roster-mesure]] (#376) a montré que **93 %
 du coût d'extraction d'un membre du roster** (10,9 s sur 11,7 s) était la
 relecture des index amendements — 673 Mo de JSON reparsés à **chaque**

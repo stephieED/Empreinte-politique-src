@@ -1,5 +1,9 @@
 # L'effectif d'un groupe dans le temps : `min_historique` et `max_historique` portent leur date (#702) — 01/09/2026
 
+`2026-09-01`
+
+> **En bref** — les deux champs valaient `null` sur les **7 fiches** depuis l'origine du schéma ; ils publient désormais `{valeur, date}`, balayés à chaque `debut_dans_groupe` et au **lendemain** de chaque `fin_dans_groupe` (borne de fin inclusive, `_appartenance_couvre`), sur la **fenêtre de la fiche** — `periode.debut` → `periode.fin`, `date_reference.date` prenant le relais tant que la période est ouverte, jamais au-delà. Mesuré sur les 5 fiches AN de la XVIe : **REN 167 → 175**, **RN 87 → 89**, **LFI 74 → 75**, **LR 61 → 61**, **SOC 31 → 31** — l'écart `membres[]` / `a_la_date_de_reference` (24 sur REN) est de la **rotation**, pas une amplitude, et le lire comme telle aurait publié un chiffre trois fois trop grand. **Seuil 0** : une seule entrée sans `debut_dans_groupe` laisse les deux bornes à `null` avec son motif — ce membre n'est comptable à aucune date (#653), et les bornes obtenues sans lui sont des bornes inférieures (0 / 452 sur les 5 fiches AN, 14 / 15 et 4 / 5 sur les 2 fiches Sénat gelées, #516, qui gardent `null`). Limite nommée et non mesurée : `membres[]` ne porte qu'**un intervalle par membre** (périodes recollées, #526), donc un départ suivi d'un retour reste invisible et l'amplitude est un minorant. Trois formes lues (`null`, entier nu hérité, objet), une seule produite ; ni série, ni taux, ni classement (§2 règle 1).
+
 ## Contexte
 
 Une fiche de groupe publiait un effectif **à une date** pour décrire une

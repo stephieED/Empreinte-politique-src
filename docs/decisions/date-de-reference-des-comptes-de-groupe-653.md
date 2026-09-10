@@ -1,5 +1,9 @@
 # Tous les comptes d'une fiche de groupe se rapportent à une date, et elle est publiée (#653) (2026-08-31)
 
+`2026-08-31`
+
+> **En bref** — aucune des 7 fiches ne décrit la législature en cours, or trois compteurs disaient « aujourd'hui » et mesuraient en fait la **carrière ultérieure** des membres : `effectif.actuel` égalait exactement le nombre de membres portant un mandat électif ouvert (38/38, 85/85, 60/60 sur `LR`, `REN`, `LFI`) et `nb_membres_actifs` comptait leur commission **d'aujourd'hui** ; une `date_reference` dérivée — clôture de la période si toutes les appartenances sont refermées, génération sinon — est **publiée** dans la fiche et les trois compteurs s'y rapportent, renommés pour le dire (`a_la_date_de_reference`, `present_a_la_date_de_reference`) ; les valeurs annoncées à l'arbitrage **ne se reproduisent pas** (REN 85 → 169), et deux contrôles indépendants établissent les nouvelles — égalité avec les mandats de groupe clos le jour de la dissolution, et la contrainte « une seule commission permanente » (#656) retrouvée à l'unité près sur 4 fiches sur 5 ; sélectionner le mandat **ouvert à cette date** est ce qui rend le compteur juste (sans quoi les affaires sociales LFI tombent de 9 à 3), le cumul et le nombre d'entrées restant identiques au bit près.
+
 Une fiche de groupe décrit **une législature**, et aucune des 7 publiées ne
 décrit la législature en cours. Tout compteur ancré sur « aujourd'hui » y est
 donc vide de sens. Trois l'étaient :

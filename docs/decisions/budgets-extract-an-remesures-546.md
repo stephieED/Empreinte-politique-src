@@ -1,6 +1,10 @@
 <a id="budgets-extract-an-remesures-546"></a>
 # La décomposition d'un shard `extract-an`, et les deux budgets recalés dessus (#546) (2026-08-27)
 
+`2026-08-27`
+
+> **En bref** — décomposition mesurée d'un shard `extract-an`, et les deux budgets recalés dessus.
+
 Suite de [#budgets-extract-an-perimes-546](budgets-extract-an-perimes-546.md), qui
 constatait que les deux budgets ne valaient plus sans dire par quoi les
 remplacer. Voici la mesure, puis l'arbitrage.

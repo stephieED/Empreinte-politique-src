@@ -1,6 +1,10 @@
 <a id="refonte-inputs-workflow"></a>
 # Le formulaire de lancement disait pourquoi, pas quoi (2026-08-20)
 
+`2026-08-20`
+
+> **En bref** — un formulaire de lancement dit quoi, pas pourquoi : 575 mots de description ramenés à des libellés.
+
 Les neuf inputs de `workflow_dispatch` portaient **~575 mots** de description,
 jusqu'a 138 pour `roster_extraction_limit` seul. Elles avaient grossi par
 sedimentation : chaque incident y ajoutait son rationale, ses numeros d'issue

@@ -1,6 +1,10 @@
 <a id="perimetre-controle-perte"></a>
 # Le périmètre du contrôle de perte : ce qu'il couvre, ce qu'il ne couvre pas (#470) (2026-08-20)
 
+`2026-08-20`
+
+> **En bref** — les cinq couches publiées et les deux index partagés, pas seulement les profils.
+
 Le contrôle branché par #460 avant le commit de données ([[controle-de-perte-avant-commit]])
 avait deux angles morts, et les deux ont laissé passer une perte réelle **alors
 qu'il tournait** :

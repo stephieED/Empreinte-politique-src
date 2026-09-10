@@ -1,6 +1,10 @@
 <a id="scission-cache-ci-ecartee"></a>
 # Scission du cache CI `.cache` par sous-répertoire : écartée (#374, fermée non planifiée) (2026-08-17)
 
+`2026-08-17`
+
+> **En bref** — scinder le cache CI par sous-répertoire : écartée, avec les chiffres qui l'écartent.
+
 **Contexte** : #374 proposait de scinder le cache GitHub Actions partagé
 `public-data-cache-an-*` (`path: .cache`) en deux entrées — amendements d'un
 côté, le reste de l'autre — au motif que chaque shard `extract-an` restaurait

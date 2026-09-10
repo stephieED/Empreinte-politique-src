@@ -1,6 +1,10 @@
 <a id="provenance-pivot"></a>
 # Provenance des profils pivot : candidat_declare vs roster_groupe (2026-08-10)
 
+`2026-08-10`
+
+> **En bref** — `meta.provenance` distingue `candidat_declare` de `roster_groupe`.
+
 **Contexte** : #188 introduit `generate_roster_candidats.py`, qui produit une
 liste de "candidats" alternative à `raw_data/candidats.json`, pilotée par la
 composition réelle des groupes parlementaires (`statut: "roster_groupe"`) plutôt

@@ -1,5 +1,9 @@
 # `meta.warnings[]` déclare son destinataire, dans un jumeau typé et aligné (#642) (2026-08-31)
 
+`2026-08-31`
+
+> **En bref** — 52 des 481 profils publiés portent 115 avertissements dont **80 internes et 35 lisibles** (re-mesuré le 31/08/2026), sans rien qui les partitionne : l'interface ne publiait donc aucun des deux registres, et la page de `bruno-retailleau` restait sans explication alors qu'elle est écrite dans le fichier ; le destinataire est désormais déclaré **par avertissement, à l'endroit qui l'écrit** — vocabulaire fermé à deux valeurs, obligatoire, validé — dans `meta.avertissements[]`, jumeau typé et **aligné entrée par entrée** sur `meta.warnings[]`, ce qui rend une disparition impossible là où `audit_diff_profils` ne surveille rien ; une table indexée sur le préfixe est écartée parce que « votes introuvables » couvre à la fois un constat et une panne (#484 à l'identique), le constat ParlTrack **s'écrit deux fois** faute de destinataire « mixte », et les 19 avertissements `synchro_sources.nosdeputes` qu'aucun code n'écrit plus sont typés par une table fermée indexée sur le message entier.
+
 `meta.warnings[]` mélangeait deux registres sous un seul champ, et rien ne
 permettait de les séparer par programme. L'interface ne pouvait donc ni tout
 publier — de la plomberie sur une page publique — ni rien publier — elle perdait

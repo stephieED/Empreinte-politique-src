@@ -1,6 +1,10 @@
 <a id="dossiers-multi-archives-origine-document"></a>
 # Dossiers législatifs : ingestion multi-archives, origine par document déposé, statut `promulgue` (#400) (2026-08-18)
 
+`2026-08-18`
+
+> **En bref** — ingestion multi-archives des dossiers, origine déterminée par document déposé, statut `promulgue` ajouté.
+
 **Contexte** : `gouvernement_textes.py` ne lisait qu'une archive, celle de la
 XVII législature. Elle est multi-législature mais ne garde des précédentes
 qu'une **traîne résiduelle** : aucun projet de loi antérieur à la XVI. Les

@@ -1,6 +1,10 @@
 <a id="extraction-groupe-suspendue-516"></a>
 # Suspendre l'extraction des deux groupes Sénat, sans les retirer de la config (#516) (2026-08-24)
 
+`2026-08-24`
+
+> **En bref** — le bloc exige `depuis`, `motif`, `references`, `condition_reprise`.
+
 **Décision temporaire, réversible d'une ligne, et datée.** Elle ne tranche pas
 la question éditoriale du maintien des groupes Sénat — elle débloque le
 pipeline pendant qu'elle reste ouverte.

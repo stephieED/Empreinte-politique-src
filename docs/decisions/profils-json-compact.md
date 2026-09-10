@@ -1,6 +1,10 @@
 <a id="profils-json-compact"></a>
 # Profils écrits en JSON compact, groupes et gouvernements indentés (#433) (2026-08-18)
 
+`2026-08-18`
+
+> **En bref** — profils écrits en JSON compact (35 % du volume n'était que de l'indentation) ; groupes et gouvernements restent indentés.
+
 **Contexte** : troisième levier de l'épic volumétrie #429. La mesure sur les 752
 profils du roster complet (`audit_volumetrie_profils.py`,
 `audit/volumetrie_roster_752.md`) donne 8 093 Mo sur disque pour 5 263 Mo de

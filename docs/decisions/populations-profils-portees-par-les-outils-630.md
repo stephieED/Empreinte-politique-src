@@ -1,6 +1,10 @@
 <a id="populations-profils-portees-par-les-outils-630"></a>
 # Les deux populations de `pivot_data/profiles/` sont portées par les outils, pas par une consigne (#630, 2026-08-30)
 
+`2026-08-30`
+
+> **En bref** — `check_quality_gate.py` ne contenait pas une occurrence de `provenance` et intitulait « Candidats » des sections portant sur les 481 profils (13 candidats déclarés, 468 membres de roster) ; tout compte affiché passe désormais par `Ventilation`, et la §2 cesse de nommer les 468 membres de roster « Inattendus » un par un (rapport de 1 054 à 592 lignes).
+
 ## Contexte
 
 `pivot_data/profiles/` porte **deux populations** que rien ne distingue sur le

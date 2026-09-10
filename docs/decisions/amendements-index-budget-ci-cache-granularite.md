@@ -1,6 +1,10 @@
 <a id="amendements-index-budget-ci-cache-granularite"></a>
 # Spike : budget CI pour un job dédié `extract-amendements-an` et granularité de cache (#249) (2026-08-13)
 
+`2026-08-13`
+
+> **En bref** — spike : budget CI d'un job dédié amendements, et granularité de cache tranchée.
+
 **Contexte** : sous-issue 1/6 du plan d'architecture #248, en préparation
 d'un futur job dédié qui construirait les 3 index de législature (17/16/15)
 sans condition (indépendamment de la liste de candidats traitée par

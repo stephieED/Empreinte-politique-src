@@ -1,6 +1,10 @@
 <a id="gouvernement-profile-rattachement"></a>
 # `gouvernement_profile.py` : rattachement des textes par `date_depot`, exclusion silencieuse des dossiers non classifiables (#211) (2026-08-14)
 
+`2026-08-14`
+
+> **En bref** — rattachement des textes par `date_depot`, et exclusion des dossiers non classifiables.
+
 **Contexte** : #211 combine la sortie de `gouvernement_roster.py` (composition
 ministérielle, pure) et `gouvernement_textes.py` (dossiers d'origine
 gouvernementale, non filtrés par gouvernement — le rattachement était

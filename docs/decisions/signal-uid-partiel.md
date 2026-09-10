@@ -1,6 +1,10 @@
 <a id="signal-uid-partiel"></a>
 # Couverture `uid` partielle : ce qui manquait n'était pas un verrou, c'était un signal (#447) (2026-08-19)
 
+`2026-08-19`
+
+> **En bref** — ce qui manquait sur la couverture `uid` partielle n'était pas un verrou, c'était un signal.
+
 Le défaut de #450 a mis deux jours à être identifié, et il a d'abord été pris
 pour de l'instabilité de collecte. La raison tient en une phrase : **rien ne le
 signalait**. Ni les logs d'extraction — les 8 shards imprimaient la ligne

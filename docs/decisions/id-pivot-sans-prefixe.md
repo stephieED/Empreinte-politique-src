@@ -1,6 +1,10 @@
 <a id="id-pivot-sans-prefixe"></a>
 # L'`id` d'un profil pivot est le slug : le préfixe de provenance était instable (#487) (2026-08-20)
 
+`2026-08-20`
+
+> **En bref** — le préfixe changeait de valeur sur une carrière inchangée.
+
 Sous-issue A de l'épic #486.
 `normalize_nosdeputes` construisait `f"{source_type}:{slug}"`, où `source_type`
 venait de `_SOURCE_TYPE_MAP` (`deputes` → `nosdeputes`, `senateurs` →

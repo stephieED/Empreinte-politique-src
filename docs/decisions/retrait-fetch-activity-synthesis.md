@@ -1,6 +1,10 @@
 <a id="retrait-fetch-activity-synthesis"></a>
 # Retrait de `fetch_activity_synthesis` (#356) (2026-08-16)
 
+`2026-08-16`
+
+> **En bref** — `fetch_activity_synthesis` retiré : plus rien n'en dépendait.
+
 **Contexte** : sous-issue 5/6 de #351, une fois `fetch_identity` basculé sur
 l'AN pour l'identité (bio) (#355, [[bascule-identite-an-primaire]]).
 L'énoncé demandait de réévaluer si `fetch_activity_synthesis` (endpoint

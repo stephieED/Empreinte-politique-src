@@ -1,6 +1,10 @@
 <a id="purge-mandats-dupliques-prudence"></a>
 # Purge des mandats hérités dupliqués : appariement prudent (#387) (2026-08-17)
 
+`2026-08-17`
+
+> **En bref** — purge des mandats hérités dupliqués par appariement prudent : la fusion additive ne remplace jamais.
+
 **Contexte** : après [[taxonomie-mandats-typeorgane-an]] (#384), l'AN fournit
 les mandats correctement catégorisés, mais les entrées héritées de l'ère
 NosDéputés subsistent — la fusion additive ne remplace jamais. Le même organe

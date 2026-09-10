@@ -1,6 +1,10 @@
 <a id="chambres-profil-derivees"></a>
 # `chambres` au niveau profil : une liste dérivée, et `chambre` qui n'en est plus que le premier élément (#493) (2026-08-20)
 
+`2026-08-20`
+
+> **En bref** — un champ dérivé se recalcule, il ne se fusionne pas ; le repli est déclaré par profil.
+
 Sous-issue **D** de l'épic **#486**, après #487 (A), #488 (B) et #492 (C). Ne
 migre aucun consommateur (#494, sous-issue E), ne corrige pas le profil de
 Mélenchon (#484), ne touche pas à l'UI (#495). Aucune collecte relancée, aucun

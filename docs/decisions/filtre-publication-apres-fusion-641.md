@@ -1,5 +1,9 @@
 # Un filtre de publication posé avant la fusion ne filtre rien (#641, réouverture) (2026-08-31)
 
+`2026-08-31`
+
+> **En bref** — le lot #641 avait bien vu que « la fusion ne fait jamais régresser un scalaire vers `null` » et en avait tiré un second filtre, mais posé sur le bloc que la **normalisation produit** et non sur celui qui part au fichier : le run `33395056902` a donc nettoyé les 3 professions à préfixe parasite — valeur neuve renseignée, elle gagne — et republié les **5** libellés du code 85 — valeur neuve `None`, `_composer_identite` rend la main à l'ancienne (#601) ; `filtrer_identite_publiee` s'applique désormais **après** la composition, sur les deux chemins de `merge_pivot_profile`, via une table nommée champ par champ (`FILTRES_PUBLICATION_IDENTITE`) parce qu'`identite` porte cinq libellés recopiés d'AMO30 et qu'un filtre général inventerait la sémantique des quatre autres ; effet re-mesuré sur les 481 profils publiés — **5** passent à `null`, 472 inchangés, 4 sans le champ —, la provenance du champ disparaît avec la valeur (#603), et **aucun `allow_declared_losses` n'est requis** : `audit_diff_profils` réduit `identite` à `"<renseigné>"` et ne compare que la présence du bloc, qui reste présent ; filtrer le bloc ancien **avant** la composition est écarté — cela peut faire basculer `bloc_sans_fond` et désarmer la réserve de #597 sur `nom_complet`/`groupe_nom` ; les 3 réussites et les 5 échecs passaient tous la suite, le test manquant portait sur la transition, pas sur les étapes.
+
 [#profession-code-nomenclature-641](profession-code-nomenclature-641.md) a livré
 deux filtres — un à la collecte (`candidate_profile._profession_an`), un à la
 publication (`normalize_profil._profession_publiable`) — et son propre motif

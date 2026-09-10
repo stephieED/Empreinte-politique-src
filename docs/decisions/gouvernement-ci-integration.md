@@ -1,6 +1,10 @@
 <a id="gouvernement-ci-integration"></a>
 # Intégration de `generate_gouvernement_profiles.py` dans `generate-data.yml` (#215) (2026-08-14)
 
+`2026-08-14`
+
+> **En bref** — `generate_gouvernement_profiles.py` branché dans `merge-and-pivot`.
+
 **Contexte** : #212 avait explicitement laissé le branchement CI hors
 périmètre (voir [[quality-gate-gouvernements]], dernier paragraphe). #215
 ajoute l'appel dans le job `merge-and-pivot`, juste après le step groupes

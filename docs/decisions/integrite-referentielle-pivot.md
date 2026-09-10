@@ -1,6 +1,10 @@
 <a id="integrite-referentielle-pivot"></a>
 # Rien ne vérifiait que les clés publiées résolvent : le contrôle d'invariance (#485) (2026-08-20)
 
+`2026-08-20`
+
+> **En bref** — une clé publiée qui ne résout pas est un vote sans objet ; seuil 0 avant commit.
+
 **Il n'y avait aucun défaut.** Mesuré sur `01ffa7f` le 20/08/2026, index et
 couches référençantes relevés ensemble :
 

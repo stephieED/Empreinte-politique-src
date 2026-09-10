@@ -1,6 +1,10 @@
 <a id="budget-roster-mesure"></a>
 # Budget CI de `extract-roster-groupes` : mesure réelle (#376) (2026-08-17)
 
+`2026-08-17`
+
+> **En bref** — budget CI de `extract-roster-groupes` mesuré, à la place d'un `timeout-minutes` provisoire.
+
 **Contexte** : le `timeout-minutes: 60` de ce job était marqué « provisoire »
 depuis sa création, sans aucune mesure de débit — contrairement aux
 amendements, qui avaient eu leur spike dédié

@@ -1,6 +1,10 @@
 <a id="ci-cd"></a>
 # Angle mort du `runner shutdown signal` sur `if: always()` et la sauvegarde de cache (#228) (2026-08-12)
 
+`2026-08-12`
+
+> **En bref** — angle mort du `shutdown signal` runner sur `if: always()` et sur la sauvegarde de cache.
+
 **Contexte** : #219 a ajouté `if: always()` sur les steps `Upload artifact *`
 de `generate-data.yml` pour préserver la progression partielle (profils déjà
 écrits sur disque) en cas d'annulation/échec de job. Le run #25

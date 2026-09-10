@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 280 décisions
+gouverne sans avoir à fouiller les 281 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -311,7 +311,7 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 | [L'existence d'un cache n'est pas la preuve de son contenu — et #447 n'avait pas de seconde cause (2026-08-19)](decisions/cache-amendements-existence-nest-pas-conformite.md) | `_cache_amendements_au_format_uid`, `_download_and_build_amendement_index`, `_read_cached_amendements_acteur`, `_scrutins_shard_path_acteur`, `_write_cached_amendements_agreges`, `_write_cached_scrutins`, `amendements_index_deja_figee`, `fetch_amendements_officiels` |
 | [Cache amendements stocké et lu sous forme dédupliquée (#377) (2026-08-17)](decisions/cache-amendements-forme-dedupliquee.md) | `AMENDEMENTS_CACHE_DIR`, `_aggregate_amendements_index`, `_download_and_build_amendement_index`, `_expand_aggregated_amendements_index`, `_load_frozen_amendement_index`, `_parse_amendements_zip`, `_read_cached_amendements_acteur`, `_write_cached_amendements_agreges`, `amendements_index_deja_figee`, `fetch_amendements_officiels` |
 | [La clé de cache AN porte la COMPLÉTUDE, et la sauvegarde devient explicite (#550) (2026-08-28)](decisions/cache-completude-interventions-550.md) | `AMENDEMENTS_FRAICHEUR_FILENAME`, `AN_QUESTIONS_PATH`, `AN_SCRUTINS_LEGISLATURES_FIGEES`, `_build_acteur_questions_index`, `_read_cached_interventions_syceron_acteur` |
-| [Six tests lisaient le cache du poste : la CI était verte parce que la machine est vide (#721) (2026-09-03)](decisions/cache-du-poste-hors-des-tests-721.md) | `_build_acteur_interventions_syceron_index`, `_interventions_syceron_acteur`, `fetch_interventions_syceron` |
+| [Six tests lisaient le cache du poste : la CI était verte parce que la machine est vide (#721) (2026-09-03)](decisions/cache-du-poste-hors-des-tests-721.md) | `_build_acteur_interventions_syceron_index`, `_interventions_syceron_acteur`, `_read_cached_interventions_syceron_acteur`, `fetch_interventions_syceron` |
 | [Les `restore-keys` du cache AN traversaient les semaines : la fraîcheur ne se met pas dans la clé, elle se lit dans celle qu'on a restaurée (#555) (2026-08-28)](decisions/cache-fraicheur-interventions-555.md) | `AMENDEMENTS_FRAICHEUR_FILENAME`, `AN_AMENDEMENTS_LEGISLATURES_FIGEES`, `AN_SCRUTINS_LEGISLATURES_FIGEES`, `_build_acteur_questions_index`, `_ensure_acteurs_historique_zip_downloaded`, `_read_cached_interventions_syceron_acteur` |
 | [La clé de cache AN porte le MODE, et le job roster ne l'écrit plus (#505) (2026-08-20)](decisions/cache-mode-interventions-505.md) | `_build_acteur_interventions_syceron_index`, `_build_acteur_questions_index`, `_parse_syceron_intervention_entry`, `fetch_questions_officielles` |
 | [Un mandat dit quel référentiel a établi sa catégorie, et l'absence n'accuse personne (#718) (2026-09-03)](decisions/categorie-source-des-mandats-718.md) | `_TYPE_ORGANE_TO_CATEGORIE` |
@@ -659,7 +659,7 @@ Le mentionnent sans le gouverner : [`civilite-et-pcs-insee-659`](decisions/civil
 
 ## `src/group_roster.py`
 
-7 décision(s) le gouvernent ; le module en cite 3.
+8 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
@@ -670,6 +670,7 @@ Le mentionnent sans le gouverner : [`civilite-et-pcs-insee-659`](decisions/civil
 | [Le Sénat sort du périmètre, et le job qui concluait vert sans rien produire est retiré (#528, lot 3 de l'épic « une seule source AN ») (2026-08-26)](decisions/retrait-senat-528.md) | `ERREURS_ROSTER`, `filter_roster_by_sigle` |
 | [Le roster des groupes AN est dérivé d'AMO30, derrière un drapeau baissé (#526, lot 1 de l'épic « une seule source AN ») (2026-08-26)](decisions/roster-an-derive-amo30-526.md) | `fetch_full_roster`, `filter_roster_by_sigle` |
 | [Un seul roster par run, une reprise sur ce qui est retentable, et des échecs qu'on peut lire (#518) (2026-08-24)](decisions/roster-unique-par-run-518.md) | `fetch_full_roster` |
+| [Un membre de roster sans correspondance relue reçoit un slug, et la collision reste un refus (#708) (2026-09-02)](decisions/slug-fabrique-membre-de-roster-708.md) | `filter_roster_by_sigle` |
 
 Le mentionnent sans le gouverner : [`cloisonnement-branche-roster-524`](decisions/cloisonnement-branche-roster-524.md), [`profil-de-groupe-lecture-329`](decisions/profil-de-groupe-lecture-329.md), [`senat-periode-debut`](decisions/senat-periode-debut.md), [`votes-multi-legislature`](decisions/votes-multi-legislature.md).
 

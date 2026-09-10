@@ -1,6 +1,10 @@
 <a id="amendements-zero-pas-de-hard-fail"></a>
 # Quality gate : « 0 amendement collecté » reste non bloquant, mais cesse d'être discret (#378) (2026-08-18)
 
+`2026-08-18`
+
+> **En bref** — « 0 amendement collecté » reste non bloquant, mais cesse d'être discret.
+
 **Contexte** : dernier des 5 fixes de l'investigation de #265 encore ouvert
 (les 4 autres tranchés lors du re-check du 2026-08-17, voir
 [[amendements-zero-silencieux-acteur-ref]]), sorti en issue dédiée parce qu'il

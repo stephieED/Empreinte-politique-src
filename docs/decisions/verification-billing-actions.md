@@ -1,6 +1,10 @@
 <a id="verification-billing-actions"></a>
 # Vérification quota/limite de dépense GitHub Actions (#221) : hypothèse infirmée (2026-08-12)
 
+`2026-08-12`
+
+> **En bref** — quota/limite de dépense GitHub Actions : hypothèse vérifiée et infirmée.
+
 **Contexte** : #221, sous-issue du diagnostic #217, vérifiait si l'annulation
 des jobs `extract-an`/`extract-roster-groupes` (run #24, récidive sur le run
 #25) était due à un plafond de minutes Actions ou à une limite de dépense

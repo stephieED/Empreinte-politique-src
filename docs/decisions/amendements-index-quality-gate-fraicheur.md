@@ -1,6 +1,10 @@
 <a id="amendements-index-quality-gate-fraicheur"></a>
 # Quality gate : distinguer un index amendements jamais construit d'un index périmé (#254) (2026-08-13)
 
+`2026-08-13`
+
+> **En bref** — le quality gate distingue un index jamais construit d'un index périmé.
+
 **Contexte** : sous-issue 6/6 (dernière) du plan d'architecture #248, bloquée
 par #251 ([[amendements-index-job-dedie-ci]]), #252
 ([[amendements-index-cache-only-consumers]]) et #253

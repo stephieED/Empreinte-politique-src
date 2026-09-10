@@ -1,6 +1,10 @@
 <a id="mandats-agreges-siege-vs-passe-656"></a>
 # `mandats_agreges` : « qui y siège » et « qui y est passé » sont deux nombres, pas un (#656) (2026-08-31)
 
+`2026-08-31`
+
+> **En bref** — `nb_membres` additionnait les passages d'un jour (43 % des 2 708 adhésions de commission publiées, un⋅e député⋅e ne siégeant qu'en une commission permanente à la fois : AMO30 écrit toute bascule temporaire comme un mandat à part entière) : deux compteurs nommés, un dénominateur publié, un tri sur « qui y siège ».
+
 ## Le défaut
 
 `mandats_agreges[].nb_membres` additionnait toute présence, si brève soit-elle,

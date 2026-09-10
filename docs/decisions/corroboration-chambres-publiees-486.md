@@ -1,6 +1,10 @@
 <a id="corroboration-chambres-publiees-486"></a>
 # La corroboration porte sur les chambres publiées, pas sur la complétude des mandats — et la condition de retrait de `chambre` devient atteignable (#486) (2026-08-30)
 
+`2026-08-30`
+
+> **En bref** — 30 des 31 occurrences publiées du warning énonçaient un problème que leur propre phrase déniait ; le prédicat cesse de gager le retrait d'un champ de niveau profil sur une complétude de niveau mandat que la fusion additive ne peut pas atteindre (29 des 511 mandats électifs publiés ne sont plus rendus par la source), et la condition de retrait de `chambre` se réduit aux 20 profils que seule une collecte sénatoriale débloque.
+
 Épic **#486**, après #487 (A), #488 (B), #492 (C), #493 (D) et #494 (E), toutes
 fermées. Ne touche pas à l'UI (#495, F, ouverte), ne relance aucune collecte, ne
 lit ni ne modifie aucun fichier de `pivot_data/` ni de `raw_data/` dans le

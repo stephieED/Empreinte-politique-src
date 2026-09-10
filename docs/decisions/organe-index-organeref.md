@@ -1,6 +1,10 @@
 <a id="organe-index-organeref"></a>
 # `_build_organe_index` : résoudre `organeRef` via `AMO30` (historique) sans filtrage par `codeType` (#353) (2026-08-16)
 
+`2026-08-16`
+
+> **En bref** — résoudre `organeRef` via `AMO30` historique, sans filtrage par `codeType`.
+
 **Contexte** : sous-issue 2/6 de #351. `mandats[].organes.organeRef` (ex.
 `PO59048`) ne référence un organe (commission, groupe politique, groupe
 d'amitié, engagement extra-parlementaire...) que par identifiant — aucun nom

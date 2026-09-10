@@ -1,5 +1,9 @@
 # La qualification d'un scrutin et la clé de son dossier étaient lues puis jetées (#639, rangs 1 et 2)
 
+`2026-08-31`
+
+> **En bref** — `typeVote` est renseigné sur 18 311 / 18 311 scrutins bruts et `dossiers_legislatifs[].id` sur 472 / 472 entrées, tous deux jetés à la projection : les 66 motions de censure étaient publiées `vote_texte` comme les 17 682 autres, et l'invariant §5 qui exige leur `texte_lie_id` était vacuement satisfait ; il devient exigible et n'est pas satisfiable (0 / 18 311 référence législative sur un scrutin AN), donc la clé absente est **déclarée** (`texte_lie_non_resolu.motif`) plutôt qu'inventée ou tue, et un cache de scrutins non qualifié — index figé committé compris — est refusé au lieu d'être relu.
+
 *31/08/2026 — issue #639, rangs 1 et 2. Les rangs 3 (index d'amendements) et 4
 (lien inverse dossier → scrutin) ne sont pas traités ici.*
 

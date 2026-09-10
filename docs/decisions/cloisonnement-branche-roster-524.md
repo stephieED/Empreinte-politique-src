@@ -2,6 +2,10 @@
 <a id="roster-suspension-totale-code-2"></a>
 # Cloisonnement de la branche roster, et le code 2 « suspension totale » (#524) (2026-08-26)
 
+`2026-08-26`
+
+> **En bref** — une panne de source coûte la branche roster, jamais le commit.
+
 **Ce lot ne répare pas la source. Il répare les trois amplificateurs qui
 transformaient une panne de source en run entièrement perdu.**
 

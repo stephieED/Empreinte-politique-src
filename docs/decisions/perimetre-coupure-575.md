@@ -2,6 +2,10 @@
 <a id="runner-bornage-576"></a>
 # Un garde-fou qui bloquait sur ce que la coupure garde, et une procédure qui se saute (#575, #576) (2026-08-29)
 
+`2026-08-29`
+
+> **En bref** — et `--preparer` imprimait une procédure que rien n'exécutait.
+
 Sous-issues 4 et 5 de l'épic #566, dont la prémisse est que **ce qui n'a jamais
 été exécuté n'est pas connu**. Ces deux lots traitent ce que la répétition de
 #569 a sorti le 28/08/2026 — sept défauts, dont aucun n'était atteignable par

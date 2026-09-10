@@ -1,6 +1,10 @@
 <a id="deux-chambres-interrogees"></a>
 # Le passé sénatorial est un fait de carrière, pas une donnée d'activité : bicaméral pour les candidats seulement (#488) (2026-08-20)
 
+`2026-08-20`
+
+> **En bref** — les deux chambres ne sont interrogées que pour les candidats déclarés.
+
 Sous-issue B de l'épic **#486**. Ne touche pas au schéma pivot (la chambre sur
 chaque mandat est la sous-issue C), ne corrige pas le profil de Mélenchon
 (#484), ne change aucune valeur de `chambre` publiée (sous-issue D).

@@ -1,6 +1,10 @@
 <a id="mandats-agreges-famille-1"></a>
 # `mandats_agreges` : agrégation catégorielle sur `mandats[]`, famille 1 (#361, sous-issue de #349) (2026-08-16)
 
+`2026-08-16`
+
+> **En bref** — `mandats_agreges` : agrégation catégorielle sur `mandats[]`, première famille.
+
 **Contexte** : #349 (agrégats de groupe) prévoyait une famille d'agrégats
 génériques sur `mandats[]` (commissions, groupes d'amitié, mandats
 extra-parlementaires…). Design proposé et validé sur #349 avant

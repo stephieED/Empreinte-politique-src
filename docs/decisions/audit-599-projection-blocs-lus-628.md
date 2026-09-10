@@ -1,6 +1,10 @@
 <a id="audit-599-projection-blocs-lus-628"></a>
 # Un audit lit le corpus par projection, et son plafond de mémoire est dans un test (#628, 2026-08-30)
 
+`2026-08-30`
+
+> **En bref** — l'audit de #599, livré « rejouable », rangeait chaque profil entier dans un dict par slug (~3,9 Gio de pic, `exit 137` sur une machine à 4 Gio et swap saturé) alors que ses mesures ne lisent que `identite`, `identifiants`, `meta` et le cardinal des listes — 0,39 Mo sur 681,6 ; pic ramené à 113 Mio, rapport prouvé identique sur quatre quarts disjoints du corpus, et le plafond est désormais déduit dans le test du poids sur disque des blocs à relâcher.
+
 ## Contexte
 
 `scripts/audit_fusion_blocs_599.py` a été livré par #599 comme **rejouable** :

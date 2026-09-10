@@ -2,6 +2,10 @@
 <a id="etape-ci-runner-576"></a>
 # Trois contrôles qui écrivaient leur conclusion sans la mesurer (#576, #579) (2026-08-29)
 
+`2026-08-29`
+
+> **En bref** — trois compteurs recâblés sur la mesure réelle.
+
 Trois défauts constatés **en exécution réelle** les 28 et 29/08/2026, et une
 même forme : un contrôle qui produit une phrase juste-vraisemblable au lieu d'un
 constat. C'est la prémisse de l'épic #566 — *ce qui n'a jamais été exécuté n'est

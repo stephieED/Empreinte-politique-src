@@ -2,6 +2,8 @@
 
 `2026-09-10`
 
+> **En bref** — `date_reference.origine` valait `cloture_legislature` dès que toutes les appartenances d'un groupe sont refermées : critère de **calcul** exact, étiquette **fausse** pour deux fiches sur douze, dissoutes en cours de législature — `NG-15` s'arrête au 11/09/2018 quand la XVe se clôt le 21/06/2022, **3 ans 9 mois** d'écart, `EDS-15` 1 an 8 mois ; un lecteur y lisait « effectif à la fin de la XVe » là où la donnée dit « effectif au dernier jour d'existence du groupe » — le chiffre juste, la phrase fausse (§2 règle 2), soit le défaut de #653 un cran plus bas. La valeur devient **`derniere_appartenance_close`**, et l'avertissement publié — qui est la part réellement lue — nomme désormais le cas au lieu d'annoncer une clôture. L'ancien nom reste **accepté en lecture et jamais écrit** : les 14 fiches qui le portent ne seront régénérées qu'au prochain run, et le portail échouerait entre-temps sur des fichiers que personne n'a touchés ; les 2 fiches Sénat **gelées** ne portent aucun `date_reference`, donc le cas d'un nom à garder pour toujours ne se présente pas. **Écarté** : scinder en deux valeurs selon que la dernière appartenance coïncide ou non avec la clôture — il faudrait la date de clôture de chaque législature, pour une nuance que la date publiée donne déjà. Suite complète à 4 426, 0 échec.
+
 ## Contexte
 
 `date_reference.origine` est un vocabulaire fermé à deux valeurs (#653). L'une

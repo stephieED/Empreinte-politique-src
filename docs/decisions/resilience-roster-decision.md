@@ -1,6 +1,10 @@
 <a id="resilience-roster-decision"></a>
 # Résilience de `extract-roster-groupes` : le sharding reste nécessaire (#347) (2026-08-17)
 
+`2026-08-17`
+
+> **En bref** — le sharding de `extract-roster-groupes` reste nécessaire, chiffres à l'appui.
+
 **Contexte** : #347 demandait de trancher, *avec des chiffres*, si une
 stratégie de sharding restait nécessaire une fois le coût par membre réduit,
 ou si `--skip-existing --resume` suffisait. Ses deux prérequis (mode léger

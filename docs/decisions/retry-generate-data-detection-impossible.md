@@ -1,6 +1,10 @@
 <a id="retry-generate-data-detection-impossible"></a>
 # Distinguer erreur API et signature absente dans `retry-generate-data.yml` (#237) (2026-08-13)
 
+`2026-08-13`
+
+> **En bref** — distinguer une erreur d'API d'une signature absente : les deux ne se traitent pas pareil.
+
 **Contexte** : [[retry-generate-data-preemption]] (#230) détecte la signature
 de préemption runner via deux appels `gh api` (`.../jobs` puis
 `.../jobs/<id>/logs`). Sur les runs #26/#27, `gh api .../jobs` a échoué

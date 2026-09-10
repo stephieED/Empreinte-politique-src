@@ -1,6 +1,10 @@
 <a id="mandat-electif-perdu-fausse-le-denominateur"></a>
 # Un mandat électif perdu ne manque pas seulement sur la fiche : il sort le membre du dénominateur de son groupe (#465) (2026-08-20)
 
+`2026-08-20`
+
+> **En bref** — un mandat électif perdu sort le membre du dénominateur de son groupe — la perte se propage à un chiffre publié.
+
 Les 355 `mandats` et 49 `textes_portes` restés perdus après [[restauration-interventions]]
 ont été restaurés par la **même méthode** — champ seul, réinjecté dans le brut,
 pivot re-dérivé par le code du jour. Rien de neuf de ce côté : ce qui suit est ce

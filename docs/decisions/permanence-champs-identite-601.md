@@ -1,5 +1,9 @@
 # Un champ d'identité publié ne meurt plus sans un run à perte déclarée (#601) (2026-08-30)
 
+`2026-08-30`
+
+> **En bref** — composer champ par champ fait qu'une valeur survit au silence de sa source ; assumé et écrit, la péremption déclarée étant écartée faute de pouvoir distinguer « la source ne dit plus » de « la source dit non ».
+
 Conséquence assumée de la composition champ par champ, et elle n'allait pas de soi.
 
 ## La règle qui la produit

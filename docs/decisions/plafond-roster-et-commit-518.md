@@ -1,6 +1,10 @@
 <a id="plafond-roster-et-commit-518"></a>
 # Le plafond de lecture du roster, et le commit qui ne paie plus pour une source lente (#518, second incident) (2026-08-24)
 
+`2026-08-24`
+
+> **En bref** — le plafond était placé dans la distribution de réponse de la source.
+
 **Ce que #519 a corrigé, c'est le nombre d'essais. Ce que celui-ci corrige,
 c'est la valeur qui décide de l'issue de chaque essai — et le fait qu'une
 donnée non écrite pouvait annuler la publication d'une donnée écrite.**

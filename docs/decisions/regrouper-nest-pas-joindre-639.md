@@ -2,6 +2,10 @@
 
 # Regrouper des faits d'une même source n'est pas les joindre entre sources (#639, #594) (2026-08-31)
 
+`2026-08-31`
+
+> **En bref** — le lien vote → loi existe et se lit (99,4 % des 17 748 scrutins portent un intitulé de texte, pour 1 229 textes distincts) ; ce qui manque est un identifiant, et la distinction sépare deux gestes — regrouper des chaînes d'une même source est permis, décréter qu'un scrutin et un amendement visent le même dossier est une affirmation qu'aucune source ne fait ; corollaire, le rattachement des scrutins attend que `scrutins.json` sache porter une borne datée, l'AN ne renseignant son `dossierRef` que depuis mars 2026 (0 avant, 100 % après, sur les 8 434 scrutins de la XVIIe).
+
 Sortie du temps 2 de l'épic #324. La règle décide de ce qu'une vue peut afficher
 **aujourd'hui**, sans clé et sans collecte — et de ce qui, au contraire, exige un
 identifiant que la source pose elle-même.

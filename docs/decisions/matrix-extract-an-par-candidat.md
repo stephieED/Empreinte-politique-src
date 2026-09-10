@@ -1,6 +1,10 @@
 <a id="matrix-extract-an-par-candidat"></a>
 # `extract-an` en matrix strategy par candidat, pour isoler la perte en cas de shutdown signal runner (#344) (2026-08-16)
 
+`2026-08-16`
+
+> **En bref** — `extract-an` en matrix par candidat, pour isoler la perte en cas de `shutdown signal` runner.
+
 **Contexte** : prolonge l'option 1, différée et non rejetée par
 [[resilience-generate-data-shutdown-signal]] (angle mort du `runner shutdown
 signal` sur `if: always()`, #228) — un seul `extract-an` séquentiel sur toute

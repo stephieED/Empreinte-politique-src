@@ -206,3 +206,54 @@ def test_rien_ne_renvoie_vers_larchive():
     assert not coupables, (
         "ces fichiers renvoient vers l'archive figée au lieu de la décision vivante "
         f"de docs/decisions/ : {sorted(coupables)}")
+
+
+# ---------------------------------------------------------------------------
+# #840 — l'index est GÉNÉRÉ, il ne s'édite plus
+# ---------------------------------------------------------------------------
+#
+# Il était maintenu à la main, et tous les lots y écrivaient au même endroit :
+# une ligne insérée en tête, à chaque décision. Deux branches parallèles
+# conflictaient donc systématiquement — quatre rebases en une heure le
+# 10/09/2026, sur des lots qui ne se recouvraient pas.
+
+def test_lindex_committe_est_celui_que_le_script_produit():
+    """La dérive se voit ici, pas au prochain conflit de fusion.
+
+    Même contrat que `tests/test_decisions_par_module.py` : un fichier généré
+    qui a été édité à la main ne se rattrape nulle part ailleurs.
+    """
+    import subprocess
+    import sys
+
+    resultat = subprocess.run(
+        [sys.executable, "scripts/generer_index_decisions.py", "--verifier"],
+        cwd=RACINE, capture_output=True, text=True,
+    )
+    assert resultat.returncode == 0, (
+        "`docs/technical_decisions.md` ne correspond plus aux fichiers de "
+        "`docs/decisions/`. Il ne s'édite pas à la main : lancer "
+        "`python3 scripts/generer_index_decisions.py`.\n"
+        f"{resultat.stderr}"
+    )
+
+
+def test_chaque_decision_porte_de_quoi_produire_sa_ligne():
+    """Un titre, une date, un résumé. Le script refuse d'inventer ce qui manque.
+
+    Une décision sans `> **En bref** — …` sortirait de l'index en silence, ce
+    qui est exactement ce que l'index maintenu à la main risquait à chaque
+    oubli d'insertion.
+    """
+    import sys
+
+    sys.path.insert(0, str(RACINE / "scripts"))
+    from generer_index_decisions import DecisionIncomplete, lire_decision
+
+    manquantes = []
+    for chemin in sorted((RACINE / "docs" / "decisions").glob("*.md")):
+        try:
+            lire_decision(chemin)
+        except DecisionIncomplete as exc:
+            manquantes.append(str(exc))
+    assert not manquantes, "\n".join(manquantes)

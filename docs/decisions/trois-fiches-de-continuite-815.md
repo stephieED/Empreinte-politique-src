@@ -2,6 +2,8 @@
 
 `2026-09-10`
 
+> **En bref** — `LR-15`, `GDR-17` et `ECOS-17` sont déclarées, et **trois liens qui ne coûtaient rien** — `REN-16 → LAREM-15`, `LFI-16 → FI-15`, `SOC-16 → SOC-15` — ferment trois lignées de plus sans collecter personne : six lignées remontent désormais, et `RN` s'arrête à la XVIe parce que le groupe **n'existait pas** à la XVe (seuil de constitution), fait publié `None` et non trou (§2 règle 5) ; organes relus dans AMO30 le 10/09 — `PO730934` LR 120 acteurs, `PO845514` GDR 18, `PO845439` ECOS 38 —, **84 personnes à collecter** et non les 116 annoncés la veille, la table de correspondance ayant grossi ; **deux erreurs de mesure corrigées avant d'écrire, de même forme — une valeur voisine, un résultat nul, aucune exception** : `est_mandat_de_transit(fin, constitution)` appelée à l'envers écartait **les 120 acteurs** de LR-15, et `sigles_an` porte le `libelleAbrev` (`ECOS`) et non le `libelleAbrege` (`EcoS`), si bien que le roster ne trouvait **aucun** membre — dans les deux cas c'est un test qui l'a montré, en mesurant 0 contre 38 attendus ; trois tests figeaient l'état d'avant (« les fiches de la XVIe ne succèdent à rien », « les cinq groupes de la XVIIe » deux fois) et le second compte désormais **le total de la table** plutôt qu'une constante. Rien n'est publié avant un run : `effectif_publie` reste null et le portail comptera trois fiches manquantes, régime normal déjà connu de LaREM XVe. Restent MoDem (91 sans profil), Horizons (45), LIOT (50) et UDR (16, une **scission**). Suite complète à 4 372, 0 échec.
+
 ## Contexte
 
 La propriétaire demande une **continuité par groupe entre la XVe et la XVIIe**.

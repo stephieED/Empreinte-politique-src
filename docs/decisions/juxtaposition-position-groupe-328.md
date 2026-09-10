@@ -1,5 +1,9 @@
 # Juxtaposer deux positions sourcées n'est pas mesurer un écart (#328) — 01/09/2026
 
+`2026-09-01`
+
+> **En bref** — §2 règle 7 interdisait « Individual-vs-group gaps », ce qui, lu à la lettre, interdisait d'afficher la position d'un membre à côté de celle de son groupe sur un scrutin donné ; or ce que la règle protège est nommé dans le code — `compute_ecarts_cohesion_internes` calcule des « écarts de cohésion/participation individuels **vs moyenne du groupe** », c'est-à-dire un **taux par personne rapporté à une moyenne**, dont `taux_participation` est exactement le taux d'assiduité que la règle 3 interdit déjà ; la règle distingue donc l'**indice** (jamais public, `--rapport-interne`) de la **juxtaposition d'un scrutin sourcé** (publique, jamais comptée ni notée), avec le garde-fou dans la règle même — « a voté contre son groupe 47 fois » est le même indice par un autre chemin — et le tableau §6 passe d'une ligne à deux ; aucune caractérisation n'est autorisée pour autant, ni « franc-tireur » ni « loyal », l'interprétation restant au lecteur ; le corps de #324 posait déjà cette frontière le 29/08 sans que §2 en tienne compte.
+
 ## Contexte
 
 La trame du profil candidat publie, sur un scrutin donné, la position de la

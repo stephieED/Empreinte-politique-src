@@ -1,5 +1,9 @@
 # Le bloc sombre de « En bref » est retiré — 10/09/2026 (#328)
 
+`2026-09-10`
+
+> **En bref** — `.cp-gc` portait le seul thème sombre de tout `src/`, sans effet possible sous `color-scheme: light` ; le lot institutionnel devait le doubler, il le retire.
+
 ## Contexte
 
 `.cp-gc` — le bloc « En bref » de la fiche candidat — était le **seul sélecteur de

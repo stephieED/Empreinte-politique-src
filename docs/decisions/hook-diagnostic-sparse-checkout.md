@@ -1,5 +1,9 @@
 # Diagnostiquer le piège du sparse-checkout plutôt que le prévenir (#619, 30/08/2026)
 
+`2026-08-30`
+
+> **En bref** — la liste blanche vaut 8,4 Go non téléchargés et 41 s au lieu de 4 min 30 ; le piège qu'elle crée est diagnostiqué à l'échec, pas prévenu par analyse statique, et un seul analyseur du bloc YAML sert désormais les trois lecteurs.
+
 ## Le piège
 
 `.github/workflows/tests.yml` ne matérialise sur le disque du runner qu'une

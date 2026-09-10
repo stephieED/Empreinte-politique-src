@@ -1,6 +1,10 @@
 <a id="agregats-publies-controle-perte-649"></a>
 # Les agrégats publiés entrent dans le contrôle de perte, et l'ordre de grandeur reste hors contrat (#649) (2026-08-31)
 
+`2026-08-31`
+
+> **En bref** — `amendements_agreges` et `comptages.par_statut` n'étaient regardés par aucune collection d'`audit_diff_profils` : le run `33351244845` a divisé par 5 à 32 le compteur principal de cinq fiches publiées et le commit `3c8e1f0c` est passé sans une ligne ; ils deviennent des **scalaires surveillés** — disparition et passage à `null` bloquent, la baisse de valeur est relevée — et il n'y a **pas** de quatrième catégorie bloquante sur l'ordre de grandeur, parce que la chute juste de `3c8e1f0c` (× 0,03 à × 0,21) est plus forte que la chute défectueuse d'`a125e9e` (× 0,00 à × 0,64) sur chacune des fiches et qu'aucun seuil de ratio ne les sépare ; rejeu sur les 65 transitions committées : 4 constats nouveaux, tous des pertes réelles, zéro faux positif.
+
 ## Le constat
 
 `audit_diff_profils.py` protège les listes et quelques scalaires d'identité. Il

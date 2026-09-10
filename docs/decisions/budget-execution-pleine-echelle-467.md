@@ -1,6 +1,10 @@
 <a id="budget-execution-pleine-echelle-467"></a>
 # Budget d'exécution à pleine échelle : 630 min annoncées, 55 mesurées (#467) (2026-08-20)
 
+`2026-08-20`
+
+> **En bref** — et un cache disque évite un re-téléchargement, jamais un re-parse.
+
 L'en-tête de `generate-data.yml` portait un budget de **210 min** en
 configuration par défaut et **630 min (10 h 30)** en run complet. Ce chiffre
 n'a jamais été confronté à un run. Il l'est ici : le run complet

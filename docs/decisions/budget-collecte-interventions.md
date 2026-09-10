@@ -1,6 +1,10 @@
 <a id="budget-collecte-interventions"></a>
 # Borner la collecte d'interventions, pas le job qui la contient (#498) (2026-08-20)
 
+`2026-08-20`
+
+> **En bref** — un shard tué par `timeout-minutes` n'écrit aucun profil ; un budget épuisé écrit et le déclare.
+
 `timeout-minutes: 5` sur `extract-an` tuait les shards dès que
 `collect_interventions=true`. Sur les deux seuls runs connus dans ce mode :
 4 shards tués sur 8 (run `32302557156`, 19/08 21:11), puis **8 sur 8** (run

@@ -1,6 +1,10 @@
 <a id="workers-fige-a-1"></a>
 # `workers` retire du formulaire : un bouton qui ne pouvait que nuire (2026-08-20)
 
+`2026-08-20`
+
+> **En bref** — `workers` retiré du formulaire : un paramètre documenté comme nuisible reste un piège.
+
 `workflow_dispatch` exposait un input `workers` dont la description disait
 elle-meme, depuis #467 : « MAINTENU A 1 PAR #467, et desormais sur une mesure :
 augmenter cette valeur RALENTIT l'extraction ».

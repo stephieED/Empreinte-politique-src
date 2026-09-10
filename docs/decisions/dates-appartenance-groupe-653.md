@@ -1,5 +1,9 @@
 # `debut_dans_groupe` se lit sur le mandat de groupe, plus sur le premier mandat électif (#653) (2026-08-31)
 
+`2026-08-31`
+
+> **En bref** — le champ mesurait le début du **premier mandat électif**, approximation devenue fausse dans l'autre sens depuis #647 (Vincent Rolland publié « LR depuis 2002-06-19 » alors qu'il entre dans le groupe LR de la XVIe le 2022-06-29) ; les dates viennent désormais du **mandat de groupe politique de la législature de la fiche** que le roster AMO30 rend déjà — transit écarté, organes successifs recollés (#526) —, ce qui corrige **451 des 452 dates d'entrée** des 5 fiches AN de la XVIe, dont 8 de 20 ans, sans retirer une seule entrée `membres[]` ni laisser un seul membre sans mandat de groupe identifiable ; sans roster les dates sortent `null` et comptées, **jamais repliées sur le mandat électif** (§2 règle 5) ; `effectif.actuel` est nommé pour ce qu'il compte — les membres sans fin d'appartenance **dans cette législature**, donc 0 sur une législature close — et le roster mono-législature est instruit sans être élargi, faute d'un arbitrage sur la continuité `REN`/`EPR` et sur des dénominateurs de cohésion composites.
+
 `membres[].debut_dans_groupe` ne mesurait pas l'entrée dans le groupe. Il
 mesurait le début du **premier mandat électif** de la personne dans la chambre.
 La docstring de `_derive_membre_entry` l'écrivait sans détour — « *approximation

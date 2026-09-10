@@ -1,6 +1,10 @@
 <a id="cle-fusion-interventions-540"></a>
 # Une URL de source n'est pas un identifiant : la clé de fusion des interventions (#540) (2026-08-27)
 
+`2026-08-27`
+
+> **En bref** — la clé devient l'identifiant de la prise de parole, pas son URL.
+
 **Mesure de référence.** Prise le 27/08/2026 sur `HEAD` = `74c77c2`, en
 rejouant la normalisation et la fusion pivot sur les profils **bruts et pivot
 committés** — pas sur une régénération, pas sur une estimation :

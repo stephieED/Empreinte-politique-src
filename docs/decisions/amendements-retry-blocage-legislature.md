@@ -1,6 +1,10 @@
 <a id="amendements-retry-blocage-legislature"></a>
 # Le retry avec backoff des amendements (#225) transforme un échec instantané en blocage de plusieurs minutes par candidat (#239) (2026-08-13)
 
+`2026-08-13`
+
+> **En bref** — un retry avec backoff transforme un échec instantané en blocage de plusieurs minutes par candidat.
+
 **Contexte** : #185 a diagnostiqué que la collecte des amendements officiels
 (`fetch_amendements_officiels`/`_build_acteur_amendement_index`) échouait
 silencieusement (`return {}` avalé) sur les trois archives AN Open Data

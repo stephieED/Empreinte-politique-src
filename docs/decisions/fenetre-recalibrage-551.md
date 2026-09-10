@@ -1,6 +1,10 @@
 <a id="fenetre-recalibrage-551"></a>
 # La fenêtre de 30 ne pose pas le plateau qu'on croit, et la table mesurée ne le dit pas (#551) (2026-08-28)
 
+`2026-08-28`
+
+> **En bref** — mesure, projection et quatre arbitrages rendus sur la fenêtre de squash.
+
 **Les quatre arbitrages sont rendus** (voir « Arbitrage rendu » dans chaque
 section, 28/08/2026).** Cette entrée mesure, projette et recommande.
 La valeur de la fenêtre, l'unité dans laquelle elle se compte, son déclenchement

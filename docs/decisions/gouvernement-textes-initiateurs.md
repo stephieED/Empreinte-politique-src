@@ -1,6 +1,10 @@
 <a id="gouvernement-textes-initiateurs"></a>
 # Profils de gouvernement : le lien ministre → texte (#435) (2026-08-18)
 
+`2026-08-18`
+
+> **En bref** — le lien ministre → texte : le pendant manquant de `role_signataire` pour les textes de gouvernement.
+
 **Contexte** : `textes[]` d'un profil de gouvernement portait 8 champs, dont
 aucun ne désignait un membre. On savait qu'un gouvernement avait porté 725
 textes, jamais **quel ministre avait déposé lequel** — le pendant manquant de

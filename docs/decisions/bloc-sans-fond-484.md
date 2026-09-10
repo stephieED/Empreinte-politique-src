@@ -1,5 +1,9 @@
 # Un bloc structuré sans fond n'écrase plus un bloc collecté (#484) (2026-08-30)
 
+`2026-08-30`
+
+> **En bref** — un squelette d'identité à 8 clés dont 7 nulles n'est pas vide, donc il gagnait ; la fusion demande désormais si un bloc a du fond.
+
 `jean-luc-melenchon` publiait `identite: null`, un avertissement « aucun mandat
 français connu » et une synchronisation Assemblée nationale au 19/08 — alors que
 ses 63 mandats et ses 1 016 votes étaient intacts dans le même fichier.

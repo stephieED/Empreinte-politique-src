@@ -1,6 +1,10 @@
 <a id="freshness-timestamps-groupes-gouvernements-partis"></a>
 # Extension de la stabilité des horodatages aux profils groupe/gouvernement/parti (#343, complet) (2026-08-17)
 
+`2026-08-17`
+
+> **En bref** — stabilité des horodatages étendue aux profils groupe, gouvernement et parti.
+
 **Contexte** : [[pivot-freshness-timestamps-stables]] (ci-dessous) corrigeait
 le motif pour les seuls pivots candidats, en notant que
 `group_profile.py`/`gouvernement_profile.py`/`parti_profile.py` étaient

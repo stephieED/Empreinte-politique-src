@@ -1,6 +1,10 @@
 <a id="point-de-sauvegarde-dans-les-profils-518"></a>
 # Un fichier de progression dans un répertoire de données (#518, troisième incident) (2026-08-24)
 
+`2026-08-24`
+
+> **En bref** — `Path.glob` rend les dotfiles : tout inventaire de `raw_data/profiles/` saute les noms commençant par un point.
+
 **Le garde-fou « collecté mais non publié » n'a jamais rien laissé passer : il
 n'a jamais eu l'occasion de passer. Depuis sa mise en service, il bloque sur un
 fichier qui n'est pas un profil.**

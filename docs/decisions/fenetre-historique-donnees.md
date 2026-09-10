@@ -1,6 +1,10 @@
 <a id="fenetre-historique-donnees"></a>
 # Borner l'historique de données : ce que ça rend vraiment, et quand (#434) (2026-08-20)
 
+`2026-08-20`
+
+> **En bref** — squash déclenché par la mesure, jamais de réécriture automatique.
+
 Décision : **option D**, borner l'historique de données plutôt que son contenu.
 
 > **Ce que cette décision ne tranche pas.** Ses quatre options partent toutes de la même hypothèse : la donnée est versionnée dans le dépôt. **Pourquoi** elle y est n'a été écrit que le 30/08/2026 — voir [`donnees-versionnees-integrite.md`](donnees-versionnees-integrite.md). Un lot de volumétrie qui rencontre cette contrainte doit la peser contre l'intégrité de ce que le site montre, jamais contre le confort.

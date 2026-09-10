@@ -1,6 +1,10 @@
 <a id="parlementaire-en-mission-nest-pas-ministre"></a>
 # Le `label` d'un mandat `MINISTERE` ne dit pas si c'est un maroquin (#474) (2026-08-20)
 
+`2026-08-20`
+
+> **En bref** — le `label` d'un mandat `MINISTERE` ne dit pas si c'est un maroquin : un parlementaire en mission n'est pas ministre.
+
 `pivot_data/gouvernements/gouvernement-BAYROU.json`, sur `main` à `ea6f0d5`,
 publiait ceci :
 

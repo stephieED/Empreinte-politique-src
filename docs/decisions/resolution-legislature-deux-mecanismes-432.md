@@ -1,5 +1,9 @@
 # Résoudre la `legislature` d'un vote : deux mécanismes, pas un seul (#432) (2026-08-19)
 
+`2026-08-19`
+
+> **En bref** — résoudre la `legislature` d'un vote demande deux mécanismes — jumeau étiqueté puis calendrier — jamais un défaut.
+
 `votes[].numero_scrutin` repart à 1 à chaque législature ([[votes-multi-legislature]],
 #403) : la clé d'un scrutin est `(legislature, numero_scrutin)`. Toute
 normalisation des votes en dépend — or **89 687 votes sur 398 085 (22,5 %),

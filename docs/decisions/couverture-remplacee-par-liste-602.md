@@ -1,5 +1,9 @@
 # La couverture se remplace à la maille où #539 la publie, et un cas non tranchable se déclare (#602) (2026-08-30)
 
+`2026-08-30`
+
+> **En bref** — le remplacement descend du bloc à la liste métier (2 858 entrées sur 3 800 étaient perdues face à un écrivain partiel, sur les 481 profils publiés) ; à date et rang d'interrogation égaux, la divergence se déclare au lieu de se choisir sur l'ordre des jobs.
+
 Lot 3 de l'épic #598. `couverture` était pris **en bloc** —
 `_prefer_non_empty(new, old)` — sur un modèle que
 [#couverture-listes-539](couverture-listes-539.md) a organisé **par liste

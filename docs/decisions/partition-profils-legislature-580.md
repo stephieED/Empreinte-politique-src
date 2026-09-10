@@ -2,6 +2,10 @@
 <a id="garde-fou-blob-580"></a>
 # Le seuil de blob sort du critère de sortie, et les profils bruts se partitionnent par législature (#580) (2026-08-29)
 
+`2026-08-29`
+
+> **En bref** — le profil brut se partitionne par législature (56,0 → 23,4 Mo) et le plafond de blob devient un garde-fou du quality gate, pas un critère de sortie.
+
 Deux décisions prises ensemble, et qui ne tiennent qu'ensemble. **A** seule
 reviendrait à déclarer le problème hors sujet ; **B** seule laisserait un
 critère de sortie qui ne peut structurellement jamais être atteint.

@@ -1,6 +1,10 @@
 <a id="retry-inputs-appariement-prefixe"></a>
 # `retry-generate-data.yml` : reconstruction des inputs réparée par appariement de préfixe, collecte de jobs unifiée (#414) (2026-08-18)
 
+`2026-08-18`
+
+> **En bref** — le shardage a rendu les noms de jobs dynamiques : la reconstruction des inputs s'apparie sur le préfixe.
+
 **Contexte** : le shardage d'`extract-an` (#344) et d'`extract-roster-groupes`
 (#394) a donné à ces jobs un `name:` explicite — `extract-an (<slug>)`,
 `extract-roster-groupes (shard N)`. Or le step « Reconstituer les inputs du run

@@ -1,6 +1,10 @@
 <a id="concurrence-shards-extraction-412"></a>
 # Jobs d'extraction de `generate-data.yml` : résilience au *skip*, concurrence des shards, factorisation (#412) (2026-08-18)
 
+`2026-08-18`
+
+> **En bref** — résilience au *skip*, concurrence des shards d'extraction, factorisation du préambule.
+
 **Contexte** : première sous-issue d'application de la revue transversale
 [[revue-workflows-ci-342]] — les 9 jobs de `.github/workflows/generate-data.yml`
 relus job par job. Contrairement à l'epic, ce ticket **modifie le YAML**.

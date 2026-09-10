@@ -1,6 +1,10 @@
 <a id="revue-workflows-ci-342"></a>
 # Revue transversale des workflows GitHub Actions : ce qui est gardé, ce qui est corrigé (#342) (2026-08-18)
 
+`2026-08-18`
+
+> **En bref** — revue transversale des workflows : ce qui est gardé, ce qui est corrigé, et par quelles sous-issues.
+
 **Contexte** : `.github/workflows/` a grossi par ajouts successifs, chacun
 justifié localement dans sa propre issue (#192, #215, #222, #245, #248, #251,
 #344, #390, #394…), sans qu'aucune passe transversale n'ait jamais revérifié la

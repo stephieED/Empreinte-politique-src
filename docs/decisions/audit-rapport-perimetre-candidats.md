@@ -1,6 +1,10 @@
 <a id="audit-rapport-perimetre-candidats"></a>
 # Rapport d'audit pivot : détail réservé aux candidats déclarés, indicateurs de distribution retirés (2026-08-18)
 
+`2026-08-18`
+
+> **En bref** — le détail du rapport d'audit est réservé aux candidats déclarés ; indicateurs de distribution retirés.
+
 **Contexte** : le rapport Markdown de `audit_pivot_dataset.py` avait grossi
 au rythme du jeu de données. Sur `pivot_data/profiles` (129 profils au
 18/08/2026), les deux tableaux croisés par candidat (`#174` pour les

@@ -1,6 +1,10 @@
 <a id="couverture-listes-539"></a>
 # Ce qu'une liste vide veut dire : les quatre états de couverture (#539) (2026-08-28)
 
+`2026-08-28`
+
+> **En bref** — une liste vide recouvre quatre états sans rapport (couvert, non collecté, hors couverture, panne) : ils sont désormais nommés.
+
 Second volet de [#identite-profils-539](identite-profils-539.md), qui réglait
 l'identité. Celui-ci règle la question que l'issue posait derrière : **une liste
 vide, ça veut dire quoi ?**

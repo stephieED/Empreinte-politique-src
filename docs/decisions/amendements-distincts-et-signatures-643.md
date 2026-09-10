@@ -1,5 +1,9 @@
 # Un amendement cosigné n'est pas N amendements : deux grandeurs, deux noms (#643) (2026-08-31)
 
+`2026-08-31`
+
+> **En bref** — `_aggregate_amendements` comptait une entrée de profil par signataire et la publiait sous le mot « amendements » (92,2 % des entrées du corpus sont des cosignatures, d'où « 2 600 765 amendements déposés » pour les 76 députés d'`AN:LFI`) ; `amendements_agreges` compte désormais les amendements **distincts** et les signatures vivent sous leur nom, le facteur allant de × 5,0 à × 31,7 selon la fiche et le taux d'adoption bougeant dans les deux sens (`AN:SOC` 7,24 % → 14,54 %, `AN:LFI` 5,01 % → 2,99 % sur le seau `depute`) ; la déduplication passe par un cumul partagé par fiche — 132 960 amendements retenus au lieu de 2 647 601 signatures — et deux bandes de sort de plus rendent les six bandes sommantes, dont les 33,3 % de sorts absents qu'un décompte muet publierait comme des zéros.
+
 `src/group_profile.py::_aggregate_amendements` itérait `for profil in profils:
 for entree in profil["amendements"]` et faisait `nb_amendements += 1` **par
 entrée de profil**, donc **une fois par signataire**. 92,2 % des entrées

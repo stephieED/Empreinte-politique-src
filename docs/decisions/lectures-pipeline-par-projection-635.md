@@ -1,6 +1,10 @@
 <a id="lectures-pipeline-par-projection-635"></a>
 # Trois lectures du corpus passent à la projection, et chacune a son plafond dans un test (#635, 2026-08-30)
 
+`2026-08-30`
+
+> **En bref** — les trois accumulations que #628 avait nommées sans les traiter (`gouvernement_roster.load_profils_from_dir`, `audit_pivot_dataset.load_pivot_directory`, la fiche de groupe) rangeaient chaque profil entier : `MemoryError` autour du 370e puis du 300e des 481 profils committés sous un plafond de 2,0 Gio, et près d'un Gio pour la seule fiche LFI ; ramenées à ~140, 22 et 82 Mio par une liste blanche de blocs lus et — pour les listes réellement parcourues — la rétention du seul résultat qu'elles en tirent, sorties prouvées identiques (quatre quarts disjoints du corpus, cinq fiches AN) et trois plafonds déduits du poids sur disque des blocs relâchés.
+
 ## Contexte
 
 [[audit-599-projection-blocs-lus-628]] a corrigé une lecture de corpus et, au
