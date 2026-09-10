@@ -708,6 +708,36 @@ def appliquer_chambres(profil: dict[str, Any]) -> ChambresDerivees:
     return derivation
 
 
+#: La législature portée par un identifiant d'entrée de l'Assemblée nationale.
+#: Trois familles la portent au même endroit, juste après `R5L` :
+#: `syceron_CRSANR5L16S…` (compte rendu de séance), `question_QANR5L15QE…`
+#: (question écrite) et `syceron_CRSJOCGR5L16S…` (Congrès). Mesuré le
+#: 10/09/2026 sur les 937 130 interventions des 1 035 profils publiés :
+#: 929 680 identifiants la portent, 124 ne la portent pas, 1 486 sont des
+#: questions, 5 329 relèvent du Parlement européen.
+_RE_LEGISLATURE_INTERVENTION = re.compile(r"R5L(\d+)")
+
+
+def legislature_de_intervention(intervention_id: Any) -> Optional[str]:
+    """Législature portée par l'identifiant d'une intervention AN.
+
+    `syceron_CRSANR5L16S2023O1N245_000286` → `"16"`. Lecture **structurelle**
+    de l'identifiant, jamais une déduction depuis la date : c'est l'Assemblée
+    qui l'y écrit, exactement comme `legislature_de_uid` la lit sur l'`uid`
+    d'un amendement (#821).
+
+    `None` quand l'identifiant ne suit aucune forme connue — un appelant qui
+    filtre par période doit alors **conserver** l'entrée et déclarer son
+    compte, plutôt que de lui attribuer une législature par défaut : rien ne
+    prouve qu'elle soit hors période, et l'écarter ferait passer une ignorance
+    pour un fait (§2 règle 5).
+    """
+    if not isinstance(intervention_id, str):
+        return None
+    m = _RE_LEGISLATURE_INTERVENTION.search(intervention_id)
+    return m.group(1) if m else None
+
+
 def deriver_tags_thematiques(interventions: Optional[list[dict[str, Any]]]) -> list[str]:
     """Les tags thématiques d'un profil, dérivés de ses interventions.
 

@@ -95,7 +95,10 @@ def build_parti_profile(
             "a_un_profil_pivot": pivot is not None,
         })
 
-    tags_agreges, tag_source = aggregate_tags_thematiques(pivots)
+    # Une fiche de parti ne couvre aucune législature en particulier : le
+    # filtre de #825 ne s'arme pas, et l'agrégat reste celui de la carrière.
+    agregat_tags = aggregate_tags_thematiques(pivots)
+    tags_agreges, tag_source = agregat_tags.tags, agregat_tags.source
     profil["tags_thematiques_agreges"] = tags_agreges
     if tag_source == "mots_cles_interventions":
         warnings.append(
