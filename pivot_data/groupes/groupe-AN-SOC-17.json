@@ -126103,27 +126103,12 @@
       "poids_relatif": 0.4571
     },
     {
-      "tag": "motion de censure",
-      "nb_membres_porteurs": 31,
-      "poids_relatif": 0.4429
-    },
-    {
       "tag": "projet de loi de finances pour 2026",
       "nb_membres_porteurs": 31,
       "poids_relatif": 0.4429
     },
     {
-      "tag": "motions de censure",
-      "nb_membres_porteurs": 26,
-      "poids_relatif": 0.3714
-    },
-    {
       "tag": "projet de loi de financement de la sécurité sociale pour 2025",
-      "nb_membres_porteurs": 26,
-      "poids_relatif": 0.3714
-    },
-    {
-      "tag": "projet de loi de financement rectificative de la sécurité sociale pour 2023",
       "nb_membres_porteurs": 26,
       "poids_relatif": 0.3714
     },
@@ -126133,12 +126118,17 @@
       "poids_relatif": 0.3571
     },
     {
+      "tag": "motion de censure",
+      "nb_membres_porteurs": 23,
+      "poids_relatif": 0.3286
+    },
+    {
       "tag": "protection et souveraineté agricoles",
       "nb_membres_porteurs": 23,
       "poids_relatif": 0.3286
     },
     {
-      "tag": "projet de loi de finances rectificative pour 2022",
+      "tag": "motions de censure",
       "nb_membres_porteurs": 21,
       "poids_relatif": 0.3
     },
@@ -126153,29 +126143,9 @@
       "poids_relatif": 0.2714
     },
     {
-      "tag": "plein emploi",
-      "nb_membres_porteurs": 18,
-      "poids_relatif": 0.2571
-    },
-    {
-      "tag": "mesures d’urgence pour la protection du pouvoir d’achat",
-      "nb_membres_porteurs": 17,
-      "poids_relatif": 0.2429
-    },
-    {
-      "tag": "protection des enfants",
-      "nb_membres_porteurs": 17,
-      "poids_relatif": 0.2429
-    },
-    {
       "tag": "renouvellement automatique des titres de séjour de longue durée",
       "nb_membres_porteurs": 17,
       "poids_relatif": 0.2429
-    },
-    {
-      "tag": "réforme des retraites",
-      "nb_membres_porteurs": 16,
-      "poids_relatif": 0.2286
     },
     {
       "tag": "accompagnement et soins palliatifs",
@@ -126183,7 +126153,7 @@
       "poids_relatif": 0.2143
     },
     {
-      "tag": "déclaration du gouvernement et débat",
+      "tag": "protection des enfants",
       "nb_membres_porteurs": 15,
       "poids_relatif": 0.2143
     },
@@ -126193,17 +126163,7 @@
       "poids_relatif": 0.2143
     },
     {
-      "tag": "accélération de la production d’énergies renouvelables",
-      "nb_membres_porteurs": 14,
-      "poids_relatif": 0.2
-    },
-    {
-      "tag": "projet de loi de financement de la sécurité sociale pour 2023",
-      "nb_membres_porteurs": 14,
-      "poids_relatif": 0.2
-    },
-    {
-      "tag": "fonctionnement du marché du travail",
+      "tag": "déclaration du gouvernement et débat",
       "nb_membres_porteurs": 13,
       "poids_relatif": 0.1857
     },
@@ -126216,11 +126176,6 @@
       "tag": "sécurité, rétention administrative et prévention des risques d’attentat",
       "nb_membres_porteurs": 13,
       "poids_relatif": 0.1857
-    },
-    {
-      "tag": "industrie verte",
-      "nb_membres_porteurs": 12,
-      "poids_relatif": 0.1714
     },
     {
       "tag": "lutte contre les mariages simulés ou arrangés",
@@ -126238,22 +126193,7 @@
       "poids_relatif": 0.1714
     },
     {
-      "tag": "protection de l’enfance",
-      "nb_membres_porteurs": 12,
-      "poids_relatif": 0.1714
-    },
-    {
-      "tag": "souveraineté alimentaire et renouvellement des générations en agriculture",
-      "nb_membres_porteurs": 12,
-      "poids_relatif": 0.1714
-    },
-    {
       "tag": "abrogation de la retraite à 64 ans",
-      "nb_membres_porteurs": 11,
-      "poids_relatif": 0.1571
-    },
-    {
-      "tag": "accompagnement des malades et de la fin de vie",
       "nb_membres_porteurs": 11,
       "poids_relatif": 0.1571
     },
@@ -126268,17 +126208,12 @@
       "poids_relatif": 0.1571
     },
     {
-      "tag": "lutte contre les dérives sectaires",
-      "nb_membres_porteurs": 11,
-      "poids_relatif": 0.1571
-    },
-    {
       "tag": "lutte contre les déserts médicaux",
       "nb_membres_porteurs": 11,
       "poids_relatif": 0.1571
     },
     {
-      "tag": "projet de loi de finances rectificative pour 2022 (suite)",
+      "tag": "protection de l’enfance",
       "nb_membres_porteurs": 11,
       "poids_relatif": 0.1571
     },
@@ -126293,26 +126228,6 @@
       "poids_relatif": 0.1571
     },
     {
-      "tag": "accélération des procédures liées à la construction de nouvelles installations nucléaires et fonctionnement des installations existantes",
-      "nb_membres_porteurs": 10,
-      "poids_relatif": 0.1429
-    },
-    {
-      "tag": "améliorer l’accès aux soins par l’engagement territorial des professionnels",
-      "nb_membres_porteurs": 10,
-      "poids_relatif": 0.1429
-    },
-    {
-      "tag": "contrôler l’immigration, améliorer l’intégration",
-      "nb_membres_porteurs": 10,
-      "poids_relatif": 0.1429
-    },
-    {
-      "tag": "débat sur les finances locales",
-      "nb_membres_porteurs": 10,
-      "poids_relatif": 0.1429
-    },
-    {
       "tag": "gratuité des parkings d’hôpitaux publics",
       "nb_membres_porteurs": 10,
       "poids_relatif": 0.1429
@@ -126323,27 +126238,7 @@
       "poids_relatif": 0.1429
     },
     {
-      "tag": "protéger le groupe électricité de france d’un démembrement",
-      "nb_membres_porteurs": 10,
-      "poids_relatif": 0.1429
-    },
-    {
-      "tag": "bâtir la société du bien vieillir en france",
-      "nb_membres_porteurs": 9,
-      "poids_relatif": 0.1286
-    },
-    {
-      "tag": "différenciation, décentralisation, déconcentration et simplification de l’action publique locale",
-      "nb_membres_porteurs": 9,
-      "poids_relatif": 0.1286
-    },
-    {
       "tag": "dénonciation des accords franco-algériens du 27 décembre 1968",
-      "nb_membres_porteurs": 9,
-      "poids_relatif": 0.1286
-    },
-    {
-      "tag": "gouvernance de la sûreté nucléaire et de la radioprotection",
       "nb_membres_porteurs": 9,
       "poids_relatif": 0.1286
     },
@@ -126373,16 +126268,6 @@
       "poids_relatif": 0.1286
     },
     {
-      "tag": "orientation et programmation du ministère de la justice 2023-2027",
-      "nb_membres_porteurs": 9,
-      "poids_relatif": 0.1286
-    },
-    {
-      "tag": "programmation militaire 2024-2030",
-      "nb_membres_porteurs": 9,
-      "poids_relatif": 0.1286
-    },
-    {
       "tag": "protéger les enfants et lutter contre les violences en milieu scolaire",
       "nb_membres_porteurs": 9,
       "poids_relatif": 0.1286
@@ -126398,11 +126283,6 @@
       "poids_relatif": 0.1286
     },
     {
-      "tag": "responsabilité de l’état et indemnisation des victimes du chlordécone",
-      "nb_membres_porteurs": 9,
-      "poids_relatif": 0.1286
-    },
-    {
       "tag": "retrouver la confiance et l’équilibre dans les rapports locatifs",
       "nb_membres_porteurs": 9,
       "poids_relatif": 0.1286
@@ -126414,11 +126294,6 @@
     },
     {
       "tag": "simplification du millefeuille territorial par la collectivité unique",
-      "nb_membres_porteurs": 9,
-      "poids_relatif": 0.1286
-    },
-    {
-      "tag": "urgence contre la désertification médicale",
       "nb_membres_porteurs": 9,
       "poids_relatif": 0.1286
     },
@@ -126443,6 +126318,11 @@
       "poids_relatif": 0.1143
     },
     {
+      "tag": "débat sur les finances locales",
+      "nb_membres_porteurs": 8,
+      "poids_relatif": 0.1143
+    },
+    {
       "tag": "définition pénale du viol et des agressions sexuelles",
       "nb_membres_porteurs": 8,
       "poids_relatif": 0.1143
@@ -126458,22 +126338,12 @@
       "poids_relatif": 0.1143
     },
     {
-      "tag": "jeux olympiques et paralympiques de 2024",
-      "nb_membres_porteurs": 8,
-      "poids_relatif": 0.1143
-    },
-    {
       "tag": "jeux olympiques et paralympiques de 2030",
       "nb_membres_porteurs": 8,
       "poids_relatif": 0.1143
     },
     {
       "tag": "maintien en rétention des personnes condamnées pour des faits d’une particulière gravité",
-      "nb_membres_porteurs": 8,
-      "poids_relatif": 0.1143
-    },
-    {
-      "tag": "outils de gestion de la crise sanitaire",
       "nb_membres_porteurs": 8,
       "poids_relatif": 0.1143
     },
@@ -126498,27 +126368,7 @@
       "poids_relatif": 0.1143
     },
     {
-      "tag": "réduire et encadrer les frais bancaires sur succession",
-      "nb_membres_porteurs": 8,
-      "poids_relatif": 0.1143
-    },
-    {
-      "tag": "santé mentale des jeunes",
-      "nb_membres_porteurs": 8,
-      "poids_relatif": 0.1143
-    },
-    {
       "tag": "sortir la france du piège du narcotrafic - statut du procureur de la république national anti-criminalité organisée",
-      "nb_membres_porteurs": 8,
-      "poids_relatif": 0.1143
-    },
-    {
-      "tag": "sécuriser et réguler l’espace numérique",
-      "nb_membres_porteurs": 8,
-      "poids_relatif": 0.1143
-    },
-    {
-      "tag": "étendre le champ d’application de la peine d’inéligibilité aux cas de condamnations pour violences aggravées",
       "nb_membres_porteurs": 8,
       "poids_relatif": 0.1143
     },
@@ -126558,22 +126408,7 @@
       "poids_relatif": 0.1
     },
     {
-      "tag": "mesures relatives au grand âge et à l’autonomie",
-      "nb_membres_porteurs": 7,
-      "poids_relatif": 0.1
-    },
-    {
       "tag": "mode d’élection des membres du conseil de paris et des conseils municipaux de lyon et marseille (suite)",
-      "nb_membres_porteurs": 7,
-      "poids_relatif": 0.1
-    },
-    {
-      "tag": "orientation et programmation du ministère de l’intérieur",
-      "nb_membres_porteurs": 7,
-      "poids_relatif": 0.1
-    },
-    {
-      "tag": "politique du logement",
       "nb_membres_porteurs": 7,
       "poids_relatif": 0.1
     },
@@ -126588,21 +126423,6 @@
       "poids_relatif": 0.1
     },
     {
-      "tag": "projet de loi de programmation des finances publiques pour les années 2023 à 2027",
-      "nb_membres_porteurs": 7,
-      "poids_relatif": 0.1
-    },
-    {
-      "tag": "protection des enfants victimes de violences intrafamiliales",
-      "nb_membres_porteurs": 7,
-      "poids_relatif": 0.1
-    },
-    {
-      "tag": "protéger la population des risques liés aux pfas",
-      "nb_membres_porteurs": 7,
-      "poids_relatif": 0.1
-    },
-    {
       "tag": "remédier aux déséquilibres du marché locatif",
       "nb_membres_porteurs": 7,
       "poids_relatif": 0.1
@@ -126613,29 +126433,9 @@
       "poids_relatif": 0.1
     },
     {
-      "tag": "réduction de l’impact environnemental de l’industrie textile",
+      "tag": "réforme des retraites",
       "nb_membres_porteurs": 7,
       "poids_relatif": 0.1
-    },
-    {
-      "tag": "souveraineté de la france, nationalité, immigration et asile",
-      "nb_membres_porteurs": 7,
-      "poids_relatif": 0.1
-    },
-    {
-      "tag": "superprofits réalisés par les concessionnaires d’autoroutes : état des lieux et perspectives",
-      "nb_membres_porteurs": 7,
-      "poids_relatif": 0.1
-    },
-    {
-      "tag": "tarif réduit aux étudiants boursiers et précaires",
-      "nb_membres_porteurs": 7,
-      "poids_relatif": 0.1
-    },
-    {
-      "tag": "accès à une alimentation saine",
-      "nb_membres_porteurs": 6,
-      "poids_relatif": 0.0857
     },
     {
       "tag": "adaptation au droit de l’union européenne en matière économique, financière, environnementale, énergétique, de transport, de santé et de circulation des personnes",
@@ -126648,27 +126448,7 @@
       "poids_relatif": 0.0857
     },
     {
-      "tag": "donner à la douane les moyens de faire face aux nouvelles menaces",
-      "nb_membres_porteurs": 6,
-      "poids_relatif": 0.0857
-    },
-    {
-      "tag": "déclaration du gouvernement relative à l’accord de sécurité franco-ukrainien et à la situation en ukraine, suivie d’un débat et d’un vote",
-      "nb_membres_porteurs": 6,
-      "poids_relatif": 0.0857
-    },
-    {
-      "tag": "gel des tarifs des transports publics franciliens pendant les jeux olympiques et paralympiques 2024",
-      "nb_membres_porteurs": 6,
-      "poids_relatif": 0.0857
-    },
-    {
       "tag": "gestion des compétences eau et assainissement",
-      "nb_membres_porteurs": 6,
-      "poids_relatif": 0.0857
-    },
-    {
-      "tag": "gouvernance de la sûreté nucléaire et de la radioprotection-application du cinquième alinéa de l’article 13 de la constitution",
       "nb_membres_porteurs": 6,
       "poids_relatif": 0.0857
     },
@@ -126678,22 +126458,12 @@
       "poids_relatif": 0.0857
     },
     {
-      "tag": "marché locatif en zone tendue",
-      "nb_membres_porteurs": 6,
-      "poids_relatif": 0.0857
-    },
-    {
       "tag": "menaces du groupe bolloré sur la culture",
       "nb_membres_porteurs": 6,
       "poids_relatif": 0.0857
     },
     {
-      "tag": "modification du corps électoral pour les élections au congrès et aux assemblées de province de la nouvelle-calédonie",
-      "nb_membres_porteurs": 6,
-      "poids_relatif": 0.0857
-    },
-    {
-      "tag": "pavoisement des drapeaux français et européen sur le fronton des mairies",
+      "tag": "politique du logement",
       "nb_membres_porteurs": 6,
       "poids_relatif": 0.0857
     },
@@ -126708,17 +126478,12 @@
       "poids_relatif": 0.0857
     },
     {
-      "tag": "projet de loi de financement de la sécurité sociale pour 2024",
+      "tag": "protéger la population des risques liés aux pfas",
       "nb_membres_porteurs": 6,
       "poids_relatif": 0.0857
     },
     {
       "tag": "protéger les enfants accueillis en crèches privées à but lucratif",
-      "nb_membres_porteurs": 6,
-      "poids_relatif": 0.0857
-    },
-    {
-      "tag": "prévention des incendies et lutte contre l’intensification et l’extension du risque",
       "nb_membres_porteurs": 6,
       "poids_relatif": 0.0857
     },
@@ -126738,29 +126503,9 @@
       "poids_relatif": 0.0857
     },
     {
-      "tag": "vigilance sanitaire",
-      "nb_membres_porteurs": 6,
-      "poids_relatif": 0.0857
-    },
-    {
       "tag": "évaluation de la loi visant à lutter contre la précarité des accompagnants d’élèves en situation de handicap",
       "nb_membres_porteurs": 6,
       "poids_relatif": 0.0857
-    },
-    {
-      "tag": "abrogation du recul de l’âge de départ à la retraite",
-      "nb_membres_porteurs": 5,
-      "poids_relatif": 0.0714
-    },
-    {
-      "tag": "accompagnement des couples confrontés à une fausse couche",
-      "nb_membres_porteurs": 5,
-      "poids_relatif": 0.0714
-    },
-    {
-      "tag": "accompagnement des élus locaux dans la lutte contre l’artificialisation des sols",
-      "nb_membres_porteurs": 5,
-      "poids_relatif": 0.0714
     },
     {
       "tag": "aide publique au développement",
@@ -126773,27 +126518,7 @@
       "poids_relatif": 0.0714
     },
     {
-      "tag": "approvisionnement en produits de grande consommation",
-      "nb_membres_porteurs": 5,
-      "poids_relatif": 0.0714
-    },
-    {
-      "tag": "augmentation du salaire minimum",
-      "nb_membres_porteurs": 5,
-      "poids_relatif": 0.0714
-    },
-    {
-      "tag": "bilan des réformes de l’assurance chômage depuis 2017",
-      "nb_membres_porteurs": 5,
-      "poids_relatif": 0.0714
-    },
-    {
       "tag": "budget de la sécurité sociale",
-      "nb_membres_porteurs": 5,
-      "poids_relatif": 0.0714
-    },
-    {
-      "tag": "conséquences de la loi « immigration » sur les enfants étrangers placés à l’aide sociale à l’enfance",
       "nb_membres_porteurs": 5,
       "poids_relatif": 0.0714
     },
@@ -126803,22 +126528,7 @@
       "poids_relatif": 0.0714
     },
     {
-      "tag": "coût de la vie en outre-mer",
-      "nb_membres_porteurs": 5,
-      "poids_relatif": 0.0714
-    },
-    {
-      "tag": "débat d’orientation et de programmation des finances publiques",
-      "nb_membres_porteurs": 5,
-      "poids_relatif": 0.0714
-    },
-    {
       "tag": "déclaration de politique générale, débat et vote sur cette déclaration",
-      "nb_membres_porteurs": 5,
-      "poids_relatif": 0.0714
-    },
-    {
-      "tag": "déclaration du gouvernement relative à la politique de l’immigration",
       "nb_membres_porteurs": 5,
       "poids_relatif": 0.0714
     },
@@ -126833,22 +126543,7 @@
       "poids_relatif": 0.0714
     },
     {
-      "tag": "fermetures de classes",
-      "nb_membres_porteurs": 5,
-      "poids_relatif": 0.0714
-    },
-    {
       "tag": "financement de la lutte contre le virus de l’immunodéficience humaine",
-      "nb_membres_porteurs": 5,
-      "poids_relatif": 0.0714
-    },
-    {
-      "tag": "hébergement d’urgence",
-      "nb_membres_porteurs": 5,
-      "poids_relatif": 0.0714
-    },
-    {
-      "tag": "inflation et inégalités fiscales",
       "nb_membres_porteurs": 5,
       "poids_relatif": 0.0714
     },
@@ -126863,37 +126558,12 @@
       "poids_relatif": 0.0714
     },
     {
-      "tag": "liberté de recourir à l’interruption volontaire de grossesse",
-      "nb_membres_porteurs": 5,
-      "poids_relatif": 0.0714
-    },
-    {
       "tag": "libération immédiate et inconditionnelle de boualem sansal",
       "nb_membres_porteurs": 5,
       "poids_relatif": 0.0714
     },
     {
-      "tag": "lutte contre la désertification médicale",
-      "nb_membres_porteurs": 5,
-      "poids_relatif": 0.0714
-    },
-    {
-      "tag": "lutte contre la précarité des accompagnants d’élèves handicapés",
-      "nb_membres_porteurs": 5,
-      "poids_relatif": 0.0714
-    },
-    {
       "tag": "lutte contre les fermetures abusives de comptes bancaires",
-      "nb_membres_porteurs": 5,
-      "poids_relatif": 0.0714
-    },
-    {
-      "tag": "lutte contre les pénuries de médicaments",
-      "nb_membres_porteurs": 5,
-      "poids_relatif": 0.0714
-    },
-    {
-      "tag": "lutte contre l’inflation",
       "nb_membres_porteurs": 5,
       "poids_relatif": 0.0714
     },
@@ -126904,16 +126574,6 @@
     },
     {
       "tag": "organisation, gestion et financement du sport professionnel",
-      "nb_membres_porteurs": 5,
-      "poids_relatif": 0.0714
-    },
-    {
-      "tag": "ouverture à la concurrence du réseau de bus francilien de la ratp",
-      "nb_membres_porteurs": 5,
-      "poids_relatif": 0.0714
-    },
-    {
-      "tag": "partage de la valeur au sein de l’entreprise",
       "nb_membres_porteurs": 5,
       "poids_relatif": 0.0714
     },
@@ -126943,22 +126603,12 @@
       "poids_relatif": 0.0714
     },
     {
-      "tag": "projet de loi de règlement du budget et d’approbation des comptes de l’année 2021-projet de loi de règlement du budget et d’approbation des comptes de l’année 2022",
-      "nb_membres_porteurs": 5,
-      "poids_relatif": 0.0714
-    },
-    {
       "tag": "proposition de loi duplomb",
       "nb_membres_porteurs": 5,
       "poids_relatif": 0.0714
     },
     {
       "tag": "protection sociale complémentaire des agents publics territoriaux",
-      "nb_membres_porteurs": 5,
-      "poids_relatif": 0.0714
-    },
-    {
-      "tag": "prévention de l’exposition excessive des enfants aux écrans",
       "nb_membres_porteurs": 5,
       "poids_relatif": 0.0714
     },
@@ -126973,17 +126623,7 @@
       "poids_relatif": 0.0714
     },
     {
-      "tag": "renforcer l’ancrage territorial des parlementaires",
-      "nb_membres_porteurs": 5,
-      "poids_relatif": 0.0714
-    },
-    {
       "tag": "respect à l’importation de normes de production équivalentes aux normes applicables dans l’union européenne",
-      "nb_membres_porteurs": 5,
-      "poids_relatif": 0.0714
-    },
-    {
-      "tag": "revalorisation des retraites",
       "nb_membres_porteurs": 5,
       "poids_relatif": 0.0714
     },
@@ -126994,6 +126634,11 @@
     },
     {
       "tag": "réduire les risques sanitaires liés aux contaminations au cadmium",
+      "nb_membres_porteurs": 5,
+      "poids_relatif": 0.0714
+    },
+    {
+      "tag": "santé mentale des jeunes",
       "nb_membres_porteurs": 5,
       "poids_relatif": 0.0714
     },
@@ -127013,47 +126658,7 @@
       "poids_relatif": 0.0714
     },
     {
-      "tag": "abrogation de l’obligation vaccinale contre la covid-19",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "accompagnement des malades et de la fin de vie (suite)",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "accord commercial entre l’union européenne et le mercosur",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "accroître le financement des entreprises et l’attractivité de la france",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "adaptation au droit de l’union européenne dans les domaines de l’économie, de la santé, du travail, des transports et de l’agriculture",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "adaptation au droit de l’union européenne en matière d’économie, de finances, de transition écologique, de droit pénal, de droit social et en matière agricole",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "amélioration de l’accès aux soins",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
       "tag": "améliorer le traitement des maladies affectant les cultures végétales à l’aide d’aéronefs télépilotés",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "approbation des comptes de la sécurité sociale pour l’année 2022",
       "nb_membres_porteurs": 4,
       "poids_relatif": 0.0571
     },
@@ -127064,36 +126669,6 @@
     },
     {
       "tag": "clarification des compétences : quel bilan des lois de décentralisation, quelles perspectives ?",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "constitutionnalisation de l’ivg",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "crise du logement",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "différenciation, décentralisation, déconcentrationet simplification de l’action publique locale",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "dispositif territoires zéro chômeur",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "droits des personnes en situation de handicap",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "déclaration du gouvernement relative au projet de programme de stabilité pour la période 2022-2027",
       "nb_membres_porteurs": 4,
       "poids_relatif": 0.0571
     },
@@ -127113,22 +126688,7 @@
       "poids_relatif": 0.0571
     },
     {
-      "tag": "encadrement des marges des industries agroalimentaires",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "encadrer l’intervention des cabinets de conseil privés",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
       "tag": "exécution des peines d’emprisonnement ferme",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "faciliter le passage et l’obtention de l’examen du permis de conduire",
       "nb_membres_porteurs": 4,
       "poids_relatif": 0.0571
     },
@@ -127138,22 +126698,7 @@
       "poids_relatif": 0.0571
     },
     {
-      "tag": "fiscalité des droits de succession et de donation",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
       "tag": "fraudes aux aides publiques",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "fusion des filières à responsabilité élargie des producteurs d’emballages ménagers et des producteurs de papier",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "gestion différenciée des compétences eau et assainissement",
       "nb_membres_porteurs": 4,
       "poids_relatif": 0.0571
     },
@@ -127163,12 +126708,7 @@
       "poids_relatif": 0.0571
     },
     {
-      "tag": "incendie du chu de limoges et situation des hôpitaux en milieu rural",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "indexer la dotation globale de fonctionnement sur l’inflation",
+      "tag": "hébergement d’urgence",
       "nb_membres_porteurs": 4,
       "poids_relatif": 0.0571
     },
@@ -127184,11 +126724,6 @@
     },
     {
       "tag": "justice criminelle et respect des victimes – renforcement des juridictions criminelles",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "lutte contre les discriminations par la pratique de tests individuels et statistiques",
       "nb_membres_porteurs": 4,
       "poids_relatif": 0.0571
     },
@@ -127223,11 +126758,6 @@
       "poids_relatif": 0.0571
     },
     {
-      "tag": "mieux protéger les enfants victimes de violences intrafamiliales",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
       "tag": "mobilisation de l’habitat existant",
       "nb_membres_porteurs": 4,
       "poids_relatif": 0.0571
@@ -127238,17 +126768,7 @@
       "poids_relatif": 0.0571
     },
     {
-      "tag": "offre publique d’achat de l’état sur le groupe edf",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
       "tag": "perte de souveraineté industrielle et atteinte aux industries stratégiques",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "politique du médicament et pénuries",
       "nb_membres_porteurs": 4,
       "poids_relatif": 0.0571
     },
@@ -127268,27 +126788,7 @@
       "poids_relatif": 0.0571
     },
     {
-      "tag": "programmation des finances publiques pour les années 2023 à 2027",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "projet de loi sur l’immigration",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
       "tag": "propos du premier ministre",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "protection des logements contre l’occupation illicite",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "protéger et garantir le droit fondamentalà l’interruption volontaire de grossesse et à la contraception",
       "nb_membres_porteurs": 4,
       "poids_relatif": 0.0571
     },
@@ -127304,11 +126804,6 @@
     },
     {
       "tag": "prévention des litiges relatifs aux obligations de décence énergétique et sécurisation de leur application en copropriété",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "prévention en santé",
       "nb_membres_porteurs": 4,
       "poids_relatif": 0.0571
     },
@@ -127343,22 +126838,17 @@
       "poids_relatif": 0.0571
     },
     {
-      "tag": "renforcement du droit à l’avortement",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "renforcer l’accès des femmes aux responsabilités dans la fonction publique",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "report du renouvellement général des membres du congrès et des assemblées de province de la nouvelle-calédonie",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
       "tag": "restriction de la vente de protoxyde d’azote aux seuls professionnels",
+      "nb_membres_porteurs": 4,
+      "poids_relatif": 0.0571
+    },
+    {
+      "tag": "revalorisation des retraites",
+      "nb_membres_porteurs": 4,
+      "poids_relatif": 0.0571
+    },
+    {
+      "tag": "réduire et encadrer les frais bancaires sur succession",
       "nb_membres_porteurs": 4,
       "poids_relatif": 0.0571
     },
@@ -127373,11 +126863,6 @@
       "poids_relatif": 0.0571
     },
     {
-      "tag": "réintégration du personnel des établissements de santé non vacciné",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
       "tag": "réserve communale de sécurité civile",
       "nb_membres_porteurs": 4,
       "poids_relatif": 0.0571
@@ -127388,32 +126873,7 @@
       "poids_relatif": 0.0571
     },
     {
-      "tag": "situation de l’éducation nationale",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "situation des finances publiques",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "situation en nouvelle-calédonie",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
       "tag": "spatial : vers un décrochage de la france et de l’europe ?",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "suite du projet de loi sur l’immigration",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "sécurité des élus locaux et protection des maires",
       "nb_membres_porteurs": 4,
       "poids_relatif": 0.0571
     },
@@ -127433,47 +126893,12 @@
       "poids_relatif": 0.0571
     },
     {
-      "tag": "veille et sécurité sanitaire en matière de lutte contre la covid-19",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "économies budgétaires",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "égal accès à la santé",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
       "tag": "égalité d’accès au service public postal en outre-mer",
       "nb_membres_porteurs": 4,
       "poids_relatif": 0.0571
     },
     {
-      "tag": "élargir l’assiette de la taxe sur les transactions financières",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0571
-    },
-    {
-      "tag": "accès aux soins",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
       "tag": "affaire notre-dame de bétharram",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "améliorer l’accès aux soins par la territorialisation et la formation",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "application de la loi « climat et résilience »",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0429
     },
@@ -127488,17 +126913,7 @@
       "poids_relatif": 0.0429
     },
     {
-      "tag": "bilan des politiques publiques de défense et de promotion de la laïcité",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
       "tag": "budget de l’éducation nationale",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "campagne des élections européennes",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0429
     },
@@ -127513,27 +126928,7 @@
       "poids_relatif": 0.0429
     },
     {
-      "tag": "condamnation des crimes perpétrés contre les ouïghours",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "conflit israélo-palestinien",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "constitutionnaliser la sécurité sociale",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
       "tag": "conséquences de la dissolution sur notre démocratie",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "contrer le recul de la culture scientifique à l’école, au sein de l’état et dans nos politiques publiques",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0429
     },
@@ -127548,22 +126943,7 @@
       "poids_relatif": 0.0429
     },
     {
-      "tag": "crise de l’hôpital public",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "création du délit d’homicide routier et lutte contre la violence routière",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
       "tag": "dissociation, syndromes traumatiques et décrédibilisation de la parole des victimes de violences sexistes et sexuelles dans le processus judiciaire",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "doctrine d’emploi des forces de l’ordre dans les manifestations",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0429
     },
@@ -127578,6 +126958,11 @@
       "poids_relatif": 0.0429
     },
     {
+      "tag": "débat d’orientation et de programmation des finances publiques",
+      "nb_membres_porteurs": 3,
+      "poids_relatif": 0.0429
+    },
+    {
       "tag": "débat sur la dette",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0429
@@ -127588,17 +126973,7 @@
       "poids_relatif": 0.0429
     },
     {
-      "tag": "déclaration du gouvernement relative à la guerre en ukraine et aux conséquences pour la france",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
       "tag": "déclaration du gouvernement sur la situation au proche et moyen-orient",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "déclaration du gouvernement sur la situation au proche-orient",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0429
     },
@@ -127613,32 +126988,12 @@
       "poids_relatif": 0.0429
     },
     {
-      "tag": "déclaration du gouvernementrelative à la décision de la russie de faire la guerre à l’ukraine",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "déclarations du gouvernement sur le s-métolachlore",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
       "tag": "défense de la filière automobile française",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0429
     },
     {
       "tag": "démarchage téléphonique consenti et protection renforcée des consommateurs",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "dénonciation de l’accord franco-algérien du 27 décembre 1968",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "désertification médicale",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0429
     },
@@ -127658,17 +127013,7 @@
       "poids_relatif": 0.0429
     },
     {
-      "tag": "fermeture de services hospitaliers et renouveau démocratique",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "fermeture nocturne des services d’urgence",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "fin de la recherche et de l’exploitation des hydrocarbures",
+      "tag": "fermetures de classes",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0429
     },
@@ -127683,21 +127028,6 @@
       "poids_relatif": 0.0429
     },
     {
-      "tag": "garantir un revenu digne aux agriculteurs et accompagner la transition agricole",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "gestion des risques climatiques en agriculture",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "gouvernance de la sûreté nucléaire et de la radioprotection – application du cinquième alinéa de l’article 13 de la constitution",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
       "tag": "haine antimusulmans, islamophobie : qualification juridique et politiques publiques de lutte contre ces discriminations",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0429
@@ -127708,42 +127038,7 @@
       "poids_relatif": 0.0429
     },
     {
-      "tag": "hausse des prix de l’énergie",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "haut conseil de stabilité financière",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "hommage à gisèle halimi",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "importation de produits agricoles non conformes aux normes européennes",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "indemnisation des dégâts causés par le retrait-gonflement de l’argile",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
       "tag": "information et protection des victimes de violences sexistes et sexuelles",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "instaurer une majorité numérique et lutter contre la haine en ligne",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "interdiction des dispositifs électroniques de vapotage à usage unique",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0429
     },
@@ -127753,47 +127048,7 @@
       "poids_relatif": 0.0429
     },
     {
-      "tag": "jeux olympiques et paralympiques de paris 2024",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "jop de paris 2024",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "juridiction spécialisée dans les violences intrafamiliales",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "juridiction spécialisée dans l’expulsion des étrangers délinquants",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
       "tag": "la santé mentale des jeunes",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "les fonds d’aides au développement internationaux",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "limitation de l’engrillagement des espaces naturels et protection de la propriété privée",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "logement social dans les départements et régions d’outre-mer",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "loi européenne sur l’espace",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0429
     },
@@ -127808,27 +127063,7 @@
       "poids_relatif": 0.0429
     },
     {
-      "tag": "lutte contre le dumping social sur le transmanche",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
       "tag": "lutte contre le narcotrafic",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "lutte contre les arnaques et les dérives des influenceurs sur les réseaux sociaux",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "lutte contre l’antisémitisme",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "lutte contre l’inflation concernant les produits de grande consommation",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0429
     },
@@ -127843,22 +127078,7 @@
       "poids_relatif": 0.0429
     },
     {
-      "tag": "mesures d’urgence relatives au fonctionnement du marché du travail en vue du plein emploi",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "mesures en faveur du pouvoir d’achat",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
       "tag": "modification de la loi organique portant statut d’autonomie de la polynésie française",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "moratoire sur le déploiement des mégabassines",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0429
     },
@@ -127873,52 +127093,12 @@
       "poids_relatif": 0.0429
     },
     {
-      "tag": "ouverture du dispositif de réduction d’activité aux moniteurs de ski stagiaires",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "partenariat france-qatar relatif à la sécurité de la coupe du monde de football de 2022",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
       "tag": "politique agricole",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0429
     },
     {
       "tag": "politique du prochain gouvernement",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "pouvoir d’achat",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "professionnaliser l’enseignement de la danse en tenant compte de la diversité des pratiques",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "projet de loi de finances pour 2019",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "projet de loi de finances pour 2022",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "projet de loi d’orientation agricole",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "prolonger en 2024 l’utilisation des titres-restaurant pour des achats de produits alimentaires non directement consommables",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0429
     },
@@ -127943,32 +127123,12 @@
       "poids_relatif": 0.0429
     },
     {
-      "tag": "protéger et garantir le droit fondamental à l’interruption volontaire de grossesse et à la contraception",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "présidence par l’iran du forum social 2023",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
       "tag": "présomption de légitime défense pour les forces de l’ordre",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0429
     },
     {
-      "tag": "prévention des ingérences étrangères en france",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
       "tag": "quelle stratégie de l’état face à la dépendance française aux matériaux critiques et stratégiques ?",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "ratification de l’accord économique et commercial global",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0429
     },
@@ -127983,22 +127143,12 @@
       "poids_relatif": 0.0429
     },
     {
-      "tag": "renforcement du principe de la continuité territoriale en outre-mer",
+      "tag": "report du renouvellement général des membres du congrès et des assemblées de province de la nouvelle-calédonie",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0429
     },
     {
-      "tag": "renforcer la protection des mineurs et l’honorabilité dans le sport",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "retraite de base des non-salariés agricoles",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "retraites des femmes",
+      "tag": "responsabilité de l’état et indemnisation des victimes du chlordécone",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0429
     },
@@ -128008,32 +127158,12 @@
       "poids_relatif": 0.0429
     },
     {
-      "tag": "revalorisation du métier de secrétaire de mairie",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "règlement du budget et approbation des comptes de l’année 2021",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "réforme de la fonction publique",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "réforme de l’assurance chômage",
+      "tag": "réduction de l’impact environnemental de l’industrie textile",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0429
     },
     {
       "tag": "régulation des réseaux sociaux face aux ingérences étrangères",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "réparation des préjudices subis par les personnes condamnées pour homosexualité entre 1942 et 1982",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0429
     },
@@ -128048,27 +127178,12 @@
       "poids_relatif": 0.0429
     },
     {
-      "tag": "situation en ukraine",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "situation financière des jeunes",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
       "tag": "situation politique",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0429
     },
     {
       "tag": "sortir la france du piège du narcotrafic-statut du procureur de la république national anti-criminalité organisée",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "soutenir les femmes qui souffrent d’endométriose",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0429
     },
@@ -128083,27 +127198,7 @@
       "poids_relatif": 0.0429
     },
     {
-      "tag": "stratégie vaccinale contre la covid-19",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "structuration, financement, moyens et modalités d’action des groupuscules auteurs de violences à l’occasion des manifestations et rassemblements intervenus entre le 16 mars et le 3 mai 2023",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "surpopulation carcérale",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
       "tag": "sécurisation du mécanisme de purge des nullités",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "sécurité des professionnels de santé",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0429
     },
@@ -128113,17 +127208,7 @@
       "poids_relatif": 0.0429
     },
     {
-      "tag": "taxation des superprofits",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
       "tag": "traitement judiciaire des violences sexuelles incestueuses parentales",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "transformation des bureaux en logements",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0429
     },
@@ -128133,22 +127218,7 @@
       "poids_relatif": 0.0429
     },
     {
-      "tag": "violences commises dans les secteurs du cinéma, de l’audiovisuel, du spectacle vivant, de la mode et de la publicité",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
       "tag": "violences sexistes et sexuelles",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "« rendez-vous avec la nation »",
-      "nb_membres_porteurs": 3,
-      "poids_relatif": 0.0429
-    },
-    {
-      "tag": "état de l’école de la république",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0429
     },
@@ -128168,12 +127238,7 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "accession de la finlande et de la suède au traité de l’atlantique nord",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "accompagnement humain des élèves en situation de handicap",
+      "tag": "accord commercial entre l’union européenne et le mercosur",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -128188,11 +127253,6 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "accords france-sénégal et france-sri lanka autorisant l’exercice d’une activité professionnelle par les conjoints des agents des missions officielles",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "accès au logement",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
@@ -128203,17 +127263,7 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "accès au logement social",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "accès aux soins dans les territoires",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "accélération de la reconstruction et de la réfection des bâtiments dégradés lors des violences urbaines",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -128223,17 +127273,7 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "activité professionnelle indépendante",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "adaptation au changement climatique",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "adaptation du droit de la responsabilité civile",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -128243,62 +127283,12 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "agression de l’azerbaïdjan à l’encontre de l’arménie",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "aide universelle d’urgence pour les victimes de violences conjugales",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "aides publiques aux entreprises",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "allongement de l’ordonnance de protection et création de l’ordonnance provisoire de protection immédiate",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "amélioration de la prise en charge de la sclérose latérale amyotrophique et d’autres maladies évolutives graves",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
     {
-      "tag": "amélioration de l’accès aux soins par la confiance aux professionnels de santé",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "améliorer le repérage et l’accompagnement des personnes présentant des troubles du neurodéveloppement et favoriser le répit des proches aidants",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "améliorer l’encadrement des centres de santé",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "aménagement du rhône",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "annulation de l’agrément de l’association anticor",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "appel à une action résolue de la france contre le blocus imposé par les états-unis au peuple cubain",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "application de la loi visant à agir contre les violences au sein de la famille",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -128318,22 +127308,7 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "arenh et prix de l’énergie",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "association de taïwan aux travaux des organisations internationales",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "associations en crise : quelle politique associative pour l’état ?",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "attaque terroriste à arras",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -128348,11 +127323,6 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "avenant au protocole d’accord france-luxembourg",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "avenir de la sidérurgie française",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
@@ -128363,27 +127333,7 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "baisse de la facture énergétique des français et des entreprises",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "baisse démographique en france",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "bilan de la loi de programmation militaire 2019-2025",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "bilan de la mise en œuvre de la politique nationale relative aux droits des personnes handicapées",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "bilan des 100 jours",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -128403,27 +127353,7 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "choix du nom issu de la filiation",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "chèque énergie",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "comment massifier la rénovation thermique ?",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "conditions de travail et de détention dans les prisons françaises",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "confidentialité des consultations des juristes d’entreprise",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -128438,21 +127368,6 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "conséquences des bouleversements menés par le gouvernement en matière éducative",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "continuité de la représentation des communes au sein des conseils communautaires",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "contribution de vie étudiante et de campus",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "contrôle du parlement en période d’expédition des affaires courantes",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
@@ -128463,32 +127378,7 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "convention des nations unies sur le droit de la mer",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "cop26",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "corps électoral de nouvelle-calédonie",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "coût de l’hébergement en ehpad",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "création de groupes de niveau au collège",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "création de la fonction de directrice ou de directeur d’école",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -128498,27 +127388,12 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "devoir de vigilance des sociétés mères et des entreprises donneuses d’ordre",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "difficultés du secteur de la petite enfance",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
     {
-      "tag": "discrimination capillaire",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "discriminations dans l’accès au logement",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "dispositif maprimerénov’",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -128533,11 +127408,6 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "droits d’inscription à l’université",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "débat sur le plan budgétaire et structurel à moyen terme",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
@@ -128548,52 +127418,7 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "déclaration de politique générale du gouvernement et débat sur cette déclaration",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "déclaration du gouvernement relative au bilan de la présidence française de l’union européenne",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "déclaration du gouvernement relative aux partenariats renouvelés entre la france et les pays africains",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "déclassification des archives concernant les émeutes de 1967 en guadeloupe",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "défaillances de l’aide sociale à l’enfance",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "démocratiser le sport en france",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "dépôt du rapport annuel de la cour des comptes",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "dérapage du coût de la couverture santé des étrangers en situation irrégulière et des demandeurs d’asile",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "effets psychologiques de tiktok sur les mineurs",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "emploi public et réforme des retraites",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -128608,11 +127433,6 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "enjeux du changement climatique outre-mer",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "enseignement des langues régionales",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
@@ -128623,22 +127443,7 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "essais nucléaires en polynésie française : indemnisation des victimes directes, indirectes et transgénérationnelles et réparations environnementales",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "exercice en france des médecins diplômés au royaume-uni ayant débuté leurs études avant le brexit",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "expulsion des étrangers en cas de menace grave pour l’ordre public",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "extension de dispositions statutaires à la fonction publique des communes de polynésie française",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -128648,42 +127453,7 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "faciliter le financement des travaux de rénovation énergétique des bâtiments publics",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "facture énergétique des artisans",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "fermetures de classes dans les zones rurales",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "fin des régimes d’exception créés pour lutter contre l’épidémie liée à la covid-19",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "financement de la transition écologique",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "fièvre catarrhale ovine",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "garantir le respect du droit à l’image des enfants",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "généralisation du contrat à durée indéterminée à des fins d’employabilité",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -128698,17 +127468,7 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "impact du pacte sur la migration et l’asile sur la france",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "imposition du patrimoine",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "inciter les entreprises à augmenter les salaires nets de 10 %",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -128718,27 +127478,12 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "influence de la diplomatie française",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "instrumentalisation politique des élections des parents d’élèves dans les conseils d’école",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "interdiction de la vaisselle en plastique dans la restauration collective accueillant du jeune public",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
     {
-      "tag": "interdiction de l’écriture dite inclusive",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "interdiction des vols en jets privés",
+      "tag": "interdiction des dispositifs électroniques de vapotage à usage unique",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -128748,22 +127493,7 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "la vie chère dans les outre-mer",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "le sans-abrisme, réceptacle des échecs des politiques publiques ?",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "les centres de santé pluriprofessionnels : antidote aux déserts médicaux ?",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "les salaires en france",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -128783,42 +127513,7 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "livre vii du code monétaire et financier et diverses dispositions relatives à l’outre-mer",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "loi « climat et résilience » : bilan et perspectives",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "lutte contre la fraude sous toutes ses formes",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "lutte contre la pollution plastique",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "lutte contre la récidive",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "lutte contre le gaspillage et économie circulaire",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "lutte contre le harcèlement scolaire",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "lutte contre les arnaques et des dérives des influenceurs sur les réseaux sociaux",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -128833,17 +127528,7 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "maintien provisoire d’un dispositif de plafonnement de revalorisation de la variation annuelle des indices locatifs",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "maisons france autonomie",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "manifestations en iran",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -128858,17 +127543,7 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "mesures agroenvironnementales et climatiques en bretagne",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "mesures de justice pour limiter les frais bancaires",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "mesures de soutien face à l’augmentation des coûts de l’énergie",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -128879,36 +127554,6 @@
     },
     {
       "tag": "mettre fin au devoir conjugal",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "mobilisation des agriculteurs",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "mobilité internationale des alternants, pour un \"erasmus de l’apprentissage\"",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "modèle économique des entreprises de crèches et qualité de l’accueil des jeunes enfants",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "mort de nahel et violences urbaines",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "mort d’alexandra et mobilisation des agriculteurs",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "mouvement de grève chez sanofi",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -128924,16 +127569,6 @@
     },
     {
       "tag": "négociations commerciales",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "oubliés du bouclier énergétique",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "pauvreté des enfants",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -128968,16 +127603,6 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "politique migratoire",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "politique pénitentiaire et conditions de détention",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "politique écologique",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
@@ -128993,22 +127618,7 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "port d’une tenue uniforme à l’école",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "position de la france sur les accords de libre-échange",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "poursuite de la dématérialisation de l’état civil du ministère de l’europe et des affaires étrangères",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "premier bilan du plan « agir contre la fraude »",
+      "tag": "pouvoir d’achat",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -129023,52 +127633,7 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "prix payés aux producteurs par les entreprises de transformation et de distribution agroalimentaires",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "programmation pour la refondation de mayotte - département-région de mayotte",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "projet de loi contrôler l’immigration, améliorer l’intégration",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "projet de loi de financement de la sécurité sociale pour 2018 (suite)",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "projet de loi de financement de la sécurité socialepour 2022",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "projet de loi de finances de fin de gestion pour 2023",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "projet de loi de finances pour 2018",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "projet de loi de finances pour 2024",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "projet de loi de finances rectificative pour 2021",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "projet de loi de programmation des finances publiques pour les années 2023 à 2027-projet de loi de finances pour 2023",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -129083,22 +127648,7 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "proposition de loi « bien vieillir »",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "protection des personnes ciblées par les réseaux de criminalité organisée",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "protocole sanitaire dans les écoles",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "protocole sur la responsabilité et l’indemnisation pour les dommages liés au transport de substances nocives",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -129113,16 +127663,6 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "prévention de la diffusion de contenus à caractère terroriste en ligne",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "prévention de la diffusion en ligne de contenus à caractère terroriste",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "prévention de la grippe aviaire dans la filière avicole",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
@@ -129133,22 +127673,7 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "quelle attractivité et quelle compétitivité pour la recherche française ?",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "quelle politique de développement et de financement des modes d’accueil de la petite enfance ?",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "quelle politique du logement ? habiter et se loger dignement dans les territoires",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "reconnaissance des métiers de la médiation sociale",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -129158,37 +127683,7 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "reconnaissance et condamnation de l’holodomor comme génocide",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "reconnaissance et condamnation du massacre des algériens du 17 octobre 1961",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "reconnaissance et réparation des préjudices subis par les harkis",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "relance des trains de nuit",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "relations du gouvernement avec le parlement",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "remboursement des prêts garantis par l’état",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "renforcement de la réponse pénale contre les infractions à caractère raciste, antisémite ou discriminatoire",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -129198,32 +127693,7 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "renforcer l’équilibre dans les relations commerciales entre fournisseurs et distributeurs",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "renvoi du garde des sceaux devant la cour de justice de la république",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "respect des principes de la république",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "restaurer l’autorité de l’état",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "restitution des restes humains appartenant aux collections publiques",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "restitution des travaux des commissions des finances et des affaires sociales sur le printemps de l’évaluation",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -129233,62 +127703,12 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "revalorisation du salaire des enseignants",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "revalorisation du smic",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "règlement du budget et d’approbation des comptes de l’année 2021",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "réaffirmer l’ambition climatique de la france au niveau européen",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
     {
-      "tag": "réemploi des véhicules au service des mobilités durables",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "réforme de la police judiciaire",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "réforme de la voie professionnelle",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "réforme de l’adoption",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "réforme des bourses sur critères sociaux et lutte contre la précarité étudiante",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "régime juridique des actions de groupe",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "rénovation de l’habitat dégradé",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "réouverture des accueils physiques dans les services publics",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -129308,27 +127728,7 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "révision des traités européens",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "saisie et confiscation des avoirs criminels",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "santé mentale",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "santé mentale et psychiatrie",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "services express régionaux métropolitains",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -129343,27 +127743,12 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "situation dans les ehpad",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "situation dans les outre-mer",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
     {
-      "tag": "situation de la psychiatrie",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "situation des outre-mer",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "situation en israël",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -129383,11 +127768,6 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "solution à deux états et condamnation de l’institutionnalisation par l’état d’israël d’un régime d’apartheid",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "soutenir le danemark et le groenland et œuvrer en faveur d’une plus grande coopération en matière de défense",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
@@ -129398,22 +127778,7 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "soutenir l’engagement bénévole et simplifier la vie associative",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "soutien à l’innovation thérapeutique contre les cancers, les maladies rares et les maladies orphelines de l’enfant",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "soutien à l’ukraine et condamnation de la guerre menée par la russie",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "statut des sapeurs-pompiers volontaires",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -129428,12 +127793,12 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "suppression des allocations familiales pour les parents d’enfants criminels ou délinquants",
+      "tag": "supprimer le vote par assis et levé",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
     {
-      "tag": "supprimer le vote par assis et levé",
+      "tag": "surpopulation carcérale",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -129449,11 +127814,6 @@
     },
     {
       "tag": "temps de l’enfant",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "tempête ciaran",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -129483,32 +127843,17 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "usage de la langue française aux jeux olympiques et paralympiques de paris en 2024",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "versement des allocations familiales dès le premier enfant",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
     {
-      "tag": "violences contre les élus",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "violences en guadeloupe",
+      "tag": "violences commises dans les secteurs du cinéma, de l’audiovisuel, du spectacle vivant, de la mode et de la publicité",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
     {
       "tag": "violences en marge de la finale de la ligue des champions",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "échecs de la politique migratoire",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
     },
@@ -129528,11 +127873,6 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "état de la psychiatrie en france",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
       "tag": "évaluation de la lutte contre la contrefaçon",
       "nb_membres_porteurs": 2,
       "poids_relatif": 0.0286
@@ -129543,27 +127883,7 @@
       "poids_relatif": 0.0286
     },
     {
-      "tag": "éventuelles coupures d’électricité dans les établissements scolaires",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "évolution de la santé psychique",
-      "nb_membres_porteurs": 2,
-      "poids_relatif": 0.0286
-    },
-    {
-      "tag": "abolition de la corrida",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "abrogation de l’accord de 1968 avec l’algérie",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "accessibilité des billets pour les jeux olympiques et paralympiques de 2024",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -129588,52 +127908,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "accord france-pays-bas",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "accord france-royaume-uni relatif à la sûreté des navires à passagers dans la manche",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "accord relatif à l’exécution des peines prononcées par la cour pénale internationale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "accorder l’asile politique à julian assange et faciliter l’accès au statut de réfugié pour les lanceurs d’alerte étrangers",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "accords entre la france et la banque des règlements internationaux",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "accords sur le partage de l’information maritime et sur la coordination des opérations en mer dans l’océan indien occidental",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "accueil de l’ocean viking à toulon",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "accueil des migrants au sein de l’union européenne et réforme du règlement dublin iii",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "accès au logement dans le calvados",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "accès aux services publics dans les territoires ruraux",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -129643,47 +127918,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "accès transparent au marché de l’assurance emprunteur",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "accès universel à la vaccination",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "accès à l’eau en guadeloupe",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "accès à une justice adaptée aux besoins des justiciables ultramarins",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "accélérer l’égalité économique et professionnelle",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "actions détenues par des membres de la majorité",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "activités périscolaires",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "adaptation des politiques publiques au changement climatique, notamment pour les villes côtières et insulaires",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "affectations et mutations des fonctionnaires ultramarins",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -129708,11 +127943,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "aide juridictionnelle aux personnes en situation irrégulière",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "aide sociale à l’enfance",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -129723,22 +127953,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "aide à domicile en milieu rural",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "aides de la pac",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "ailleurs",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "algues sargasses",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -129763,27 +127978,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "amendements à la convention portant création de l’organisation maritime internationale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "amélioration de l’encadrement des centres de santé",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "amélioration de l’offre de soins dans les hôpitaux",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "améliorer la protection des lanceurs d’alerte-rôle du défenseur des droits en matière d’alerte",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "améliorer la réussite scolaire des jeunes ultramarins grâce à l’apprentissage des langues régionales",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -129808,16 +128003,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "application du cinquième alinéa de l’article 13 de la constitution",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "application prématurée du guichet unique des entreprises en outre-mer",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "approbation des comptes de la sécurité sociale de l’année 2025",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -129838,11 +128023,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "article de disclose",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "assassinat d’aboubakar cissé",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -129853,22 +128033,12 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "assurer une justice patrimoniale au sein de la famille",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "attentat de mulhouse",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
       "tag": "audiovisuel public",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "augmentation des inégalités",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -129888,27 +128058,12 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "avenir de biogaran",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "avenir de l’industrie automobile",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
-      "tag": "avenir du secteur aéronautique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "avenir du site stellantis de poissy",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "avenir institutionnel et politique de la nouvelle-calédonie",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -129943,42 +128098,12 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "bilan de la loi confortant le respect des principes de la république",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "bilan de la loi confortant le respect des principes de la république (suite)",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "bilan de la stratégie nationale de sécurité numérique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "bilan de l’action de la banque de france",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
-      "tag": "bilan des « cent jours »",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "blocage des prix",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "branche",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "budget de la pédopsychiatrie",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -130023,11 +128148,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "calcul de la pension civile en polynésie française",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "calendrier des réformes",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -130038,27 +128158,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "candidats de l’enseignement admis sur liste complémentaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "carte",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "carte scolaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "carte scolaire 2024",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "caserne de gendarmerie à combourg",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -130073,11 +128173,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "centre hospitalier de brocéliande",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "centre hospitalier de caen",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -130088,37 +128183,12 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "centre pénitentiaire de condé-sur-sarthe",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "centre pénitentiaire de rennes-vezin",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
-      "tag": "centres de données en france",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "centres sociaux",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "certain",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "certification européenne du sel biologique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "cessez-le-feu à gaza",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -130129,16 +128199,6 @@
     },
     {
       "tag": "chambres de métiers et de l’artisanat",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "charge fiscale de la pension alimentaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "chlordécone aux antilles françaises",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -130183,22 +128243,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "comités sociaux et économiques de la poste",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "commande publique outre-mer",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "commissariat de foix",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "commission d’évaluation de l’aide publique au développement",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -130213,27 +128258,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "composition du nouveau gouvernement",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "comptes publics",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "comptes sociaux",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "compétences dans le secteur automobile",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "compétences de la collectivité européenne d’alsace",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -130253,11 +128278,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "condamnation du régime d’alexandre loukachenko",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "condition",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -130268,37 +128288,17 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "confiance dans l’institution judiciaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "conflit au moyen-orient",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "conflit entre israël et l’iran",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
-      "tag": "conflit entre l’arménie et l’azerbaïdjan",
+      "tag": "conflit israélo-palestinien",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
       "tag": "conférence",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "conférence sur l’avenir de l’europe",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "conférence sur l’avenir de l’europe (suite)",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -130323,11 +128323,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "contentieux du stationnement payant",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "contrat dépendance équitable",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -130343,17 +128338,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "contribution sur le transport routier dans le grand est",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "contrôle",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "contrôles à la frontière franco-italienne",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -130363,37 +128348,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "convention du conseil de l’europe contre le trafic d’organes humains",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "convention france-moldavie pour l’élimination de la double imposition sur le revenu et la prévention de la fraude fiscale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "convention sur la manipulation de compétitions sportives",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "conventions d’entraide judiciaire en matière pénale et d’extradition entre la france et le sénégal",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "coopération judiciaire entre la france et l’espagne",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "cop27",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "cop28",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -130403,22 +128358,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "coulée de boue en vallée d’aspe",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "coût de la vie",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "coût de l’immigration en france",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "coût de l’énergie pour les boulangers",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -130448,22 +128388,12 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "crise du logement étudiant",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "crise du système de santé français",
+      "tag": "crise du logement",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
       "tag": "crise viticole",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "crise à la frontière entre la pologne et la biélorussie",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -130493,32 +128423,12 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "création de l’organisation internationale pour les aides à la navigation maritime",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "création de l’établissement public du commerce et de l’industrie de la collectivité de corse",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
-      "tag": "création du conseiller territorial",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "création d’un centre hospitalier universitaire en corse",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "création d’un complément de revenu pour les étudiants qui travaillent",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "création d’un défenseur de l’environnement",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -130568,11 +128478,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "desserte tgv du mans et de la sarthe",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "dette",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -130583,32 +128488,12 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "devoir de vigilance des multinationales",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "dialogue",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
-      "tag": "difficultés de fonctionnement des ehpad",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "difficultés de la filière noix",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "difficultés des ehpad",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "difficultés financières des ehpad",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -130643,16 +128528,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "dispositif d’autorégulation pour les enfants présentant des troubles autistiques",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "dissolution des groupuscules fascistes et antirépublicains",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "dissolution d’associations de supporters",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -130664,11 +128539,6 @@
     },
     {
       "tag": "domicile",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "don du sang",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -130718,22 +128588,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "dysfonctionnements de la justice en outre-mer",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "décentralisation des politiques publiques agricoles",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "déchet",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "déclaration du gouvernement relative à la présidence française du conseil de l’union européenne, suivie d’un débat",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -130743,17 +128598,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "déclaration du gouvernement sur la politique énergétique de la france",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "déclaration du gouvernement sur la situation en ukraine et la sécurité en europe, suivie d’un débat",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "déclaration du gouvernementrelative à l’évolution de la situation sanitaire (suite)",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -130768,37 +128613,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "défendre un accord ambitieux lors de la conférence sur la diversité biologique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "défense de la laïcité à l’école",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "défense de l’école publique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "défense des démocraties face aux multiples menaces et tentatives de déstabilisation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "déficit",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "déficit de gynécologues médicaux",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "déficit des centres hospitaliers",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -130809,11 +128624,6 @@
     },
     {
       "tag": "démocratie",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "dénonciation du coup d’état militaire en birmanie",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -130848,11 +128658,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "effets de la réforme de l’assurance chômage sur l’iae",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "ehpad",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -130868,27 +128673,12 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "encadrement pédagogique dans les lycées professionnels",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "enfance",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
-      "tag": "engorgement des juridictions de haute-garonne",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "enquête",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "enseignants du premier degré",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -130909,11 +128699,6 @@
     },
     {
       "tag": "entreprises en difficulté",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "errements de parcoursup et difficultés de l’enseignement supérieur",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -130978,17 +128763,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "extension et adaptation à la polynésie française, à la nouvelle-calédonie et aux îles wallis et futuna de dispositions législatives relatives à la santé",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "extension et renforcement du droit de préemption commercial",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "exécution des obligations de quitter le territoire français",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -131003,32 +128778,12 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "favoriser l’accès de tous au logement",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "femmes et retraite",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "fermeture de la centrale de fessenheim",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
       "tag": "fermeture de maison colibri",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "fermeture de maternités",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "fermeture de services des urgences",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -131043,27 +128798,12 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "feuille de route de la ministre de l’éducation nationale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "feuille de route du ministère de la culture",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "filière",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
       "tag": "filière biologique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "finalisation de la voie rapide 52 dans le grand est",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -131083,22 +128823,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "financement des concessions autoroutières",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "financement des hôpitaux en corse",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "financement des structures d’insertion par l’activité économique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "financement des établissements scolaires privés",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -131123,17 +128848,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "fixation du prix de la canne à sucre",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "fonctionnement des instances de gouvernance des chambres d’agriculture et de la mutualité sociale agricole",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "fonds de compensation pour la taxe sur la valeur ajoutée",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -131149,11 +128864,6 @@
     },
     {
       "tag": "fonds d’indemnisation des victimes de pesticides",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "fonds spécial pour les outre-mer",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -131198,11 +128908,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "garde à vue d’une élue en seine-maritime",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "gendarmerie",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -131213,32 +128918,12 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "gestion des autoroutes",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "gestion des risques naturels majeurs dans les territoires d’outre-mer",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "gestion financière des établissements de santé",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
-      "tag": "gouvernance de l’agence pour l’enseignement français à l’étranger",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "gouvernement",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "grippe aviaire",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -131253,47 +128938,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "grève des salariés de vertbaudet",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "guerre en ukraine",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "géothermie en guadeloupe",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "handicap",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "hausse des prix",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "hausse des prix des carburants",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "hausse des prix du carburant",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "hausse des températures",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "hausse du prix de l’énergie",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -131303,22 +128948,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "haut-karabakh",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "hommage au professeur tué à arras",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "hommage à lionel jospin",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "hommage à robert hébras",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -131328,47 +128958,12 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "hébergement des malades ultramarins",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "hébergement d’urgence dans le calvados",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "hébergement d’urgence pour les femmes victimes de violence",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "hôpital de carhaix",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
-      "tag": "hôpitaux ruraux",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "immigration",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "immigration légale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "immigration sur le territoire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "implantation d’une gendarmerie à verneuil-sur-vienne",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -131379,16 +128974,6 @@
     },
     {
       "tag": "indemnisation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "indemnisation des mineurs de la mure",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "indemnisation pour événements climatiques exceptionnels",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -131418,11 +129003,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "inscrire le groupe militaire privé wagner sur la liste des organisations terroristes",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "installation",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -131443,27 +129023,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "insécurité en guyane",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "intelligence artificielle",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "interdiction de la maltraitance sur les chiens et les chats par colliers étrangleurs",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "interdiction des sucres ajoutés dans les aliments destinés aux nourrissons et aux enfants en bas âge",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "interdiction du glyphosate",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -131473,37 +129033,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "intégrité territoriale de l’ukraine",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "investissements dans le secteur ferroviaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "inégalités scolaires",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "inégalités scolaires en seine-saint-denis",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "isf",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "isolement",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "isolement social des personnes vulnérables",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -131528,11 +129058,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "journée mondiale du diabète",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "judiciaire",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -131548,11 +129073,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "justice patrimoniale au sein de la famille",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "lait infantile contaminé",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -131563,32 +129083,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "le chlordécone en martinique et en guadeloupe : l’action de l’état face aux nécessaires réparations",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "le fonctionnement des éco-organismes et la gestion des éco-contributions",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "le localisme au service de la réindustrialisation et de l’environnement",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "liaison a28-a13",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "liaison autoroutière a133-a134",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "liaison ferroviaire clermont-ferrand-paris",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -131604,21 +129099,6 @@
     },
     {
       "tag": "liberté de la presse",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "liberté de l’école privée",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "liberté des médias",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "libre choix des communes en matière d’eau et d’assainissement",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -131648,11 +129128,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "ligne tgv paris-metz/nancy",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "lignes d et e du rer",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -131673,6 +129148,11 @@
       "poids_relatif": 0.0143
     },
     {
+      "tag": "logement social dans les départements et régions d’outre-mer",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.0143
+    },
+    {
       "tag": "logement social dans les outre-mer",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -131688,16 +129168,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "loi « grand âge »",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "lois de financement de la sécurité sociale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "loyer",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -131708,67 +129178,12 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "lutte contre la maltraitance animale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "lutte contre la spéculation dans l’immobilier touristique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "lutte contre la tuberculose bovine",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "lutte contre le changement climatique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "lutte contre le commerce illicite de tabac",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
-      "tag": "lutte contre le terrorisme d’extrême droite",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "lutte contre les abus et les fraudes au compte personnel de formation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "lutte contre les dérives des influenceurs sur les réseaux sociaux",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "lutte contre les maladies neurodégénératives",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "lutte contre les plastiques dangereux pour l’environnement et la santé",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "lutte contre les punaises de lit",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "lutte contre les surtranspositions en matière agricole",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "lutte contre les violences faites aux femmes",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -131788,57 +129203,12 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "lutte contre l’exclusion financière et plafonnement des frais bancaires",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "lutte contre l’extrême droite",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "lutte contre l’homophobie",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "lutte contre l’inceste",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
-      "tag": "légalisation du cannabis : évolutions européennes,blocages français",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "légalisation du cannabis sous le contrôle de l’état",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "législation sur la fin de vie",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "l’austérité imposée par le gouvernement",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "l’échec global de la reconquête de la qualité de l’eau potable",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "l’école inclusive, une réalité ?",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "l’école publique face aux politiques de tri social",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -131853,32 +129223,12 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "maintien des petites lignes ferroviaires",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "maison d’arrêt de rouen",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "maisons fissurées",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "majorité",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
       "tag": "majorité numérique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "mal-logement",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -131909,11 +129259,6 @@
     },
     {
       "tag": "manque de personnel éducatif à rennes",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "manque de professionnels dans les ehpad",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -131963,11 +129308,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "mieux partager la valeur et garantir des revenus dignes pour les agriculteurs",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "militaire",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -131988,27 +129328,12 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "mise à disposition aux régions du réseau routier national non concédé",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "mobilité",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
-      "tag": "modalités de représentation des travailleurs indépendants recourant aux plateformes",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "modification de l’ordre du jour",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "modification du mécanisme européen de stabilité",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -132043,16 +129368,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "moratoire sur l’exploitation minière des fonds marins",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "mort de lola",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "mort de noahm",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -132073,11 +129388,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "moyens des collectivités en faveur de l’apprentissage",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "mécanisme d’ajustement carbone aux frontières à la réunion",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -132088,17 +129398,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "médecine scolaire et santé mentale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "média",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "métiers du secteur social et médico-social",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -132133,11 +129433,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "nationalisation des sociétés concessionnaires d’autoroutes",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "naturelle",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -132168,22 +129463,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "nouvelle ministre de l’éducation nationale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "novasco",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "nuisances liées à l’autoroute a13",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "nuisances provoquées par la lgv bretagne-pays de la loire",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -132233,26 +129513,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "organisation des services de la navigation aérienne en cas de mouvement social",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "orientation et programmation du ministère de la justice 2023-2027 – modernisation et responsabilité du corps judiciaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "orientation et programmation du ministère de la justice 2023-2027-modernisation et responsabilité du corps judiciaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "orpea",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "outre-mer",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -132293,21 +129553,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "parcours des jeunes adultes handicapés",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "parcoursup",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "parité dans le bloc communal",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "part collective du pass culture",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -132324,11 +129569,6 @@
     },
     {
       "tag": "participation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "passe sanitaire dans les bibliothèques",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -132363,11 +129603,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "places en institut médico-éducatif",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "plan avenir montagnes",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -132384,11 +129619,6 @@
     },
     {
       "tag": "plfss",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "pluralisme dans les médias",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -132418,11 +129648,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "politique budgétaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "politique de l’emploi",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -132448,7 +129673,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "politique à l’égard des chômeurs",
+      "tag": "politique migratoire",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -132459,31 +129684,6 @@
     },
     {
       "tag": "port du voile dans le sport",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "pour la conservation et l’utilisation durable de l’océan",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "pour un article 49 respectueux de la représentation nationale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "pour une santé accessible à tous et contre la désertification médicale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "premier amendement et protocole à la convention d’espoo",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "prescription trentenaire dans les outre-mer",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -132508,47 +129708,12 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "prise en charge des enfants handicapés en ille-et-vilaine",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "prise en charge des mineurs non accompagnés",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "prise en charge des soins et dispositifs spécifiques au traitement du cancer du sein",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
-      "tag": "prise en charge intégrale des soins liés au traitement du cancer du sein",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "prix de l’énergie et superprofits",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "prix des billets d’avion en outre-mer",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "prix des billets d’avion outre-mer",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "prix des carburants aux antilles",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "prix des transports en île-de-france",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -132573,11 +129738,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "programmation 2018-2022 et réforme de la justice - renforcement de l’organisation des juridictions",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "programmation pluriannuelle de l’énergie",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -132593,27 +129753,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "programme hydroélectrique français",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "projet bromo",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "projet de destruction, à mourenx, de la tour dite des célibataires",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "projet de loi constitutionnelle relatif à la liberté de recourir à l’interruption volontaire de grossesse",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "projet de loi de financement de la sécurité sociale pour 2022",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -132623,22 +129763,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "projet de loi de finances pour 2021",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "projet de loi de finances pour 2025",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "projet de loi de programmation des finances publiques pour les années 2023 à 2027 - projet de loi de finances pour 2023",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "projet de loi d’orientation et de programmation du ministère de l’intérieur",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -132663,37 +129788,12 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "proposition de censure simple d’un député",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "proposition de législation européenne sur la liberté des médias",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "propriétaire",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
-      "tag": "propriété des personnes publiques en polynésie française",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "prorogation de la loi du 6 mars 2017 relative à l’assainissement cadastral et à la résorption du désordre de la propriété",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "protection des enfants contre les violences familiales",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "protection des familles d’enfants atteints d’une maladie ou d’un handicap",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -132743,42 +129843,12 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "punaises de lit",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "pénale",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
-      "tag": "pénurie de médicaments",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "pénurie de vaccins contre la bronchiolite",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "pérennisation du contrat de professionnalisation expérimental",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "pérenniser les jardins d’enfants",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "pérennité des établissements de spectacles cinématographiques et accès au cinéma dans les outre-mer",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "quais de la gare de maisons-alfort alfortville",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -132798,32 +129868,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "quelles réponses à l’envolée des prix des produits de grande consommation ?",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "rappels au règlement",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "rapport",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "rapport annuel du conseil d’orientation des retraites",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "rapport evin-stefanini sur l’ame",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "rapport pisa 2023",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -132838,22 +129883,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "ratification du traité de coopération entre la france et l’italie",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "recherche sur les cancers pédiatriques",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "recommandations de la has en matière de prise en charge de l’autisme",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "reconnaissance de l’endométriose comme une affection de longue durée",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -132863,17 +129893,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "reconnaissance des ambulanciers",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "reconnaissance des victimes de l’exposition aux essais nucléaires français",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "reconnaissance du génocide des assyro-chaldéens de 1915",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -132884,16 +129904,6 @@
     },
     {
       "tag": "reconstruction de gaza",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "recours aux cabinets de conseil",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "recours aux fonds européens pour l’aide alimentaire",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -132913,11 +129923,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "relancer l’organisation des classes de découverte",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "relations avec les états-unis",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -132928,17 +129933,17 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "relocalisation d’electrosteel en france",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "relogement du propriétaire occupant en cas de péril",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
       "tag": "remboursement des frais d’expertise comptable aux candidats",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.0143
+    },
+    {
+      "tag": "remboursement des prêts garantis par l’état",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -132958,11 +129963,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "renforcement de l’europe",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "renforcer la démographie professionnelle des orthophonistes",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -132974,11 +129974,6 @@
     },
     {
       "tag": "renforcer la sécurité des professionnels de santé",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "renforcer la sécurité et la protection des maires et des élus locaux",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -133003,22 +129998,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "représentation plus juste des français à l’assemblée nationale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "rer e",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "respect du droit international dans le secours des migrants en mer méditerranée",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "respect éthique du don d’organes",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -133033,12 +130013,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "ressources des collectivités territoriales",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "restitution des biens culturels spoliés entre 1933 et 1945",
+      "tag": "restitution des travaux des commissions des finances et des affaires sociales sur le printemps de l’évaluation",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -133053,22 +130028,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "retraites et protection sociale dans la fonction publique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "retraités",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "revivifier la représentation politique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "route nationale 20",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -133093,17 +130053,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "réactions à l’attribution de la palme d’or à mme triet",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "récupération",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "réduction des inégalités territoriales pour les ouvertures de casinos",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -133113,17 +130063,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "réforme de la décentralisation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "réforme de la sécurité civile",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "réforme de la taxe foncière",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -133133,77 +130073,12 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "réforme de l’indemnisation des catastrophes naturelles",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "réforme de l’octroi de mer",
+      "tag": "réforme de l’assurance chômage",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
       "tag": "réforme des bourses sur critères sociaux",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "réforme des retraites en outre-mer",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "réforme des retraites et droit de grève",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "réforme des retraites et pénibilité",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "réforme du lycée professionnel",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "réforme en faveur du grand âge",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "réformes de l’assurance chômage et des retraites",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "régime agirc-arrco",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "régime de sécurité sociale minière",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "régularisation du plui de la communauté de communes du bas-chablais",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "régulation de l’accès au foncier agricole",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "régulation environnementale du numérique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "réhabilitation des militaires « fusillés pour l’exemple »",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -133223,37 +130098,12 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "répression du mouvement social contre la réforme des retraites",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "république",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
-      "tag": "réseau france services",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "résidence autonomie de montfort-sur-meu",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "résultats de la gestion et approbation des comptes de l’année 2024",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "rôle du ministre de l’éducation nationale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "salaire des enseignants",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -133264,11 +130114,6 @@
     },
     {
       "tag": "santé mentale en guadeloupe",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "santé à l’école dans la sarthe",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -133313,17 +130158,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "service national universel",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "service public de la petite enfance",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "signes religieux à l’école",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -133343,32 +130178,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "situation au sein des instituts médico-sociaux en isère",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "situation dans le haut-karabakh",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "situation dans les ehpad à but lucratif",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "situation de fibre excellence",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "situation de la pédopsychiatrie en france",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "situation des agriculteurs sarthois",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -133378,42 +130188,12 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "situation des ehpad",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "situation des hôpitaux",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "situation des kurdes en turquie",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
-      "tag": "situation des migrants à calais",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "situation des praticiens à diplôme hors union européenne",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "situation des sans-abri dans le calvados",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "situation des urgences hospitalières face à la canicule",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "situation des urgences à l’hôpital",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -133428,7 +130208,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "situation du secteur social et médico-social",
+      "tag": "situation en ukraine",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -133478,11 +130258,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "soins palliatifs",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "solidarité envers les retraités pauvres",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -133508,17 +130283,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "soutien au mouvement pour la liberté du peuple iranien",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "soutien au peuple iranien",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "soutien à israël face au terrorisme",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -133548,42 +130313,12 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "stratégie de dépistage du cancer du sein",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "stratégie de la france face aux cyberattaques",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
-      "tag": "stratégie de l’union européenne pour la décarbonation de l’électricité",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "stratégie interministérielle pour le bien vieillir",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "stratégie nationale de santé",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "suites données au rapport de la commission d’enquête sur les manquements des politiques publiques de protection de l’enfance.",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "suites données à la commission d’enquête visant à établir les raisons de la perte de souveraineté et d’indépendance énergétique de la france",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "suppression de l’ame par le sénat",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -133613,11 +130348,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "supprimer les zones à faibles émissions mobilité",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "sur",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -133633,27 +130363,12 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "sécurisation des jeux olympiques de paris",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "sécurité européenne",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
-      "tag": "sécurité intérieure et lutte contre le terrorisme",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "sécurité à menton",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "séparatisme à l’école",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -133688,32 +130403,12 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "tensions dans les services hospitaliers pédiatriques et réforme du système de soin",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "territoires zéro chômeur de longue durée",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "titres de séjour",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
-      "tag": "trafic de stupéfiants à laval",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "traité de coopération en matière de défense entre la france et djibouti",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "traité france-kazakhstan sur l’entraide judiciaire",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -133728,22 +130423,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "transition agroécologique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "transition écologique des bâtiments scolaires",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "transparence, efficacité et impact de l’aide publique au développement",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "transport ferré sur la rive droite du rhône",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -133758,32 +130438,12 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "travailleurs des plateformes numériques",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "travailleurs étrangers en situation irrégulière",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
       "tag": "tribunal judiciaire de cherbourg-en-cotentin",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "trottinettes électriques",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "télécommunications dans le finistère",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "uber files",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -133813,22 +130473,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "variole du singe",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "vente d’opella par sanofi",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "verdissement des flottes automobiles",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "versement des pensions alimentaires aux enfants majeurs",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -133843,11 +130488,6 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "violences contre les femmes",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "violences dans le périscolaire",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
@@ -133858,47 +130498,12 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "violences urbaines",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "violences urbaines et réponse pénale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "violences à nantes",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "visite",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
-      "tag": "voyages scolaires en temps de covid",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "zonage france ruralité revitalisation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "zones de non-traitement",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "zones à faibles émissions mobilité",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "zéro artificialisation nette",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -133923,47 +130528,12 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "école inclusive",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "école publique du premier degré dans la haute-vienne",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "écoles d’infirmiers",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "écoles et collèges des quartiers sud du mans",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "écoles nationales d’architecture",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "économie",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
     {
       "tag": "économie sociale et solidaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "éducation prioritaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "éducation à la sexualité",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -133979,11 +130549,6 @@
     },
     {
       "tag": "élus condamnés pour violences faites aux enfants, aux femmes et intrafamiliales",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "énergies renouvelables",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     },
@@ -134013,22 +130578,7 @@
       "poids_relatif": 0.0143
     },
     {
-      "tag": "évaluation des politiques de prévention en santé publique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "évolution de la formation de sage-femme",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
       "tag": "évolution institutionnelle en martinique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0143
-    },
-    {
-      "tag": "évolution statutaire de la collectivité de corse",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0143
     }
@@ -160961,35 +157511,35 @@
     }
   ],
   "amendements_agreges": {
-    "nb_amendements": 68705,
-    "nb_adoptes": 10546,
-    "nb_rejetes": 21484,
-    "nb_irrecevables": 9159,
-    "nb_retires_ou_tombes": 17118,
-    "nb_sort_non_renseigne": 10398,
+    "nb_amendements": 15599,
+    "nb_adoptes": 2926,
+    "nb_rejetes": 3556,
+    "nb_irrecevables": 2312,
+    "nb_retires_ou_tombes": 4153,
+    "nb_sort_non_renseigne": 2652,
     "nb_sort_non_reconnu": 0,
-    "taux_adoption": 0.1535,
+    "taux_adoption": 0.1876,
     "nb_sans_identifiant": 0,
     "par_type_deposant": {
       "commission_rapporteur": {
-        "nb_amendements": 2624,
-        "nb_adoptes": 1419,
-        "nb_rejetes": 321,
-        "nb_irrecevables": 40,
-        "nb_retires_ou_tombes": 498,
-        "nb_sort_non_renseigne": 346,
+        "nb_amendements": 1324,
+        "nb_adoptes": 787,
+        "nb_rejetes": 131,
+        "nb_irrecevables": 25,
+        "nb_retires_ou_tombes": 298,
+        "nb_sort_non_renseigne": 83,
         "nb_sort_non_reconnu": 0,
-        "taux_adoption": 0.5408
+        "taux_adoption": 0.5944
       },
       "depute": {
-        "nb_amendements": 66081,
-        "nb_adoptes": 9127,
-        "nb_rejetes": 21163,
-        "nb_irrecevables": 9119,
-        "nb_retires_ou_tombes": 16620,
-        "nb_sort_non_renseigne": 10052,
+        "nb_amendements": 14275,
+        "nb_adoptes": 2139,
+        "nb_rejetes": 3425,
+        "nb_irrecevables": 2287,
+        "nb_retires_ou_tombes": 3855,
+        "nb_sort_non_renseigne": 2569,
         "nb_sort_non_reconnu": 0,
-        "taux_adoption": 0.1381
+        "taux_adoption": 0.1498
       },
       "gouvernement": {
         "nb_amendements": 0,
@@ -161013,13 +157563,13 @@
       }
     },
     "signatures": {
-      "nb_signatures": 785071,
+      "nb_signatures": 343493,
       "par_type_deposant": {
         "commission_rapporteur": {
-          "nb_signatures": 11604
+          "nb_signatures": 7022
         },
         "depute": {
-          "nb_signatures": 773467
+          "nb_signatures": 336471
         },
         "gouvernement": {
           "nb_signatures": 0
@@ -161028,7 +157578,9 @@
           "nb_signatures": 0
         }
       }
-    }
+    },
+    "nb_signatures_hors_periode_ecartees": 441578,
+    "nb_signatures_sans_legislature_retenues": 0
   },
   "sources": [
     {
@@ -161039,7 +157591,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1008",
-      "synchro_le": "2026-09-10T12:53:27+0000"
+      "synchro_le": "2026-09-10T18:08:22+0000"
     },
     {
       "type": "nosdeputes",
@@ -161049,7 +157601,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1567",
-      "synchro_le": "2026-09-10T12:54:21+0000"
+      "synchro_le": "2026-09-10T18:08:52+0000"
     },
     {
       "type": "assemblee_nationale",
@@ -161064,7 +157616,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA331973",
-      "synchro_le": "2026-09-10T12:47:35+0000"
+      "synchro_le": "2026-09-10T18:02:40+0000"
     },
     {
       "type": "nosdeputes",
@@ -161074,7 +157626,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA333285",
-      "synchro_le": "2026-09-10T12:53:43+0000"
+      "synchro_le": "2026-09-10T18:09:00+0000"
     },
     {
       "type": "nosdeputes",
@@ -161084,7 +157636,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335054",
-      "synchro_le": "2026-09-10T12:54:40+0000"
+      "synchro_le": "2026-09-10T18:10:05+0000"
     },
     {
       "type": "nosdeputes",
@@ -161094,12 +157646,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA340343",
-      "synchro_le": "2026-09-10T12:46:44+0000"
+      "synchro_le": "2026-09-10T18:00:53+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA341981",
-      "synchro_le": "2026-09-10T12:45:26+0000"
+      "synchro_le": "2026-09-10T18:02:25+0000"
     },
     {
       "type": "nosdeputes",
@@ -161109,7 +157661,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA342196",
-      "synchro_le": "2026-09-10T12:46:52+0000"
+      "synchro_le": "2026-09-10T18:01:58+0000"
     },
     {
       "type": "nosdeputes",
@@ -161119,17 +157671,17 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA342415",
-      "synchro_le": "2026-09-10T12:44:58+0000"
+      "synchro_le": "2026-09-10T18:01:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA606573",
-      "synchro_le": "2026-09-10T12:47:12+0000"
+      "synchro_le": "2026-09-10T18:02:23+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA606793",
-      "synchro_le": "2026-09-10T12:53:47+0000"
+      "synchro_le": "2026-09-10T18:08:43+0000"
     },
     {
       "type": "nosdeputes",
@@ -161139,7 +157691,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607553",
-      "synchro_le": "2026-09-10T12:53:28+0000"
+      "synchro_le": "2026-09-10T18:08:23+0000"
     },
     {
       "type": "nosdeputes",
@@ -161149,12 +157701,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA608172",
-      "synchro_le": "2026-09-10T12:54:24+0000"
+      "synchro_le": "2026-09-10T18:08:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA608264",
-      "synchro_le": "2026-09-10T12:54:45+0000"
+      "synchro_le": "2026-09-10T18:09:14+0000"
     },
     {
       "type": "nosdeputes",
@@ -161164,7 +157716,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA609332",
-      "synchro_le": "2026-09-10T12:54:41+0000"
+      "synchro_le": "2026-09-10T18:10:06+0000"
     },
     {
       "type": "nosdeputes",
@@ -161174,7 +157726,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA642764",
-      "synchro_le": "2026-09-10T12:46:54+0000"
+      "synchro_le": "2026-09-10T18:01:59+0000"
     },
     {
       "type": "nosdeputes",
@@ -161184,7 +157736,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643143",
-      "synchro_le": "2026-09-10T12:44:59+0000"
+      "synchro_le": "2026-09-10T18:01:55+0000"
     },
     {
       "type": "nosdeputes",
@@ -161194,7 +157746,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643157",
-      "synchro_le": "2026-09-10T12:46:40+0000"
+      "synchro_le": "2026-09-10T18:01:52+0000"
     },
     {
       "type": "nosdeputes",
@@ -161204,7 +157756,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643192",
-      "synchro_le": "2026-09-10T12:53:28+0000"
+      "synchro_le": "2026-09-10T18:08:23+0000"
     },
     {
       "type": "nosdeputes",
@@ -161214,7 +157766,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719930",
-      "synchro_le": "2026-09-10T12:54:24+0000"
+      "synchro_le": "2026-09-10T18:08:54+0000"
     },
     {
       "type": "nosdeputes",
@@ -161224,12 +157776,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720362",
-      "synchro_le": "2026-09-10T12:46:38+0000"
+      "synchro_le": "2026-09-10T18:01:48+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720992",
-      "synchro_le": "2026-09-10T12:54:29+0000"
+      "synchro_le": "2026-09-10T18:09:45+0000"
     },
     {
       "type": "nosdeputes",
@@ -161239,7 +157791,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722150",
-      "synchro_le": "2026-09-10T12:46:42+0000"
+      "synchro_le": "2026-09-10T18:00:52+0000"
     },
     {
       "type": "nosdeputes",
@@ -161249,7 +157801,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA774958",
-      "synchro_le": "2026-09-10T12:53:46+0000"
+      "synchro_le": "2026-09-10T18:09:01+0000"
     },
     {
       "type": "nosdeputes",
@@ -161259,7 +157811,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA774960",
-      "synchro_le": "2026-09-10T12:54:41+0000"
+      "synchro_le": "2026-09-10T18:10:06+0000"
     },
     {
       "type": "nosdeputes",
@@ -161269,7 +157821,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793394",
-      "synchro_le": "2026-09-10T12:46:47+0000"
+      "synchro_le": "2026-09-10T18:00:56+0000"
     },
     {
       "type": "nosdeputes",
@@ -161279,7 +157831,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793624",
-      "synchro_le": "2026-09-10T12:46:54+0000"
+      "synchro_le": "2026-09-10T18:01:59+0000"
     },
     {
       "type": "nosdeputes",
@@ -161289,7 +157841,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793816",
-      "synchro_le": "2026-09-10T12:44:59+0000"
+      "synchro_le": "2026-09-10T18:01:55+0000"
     },
     {
       "type": "nosdeputes",
@@ -161299,7 +157851,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794094",
-      "synchro_le": "2026-09-10T12:46:41+0000"
+      "synchro_le": "2026-09-10T18:01:52+0000"
     },
     {
       "type": "nosdeputes",
@@ -161309,7 +157861,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794270",
-      "synchro_le": "2026-09-10T12:53:29+0000"
+      "synchro_le": "2026-09-10T18:08:24+0000"
     },
     {
       "type": "nosdeputes",
@@ -161319,7 +157871,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794494",
-      "synchro_le": "2026-09-10T12:54:24+0000"
+      "synchro_le": "2026-09-10T18:08:55+0000"
     },
     {
       "type": "nosdeputes",
@@ -161329,7 +157881,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794854",
-      "synchro_le": "2026-09-10T12:53:46+0000"
+      "synchro_le": "2026-09-10T18:09:01+0000"
     },
     {
       "type": "nosdeputes",
@@ -161339,7 +157891,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795156",
-      "synchro_le": "2026-09-10T12:54:41+0000"
+      "synchro_le": "2026-09-10T18:10:07+0000"
     },
     {
       "type": "nosdeputes",
@@ -161349,7 +157901,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795430",
-      "synchro_le": "2026-09-10T12:46:47+0000"
+      "synchro_le": "2026-09-10T18:00:56+0000"
     },
     {
       "type": "nosdeputes",
@@ -161359,62 +157911,62 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795762",
-      "synchro_le": "2026-09-10T12:46:54+0000"
+      "synchro_le": "2026-09-10T18:02:00+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA822617",
-      "synchro_le": "2026-09-10T12:55:00+0000"
+      "synchro_le": "2026-09-10T18:10:28+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA826635",
-      "synchro_le": "2026-09-10T12:47:28+0000"
+      "synchro_le": "2026-09-10T18:01:32+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840171",
-      "synchro_le": "2026-09-10T12:47:35+0000"
+      "synchro_le": "2026-09-10T18:02:40+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840175",
-      "synchro_le": "2026-09-10T12:45:27+0000"
+      "synchro_le": "2026-09-10T18:02:25+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840665",
-      "synchro_le": "2026-09-10T12:47:12+0000"
+      "synchro_le": "2026-09-10T18:02:24+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840673",
-      "synchro_le": "2026-09-10T12:53:47+0000"
+      "synchro_le": "2026-09-10T18:08:43+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840765",
-      "synchro_le": "2026-09-10T12:54:45+0000"
+      "synchro_le": "2026-09-10T18:09:15+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840793",
-      "synchro_le": "2026-09-10T12:54:29+0000"
+      "synchro_le": "2026-09-10T18:09:46+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840829",
-      "synchro_le": "2026-09-10T12:55:00+0000"
+      "synchro_le": "2026-09-10T18:10:28+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840903",
-      "synchro_le": "2026-09-10T12:47:28+0000"
+      "synchro_le": "2026-09-10T18:01:32+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840939",
-      "synchro_le": "2026-09-10T12:47:35+0000"
+      "synchro_le": "2026-09-10T18:02:40+0000"
     },
     {
       "type": "assemblee_nationale",
@@ -161429,117 +157981,117 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841091",
-      "synchro_le": "2026-09-10T12:47:13+0000"
+      "synchro_le": "2026-09-10T18:02:24+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841107",
-      "synchro_le": "2026-09-10T12:53:47+0000"
+      "synchro_le": "2026-09-10T18:08:43+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841243",
-      "synchro_le": "2026-09-10T12:54:45+0000"
+      "synchro_le": "2026-09-10T18:09:15+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841295",
-      "synchro_le": "2026-09-10T12:54:30+0000"
+      "synchro_le": "2026-09-10T18:09:46+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841315",
-      "synchro_le": "2026-09-10T12:55:01+0000"
+      "synchro_le": "2026-09-10T18:10:28+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841327",
-      "synchro_le": "2026-09-10T12:47:28+0000"
+      "synchro_le": "2026-09-10T18:01:32+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841367",
-      "synchro_le": "2026-09-10T12:47:35+0000"
+      "synchro_le": "2026-09-10T18:02:40+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841381",
-      "synchro_le": "2026-09-10T12:45:32+0000"
+      "synchro_le": "2026-09-10T18:02:30+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841463",
-      "synchro_le": "2026-09-10T12:47:13+0000"
+      "synchro_le": "2026-09-10T18:02:24+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841471",
-      "synchro_le": "2026-09-10T12:53:47+0000"
+      "synchro_le": "2026-09-10T18:08:44+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841539",
-      "synchro_le": "2026-09-10T12:54:45+0000"
+      "synchro_le": "2026-09-10T18:09:15+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841633",
-      "synchro_le": "2026-09-10T12:54:30+0000"
+      "synchro_le": "2026-09-10T18:09:46+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841665",
-      "synchro_le": "2026-09-10T12:55:01+0000"
+      "synchro_le": "2026-09-10T18:10:29+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841681",
-      "synchro_le": "2026-09-10T12:47:29+0000"
+      "synchro_le": "2026-09-10T18:01:33+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841717",
-      "synchro_le": "2026-09-10T12:47:36+0000"
+      "synchro_le": "2026-09-10T18:02:41+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841813",
-      "synchro_le": "2026-09-10T12:45:32+0000"
+      "synchro_le": "2026-09-10T18:02:31+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841853",
-      "synchro_le": "2026-09-10T12:47:13+0000"
+      "synchro_le": "2026-09-10T18:02:24+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841893",
-      "synchro_le": "2026-09-10T12:53:48+0000"
+      "synchro_le": "2026-09-10T18:08:44+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841919",
-      "synchro_le": "2026-09-10T12:54:45+0000"
+      "synchro_le": "2026-09-10T18:09:15+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA842195",
-      "synchro_le": "2026-09-10T12:54:30+0000"
+      "synchro_le": "2026-09-10T18:09:46+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA842211",
-      "synchro_le": "2026-09-10T12:55:01+0000"
+      "synchro_le": "2026-09-10T18:10:29+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA842263",
-      "synchro_le": "2026-09-10T12:47:29+0000"
+      "synchro_le": "2026-09-10T18:01:33+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-10T13:16:59+0000",
+    "genere_le": "2026-09-10T19:26:02+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO) + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
     "profils_sources": [
       "alain-david",
@@ -161617,6 +158169,9 @@
     "warnings": [
       "date_reference : tous les comptes de cette fiche se rapportent au 2026-09-10, date de génération — au moins une appartenance au groupe est encore ouverte, la législature court. La valeur bougera au prochain run (#653).",
       "effectif_sur_la_periode : entre 2024-07-19 et 2026-09-10, le groupe a compté au minimum 66 membres (2024-07-19) et au maximum 69 (2025-10-08) — première date à laquelle chaque borne est atteinte. L'effectif est réévalué à chaque entrée et à chaque lendemain de sortie, jamais hors de cette fenêtre. `membres[]` ne porte qu'un intervalle par membre (périodes recollées, #526) : un départ suivi d'un retour n'y apparaît pas, et aucune de ces deux bornes ne le voit (#702).",
+      "tags_thematiques_agreges : 28067 intervention(s) tenue(s) sous une autre législature que la 17e n'ont pas nourri l'empreinte thématique — elles appartiennent à la carrière de leurs auteurs, pas à l'activité de ce groupe (#825, même règle que les votes depuis #403 et que les amendements depuis #821).",
+      "tags_thematiques_agreges : 200 intervention(s) dont l'identifiant ne porte pas de législature sont CONSERVÉES — rien ne prouve qu'elles soient hors période, et les écarter ferait passer une ignorance pour un fait (§2 règle 5).",
+      "amendements_agreges : 441578 signature(s) portant sur des amendements déposés sous une autre législature que la 17e ont été écartées — ils appartiennent à la carrière de leurs auteurs, pas à l'activité de ce groupe (#821, même règle que les votes depuis #403).",
       "fraicheur_donnees : composition dérivée du référentiel AMO30 de l'Assemblée nationale (data.assemblee-nationale.fr, Licence Ouverte), et non plus de www.nosdeputes.fr depuis #527. Une législature close y est complète : les mandats terminés en cours de législature y figurent, alors que la dernière composition connue d'un miroir les perd. La fiche reflète donc l'appartenance au groupe telle que l'Assemblée la publie à la date de meta.genere_le ; un membre sans profil publié n'y apparaît pas (voir meta.couverture_roster)."
     ],
     "couverture_roster": {
