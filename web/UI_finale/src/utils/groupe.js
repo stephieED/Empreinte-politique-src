@@ -61,7 +61,12 @@ import {
  * sur des fichiers déjà publiés.
  */
 export const ORIGINES_DATE_REFERENCE = {
-  cloture_legislature: 'clôture de la législature',
+  derniere_appartenance_close: 'dernière appartenance close',
+  // #808 : l'ancien nom, gardé en lecture. Il annonçait un événement que deux
+  // fiches sur douze n'ont pas connu — `NG-15` s'arrête 3 ans 9 mois avant la
+  // clôture de la XVe. Les fiches qui le portent encore doivent rester
+  // lisibles jusqu'à leur régénération.
+  cloture_legislature: 'dernière appartenance close',
   generation: 'date de génération de la fiche',
 };
 

@@ -2155,12 +2155,15 @@ def build_groupe_profile(
     if (date_reference or {}).get("origine") == ORIGINE_DATE_REFERENCE_CLOTURE:
         warnings.append(avertissement(
             f"date_reference : tous les comptes de cette fiche se rapportent au "
-            f"{date_ref}, clôture de la législature — `effectif.a_la_date_de_reference` "
+            f"{date_ref}, jour de la dernière appartenance close — "
+            f"`effectif.a_la_date_de_reference` "
             f"({n_presents} sur les {len(membres)} entrées de `membres[]`), "
             "`mandats_agreges[].nb_membres_a_la_date_de_reference` et "
-            "`membres[].present_a_la_date_de_reference`. Une fiche de législature close "
-            "est un objet historique : aucun de ses compteurs ne dit « aujourd'hui » "
-            "(#653).",
+            "`membres[].present_a_la_date_de_reference`. Cette date est celle où le "
+            "dernier membre a quitté le groupe, qui n'est pas toujours la clôture de la "
+            "législature — `NG-15` s'arrête au 11/09/2018, la XVe au 21/06/2022 (#808). "
+            "Une fiche dont toutes les appartenances sont closes est un objet "
+            "historique : aucun de ses compteurs ne dit « aujourd'hui » (#653).",
             DESTINATAIRE_LECTEUR,
         ))
     else:

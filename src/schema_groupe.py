@@ -91,7 +91,7 @@ Format d'un profil de groupe v1 :
                                         # avant le lot (les 2 `groupe-Senat-*`, gelées par
                                         # #516) : optionnelle, jamais obligatoire.
         "date": "2024-06-09",           # ISO-8601
-        "origine": "cloture_legislature"  # ORIGINES_DATE_REFERENCE : `cloture_legislature`
+        "origine": "derniere_appartenance_close"  # ORIGINES_DATE_REFERENCE (#808)
                                         # (toutes les appartenances refermées → la plus
                                         # tardive) | `generation` (au moins une encore
                                         # ouverte → meta.genere_le)
@@ -433,10 +433,30 @@ REQUIRED_META_KEYS: frozenset[str] = frozenset({
 # groupe quand toutes les appartenances sont refermées, la date de génération
 # tant qu'au moins une reste ouverte. Un compteur daté qu'on ne peut pas dater à
 # la lecture est un compteur nu (AGENTS.md §2 règle 2).
-ORIGINE_DATE_REFERENCE_CLOTURE = "cloture_legislature"
+#
+# #808 — L'ÉTIQUETTE NOMMAIT UN ÉVÉNEMENT, PAS LE CRITÈRE. Elle valait
+# `cloture_legislature` dès que toutes les appartenances sont refermées, ce qui
+# est un critère de CALCUL, exact. Mais deux fiches sur douze n'ont jamais connu
+# cet événement : `NG-15` s'arrête au 11/09/2018 et `EDS-15` au 16/10/2020,
+# quand la XVe se clôt le 21/06/2022 — 3 ans 9 mois d'écart pour la première.
+# Un lecteur y lisait « effectif à la fin de la XVe » là où la donnée dit
+# « effectif au dernier jour d'existence du groupe » : le chiffre était juste,
+# la phrase qui l'accompagnait ne l'était pas (§2 règle 2).
+#
+# La valeur nomme désormais ce qu'elle mesure. **Écarté** : scinder en deux
+# valeurs selon que la dernière appartenance coïncide ou non avec la clôture —
+# il faudrait connaître la date de clôture de chaque législature, et ajouter un
+# cas au vocabulaire pour une nuance que la date publiée donne déjà.
+ORIGINE_DATE_REFERENCE_CLOTURE = "derniere_appartenance_close"
+#: L'ancien nom, **accepté en lecture et jamais écrit**. Les 14 fiches qui le
+#: portent seront régénérées au prochain run, mais une fiche publiée doit
+#: continuer de valider entre le déploiement du code et ce run — sans quoi le
+#: portail de qualité échouerait sur des fichiers que personne n'a touchés.
+ORIGINE_DATE_REFERENCE_CLOTURE_HERITEE = "cloture_legislature"
 ORIGINE_DATE_REFERENCE_GENERATION = "generation"
 ORIGINES_DATE_REFERENCE: tuple[str, ...] = (
     ORIGINE_DATE_REFERENCE_CLOTURE,
+    ORIGINE_DATE_REFERENCE_CLOTURE_HERITEE,
     ORIGINE_DATE_REFERENCE_GENERATION,
 )
 
