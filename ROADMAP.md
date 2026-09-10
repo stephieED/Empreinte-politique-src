@@ -148,16 +148,28 @@ Convention d'écriture : `AGENTS.md` §8.
   trois chiffres dans son JSX. La même mécanique reste à appliquer à la
   méthodologie.
 
-- **Un bloc de la fiche candidat bascule en sombre sur une page qui reste
-  claire.** `index.css` déclare `color-scheme: light` sur `:root`, et
-  `CandidateProfile.css` porte pourtant un `@media (prefers-color-scheme: dark)`
-  sur `.cp-gc`. Vérifié au navigateur le 09/09/2026 en `colorScheme: 'dark'` :
-  `body` reste `#f7f6f4` quand `.cp-gc` prend `--rail: #1f2027` et
-  `--parl: #8fb3e8` — une figure foncée au milieu d'une page claire. Deux
-  sorties possibles, et le choix est éditorial : retirer le bloc (l'interface
-  assume d'être claire) ou porter un vrai thème sombre sur toute l'interface.
-  `FriseCouverture.css` s'abstient en attendant, et son commentaire dit
-  pourquoi.
+- **Le seuil de publication des textes portés écarte 100 % d'une institution
+  (#328).** `AGENTS.md` §6 ne publie qu'un texte parvenu au moins en commission.
+  Les **405 textes portés européens** ont tous `stade_procedural: null` — la
+  source européenne ne publie pas de stade —, donc aucun ne franchit le seuil :
+  23 sur 23 chez Glucksmann, 45 sur 45 chez Maurel, 4 sur 4 chez Mélenchon. Un
+  seuil qui écarte tout ce qu'il ne sait pas mesurer ne filtre plus, il
+  supprime. Arbitrage éditorial ouvert : le seuil ne porte-t-il que sur les
+  textes qui ont un stade ?
+
+- **La §4 « Où il s'est écarté des siens » ne peut pas exister à l'européen
+  (#328).** Elle compare une position à celle de son groupe, et les 23 fiches de
+  groupe servies sont **21 AN et 2 Sénat, aucune européenne** ; le profil de
+  Glucksmann ne porte même aucun mandat `groupe_politique`. La section reste
+  présente et vide avec son motif — trou déclaré, pas comblé (§2 règle 5).
+
+- **Les 11 013 votes européens et les 7 303 amendements européens n'ont pas
+  encore leur rang par institution dans « En bref » (#328).** Ils arrivent d'un
+  agrégat qui ne porte pas l'institution : `joinAmendements` projette huit
+  champs et laisse celui-là, et `votesDuProfil` filtre sur deux règles de forme
+  AN — `isWholeTextVote` exige `type_vote === 'vote_texte'` quand le PE porte
+  `nature`, et la dernière lecture se cherche dans `scrutins.json`, où un
+  `scrutin_id: null` n'entre jamais. Dernier morceau du lot institutionnel.
 
 - **Un moment de séance sans grammaire plus fine sous lui reste publié comme un
   sujet (#710).** Le critère structurel de #710 écarte les créneaux de questions

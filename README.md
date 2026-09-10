@@ -181,9 +181,19 @@ où ils se lisaient comme des faits sur la personne affichée (#328).
   d'identifiants d'acteur nus reste livrée inactive (#510) — une collecte
   fraîche ne rend donc que les questions officielles. Les prises de parole déjà
   publiées sont conservées par la fusion additive.
-- **Maires, portefeuille ministériel hors AN, textes européens** : hors
-  périmètre, investigués et écartés.
-  → [`docs/decisions/hors-perimetre.md`](docs/decisions/hors-perimetre.md)
+- **Maires, portefeuille ministériel hors AN** : hors périmètre, investigués et
+  écartés. → [`docs/decisions/hors-perimetre.md`](docs/decisions/hors-perimetre.md)
+- **Parlement européen** : collecté depuis #683 via Parltrack, et **lu comme une
+  institution à part entière sur la fiche** depuis #328 — 6 des 30 candidats
+  publiés y ont siégé, et pour trois d'entre eux c'est **tout** leur mandat
+  parlementaire. Deux limites connues, déclarées et non comblées : les
+  **405 textes portés européens** n'ont pas de stade procédural, donc aucun ne
+  franchit le seuil de publication (voir `ROADMAP.md`), et la section « Où il
+  s'est écarté des siens » n'a aucune fiche de groupe européenne à quoi se
+  comparer. La ligne « textes européens : hors périmètre » qui figurait ici
+  décrivait l'API officielle du Parlement, abandonnée pour son coût, et non le
+  matériau lui-même.
+  → [`docs/decisions/institution-dimension-de-la-fiche-328.md`](docs/decisions/institution-dimension-de-la-fiche-328.md)
 - **Biais de couverture** : un ancien parlementaire laisse des traces bien plus
   riches qu'un candidat qui ne l'a jamais été.
 

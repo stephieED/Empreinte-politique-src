@@ -59,10 +59,27 @@ Trois formes, verified dans `src/components/Brand.jsx`/`Brand.css` et cotées da
 |---|---|---|
 | Parlementaire `--parl` / `--pop-cand` | `#3F5166` | L'Assemblée sur la frise de la fiche ; les **fiches de candidats** sur celle de `/couverture` |
 | Gouvernemental `--gouv` / `--pop-gouv` | `#8A6B4C` | Le gouvernement sur la fiche ; les **fiches de gouvernement** sur `/couverture` |
+| **Européen `--pe`** | **`#514F96`** | **Le Parlement européen sur la frise et les colonnes de la fiche (#328)** |
+| **Sénatorial `--senat`** | **`#8F4A6D`** | **Le Sénat, idem — mandat publié, activité non collectée (#528)** |
 | Groupe `--pop-grp` | `#6F5B7A` | Les **fiches de groupe** — la troisième population, ajoutée par `/couverture` (#328) |
 
-Trois teintes et pas quatre : elles distinguent des **origines**, qui n'ont pas d'ordre. Une
-quatrième diluerait les trois, et une rampe les placerait sur une échelle (§2 règle 1).
+Chacune porte sa rampe de quatre valeurs — `--x`, `--x-wash`, `--x-pale`, `--x-line` —, en clair
+seulement : l'UI n'a **pas** de mode nuit (`index.css` déclare `color-scheme: light`), et le
+fragment qui en restait sur `.cp-gc` a été retiré
+([`bloc-sombre-mort-retire-328`](../../docs/decisions/bloc-sombre-mort-retire-328.md)).
+
+**« Trois teintes et pas quatre » a tenu jusqu'au 10/09/2026, et ce n'est plus la règle.** Elle
+disait vrai tant que la fiche ne connaissait que deux bancs. Le corpus en porte quatre — une
+carrière peut traverser l'Assemblée, le Sénat, le Parlement européen et le gouvernement —, et
+ranger un mandat européen sous la teinte de l'Assemblée n'était pas une économie de couleur,
+c'était un fait faux : `raphael-glucksmann`, qui n'a jamais siégé à l'Assemblée, y voyait ses
+4 mandats en commission européens.
+
+Ce qui reste de la règle, et qui la remplace : **une teinte de plus se justifie par une mesure,
+jamais par un besoin de distinguer.** Les deux ajoutées portent 6,7:1 et 5,8:1 de contraste sur
+le fond, et **ΔE ≥ 33** de chacune des autres institutions **et** des couleurs de vote — sans
+quoi une institution se lirait comme une position. Elles distinguent des **origines**, qui n'ont
+toujours pas d'ordre : aucune rampe ne les met sur une échelle (§2 règle 1).
 
 ### Couleurs de vote & d'issue — *vérifiées*, `src/utils/lecture.js` (`VOTE_STYLE` / `OUTCOME_COLOR`)
 
