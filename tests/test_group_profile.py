@@ -519,7 +519,7 @@ def test_cohesion_taux_coherence_hors_absents():
 def test_tags_agrege_compte_membres():
     p1 = _pivot(tags=["budget", "fiscalité"])
     p2 = _pivot(tags=["budget", "santé"])
-    tags, _ = aggregate_tags_thematiques([p1, p2])
+    tags = aggregate_tags_thematiques([p1, p2]).tags
     budget_entry = next(t for t in tags if t["tag"] == "budget")
     assert budget_entry["nb_membres_porteurs"] == 2
     assert budget_entry["poids_relatif"] == 1.0
@@ -528,7 +528,7 @@ def test_tags_agrege_compte_membres():
 def test_tags_agrege_deduplication_par_membre():
     """Un tag répété dans le profil d'un membre ne compte qu'une fois."""
     p1 = _pivot(tags=["budget", "budget", "budget"])
-    tags, _ = aggregate_tags_thematiques([p1])
+    tags = aggregate_tags_thematiques([p1]).tags
     budget_entry = next(t for t in tags if t["tag"] == "budget")
     assert budget_entry["nb_membres_porteurs"] == 1
 
@@ -537,7 +537,7 @@ def test_tags_trie_par_nombre_membres_desc():
     p1 = _pivot(tags=["budget", "santé", "défense"])
     p2 = _pivot(tags=["budget", "santé"])
     p3 = _pivot(tags=["budget"])
-    tags, _ = aggregate_tags_thematiques([p1, p2, p3])
+    tags = aggregate_tags_thematiques([p1, p2, p3]).tags
     counts = [t["nb_membres_porteurs"] for t in tags]
     assert counts == sorted(counts, reverse=True)
 
@@ -546,7 +546,8 @@ def test_tags_fallback_sur_mots_cles_interventions():
     """Si tags_thematiques est vide, on utilise les mots-clés des interventions."""
     interventions = [{"mots_cles": ["immigration", "social"], "date": "2024-01-01"}]
     p1 = _pivot(tags=[], interventions=interventions)
-    tags, source = aggregate_tags_thematiques([p1])
+    _agregat = aggregate_tags_thematiques([p1])
+    tags, source = _agregat.tags, _agregat.source
     tag_names = {t["tag"] for t in tags}
     assert "immigration" in tag_names
     assert source == "mots_cles_interventions"
@@ -554,20 +555,21 @@ def test_tags_fallback_sur_mots_cles_interventions():
 
 def test_tags_source_tags_thematiques():
     p1 = _pivot(tags=["budget"])
-    _, source = aggregate_tags_thematiques([p1])
+    source = aggregate_tags_thematiques([p1]).source
     assert source == "tags_thematiques"
 
 
 def test_tags_source_mixed():
     p1 = _pivot(tags=["budget"])
     p2 = _pivot(tags=[], interventions=[{"mots_cles": ["santé"], "date": "2024-01-01"}])
-    _, source = aggregate_tags_thematiques([p1, p2])
+    source = aggregate_tags_thematiques([p1, p2]).source
     assert source == "mixed"
 
 
 def test_tags_vide_si_aucun_tag():
     p1 = _pivot(tags=[], interventions=[])
-    tags, source = aggregate_tags_thematiques([p1])
+    _agregat = aggregate_tags_thematiques([p1])
+    tags, source = _agregat.tags, _agregat.source
     assert tags == []
     assert source is None
 
@@ -575,7 +577,7 @@ def test_tags_vide_si_aucun_tag():
 def test_tags_poids_relatif():
     p1 = _pivot(tags=["budget"])
     p2 = _pivot(tags=[])
-    tags, _ = aggregate_tags_thematiques([p1, p2])
+    tags = aggregate_tags_thematiques([p1, p2]).tags
     budget_entry = next(t for t in tags if t["tag"] == "budget")
     assert budget_entry["poids_relatif"] == 0.5  # 1 membre sur 2
 
@@ -742,15 +744,76 @@ def test_build_groupe_profile_seuil_quorum_dans_meta():
     assert g["meta"]["seuil_quorum"] == 0.7
 
 
+def _interv(theme: str, legislature: str = "16", n: int = 1) -> dict:
+    """Une intervention telle que le corpus en porte : l'id dit la législature."""
+    return {
+        "intervention_id": f"syceron_CRSANR5L{legislature}S2023O1N245_{n:06d}",
+        "theme_officiel": theme,
+        "date": "2024-01-01",
+    }
+
+
 def test_build_groupe_profile_tags():
+    """#825 — une fiche lit les interventions de SA législature, pas `tags_thematiques`.
+
+    La fixture d'origine posait `tags_thematiques` à la main et n'avait aucune
+    intervention : elle décrivait le monde tel que le code l'imaginait, et ne
+    pouvait donc pas voir que la fiche comptait la carrière entière.
+    """
     profils = [
-        _pivot(tags=["budget"]),
-        _pivot(tags=["budget", "santé"]),
+        _pivot(interventions=[_interv("budget")]),
+        _pivot(interventions=[_interv("budget"), _interv("santé", n=2)]),
     ]
     g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils, scrutins_index=_index())
     tag_names = {t["tag"] for t in g["tags_thematiques_agreges"]}
     assert "budget" in tag_names
     assert "santé" in tag_names
+
+
+def test_tags_agreges_ecartent_les_autres_legislatures():
+    """L'empreinte d'une fiche de la XVIe ignore ce qui a été dit sous la XVe."""
+    profils = [
+        _pivot(interventions=[
+            _interv("budget", legislature="16"),
+            _interv("retraites", legislature="15", n=2),
+            _interv("écologie", legislature="17", n=3),
+        ]),
+    ]
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils, scrutins_index=_index())
+    assert {t["tag"] for t in g["tags_thematiques_agreges"]} == {"budget"}
+    assert any(
+        "tags_thematiques_agreges : 2 intervention(s) tenue(s) sous une autre" in w
+        for w in g["meta"]["warnings"]
+    )
+
+
+def test_tags_agreges_conservent_une_intervention_sans_legislature():
+    """Une ignorance n'est pas un fait : l'entrée est retenue, et le compte déclaré."""
+    profils = [
+        _pivot(interventions=[
+            _interv("budget", legislature="16"),
+            {"intervention_id": None, "theme_officiel": "santé", "date": "2024-01-01"},
+        ]),
+    ]
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils, scrutins_index=_index())
+    assert {t["tag"] for t in g["tags_thematiques_agreges"]} == {"budget", "santé"}
+    assert any(
+        "1 intervention(s) dont l'identifiant ne porte pas de législature sont CONSERVÉES" in w
+        for w in g["meta"]["warnings"]
+    )
+
+
+def test_tags_agreges_sans_legislature_gardent_la_carriere():
+    """Une fiche de parti ne nomme aucune législature : rien n'est filtré (#825)."""
+    profils = [
+        _pivot(interventions=[
+            _interv("budget", legislature="16"),
+            _interv("retraites", legislature="15", n=2),
+        ]),
+    ]
+    agregat = aggregate_tags_thematiques(profils)
+    assert {t["tag"] for t in agregat.tags} == {"budget", "retraites"}
+    assert agregat.hors_periode == 0
 
 
 def test_build_groupe_profile_sources_deduplication():
@@ -770,13 +833,32 @@ def test_build_groupe_profile_sources_deduplication():
     assert urls.count(same_source["url"]) == 1
 
 
-def test_build_groupe_profile_warning_tags_fallback():
-    """Un warning doit être émis si on utilise mots_cles en fallback."""
+def test_build_groupe_profile_repli_mots_cles_survit_au_filtre():
+    """#825 — le repli sur `mots_cles` n'est pas rouvert : il est DANS la fabrique.
+
+    L'issue craignait que recalculer l'empreinte depuis les interventions
+    « rouvre la question du repli documenté ». Elle ne se rouvre pas :
+    `deriver_tags_thematiques` porte déjà `theme_officiel` puis `mots_cles`,
+    et une fiche de groupe en hérite. Ce qui change est le nom de la source,
+    plus le chemin.
+    """
+    profils = [
+        _pivot(tags=[], interventions=[{
+            "intervention_id": "syceron_CRSANR5L16S2023O1N245_000001",
+            "mots_cles": ["santé"],
+            "date": "2024-01-01",
+        }]),
+    ]
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils, scrutins_index=_index())
+    assert {t["tag"] for t in g["tags_thematiques_agreges"]} == {"santé"}
+
+
+def test_parti_profile_garde_le_warning_de_repli_mots_cles():
+    """Sans législature, le repli d'origine et son avertissement tiennent."""
     profils = [
         _pivot(tags=[], interventions=[{"mots_cles": ["santé"], "date": "2024-01-01"}]),
     ]
-    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils, scrutins_index=_index())
-    assert any("mots_cles_interventions" in w for w in g["meta"]["warnings"])
+    assert aggregate_tags_thematiques(profils).source == "mots_cles_interventions"
 
 
 def test_build_groupe_profile_profils_vide():
@@ -1770,7 +1852,8 @@ def test_tags_fallback_sur_theme_officiel_avant_mots_cles():
         }
     ]
     p1 = _pivot(tags=[], interventions=interventions)
-    tags, source = aggregate_tags_thematiques([p1])
+    _agregat = aggregate_tags_thematiques([p1])
+    tags, source = _agregat.tags, _agregat.source
     tag_names = {t["tag"] for t in tags}
     assert "réforme des retraites" in tag_names
     # mots_cles ne doivent pas apparaître quand theme_officiel est disponible
@@ -1788,7 +1871,8 @@ def test_tags_fallback_mots_cles_si_pas_theme_officiel():
         }
     ]
     p1 = _pivot(tags=[], interventions=interventions)
-    tags, source = aggregate_tags_thematiques([p1])
+    _agregat = aggregate_tags_thematiques([p1])
+    tags, source = _agregat.tags, _agregat.source
     tag_names = {t["tag"] for t in tags}
     assert "immigration" in tag_names
     assert source == "mots_cles_interventions"

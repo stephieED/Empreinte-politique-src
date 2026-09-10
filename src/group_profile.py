@@ -141,6 +141,7 @@ from amendements_index import (
     joindre as joindre_amendements,
     legislature_de_id,
 )
+from schema_pivot import deriver_tags_thematiques, legislature_de_intervention
 from scrutins_index import ScrutinsIndex, charger as charger_scrutins, decomposer_id, DEFAULT_SCRUTINS_PATH
 
 
@@ -841,38 +842,128 @@ def _compute_cohesion_votes(
 # Agrégation des tags thématiques
 # ---------------------------------------------------------------------------
 
+@dataclass
+class TagsAgreges:
+    """L'empreinte thématique d'une fiche, et ce que son calcul a écarté."""
+
+    #: Une entrée par étiquette : `tag`, `nb_membres_porteurs`, `poids_relatif`.
+    tags: list[dict[str, Any]]
+    #: D'où viennent les étiquettes retenues — voir `aggregate_tags_thematiques`.
+    source: Optional[str]
+    #: Interventions écartées parce que leur identifiant porte une AUTRE
+    #: législature que celle de la fiche. Comptées, jamais tues : une exclusion
+    #: muette transforme un dénominateur en donnée fausse (§2 règle 7).
+    hors_periode: int = 0
+    #: Interventions dont l'identifiant ne porte aucune législature lisible.
+    #: **Conservées** — rien ne prouve qu'elles soient hors période, et les
+    #: écarter ferait passer une ignorance pour un fait (§2 règle 5).
+    sans_legislature: int = 0
+
+
+def _tags_du_membre(
+    profil: dict[str, Any], legislature: Optional[str]
+) -> tuple[list[str], Optional[str], int, int]:
+    """Les étiquettes d'UN membre, restreintes à la législature de la fiche.
+
+    ## Pourquoi la liste publiée ne suffit pas, et pourquoi rien n'est dupliqué
+
+    #825 constatait que `tags_thematiques` est « une liste de chaînes, sans
+    provenance : il n'y a rien à filtrer ». C'est vrai de la **liste**, et faux
+    du **champ** : depuis #710, `tags_thematiques` est DÉRIVÉ des
+    `interventions[]` par une fabrique unique, `deriver_tags_thematiques`. Il
+    suffit donc de la rappeler sur les interventions retenues — la provenance
+    n'a pas à être portée, elle est encore là au moment du calcul.
+
+    Vérifié le 10/09/2026 sur les **1 035 profils publiés** : la liste publiée
+    est exactement ce que la fabrique rend depuis les interventions de ces
+    mêmes profils, **0 écart**. Le repli documenté (`theme_officiel`, puis
+    `mots_cles`) ne se rouvre pas non plus : il est DANS la fabrique.
+
+    ## Le filtre
+
+    La législature se lit sur l'identifiant (`syceron_CRSANR5L16S…`,
+    `question_QANR5L15QE…`), donnée structurelle écrite par l'Assemblée, jamais
+    déduite d'une date — même règle que les votes depuis #403, que les
+    amendements depuis #821. Mesuré sur les 40 premiers membres de `REN-16` :
+    **26 %** seulement de leurs interventions relèvent de la XVIe.
+
+    Une intervention du Parlement européen n'est PAS triée à part, et ce n'est
+    pas un oubli : mesuré sur le corpus publié, **0 des 5 329** entrées
+    européennes porte un `theme_officiel` ou des `mots_cles`. Elles n'apportent
+    aucune étiquette, donc elles n'en retirent aucune ; elles sont comptées
+    parmi les entrées sans législature, ce qu'elles sont pour l'Assemblée.
+    """
+    if not legislature:
+        return list(profil.get("tags_thematiques") or []), "tags_thematiques", 0, 0
+
+    retenues: list[dict[str, Any]] = []
+    hors_periode = 0
+    sans_legislature = 0
+    for interv in (profil.get("interventions") or []):
+        if not isinstance(interv, dict):
+            continue
+        leg = legislature_de_intervention(interv.get("intervention_id"))
+        if leg is None:
+            sans_legislature += 1
+        elif leg != str(legislature):
+            hors_periode += 1
+            continue
+        retenues.append(interv)
+    return (
+        deriver_tags_thematiques(retenues),
+        "interventions_de_la_legislature",
+        hors_periode,
+        sans_legislature,
+    )
+
+
 def aggregate_tags_thematiques(
     profils: list[dict[str, Any]],
-) -> tuple[list[dict[str, Any]], Optional[str]]:
+    legislature: Optional[str] = None,
+) -> TagsAgreges:
     """Agrège les tags thématiques de tous les profils membres.
 
-    Stratégie : utilise ``tags_thematiques`` de chaque profil individuel.
-    Si un profil a ``tags_thematiques`` vide, ses interventions sont consultées
-    en fallback : d'abord ``interventions[].theme_officiel`` (débats officiels
-    Syceron), puis ``interventions[].mots_cles`` (scraping NosDéputés).
-    Les deux sources peuvent coexister dans le même appel si les profils sont
-    hétérogènes (``tag_source`` vaut alors "mixed").
+    **Avec `legislature`** — le cas d'une fiche de groupe — les étiquettes de
+    chaque membre sont recalculées sur ses seules interventions de cette
+    législature (`_tags_du_membre`), et `source` vaut
+    `"interventions_de_la_legislature"`.
+
+    **Sans** — le cas d'une fiche de parti, qui ne couvre aucune législature en
+    particulier — le comportement d'origine tient : `tags_thematiques` de
+    chaque profil, et à défaut ses interventions, d'abord par `theme_officiel`
+    puis par `mots_cles`. Le filtre ne s'arme que si l'appelant nomme une
+    législature (#821, même règle).
+
+    Ce repli-là est **mort sur le corpus publié** et n'est gardé que parce que
+    rien ne prouve qu'il le reste : mesuré le 10/09/2026, **0 des 1 035
+    profils** publiés a un `tags_thematiques` vide et des interventions
+    thématisées.
 
     Args:
         profils: liste de profils pivot v1.
+        legislature: législature de la fiche (ex. "16"), ou None.
 
     Returns:
-        Tuple (liste triée par nb_membres_porteurs desc, tag_source).
-        ``tag_source`` vaut "tags_thematiques", "theme_officiel",
-        "mots_cles_interventions" ou "mixed".
+        Un `TagsAgreges` : les étiquettes triées par `nb_membres_porteurs`
+        décroissant, leur `source`, et les deux comptes d'interventions que le
+        filtre a écartées ou retenues sans preuve.
     """
     n = len(profils)
     if n == 0:
-        return [], None
+        return TagsAgreges([], None)
 
     tag_counts: dict[str, int] = {}  # tag → nombre de membres porteurs
     sources_used: set[str] = set()
+    hors_periode = 0
+    sans_legislature = 0
 
     for profil in profils:
-        tags = list(profil.get("tags_thematiques") or [])
+        tags, source, n_hors, n_sans = _tags_du_membre(profil, legislature)
+        hors_periode += n_hors
+        sans_legislature += n_sans
         if tags:
-            sources_used.add("tags_thematiques")
-        else:
+            sources_used.add(source)
+        elif not legislature:
             # Fallback : thèmes officiels Syceron en priorité, mots-clés scraping sinon
             kw_set: set[str] = set()
             theme_set: set[str] = set()
@@ -900,7 +991,7 @@ def aggregate_tags_thematiques(
                 tag_counts[tag] = tag_counts.get(tag, 0) + 1
 
     if not tag_counts:
-        return [], None
+        return TagsAgreges([], None, hors_periode, sans_legislature)
 
     tag_source: Optional[str] = None
     if len(sources_used) == 1:
@@ -919,7 +1010,7 @@ def aggregate_tags_thematiques(
         ],
         key=lambda x: (-x["nb_membres_porteurs"], x["tag"]),
     )
-    return result, tag_source
+    return TagsAgreges(result, tag_source, hors_periode, sans_legislature)
 
 
 # ---------------------------------------------------------------------------
@@ -1796,7 +1887,10 @@ BLOCS_LUS_MEMBRE: tuple[str, ...] = (
 CLES_LUES_PAR_ENTREE: dict[str, tuple[str, ...]] = {
     "mandats": ("categorie", "chambre", "debut", "fin", "actif", "label", "fonction"),
     "votes": ("scrutin_id", "position"),
-    "interventions": ("theme_officiel", "mots_cles"),
+    # `intervention_id` depuis #825 : c'est lui qui porte la législature
+    # (`syceron_CRSANR5L16S…`), et sans elle l'empreinte thématique d'une
+    # fiche compte la carrière entière de ses membres.
+    "interventions": ("intervention_id", "theme_officiel", "mots_cles"),
 }
 
 
@@ -2124,7 +2218,28 @@ def build_groupe_profile(
         )
 
     # --- Tags thématiques ---
-    tags_agreges, tag_source = aggregate_tags_thematiques(profils)
+    agregat_tags = aggregate_tags_thematiques(profils, legislature=legislature)
+    tags_agreges, tag_source = agregat_tags.tags, agregat_tags.source
+    # #825 — L'EMPREINTE THÉMATIQUE D'UNE FICHE EST CELLE DE SA LÉGISLATURE.
+    # Quatrième occurrence du même motif après #657, #817 et #821 : un agrégat
+    # de fiche parcourait la carrière entière de ses membres. Mesuré avant
+    # correctif sur les 40 premiers membres de `REN-16` : 36 264 interventions
+    # de la XVe et 5 477 de la XVIIe pour 14 172 de la XVIe, soit **26 %**.
+    if agregat_tags.hors_periode:
+        warnings.append(
+            f"tags_thematiques_agreges : {agregat_tags.hors_periode} intervention(s) "
+            f"tenue(s) sous une autre législature que la {legislature or '?'}e n'ont pas "
+            "nourri l'empreinte thématique — elles appartiennent à la carrière de leurs "
+            "auteurs, pas à l'activité de ce groupe (#825, même règle que les votes "
+            "depuis #403 et que les amendements depuis #821)."
+        )
+    if agregat_tags.sans_legislature:
+        warnings.append(
+            f"tags_thematiques_agreges : {agregat_tags.sans_legislature} intervention(s) "
+            "dont l'identifiant ne porte pas de législature sont CONSERVÉES — rien ne "
+            "prouve qu'elles soient hors période, et les écarter ferait passer une "
+            "ignorance pour un fait (§2 règle 5)."
+        )
     if tag_source == "theme_officiel":
         warnings.append(
             "tags_thematiques_agreges : source=theme_officiel "
