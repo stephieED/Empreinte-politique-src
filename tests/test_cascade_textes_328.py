@@ -207,8 +207,11 @@ def test_les_textes_portes_viennent_avant_les_amendements(composant):
     # de la copie et ils changent (« Où en sont les textes… » est devenu « Les
     # textes qu'il a portés » le 07/09). Un test calé sur une phrase casse au
     # premier mot réécrit et ne dit rien de l'ordre qu'il prétend garder.
+    # `<Chute>` — la cascade des amendements par année — est devenue
+    # `<Matieres>`, le tableau des deux mesures. L'ancrage reste STRUCTUREL :
+    # c'est l'ordre des deux populations qui est gardé, pas le nom du composant.
     place_textes = corps.index("<Cascade")
-    place_amdts = corps.index("<Chute")
+    place_amdts = corps.index("<Matieres")
     assert place_textes < place_amdts, (
         "la carte des textes portés doit ouvrir la section, avant les "
         "amendements déposés sur les textes des autres"

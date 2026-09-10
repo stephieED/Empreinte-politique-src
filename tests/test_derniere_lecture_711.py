@@ -820,7 +820,28 @@ def test_la_regle_est_publiee_avec_sa_phrase_et_son_pourquoi(regles):
 
 
 def test_le_libelle_affiche_dit_la_regle_a_cote_du_chiffre():
-    """Sur la fiche candidat et dans la méthodologie, pas seulement en commentaire."""
+    """Le chiffre porte son étiquette sur la fiche ; le raisonnement, la méthodologie.
+
+    #711 EST RENVERSÉ SUR CE POINT, ET C'EST UNE DÉCISION, PAS UN OUBLI.
+
+    #711 exigeait que la règle de la dernière lecture soit publiée SUR LA FICHE,
+    à côté du chiffre — parce que la méthodologie l'annonçait déjà à l'époque où
+    rien ne l'appliquait, et qu'une règle annoncée sans être appliquée est pire
+    que pas de règle du tout.
+
+    Ce qui a changé le 10/09 : la règle EST appliquée, et depuis #711 —
+    `isWholeTextVote` et le repli sur la dernière lecture vivent dans
+    `utils/lecture.js`, et le chiffre affiché en dérive. L'incident que #711
+    corrigeait ne peut plus se reproduire en silence : c'est le CODE qui applique
+    la règle, plus une phrase qui promet qu'elle l'est.
+
+    Ce qui reste garanti ici, et qui est l'essentiel de #711 : le chiffre porte
+    son étiquette courte (`LAST_READING_LABEL`), il est bâti sur les TEXTES
+    retenus, et le raisonnement complet est publié en méthodologie, où mène le
+    renvoi posé sous la figure.
+
+    → `docs/decisions/regle-de-lecture-en-methodologie-328.md`
+    """
     vue = sans_commentaires(VUE_CANDIDAT.read_text(encoding="utf-8"))
     methodo = sans_commentaires(PAGE_METHODO.read_text(encoding="utf-8"))
 
@@ -832,7 +853,7 @@ def test_le_libelle_affiche_dit_la_regle_a_cote_du_chiffre():
         "la barre de positions doit être bâtie sur les TEXTES retenus, pas sur "
         "les votes sur l'ensemble d'un texte"
     )
-    assert "LAST_READING_RULE" in vue and "LAST_READING_RULE" in methodo, (
-        "la règle est publiée sur la fiche ET dans la méthodologie — cette "
-        "dernière l'annonçait déjà alors que rien ne l'appliquait (#711)"
+    assert "LAST_READING_RULE" in methodo, (
+        "le raisonnement de la règle est publié en méthodologie, où mène le "
+        "renvoi posé sous la figure"
     )

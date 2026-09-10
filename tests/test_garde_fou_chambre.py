@@ -165,7 +165,6 @@ SITES_UI: dict[tuple[str, str], str] = {
     # `chambre` d'un profil pivot que #493 met en retrait : une comparaison ne
     # traverse ni chambre ni législature, et la clé le dit.
     ("scripts/comparaison-groupes.mjs", "groupe"): GROUPE,
-    ("src/data/index.js", "g"): GROUPE,
     ("src/data/pivotAdapter.js", "groupe"): GROUPE,
     ("src/components/GovernmentProfile.jsx", "texte"): GROUPE,
     # #328 : la fiche candidat lit la chambre SUR LE MANDAT, jamais sur le
@@ -181,6 +180,16 @@ SITES_UI: dict[tuple[str, str], str] = {
     ("scripts/couverture-corpus.mjs", "m"): MANDAT,
     ("src/utils/profilCandidat.js", "existant"): MANDAT,
     ("src/utils/profilCandidat.js", "siege"): MANDAT,
+    # #815 : la barre grise les deux fiches du Sénat — collecte suspendue depuis
+    # le 24/08/2026, Sénat hors périmètre éditorial. La chambre lue est celle du
+    # SCHÉMA DE GROUPE, portée par le manifeste, jamais le scalaire d'un profil
+    # pivot : une pastille de groupe ne connaît aucun profil.
+    ("src/components/GroupsBar.jsx", "group"): GROUPE,
+    # Le regroupement par lignée choisit l'intitulé de la fiche la plus récente
+    # et compose son sous-titre ; la chambre y distingue « Assemblée nationale ·
+    # Législatures 16, 17 » de « Sénat », qui n'a pas de législature. Remplace
+    # l'accès `g` de `getGroupsList`, qui rendait une entrée par FICHE.
+    ("src/data/index.js", "tete"): GROUPE,
 }
 
 # Le dernier consommateur du champ profil de l'interface — `chambreLabel(

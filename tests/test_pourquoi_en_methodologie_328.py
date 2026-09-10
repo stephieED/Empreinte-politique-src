@@ -113,9 +113,20 @@ def test_le_critere_des_votes_ne_redit_plus_la_regle_de_derniere_lecture(fiche: 
     L'écrire aussi en tête de section la faisait lire deux fois, et c'est cette
     répétition qui portait le critère à 58 mots.
     """
-    critere = next(c for c in re.findall(r'critere="([^"]+)"', fiche) if "période politique" in c)
-    assert "dernière lecture" not in critere
-    assert "LAST_READING_RULE.phrase" in fiche, "la règle a disparu de la fiche entière"
+    # Le critère de section a été retiré le 10/09 : « Une position par texte,
+    # rangée par période politique. Aucun taux de participation n'est publié. »
+    # disait deux choses déjà dites — la première par la figure elle-même, la
+    # seconde par la méthodologie et le pied du site.
+    # L'ancrage est sur « taux de participation », propre au critère des VOTES :
+    # celui des interventions parle lui aussi de période politique, et s'y caler
+    # ferait passer ce test pour une garde de la section voisine.
+    assert not [c for c in re.findall(r'critere="([^"]+)"', fiche) if "taux de participation" in c], (
+        "le critère de la section des votes est revenu"
+    )
+    assert "LAST_READING_LABEL" in fiche, (
+        "l'étiquette courte reste à côté du chiffre : c'est ce que #711 garantit "
+        "encore, le raisonnement vivant en méthodologie"
+    )
 
 
 def test_les_trois_refus_ne_sont_plus_rendus_que_par_la_methodologie() -> None:

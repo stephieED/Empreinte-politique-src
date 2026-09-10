@@ -291,7 +291,10 @@ def test_le_pied_documente_la_regle_et_mene_a_la_methodologie(composant):
     """
     section = _corps(composant, 'titre="Les fonctions exercées"', "</Section>")
     assert "plus longues" in section
-    assert "filet" in section
+    # « un filet passé la moitié du mandat » nommait la FORME du repère ; le pied
+    # dit maintenant ce qu'il marque — « ligne surlignée = expérience sur + de la
+    # moitié du mandat ». Le repère reste documenté, en clair.
+    assert "moitié du mandat" in section
     assert 'to="/methodologie#fonctions"' in section
 
     methodo = (
