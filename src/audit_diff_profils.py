@@ -168,6 +168,15 @@ class Collection:
     sous_chemin: str
     listes_stables: tuple[str, ...] = ()
     listes_signalees: tuple[str, ...] = ()
+    #: Listes dont le relevé garde les VALEURS, pas seulement leur nombre
+    #: (#823). Un compte ne voit pas un échange : une entrée remplacée par une
+    #: autre laisse le total inchangé, et le contrôle ne dit rien. Réservé aux
+    #: listes de chaînes courtes et peu nombreuses — 5 911 valeurs distinctes
+    #: pour les 53 183 `tags_thematiques` des 1 035 profils publiés, 2,6 Mio de
+    #: relevé qui ne quitte jamais la mémoire. Le faire sur `amendements`
+    #: coûterait des millions de clés, et c'est pourquoi ce n'est pas le
+    #: comportement par défaut.
+    listes_nommees: tuple[str, ...] = ()
     scalaires: tuple[str, ...] = ()
     motif_present: str = "*.json"
     #: Motif des fichiers présents mais volontairement non ouverts. `fnmatch`
@@ -191,6 +200,12 @@ class Collection:
         return not (self.motif_exclu
                     and fnmatch.fnmatch(nom_fichier, self.motif_exclu))
 
+
+#: Combien d'entrées disparues un constat d'échange nomme au plus. Le rapport
+#: est lu par un humain qui cherche une cause, pas un inventaire : au-delà, le
+#: compte total (`nb_disparues`) dit l'ampleur et les premières disent la
+#: nature.
+LIMITE_ENTREES_NOMMEES = 20
 
 # --- Profils individuels ----------------------------------------------------
 #
@@ -228,6 +243,7 @@ COLLECTION_PROFILS = Collection(
         "tags_thematiques", "dossiers_legislatifs",
     ),
     listes_signalees=("amendements", "sources", "chambres"),
+    listes_nommees=("tags_thematiques",),
     scalaires=("id", "nom", "chambre", "parti", "groupe", "identite",
                "meta.provenance"),
     motif_present="*.json",
@@ -291,6 +307,10 @@ COLLECTION_GROUPES = Collection(
                     "tags_thematiques_agreges", "historique_noms",
                     "amendements_agreges.par_type_deposant"),
     listes_signalees=("sources",),
+    # #823 — c'est ICI que l'échange s'est vu, sur `REN-16` et `EPR-17`, alors
+    # qu'il naissait à l'étage profil : une union expose ce que ses membres
+    # masquent. Nommer des deux côtés dit lequel des deux étages a bougé.
+    listes_nommees=("tags_thematiques_agreges",),
     scalaires=("groupe_id", "groupe_sigle", "groupe_nom", "chambre",
                "legislature", "periode.debut",
                "meta.couverture_roster.roster_total",
@@ -305,6 +325,7 @@ COLLECTION_PARTIS = Collection(
     sous_chemin="partis",
     listes_stables=("candidats", "tags_thematiques_agreges"),
     listes_signalees=("sources",),
+    listes_nommees=("tags_thematiques_agreges",),
     scalaires=("parti_id", "parti_nom"),
 )
 
@@ -441,6 +462,31 @@ def _resume_scalaire(valeur: Any) -> Any:
     return str(valeur)
 
 
+def _identites(valeur: Any) -> Optional[set[str]]:
+    """Les entrées d'une liste, nommées — ou `None` si elles ne se nomment pas.
+
+    Deux formes dans le corpus, et une seule règle : l'entrée est son propre
+    nom quand c'est une chaîne (`tags_thematiques` d'un profil), et c'est sa
+    clé `tag` quand c'est un objet (`tags_thematiques_agreges` d'une fiche de
+    groupe, qui porte aussi `nb_membres_porteurs` et `poids_relatif`).
+
+    `None` — et non un ensemble vide — quand la liste n'est pas de cette forme.
+    Un ensemble vide dirait « cette liste ne porte rien », ce qui ferait passer
+    une lecture impossible pour un fait sur les données (§2 règle 5).
+    """
+    if not isinstance(valeur, list):
+        return None
+    noms: set[str] = set()
+    for entree in valeur:
+        if isinstance(entree, str):
+            noms.add(entree)
+        elif isinstance(entree, dict) and isinstance(entree.get("tag"), str):
+            noms.add(entree["tag"])
+        else:
+            return None
+    return noms
+
+
 def relever(doc: Any, collection: Collection) -> dict[str, Any]:
     """Relevé d'un document : longueurs de conteneurs + scalaires surveillés.
 
@@ -488,7 +534,16 @@ def relever(doc: Any, collection: Collection) -> dict[str, Any]:
         chemin: _resume_scalaire(_chemin_pointe(doc, chemin))
         for chemin in collection.scalaires
     }
-    return {"listes": listes, "scalaires": scalaires, "lu": True}
+    # #823 — les valeurs, pour les seules listes qui les déclarent.
+    valeurs: dict[str, list[str]] = {}
+    for champ in collection.listes_nommees:
+        noms = _identites(_chemin_pointe(doc, champ))
+        if noms is not None:
+            valeurs[champ] = sorted(noms)
+    releve: dict[str, Any] = {"listes": listes, "scalaires": scalaires, "lu": True}
+    if valeurs:
+        releve["valeurs"] = valeurs
+    return releve
 
 
 def _releve_non_lu() -> dict[str, Any]:
@@ -663,6 +718,7 @@ def comparer(
     """
     pertes: list[dict[str, Any]] = []
     gains: list[dict[str, Any]] = []
+    echanges: list[dict[str, Any]] = []
     pertes_scalaires: list[dict[str, Any]] = []
     evolutions_scalaires: list[dict[str, Any]] = []
 
@@ -681,6 +737,27 @@ def comparer(
                            "avant": sum(a.get("listes", {}).values()) or 1,
                            "apres": 0, "stable": True})
             continue
+        # #823 — CE QUE LE COMPTE NE VOIT PAS. Une entrée remplacée par une
+        # autre laisse le total inchangé : `tags_thematiques` est passé de
+        # 43 811 à 53 581 sur les 953 profils du run 34454305520 — aucune perte
+        # au compte — pendant que `REN-16` perdait une étiquette que plus aucun
+        # membre ne portait. Une union ne peut perdre un élément que si aucun
+        # de ses membres ne le porte plus ; l'échange était donc à l'étage
+        # profil, invisible, et ne se voyait qu'à l'étage groupe, où il ne
+        # naissait pas. Ici on le nomme, des deux côtés.
+        for champ in collection.listes_nommees:
+            avant_noms = a.get("valeurs", {}).get(champ)
+            apres_noms = b.get("valeurs", {}).get(champ)
+            if avant_noms is None or apres_noms is None:
+                continue
+            disparues = sorted(set(avant_noms) - set(apres_noms))
+            if disparues:
+                echanges.append({
+                    "fichier": fichier, "champ": champ,
+                    "avant": len(avant_noms), "apres": len(apres_noms),
+                    "disparues": disparues[:LIMITE_ENTREES_NOMMEES],
+                    "nb_disparues": len(disparues),
+                })
         for champ in collection.tous_champs:
             av, ap = _listes(a, champ), _listes(b, champ)
             if ap < av:
@@ -707,6 +784,14 @@ def comparer(
     pertes_stables = [p for p in pertes if p["stable"]]
     return {
         "collection": collection.nom,
+        # #823 — NON BLOQUANT, et c'est délibéré. `tags_thematiques` est un
+        # champ DÉRIVÉ, recalculé à chaque run et jamais fusionné (§4) : une
+        # recomputation qui remplace une étiquette par d'autres est son
+        # fonctionnement normal, pas un incident. Bloquer dessus ferait échouer
+        # des runs légitimes. Ce que ce constat apporte, c'est de quoi
+        # EXPLIQUER une perte de compte sans rejouer le run — ce qui manquait
+        # au 34454305520, dont la sortie n'existe plus.
+        "echanges": echanges,
         "nb_avant": len(avant),
         "nb_apres": len(apres),
         "pertes": pertes,
@@ -799,6 +884,38 @@ def _section_collection(rapport: dict[str, Any]) -> list[str]:
                            "| Fichier | Champ | Avant | Après |")
     if not pertes_stables and not pertes_scalaires:
         lignes += ["Aucune perte bloquante.", ""]
+
+    # #823 — les entrées disparues, nommées. Placé AVANT les baisses signalées
+    # parce que c'est la section qui explique les autres : une perte de compte
+    # sur une union se lit ici, à l'étage où elle est née.
+    echanges = rapport.get("echanges") or []
+    if echanges:
+        total = sum(e["nb_disparues"] for e in echanges)
+        a_compte_egal = [e for e in echanges if e["apres"] >= e["avant"]]
+        lignes += [
+            f"<details><summary>{total} entrée(s) disparue(s) sur "
+            f"{len(echanges)} fichier(s), nommée(s) — non bloquant</summary>", "",
+            "Une entrée remplacée par une autre laisse le compte inchangé : "
+            "sans ce relevé, l'échange est invisible et une baisse d'union "
+            "reste inexplicable sans rejouer le run (#823).", "",
+        ]
+        if a_compte_egal:
+            lignes += [
+                f"**{len(a_compte_egal)} de ces fichiers n'ont perdu aucun "
+                "compte** — leur liste a été échangée, pas réduite. Aucun "
+                "autre contrôle ne les voit.", "",
+            ]
+        lignes += ["| Fichier | Champ | Avant | Après | Disparues |",
+                   "| --- | --- | --- | --- | --- |"]
+        for e in echanges[:_PLAFOND]:
+            noms = ", ".join(f"`{d}`" for d in e["disparues"])
+            if e["nb_disparues"] > len(e["disparues"]):
+                noms += f" … (+{e['nb_disparues'] - len(e['disparues'])})"
+            lignes.append(f"| `{e['fichier']}` | `{e['champ']}` | {e['avant']} | "
+                          f"{e['apres']} | {noms} |")
+        if len(echanges) > _PLAFOND:
+            lignes.append(f"| … | | | | {len(echanges) - _PLAFOND} de plus |")
+        lignes += ["", "</details>", ""]
 
     signalees = [p for p in rapport["pertes"] if not p["stable"]]
     if signalees:
