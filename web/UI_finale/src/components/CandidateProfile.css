@@ -255,15 +255,81 @@
 
 /* ── Les colonnes appariées ───────────────────────────────────────────────── */
 
+/* LE TABLEAU : une colonne de libellés à gauche, une colonne par institution.
+   Le rang était répété au-dessus de chaque colonne — deux fois avec deux
+   institutions, quatre fois avec les quatre qu'une carrière peut traverser. */
 .cp-gc-duo {
   display: grid;
-  grid-template-columns: 1fr;
-  column-gap: 44px;
+  --gc-libelle: minmax(88px, 128px);
+  grid-template-columns: var(--gc-libelle) 1fr;
+  column-gap: 32px;
   margin-top: 4px;
 }
 
 .cp-gc-duo--deux {
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: var(--gc-libelle) repeat(2, 1fr);
+}
+
+.cp-gc-duo--trois {
+  grid-template-columns: var(--gc-libelle) repeat(3, 1fr);
+}
+
+.cp-gc-duo--quatre {
+  grid-template-columns: var(--gc-libelle) repeat(4, 1fr);
+}
+
+/* LES PUCES D'INSTITUTION — le vocabulaire des barres de sélection de la fiche :
+   un pilulier, la teinte de l'institution allumée, l'encre sourde éteinte. Elles
+   ne filtrent pas une donnée, elles rangent une colonne : une institution
+   repliée reste nommée, et se rouvre d'un clic. */
+.cp-gc-puces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 2px;
+}
+
+.cp-gc-puce {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font: 700 11.5px 'Manrope', system-ui, sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  border: 1px solid var(--tt, var(--border));
+  background: var(--tw, transparent);
+  color: var(--tt, var(--ink));
+}
+
+.cp-gc-puce i {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--tt, var(--border));
+}
+
+.cp-gc-puce[aria-pressed='false'] {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--muted);
+}
+
+.cp-gc-puce[aria-pressed='false'] i {
+  background: var(--border);
+}
+
+.cp-gc-puce--parlement { --tt: var(--parl); --tw: var(--parl-wash); }
+.cp-gc-puce--senat { --tt: var(--senat); --tw: var(--senat-wash); }
+.cp-gc-puce--pe { --tt: var(--pe); --tw: var(--pe-wash); }
+.cp-gc-puce--gouvernement { --tt: var(--gouv); --tw: var(--gouv-wash); }
+
+/* Le coin haut-gauche du tableau ne porte rien : au-dessus des libellés de rang,
+   un titre dirait « rang », ce que la colonne montre déjà. */
+.cp-gc-coin {
+  border: 0;
 }
 
 .cp-gc-tete-col {
@@ -309,19 +375,26 @@
 .cp-gc-tete-col--gouvernement .cp-gc-col-nom { color: var(--gouv); background: var(--gouv-wash); }
 .cp-gc-tete-col--gouvernement .cp-gc-col-nom i { background: var(--gouv); }
 
+/* LE FILET COURT SUR TOUTE LA LIGNE : il est porté par le libellé ET par
+   chaque cellule, sinon il s'arrête au bout de la première colonne. */
 .cp-gc-rang {
   border-top: 1px solid var(--border);
-  font-size: 10.5px;
+  /* LE NOM DU RANG SE LIT, il ne s'excuse pas. En gris sourd et en 10,5 px il
+     passait derrière les chiffres, alors qu'il est la seule chose qui dise de
+     quoi ils sont le compte — et depuis qu'il n'est plus écrit qu'une fois,
+     à gauche, il porte toute la ligne. Encre pleine, un cran plus grand. */
+  font-size: 11.5px;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--ink);
   margin: 0;
-  padding: 16px 0 2px;
+  padding: 18px 0 2px;
 }
 
 .cp-gc-cell {
-  padding: 10px 0 18px;
+  border-top: 1px solid var(--border);
+  padding: 16px 0 18px;
 
   /* La famille de teintes de la colonne. Déclarée ICI, sur la cellule, et non
      déduite du voisinage dans la grille — voir le bloc des stades plus bas. */
@@ -373,15 +446,20 @@
 }
 
 .cp-gc-q {
-  font-size: 13.5px;
+  font-size: 12.5px;
   font-weight: 600;
-  margin: 3px 0 0;
+  color: var(--muted);
+  margin: 4px 0 0;
 }
 
 .cp-gc-d {
-  font-size: 12.5px;
+  font-size: 12px;
   color: var(--muted);
-  margin: 5px 0 0;
+  margin: 6px 0 0;
+  /* Ce qui SE DIT sans se crier : la part écartée par le seuil de publication,
+     les textes portés à un autre titre. Bornée en largeur — une phrase qui
+     traverse une colonne de tableau se relit deux fois. */
+  max-width: 44ch;
 }
 
 /* Un tiret est un FAIT sur le métier — « un ministre ne dépose pas
@@ -490,8 +568,9 @@
  * 504 px pour ~347 px utiles, donc il en manque toujours un tiers.
  */
 @media (max-width: 720px) {
-  .cp-gc-duo--deux {
-    grid-template-columns: repeat(2, minmax(230px, 1fr));
+  .cp-gc-duo--deux,
+  .cp-gc-duo--trois,
+  .cp-gc-duo--quatre {
     overflow-x: auto;
     padding-bottom: 8px;
     overscroll-behavior-x: contain;
@@ -510,7 +589,22 @@
       linear-gradient(to left, var(--gc-ombre), transparent) right / 22px 100% no-repeat scroll;
   }
 
-  .cp-gc-duo--deux > * {
+  .cp-gc-duo--deux { grid-template-columns: var(--gc-libelle) repeat(2, minmax(210px, 1fr)); }
+  .cp-gc-duo--trois { grid-template-columns: var(--gc-libelle) repeat(3, minmax(210px, 1fr)); }
+  .cp-gc-duo--quatre { grid-template-columns: var(--gc-libelle) repeat(4, minmax(210px, 1fr)); }
+
+  /* La colonne des libellés reste visible pendant le défilement : sans elle,
+     un chiffre isolé ne dit plus de quoi il est le compte. */
+  .cp-gc-rang {
+    position: sticky;
+    left: 0;
+    background: var(--card);
+    z-index: 1;
+  }
+
+  .cp-gc-duo--deux > *,
+  .cp-gc-duo--trois > *,
+  .cp-gc-duo--quatre > * {
     scroll-snap-align: start;
   }
 

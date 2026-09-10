@@ -344,12 +344,21 @@ def test_sous_le_seuil_le_tableau_defile_au_lieu_de_s_empiler(feuille):
     """Empilé, chaque titre de rang se lisait DEUX FOIS de suite — 10 titres pour
     5 rangs — et les deux en-têtes de rôle restaient en haut, séparés de leurs
     cellules par tout le tableau : plus aucune cellule ne disait à quel rôle elle
-    appartenait. En défilement, l'en-tête ne quitte jamais sa colonne."""
+    appartenait. En défilement, l'en-tête ne quitte jamais sa colonne.
+
+    Le gabarit a changé avec #328 : le rang est écrit UNE fois, dans une colonne
+    de libellés en tête de ligne, et les institutions peuvent être quatre. Chaque
+    largeur reprend donc `var(--gc-libelle)` avant ses colonnes, et la colonne
+    des libellés reste collée à gauche pendant le défilement — un chiffre isolé
+    ne dit plus de quoi il est le compte."""
     bloc = _media_etroit(feuille)
-    assert "grid-template-columns: repeat(2, minmax(230px, 1fr))" in bloc, (
-        "les deux colonnes restent côte à côte, avec une largeur plancher"
-    )
+    for n, mot in ((2, "deux"), (3, "trois"), (4, "quatre")):
+        attendu = f"grid-template-columns: var(--gc-libelle) repeat({n}, minmax(210px, 1fr))"
+        assert attendu in bloc, (
+            f"les {mot} colonnes restent côte à côte, avec une largeur plancher"
+        )
     assert "overflow-x: auto" in bloc
+    assert "position: sticky" in bloc, "la colonne des libellés ne quitte pas l'écran"
     assert "grid-template-columns: 1fr;" not in bloc, (
         "l'empilement est précisément ce que ce seuil ne fait PAS"
     )
@@ -358,12 +367,38 @@ def test_sous_le_seuil_le_tableau_defile_au_lieu_de_s_empiler(feuille):
 def test_l_appariement_survit_a_l_ecran_etroit(regles, composant):
     """Tout le bloc repose sur « des objets de même nature se font face ». Des
     onglets par rôle ont été écartés pour cela : ils ne montrent jamais les deux
-    ensemble. Une seule grille, donc, quel que soit l'écran."""
+    ensemble. Une seule grille, donc, quel que soit l'écran.
+
+    #328 ouvre le repli d'une colonne par le lecteur, ce que ce test interdisait
+    en bannissant `useState`. Ce n'est pas le retour des onglets, et trois
+    propriétés le garantissent — elles sont ce que ce test vérifie désormais :
+
+    - toutes les colonnes sont OUVERTES au départ, sauf le Sénat nommément, qui
+      ne porterait que des cellules vides (#528) ;
+    - on ne peut jamais tout replier : la dernière colonne ouverte ne se replie
+      pas, sans quoi il ne resterait que le gabarit ;
+    - une colonne repliée reste NOMMÉE par sa puce, allumée ou éteinte : replier
+      n'efface pas, et le lecteur défait son geste.
+
+    Un onglet ne remplit aucune des trois : il choisit à la place du lecteur, et
+    il ne montre jamais les deux ensemble.
+    → docs/decisions/colonnes-repliables-en-bref-328.md
+    """
     bloc = _corps(composant, "function GrandsChiffres(", "export default function")
-    for interdit in ("onglet", "Tab", "role === ", "useState"):
+    for interdit in ("onglet", "Tab", "role === "):
         assert interdit not in bloc, (
             f"`{interdit}` : le choix d'un rôle à l'écran romprait l'appariement"
         )
+    assert "function repliParDefaut(colonnes)" in composant, (
+        "l'état d'ouverture est nommé et justifié, pas improvisé dans le rendu"
+    )
+    assert "INSTITUTION_SENAT" in _corps(composant, "function repliParDefaut(", "\n}"), (
+        "le Sénat est la SEULE colonne repliée d'entrée, et elle est nommée"
+    )
+    assert "ouvertes.length === 1" in bloc, "la dernière colonne ouverte ne se replie pas"
+    assert 'aria-pressed={!replies.has(c)}' in bloc, (
+        "une colonne repliée reste nommée par sa puce, et le geste se défait"
+    )
 
 
 def test_l_ombre_de_defilement_ne_ment_pas(feuille):

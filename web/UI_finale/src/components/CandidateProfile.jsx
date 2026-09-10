@@ -1239,9 +1239,39 @@ function CelluleChiffre({ cellule: c, piste }) {
   );
 }
 
+/* La largeur vient de la CLASSE, jamais d'un style en ligne : une valeur en
+ * ligne ne se surcharge qu'avec `!important`, que la media query du petit écran
+ * devrait alors reprendre. Quatre largeurs, autant que d'institutions. */
+const MOT_COLONNES = { 1: 'une', 2: 'deux', 3: 'trois', 4: 'quatre' };
+
+/* LE SÉNAT EST REPLIÉ D'ENTRÉE, SAUF S'IL EST SEUL — et c'est un choix de
+ * lecture, pas une suppression : sa puce reste allumée au-dessus du tableau et
+ * dit ce qui est là. Sa colonne ne porterait, sur les deux fiches concernées,
+ * que des cellules vides : la collecte du Sénat est hors périmètre (#528), donc
+ * ni vote, ni amendement, ni intervention. La replier met en avant ce que la
+ * fiche sait dire ; la retirer effacerait un siège réel (§2 règle 5).
+ *
+ * Seule exception, celle qui empêche une fiche vide : si le Sénat est la seule
+ * colonne, il s'ouvre. Un tableau sans colonne ne se replie pas, il disparaît. */
+function repliParDefaut(colonnes) {
+  if (colonnes.length <= 1) return new Set();
+  return new Set(colonnes.filter((c) => c === INSTITUTION_SENAT));
+}
+
 function GrandsChiffres({ chiffres, parcours }) {
+  const { colonnes = [], lignes = [] } = chiffres || {};
+  const [replies, setReplies] = useState(() => repliParDefaut(colonnes));
   if (!chiffres || chiffres.cas === CAS_RIEN_A_MONTRER) return null;
-  const { colonnes, lignes } = chiffres;
+  const ouvertes = colonnes.filter((c) => !replies.has(c));
+  const basculer = (c) => setReplies((avant) => {
+    const apres = new Set(avant);
+    // JAMAIS ZÉRO COLONNE : replier la dernière ne laisserait que des intitulés
+    // de rang, c'est-à-dire le gabarit et aucune personne.
+    if (!apres.has(c) && ouvertes.length === 1) return avant;
+    if (apres.has(c)) apres.delete(c);
+    else apres.add(c);
+    return apres;
+  });
   return (
     <section className="cp-gc">
       {/* « En bref » prend la bande, le filet et le h2 d'un titre de section.
@@ -1282,8 +1312,37 @@ function GrandsChiffres({ chiffres, parcours }) {
               ligne : sous 720 px le tableau défile latéralement, et une valeur en
               ligne ne se surcharge qu'avec `!important` — que le prochain
               ajustement oublierait. */}
-          <div className={`cp-gc-duo ${colonnes.length > 1 ? 'cp-gc-duo--deux' : ''}`}>
-            {colonnes.map((c) => (
+          {/* LE NOM DU RANG UNE FOIS, À GAUCHE — et non répété au-dessus de
+              chaque colonne. Avec deux institutions il se lisait deux fois ;
+              avec les quatre qu'une carrière peut traverser, « TEXTES PORTÉS »
+              s'écrivait quatre fois sur la même ligne. Le tableau met le rang
+              en tête de ligne et laisse les colonnes aux chiffres, qui sont ce
+              qu'on compare. */}
+          {/* LES PUCES DISENT CE QUE LE TABLEAU NE MONTRE PAS. Une colonne
+              repliée sort de la grille — le tableau se resserre sur ce qui
+              reste —, mais sa puce demeure, éteinte : le lecteur voit qu'une
+              institution existe et qu'il peut la rouvrir. Sans elles, replier
+              serait effacer. */}
+          {colonnes.length > 1 && (
+            <div className="cp-gc-puces" role="group" aria-label="Institutions affichées">
+              {colonnes.map((c) => (
+                <button
+                  type="button"
+                  key={`p-${c}`}
+                  className={`cp-gc-puce cp-gc-puce--${c}`}
+                  aria-pressed={!replies.has(c)}
+                  onClick={() => basculer(c)}
+                >
+                  <i aria-hidden="true" />
+                  {LIBELLE_PISTE[c]}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className={`cp-gc-duo cp-gc-duo--${MOT_COLONNES[ouvertes.length] || 'quatre'}`}>
+            <div className="cp-gc-coin" />
+            {ouvertes.map((c) => (
               <div className={`cp-gc-tete-col cp-gc-tete-col--${c}`} key={`t-${c}`}>
                 <span className="cp-gc-bandeau" />
                 <span className="cp-gc-col-nom">
@@ -1292,14 +1351,15 @@ function GrandsChiffres({ chiffres, parcours }) {
                 </span>
               </div>
             ))}
-            {lignes.map((l) => (
+            {/* La règle « un rang sans aucun chiffre ne s'affiche pas » vaut sur
+                les colonnes OUVERTES : replier le Sénat ne doit pas laisser un
+                intitulé seul face à rien. */}
+            {lignes
+              .filter((l) => ouvertes.some((c) => l.cellules[c] && !l.cellules[c].absent))
+              .map((l) => (
               <Fragment key={l.cle}>
-                {colonnes.map((c) => (
-                  <p className="cp-gc-rang" key={`r-${l.cle}-${c}`}>
-                    {l.titre}
-                  </p>
-                ))}
-                {colonnes.map((c) => (
+                <p className="cp-gc-rang">{l.titre}</p>
+                {ouvertes.map((c) => (
                   <CelluleChiffre cellule={l.cellules[c]} key={`c-${l.cle}-${c}`} piste={c} />
                 ))}
               </Fragment>
