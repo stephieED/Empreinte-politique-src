@@ -239,7 +239,7 @@ function Colonnes({ votes, positions, matiere, onIsoler, onToutAfficher }) {
   );
 }
 
-export default function VotesParPeriode({ periodes, portee, reperes }) {
+export default function VotesParPeriode({ periodes, portee, reperes, regle }) {
   const [index, setIndex] = useState(0);
   const [positions, setPositions] = useState(() => new Set(POSITIONS_ORDONNEES));
   const [origine, setOrigine] = useState(null);
@@ -293,22 +293,27 @@ export default function VotesParPeriode({ periodes, portee, reperes }) {
         && (!o || (v.origine === ORIGINE_GOUVERNEMENT ? ORIGINE_GOUVERNEMENT : ORIGINE_PARLEMENT) === o),
     ).length;
 
+  /* UNE SEULE CARTE, DU DÉNOMINATEUR À LA FIGURE. La règle de repli et la
+   * navigation entre périodes flottaient AU-DESSUS du cadre blanc, comme deux
+   * bandeaux détachés de ce qu'ils qualifient — alors qu'ils ne disent rien
+   * d'autre que : voici de quoi cette figure est tirée, et quelle période elle
+   * montre. Elles entrent donc dans la carte, dans cet ordre. */
   return (
     <div className="vp">
-      <NavigationPeriodes
-        periodes={periodes}
-        index={Math.min(index, periodes.length - 1)}
-        onIndex={(i) => {
-          setIndex(i);
-          setMatiere(null);
-        }}
-        poids={(p) => p.votes.length}
-        libelle={libelleCourtDePeriode}
-        unite="textes"
-        uniteSingulier="texte"
-      />
-
-      <div className="cp-carte cp-bloc">
+      <div className="cp-carte cp-bloc vp-carte">
+        {regle && <p className="vp-regle">{regle}</p>}
+        <NavigationPeriodes
+          periodes={periodes}
+          index={Math.min(index, periodes.length - 1)}
+          onIndex={(i) => {
+            setIndex(i);
+            setMatiere(null);
+          }}
+          poids={(p) => p.votes.length}
+          libelle={libelleCourtDePeriode}
+          unite="textes"
+          uniteSingulier="texte"
+        />
         <BlocPeriode
           periode={periode}
           portee={portee}
@@ -380,9 +385,10 @@ export default function VotesParPeriode({ periodes, portee, reperes }) {
       {reperes && (
         <p className="cp-note vp-couverture">
           <b>Ce que cette figure ne sait pas.</b> Sur ses {formatNumber(reperes.total)} positions
-          de dernière lecture, {formatNumber(reperes.matiere)} sont rattachées à une commission
-          saisie au fond et {formatNumber(reperes.statut)} portent le sort final de leur texte.
-          Les autres restent en « matière non établie ».{' '}
+          de dernière lecture, {formatNumber(reperes.total - reperes.matiere)} ne disent pas quelle
+          commission a examiné le texte — elles restent en « matière non établie » — et{' '}
+          {formatNumber(reperes.total - reperes.statut)} ne portent pas le sort final de leur
+          texte.{' '}
           <Link to="/methodologie#votes">Pourquoi ce rattachement n’aboutit pas toujours</Link>.
         </p>
       )}

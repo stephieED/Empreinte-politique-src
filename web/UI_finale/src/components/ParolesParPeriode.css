@@ -10,7 +10,7 @@
 }
 
 .pp-cadre {
-  padding: 0;
+  /* La marge vient de `.cp-carte`. */
 }
 
 .pp-tete {

@@ -1,17 +1,11 @@
-/* « Ses divergences » (#328). Les teintes de position viennent de `VOTE_STYLE`
+/* Les écarts au groupe (#328). Les teintes de position viennent de `VOTE_STYLE`
    (utils/lecture.js), posées en style par le composant : une couleur écrite
    deux fois est une couleur qui divergera. */
 
 .eg-carte {
-  padding: 20px 20px 16px;
+  /* La marge vient de `.cp-carte`. */
 }
 
-.eg-titre {
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  margin: 0;
-}
 
 .eg-sous {
   font-size: 13px;
@@ -25,11 +19,15 @@
   margin-top: 22px;
   border-top: 1px solid var(--border);
 }
-
-.eg-bloc:first-of-type {
-  padding-top: 14px;
-  margin-top: 14px;
+/* Le filet SÉPARE deux blocs ; au-dessus du premier il ne séparait plus rien
+   depuis le retrait du titre « Ses divergences », et ouvrait un vide en haut de
+   la carte. Le premier titre se pose comme tous les autres. */
+.eg-bloc:first-child {
+  padding-top: 0;
+  margin-top: 0;
+  border-top: 0;
 }
+
 
 .eg-bloc-tete {
   display: flex;
@@ -40,13 +38,14 @@
   margin-bottom: 12px;
 }
 
+/* MÊME TITRE DE BLOC QUE PARTOUT AILLEURS SUR LA FICHE — 15 px, 800, encre.
+   Ces deux-là étaient en 13 px capitales grises, la forme des ÉTIQUETTES : deux
+   titres de même rang portaient deux formes, et le rang se lisait faux. */
 .eg-bloc h4 {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 800;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  letter-spacing: -0.01em;
   margin: 0;
-  color: var(--muted);
 }
 
 /* La ligne des groupes va EN HAUT À DROITE : elle nomme le référentiel de toute
@@ -65,7 +64,7 @@
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--border-strong);
+  color: var(--muted);
 }
 
 .eg-groupes b {
@@ -92,9 +91,10 @@
   display: block;
   font-style: normal;
   font-size: 11.5px;
-  color: var(--border-strong);
+  /* `--border-strong` est la couleur d'un FILET (#e7e4df) : posée sur du texte,
+     elle donne un contraste de 1,3:1 sur blanc — illisible. */
+  color: var(--muted);
   margin-top: 2px;
-  max-width: 60ch;
 }
 
 .eg-dl dt em a {
@@ -254,7 +254,7 @@ button.eg-col:focus-visible {
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--border-strong);
+  color: var(--muted);
 }
 
 .eg-cle {

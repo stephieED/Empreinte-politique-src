@@ -16,15 +16,14 @@ import '../styles/shell.css';
 import './CandidateProfile.css';
 import { BadgeSource, ListeVide } from './Lecture';
 import { teinteMatiere } from '../utils/matiere';
+import { MATIERE_NON_ETABLIE } from '../utils/profilCandidat';
 import { croise, disposerCascade, textesDeLaSelection } from '../utils/cascadeTextes';
 import { Fragment, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   LAST_READING_LABEL,
-  LAST_READING_RULE,
   LIBELLE_SORT_TEXTE,
   MOTIF_SORT,
-  WHOLE_TEXT_VOTE_BOUND,
   estProcedure49_3,
   formatNumber,
 } from '../utils/lecture';
@@ -214,9 +213,7 @@ function Frise({ parcours }) {
             qui dit que les trois postures viennent de l'Assemblée et pas de nous
             (§2 règle 2). 766 caractères, puis 188. */}
           <p className="cp-legende-note">
-            Majorité, minorité et opposition sont les trois valeurs que{' '}
-            <b>l’Assemblée nationale publie elle-même</b> sur chaque groupe politique ; elle ne les
-            publie pas pour la législature en cours.
+            Majorité, minorité et opposition <b>selon l’AN</b>.
           </p>
       </div>
 
@@ -382,167 +379,101 @@ function Fonctions({ fonctions }) {
   );
 }
 
-/* ── La chute : comment le total des dépôts s'est construit ────────────────
+/* ── LES MATIÈRES, DEUX MESURES ET LEUR RAPPORT ─────────────────────────────
  *
- * Une marche par année civile, découpée par matière, et une barre de total qui
- * repart du sol : le lecteur suit le chemin, et la dernière barre est son
- * arrivée, pas un agrégat de plus.
+ * REMPLACE LA CASCADE PAR ANNÉE. Celle-ci empilait les matières sur un axe du
+ * temps, avec un bouton pour basculer entre « amendements déposés » et
+ * « dossiers amendés » : deux lectures qu'il fallait faire l'une après l'autre,
+ * et dont le rapport — le seul fait intéressant — n'apparaissait jamais.
  *
- * UN ESCALIER EST ADDITIF, et cette contrainte décide de la géométrie : le haut
- * d'une marche est le bas de la suivante. On ne peut donc pas donner de hauteur
- * minimale à une petite marche sans fausser le cumul — 1 dépôt sur 2 831 fait
- * 0,15 px et le restera. Ce qui garantit qu'aucune année ne disparaît, c'est le
- * PALIER, tracé à la hauteur exacte du cumul même quand la marche est
- * invisible. Aucun seuil n'est appliqué nulle part.
+ * Le volume seul ne fait rien ressortir : il suit le calendrier de l'Assemblée,
+ * et Finances arrive en tête pour à peu près tout le monde. Le classement
+ * S'INVERSE dès qu'on compte les textes. Les deux mesures sont donc côte à côte,
+ * avec le ratio AU MILIEU — c'est le terme qui les relie, pas une conclusion
+ * posée au bout.
  *
- * DEUX MESURES SANS RAPPORT ENTRE ELLES. Le bouton échange dépôts et dossiers
- * amendés ; l'axe ne bouge pas d'une mesure à l'autre, et aucun rapport n'est
- * calculé entre les deux (§6).
+ * CE RAPPORT N'EST NI UNE PERFORMANCE NI UN JUGEMENT. C'est une densité, et elle
+ * porte ses deux termes : elle ne se compare à aucune moyenne, ne se normalise
+ * par aucun effectif, et n'est jamais un taux d'adoption (§6). Aucune colonne
+ * n'est mise en avant — un ratio sans ses deux termes n'est rien.
+ *
+ * UN NOMBRE PAR COLONNE. Empilés dans une même cellule, « 26 775 » et « 59 » se
+ * lisaient « 26 77559 », et se copiaient ainsi.
+ *
+ * « Matière non établie » garde sa ligne, en gris et sans ratio : un dossier
+ * dont la commission n'est pas résolue n'a pas de dénominateur, et lui en
+ * inventer un le ferait disparaître dans les autres (§2 règle 5).
  */
-const CHUTE = { h: 300, hautMin: 26, bas: 30, gauche: 54, droite: 26 };
-
-function Chute({ chute, mesure, matiere, onMesure, onMatiere }) {
-  const serie = mesure === 'dossiers' ? chute.dossiers : chute.depots;
-  const total = mesure === 'dossiers' ? chute.totalDossiers : chute.totalDepots;
-  const totaux = mesure === 'dossiers' ? chute.totauxDossiers : chute.totauxDepots;
+function Matieres({ chute, matiere, onMatiere }) {
   const rang = useMemo(
     () => new Map(chute.matieres.map((m, i) => [m, i])),
     [chute.matieres],
   );
-  if (!total) return null;
+  const lignes = useMemo(() => chute.matieres
+    .filter((m) => m !== MATIERE_NON_ETABLIE)
+    .map((m) => ({
+      m,
+      amdt: chute.totauxDepots[m] || 0,
+      textes: chute.totauxDossiers[m] || 0,
+    }))
+    .filter((x) => x.amdt > 0)
+    .sort((a, b) => b.amdt - a.amdt), [chute]);
+  const nd = {
+    amdt: chute.totauxDepots[MATIERE_NON_ETABLIE] || 0,
+    textes: chute.totauxDossiers[MATIERE_NON_ETABLIE] || 0,
+  };
+  if (!lignes.length && !nd.amdt) return null;
+  const maxA = Math.max(...lignes.map((x) => x.amdt), nd.amdt, 1);
+  const maxD = Math.max(...lignes.map((x) => (x.textes ? x.amdt / x.textes : 0)), 1);
 
-  const { h, hautMin, bas, gauche, droite } = CHUTE;
-  const largeurVue = 900;
-  const x0 = gauche;
-  const x1 = largeurVue - droite;
-  const pas = (x1 - x0) / (chute.annees.length + 1);
-  const largeur = Math.max(2, Math.min(pas * 0.62, 34));
-  const y = (v) => h - bas - (v / total) * (h - bas - hautMin);
-
-  const marches = [];
-  const paliers = [];
-  const graduations = [];
-  let cumul = 0;
-  let dernierX = -Infinity;
-  serie.forEach((an, i) => {
-    const cx = x0 + pas * (i + 0.5);
-    const g = cx - largeur / 2;
-    const parts = [...an.parts].sort((p, q) => rang.get(p.matiere) - rang.get(q.matiere));
-    let base = cumul;
-    for (const p of parts) {
-      // Les deux ordonnées sont arrondies AVANT la soustraction : la hauteur
-      // est leur différence, donc l'empilement reste jointif au centième.
-      const haut = Number(y(base + p.n).toFixed(2));
-      const pied = Number(y(base).toFixed(2));
-      const vu = !matiere || matiere === p.matiere;
-      marches.push(
-        <rect
-          className={`cp-chute-part${vu ? '' : ' cp-chute-part--voile'}`}
-          data-matiere={p.matiere}
-          fill={teinteMatiere(p.matiere, rang.get(p.matiere))}
-          height={(pied - haut).toFixed(2)}
-          key={`${an.annee}-${p.matiere}`}
-          onClick={() => onMatiere(p.matiere)}
-          width={largeur.toFixed(1)}
-          x={g.toFixed(1)}
-          y={haut.toFixed(2)}
-        >
-          <title>
-            {`${p.matiere}\n${an.annee}\n${formatNumber(p.n)} ${mesure === 'dossiers' ? 'dossier' : 'amendement'}${p.n > 1 ? 's' : ''}`}
-          </title>
-        </rect>,
-      );
-      base += p.n;
-    }
-    cumul = base;
-    const finPalier = i + 1 < serie.length ? x0 + pas * (i + 1.5) - largeur / 2 : x1 - largeur;
-    paliers.push(
-      <line
-        className="cp-chute-palier"
-        key={`p${an.annee}`}
-        x1={g.toFixed(1)}
-        x2={Math.max(finPalier, g + largeur).toFixed(1)}
-        y1={y(cumul).toFixed(1)}
-        y2={y(cumul).toFixed(1)}
-      />,
-    );
-    graduations.push(
-      <line className="cp-chute-grille" key={`t${an.annee}`} x1={cx.toFixed(1)} x2={cx.toFixed(1)} y1={hautMin} y2={h - bas + 4} />,
-    );
-    // Une graduation sautée reste lisible ; un axe encombré, non.
-    if (cx - dernierX >= 42) {
-      dernierX = cx;
-      graduations.push(
-        <text className="cp-chute-axe cp-chute-axe--an" key={`a${an.annee}`} x={cx.toFixed(1)} y={h - bas + 18}>
-          {an.annee}
-        </text>,
-      );
-    }
-  });
-
-  const cxT = x1 - largeur / 2;
-  const unite = mesure === 'dossiers' ? 'dossiers amendés' : 'amendements déposés';
   return (
-    <div className="cp-chute">
-      <div className="cp-cles cp-chute-mesure">
-        <span className="cp-cle-quoi">Ce qu’on compte</span>
-        <button
-          aria-pressed={mesure !== 'dossiers'}
-          className="cp-chute-choix"
-          onClick={() => onMesure('depots')}
-          type="button"
-        >
-          amendements déposés
-        </button>
-        <button
-          aria-pressed={mesure === 'dossiers'}
-          className="cp-chute-choix"
-          onClick={() => onMesure('dossiers')}
-          type="button"
-        >
-          dossiers amendés
-        </button>
+    <div className="cp-mat">
+      <div className="cp-mr cp-mr--tete">
+        <span className="cp-mr-lib" />
+        <span />
+        <span className="cp-mr-n">amendements</span>
+        <span className="cp-mr-n">ratio par texte</span>
+        <span />
+        <span className="cp-mr-n">textes distincts</span>
       </div>
-      <svg
-        aria-label={`${unite} par année, empilés par matière`}
-        className="cp-chute-svg"
-        role="img"
-        viewBox={`0 0 ${largeurVue} ${h}`}
-      >
-        {[0, 0.25, 0.5, 0.75, 1].map((f) => (
-          <g key={f}>
-            <line className="cp-chute-grille" x1={x0} x2={x1} y1={y(total * f).toFixed(1)} y2={y(total * f).toFixed(1)} />
-            <text className="cp-chute-axe" x={x0 - 8} y={(y(total * f) + 4).toFixed(1)}>
-              {formatNumber(Math.round(total * f))}
-            </text>
-          </g>
-        ))}
-        {graduations}
-        {marches}
-        {paliers}
-        <rect className="cp-chute-total" height={(y(0) - y(total)).toFixed(1)} width={largeur.toFixed(1)} x={(cxT - largeur / 2).toFixed(1)} y={y(total).toFixed(1)}>
-          <title>{`Total\n${formatNumber(total)} ${unite}`}</title>
-        </rect>
-        <text className="cp-chute-axe cp-chute-axe--an" x={cxT.toFixed(1)} y={h - bas + 18}>total</text>
-        <text className="cp-chute-total-nb" x={cxT.toFixed(1)} y={(y(total) - 7).toFixed(1)}>{formatNumber(total)}</text>
-      </svg>
-      <div className="cp-cles">
-        <span className="cp-cle-quoi">Matière</span>
-        {chute.matieres
-          .filter((m) => (totaux[m] || 0) > 0)
-          .map((m) => (
-            <button
-              aria-pressed={matiere === m}
-              className="cp-cle cp-cle--cliquable"
-              key={m}
-              onClick={() => onMatiere(m)}
-              type="button"
-            >
-              <i style={{ background: teinteMatiere(m, rang.get(m)) }} />
-              {m} <b className="cp-num">{formatNumber(totaux[m])}</b>
-            </button>
-          ))}
-      </div>
+      {lignes.map((x) => {
+        const dens = x.textes ? x.amdt / x.textes : null;
+        const teinte = teinteMatiere(x.m, rang.get(x.m));
+        return (
+          <button
+            aria-pressed={matiere === x.m}
+            className="cp-mr cp-mr--cliquable"
+            key={x.m}
+            onClick={() => onMatiere(x.m)}
+            type="button"
+          >
+            <span className="cp-mr-lib">{x.m}</span>
+            <span className="cp-mr-rail">
+              <i style={{ background: teinte, width: `${(x.amdt / maxA) * 100}%` }} />
+            </span>
+            <span className="cp-mr-n">{formatNumber(x.amdt)}</span>
+            <span className="cp-mr-n">{dens == null ? '—' : formatNumber(Math.round(dens))}</span>
+            <span className="cp-mr-rail">
+              {dens != null && (
+                <i style={{ background: teinte, opacity: 0.5, width: `${(dens / maxD) * 100}%` }} />
+              )}
+            </span>
+            <span className="cp-mr-n cp-mr-n--textes">{formatNumber(x.textes)}</span>
+          </button>
+        );
+      })}
+      {nd.amdt > 0 && (
+        <div className="cp-mr cp-mr--nd">
+          <span className="cp-mr-lib">{MATIERE_NON_ETABLIE}</span>
+          <span className="cp-mr-rail">
+            <i style={{ background: '#dcd8d2', width: `${(nd.amdt / maxA) * 100}%` }} />
+          </span>
+          <span className="cp-mr-n">{formatNumber(nd.amdt)}</span>
+          <span className="cp-mr-n">—</span>
+          <span />
+          <span className="cp-mr-n cp-mr-n--textes">{formatNumber(nd.textes) || '—'}</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -730,12 +661,8 @@ function Cascade({ cascade, selection, onSelection }) {
             <span className="cp-ter-493-marque">49.3</span>
             <b>{formatNumber(cascade.procedure493)}</b> de ces textes
             {cascade.procedure493 > 1 ? ' ont été adoptés' : ' a été adopté'} sans vote
+            <span className="cp-ter-493-quoi">(fait procédural)</span>
           </button>
-          <span>
-            — engagement de la responsabilité du Gouvernement. C’est un{' '}
-            <b>fait procédural</b>, jamais une position de vote : l’Assemblée ne s’est pas
-            prononcée. La cascade a le <b>stade</b> pour axe et ne peut pas le montrer.
-          </span>
         </p>
       )}
     </div>
@@ -744,6 +671,10 @@ function Cascade({ cascade, selection, onSelection }) {
 
 function ListeCascade({ cascade, selection, onRaz }) {
   const sel = useMemo(() => textesDeLaSelection(cascade, selection), [cascade, selection]);
+  const colonnes = useMemo(() => [
+    { cle: 'parlement', textes: sel.filter((t) => !t.projetDeLoi) },
+    { cle: 'gouvernement', textes: sel.filter((t) => t.projetDeLoi) },
+  ].filter((c) => c.textes.length > 0), [sel]);
   if (!selection) {
     return (
       <p className="cp-note cp-ter-invite">
@@ -768,44 +699,61 @@ function ListeCascade({ cascade, selection, onRaz }) {
         </span>
         <button className="cp-chute-raz" onClick={onRaz} type="button">Tout afficher</button>
       </div>
-      <ul>
-        {sel.map((t) => (
-          <li key={`${t.titre}-${t.stadeCle}`}>
-            <span className="cp-ter-titre">
-              {t.url
-                ? <a href={t.url} rel="noreferrer" target="_blank">{t.titre}</a>
-                : t.titre}
+      {/* DEUX COLONNES, PARCE QUE CE SONT DEUX QUALITÉS.
+          Un projet de loi est signé comme MINISTRE, une proposition déposée
+          comme PARLEMENTAIRE : la liste les mêlait, et une phrase sous la
+          figure — « 31 de ses 34 textes portés sont des projets de loi » —
+          disait en toutes lettres ce que la liste aurait dû montrer. `role` les
+          sépare à la source (#689), les teintes sont celles de « ce que cette
+          personne a engagé, en chiffres », et rien n'est additionné.
+
+          UNE SEULE COLONNE QUAND LA SÉLECTION N'A QU'UNE QUALITÉ : une colonne
+          vide se lirait comme une lacune de collecte, quand c'est l'expérience
+          qui n'existe pas (§2 règle 5). */}
+      <div className={`cp-ter-cols ${colonnes.length > 1 ? 'cp-ter-cols--deux' : ''}`}>
+        {colonnes.map((col) => (
+          <div className={`cp-gc-tete-col cp-gc-tete-col--${col.cle}`} key={`t-${col.cle}`}>
+            <span className="cp-gc-bandeau" />
+            <span className="cp-gc-col-nom">
+              <i />
+              {LIBELLE_PISTE[col.cle]}
+              <b className="cp-ter-col-nb cp-num">{formatNumber(col.textes.length)}</b>
             </span>
-            <span
-              className="cp-ter-pastille"
-              style={{ '--pastille': encreDeLEtape(cascade.stades.indexOf(t.stadeCle), fin) }}
-            >
-              {t.stade}
-            </span>
-            <span className="cp-ter-fait">
-              {t.matiere}{t.an ? ` · ${t.an}` : ''}{t.role ? ` · ${t.role}` : ''}
-            </span>
+          </div>
+        ))}
+        {colonnes.map((col) => (
+          <ul key={`l-${col.cle}`}>
+            {col.textes.map((t) => (
+              <li key={`${t.titre}-${t.stadeCle}`}>
+                <span className="cp-ter-titre">
+                  {t.url
+                    ? <a href={t.url} rel="noreferrer" target="_blank">{t.titre}</a>
+                    : t.titre}
+                </span>
+                <span
+                  className="cp-ter-pastille"
+                  style={{ '--pastille': encreDeLEtape(cascade.stades.indexOf(t.stadeCle), fin) }}
+                >
+                  {t.stade}
+                </span>
+                <span className="cp-ter-fait">
+                  {t.matiere}{t.an ? ` · ${t.an}` : ''}{t.role ? ` · ${t.role}` : ''}
+                </span>
             {/* LE SORT À CÔTÉ DU STADE, JAMAIS À SA PLACE. La pastille du haut
                 dit jusqu'où le texte est allé, celle-ci ce qu'il est devenu, et
                 l'un ne se déduit pas de l'autre : « discuté en séance et pas
                 adopté » ne veut pas dire « rejeté ». Un sort absent affiche son
                 MOTIF, jamais un sort par défaut (§2 règle 5). */}
-            <span className={`cp-ter-sort${estProcedure49_3(t.sortCle) ? ' cp-ter-sort--493' : ''}`}>
-              {t.sortCle
-                ? LIBELLE_SORT_TEXTE[t.sortCle] || t.sortCle
-                : `Sort non résolu${t.sortMotif ? ` — ${MOTIF_SORT[t.sortMotif] || t.sortMotif}` : ''}`}
-            </span>
-          </li>
+                <span className={`cp-ter-sort${estProcedure49_3(t.sortCle) ? ' cp-ter-sort--493' : ''}`}>
+                  {t.sortCle
+                    ? LIBELLE_SORT_TEXTE[t.sortCle] || t.sortCle
+                    : `Sort non résolu${t.sortMotif ? ` — ${MOTIF_SORT[t.sortMotif] || t.sortMotif}` : ''}`}
+                </span>
+              </li>
+            ))}
+          </ul>
         ))}
-      </ul>
-      <p className="cp-note">
-        Le titre ouvre le dossier à l’Assemblée nationale. Chaque texte porte{' '}
-        <b>deux faits distincts</b> : la pastille de droite donne l’<b>étape la plus avancée</b>{' '}
-        que le corpus enregistre à sa date, la ligne du dessous son <b>sort</b> — ce qu’il est
-        devenu. L’un ne se déduit pas de l’autre : « discuté en séance et pas adopté » ne veut
-        pas dire « rejeté », et un texte <b>adopté via 49.3</b> l’a été sans que l’Assemblée
-        vote.
-      </p>
+      </div>
     </div>
   );
 }
@@ -825,7 +773,6 @@ function ListeCascade({ cascade, selection, onRaz }) {
  * remettre est une carte à écrire, pas une donnée à recollecter.
  */
 function Propositions({ amendements, textes, causeAmendements, causeTextes, voix }) {
-  const [mesure, setMesure] = useState('depots');
   const [matiere, setMatiere] = useState(null);
   const [selTexte, setSelTexte] = useState(null);
   const choisirMatiere = (m) => setMatiere((a) => (a === m ? null : m));
@@ -834,13 +781,6 @@ function Propositions({ amendements, textes, causeAmendements, causeTextes, voix
         .slice()
         .sort((a, b) => b.n - a.n)
     : [];
-  const avecAdopte = dossiersDeLaMatiere.filter((d) => d.adoptes > 0).length;
-  // « N dossiers où un amendement a été adopté » : le fait qui compte — au
-  // moins un dépôt entré dans le texte — jamais un rapport (§6).
-  const dossiersAvecAdopte = Object.values(amendements.chute?.dossiersParMatiere || {})
-    .flat()
-    .filter((d) => d.adoptes > 0).length;
-
   return (
     <>
       {textes.total === 0 ? (
@@ -870,20 +810,7 @@ function Propositions({ amendements, textes, causeAmendements, causeTextes, voix
               />
             </>
           )}
-          {/* LE FAIT RESTE, L'AFFIRMATION FAUSSE PART (#328). La note ajoutait
-              que le corpus range projets et propositions « sous le même rôle
-              "auteur" » et qu'« aucun champ ne la porte ». Mesuré sur les
-              textes portés des 32 fiches de candidats déclarés : `role` les
-              sépare sur 570 des 575 — `initiateur_projet_de_loi` contre
-              `auteur_proposition_de_loi`. */}
-          {textes.projetsDeLoi > 0 && (
-            <p className="cp-note">
-              <b>
-                {textes.projetsDeLoi} de ses {textes.total} textes portés sont des projets de loi
-              </b>
-              , c’est-à-dire des textes du gouvernement signés comme ministre.
-            </p>
-          )}
+
         </div>
       )}
 
@@ -898,16 +825,28 @@ function Propositions({ amendements, textes, causeAmendements, causeTextes, voix
             <span className="cp-gouv-periode cp-num">
               {formatNumber(amendements.totalAuteur)} amendements ·{' '}
               {formatNumber(amendements.dossiers?.distincts ?? amendements.chute.totalDossiers)}{' '}
-              dossiers · {formatNumber(dossiersAvecAdopte)} où un amendement a été adopté
+              dossiers · {formatNumber(amendements.adoptes)} adopté
+              {amendements.adoptes > 1 ? 's' : ''}
             </span>
           </div>
-          <Chute
+          <Matieres
             chute={amendements.chute}
             matiere={matiere}
-            mesure={mesure}
             onMatiere={choisirMatiere}
-            onMesure={setMesure}
           />
+          {/* CE QUI RESTAIT EN TROIS CARTES TIENT EN UNE LIGNE. Les adoptés et
+              les deux motifs d'irrecevabilité étaient rendus en `cp-bloc`, la
+              forme réservée aux grands chiffres : trois nombres de la taille des
+              totaux de la fiche, pour un fait qui se lit sous la légende. Aucun
+              n'est perdu — ils sont ici, à la suite de la figure qu'ils
+              qualifient, et sans accent. */}
+          {amendements.irrecevabilites.length > 0 && (
+            <p className="cp-chute-mentions">
+              {amendements.irrecevabilites
+                .map((b) => `${formatNumber(b.n)} ${b.titre}`)
+                .join(' · ')}
+            </p>
+          )}
           {matiere && (
             <div className="cp-chute-liste">
               <div className="cp-chute-liste-tete">
@@ -937,38 +876,14 @@ function Propositions({ amendements, textes, causeAmendements, causeTextes, voix
                   </li>
                 ))}
               </ul>
-              <p className="cp-note">
-                La liste est celle de la <b>matière</b>, pas de l'année : un dossier ne porte que la
-                date de son premier dépôt, et rien ne dit combien de ses amendements sont tombés
-                telle année. Un amendement <b>adopté</b> est entré dans le texte à ce stade ;{' '}
-                {avecAdopte === 0
-                  ? 'aucun des dossiers listés n’en compte'
-                  : avecAdopte === dossiersDeLaMatiere.length
-                    ? 'tous les dossiers listés en comptent au moins un'
-                    : `${formatNumber(avecAdopte)} des ${formatNumber(dossiersDeLaMatiere.length)} dossiers listés en compte${avecAdopte > 1 ? 'nt' : ''} au moins un`}
-                .
-              </p>
+              {/* LA NOTE SOUS LA LISTE EST PARTIE EN DEUX TEMPS. Sa première
+                  moitié parlait de l'axe des années, retiré avec la cascade. La
+                  seconde recomptait ce que la liste montre déjà : chaque ligne
+                  porte « N adoptés » ou « aucun adopté », et une phrase qui
+                  totalise ce que l'œil vient de lire fait relire au lieu de
+                  compléter. */}
             </div>
           )}
-        </div>
-      )}
-
-      {(amendements.adoptes > 0 || amendements.irrecevabilites.length > 0) && (
-        <div className="cp-blocs">
-          {amendements.adoptes > 0 && (
-            <div className="cp-carte cp-bloc">
-              <b className="cp-bloc-nombre cp-num">{formatNumber(amendements.adoptes)}</b>
-              <p className="cp-bloc-cle">amendements adoptés</p>
-              <p className="cp-bloc-texte">Entrés dans le texte à ce stade.</p>
-            </div>
-          )}
-          {amendements.irrecevabilites.map((b) => (
-            <div className="cp-carte cp-bloc" key={b.base}>
-              <b className="cp-bloc-nombre cp-num">{formatNumber(b.n)}</b>
-              <p className="cp-bloc-cle">{b.titre}</p>
-              <p className="cp-bloc-texte">{b.explication}</p>
-            </div>
-          ))}
         </div>
       )}
 
@@ -1079,21 +994,6 @@ function Votes({ votes, cause }) {
         </div>
       ) : (
         <>
-          {/* Les dénominateurs du repli restent AU-DESSUS de la figure : ils
-              disent de quoi les périodes sont tirées, et un ratio sans son
-              dénominateur n'est pas vérifiable (§2 règle 7). */}
-          <div className="cp-regles cp-regles--votes">
-            <span className="cp-regle">
-              {formatNumber(votes.textes)} textes — {LAST_READING_LABEL}
-            </span>
-            <span className="cp-regle">
-              tirés de {formatNumber(votes.surEnsemble)} votes sur l’ensemble d’un texte, parmi{' '}
-              {formatNumber(votes.total)} positions
-            </span>
-            <span className="cp-regle">absences jamais publiées</span>
-            <span className="cp-regle">un plancher, pas un relevé exhaustif</span>
-          </div>
-
           {/* DEUX PHRASES, ET PLUS DEUX PARAGRAPHES (#328).
               Le « pourquoi » des deux règles — quatre lectures d'un même texte,
               un code de scrutin qui ne sépare pas l'ensemble de l'article —
@@ -1109,14 +1009,8 @@ function Votes({ votes, cause }) {
                 periodes={votes.periodes}
                 portee={votes.portee}
                 reperes={votes.reperes}
+                regle={`${formatNumber(votes.textes)} textes — ${LAST_READING_LABEL}`}
               />
-              {/* SOUS la figure, jamais au-dessus. Trois blocs de texte avant un
-                  graphique font lire la légende à la place du fait — c'est ce que
-                  la maquette du 08/09 a corrigé. Les deux phrases restent
-                  néanmoins sur la fiche : #711 les veut à côté du chiffre. */}
-              <p className="cp-note">
-                <b>{LAST_READING_RULE.phrase}</b> {WHOLE_TEXT_VOTE_BOUND.phrase}
-              </p>
             </>
           ) : (
             <div className="cp-carte">
@@ -1140,10 +1034,18 @@ const LIBELLE_ETAT = {
   fait_etabli: 'fait établi',
 };
 
-function Couverture({ couverture, limites }) {
+function Couverture({ couverture, parcours, collecte }) {
   return (
     <>
-      <div className="cp-carte">
+      {/* `--rangs` : les rangs portent leur marge et leur filet court d'un bord
+          à l'autre, donc la carte s'efface devant eux. La seule de la fiche. */}
+      <div className="cp-carte cp-carte--rangs">
+        <div className="cp-gouv-tete cp-rangs-tete">
+          <span className="cp-gouv-nom">Ce que chaque liste porte</span>
+          <span className="cp-gouv-periode cp-num">
+            {formatNumber(couverture.length)} liste{couverture.length > 1 ? 's' : ''}
+          </span>
+        </div>
         {couverture.map((c) => (
           <div className="cp-ligne cp-ligne--couverture" key={c.cle}>
             <span className="cp-ligne-cle">{c.titre}</span>
@@ -1167,11 +1069,58 @@ function Couverture({ couverture, limites }) {
           </div>
         ))}
       </div>
-      {limites.map((l) => (
-        <p className="cp-note" key={l.cle}>
-          {l.texte}
-        </p>
-      ))}
+
+      {/* DEUX SOUS-PARTIES, PARCE QU'IL Y A DEUX SUJETS.
+          Le tableau ci-dessus dit, liste par liste, CE QUE LE DÉPÔT PORTE et
+          depuis quand. Les signalements ci-dessous disent ce que LA COLLECTE a
+          rencontré — une source qui ne publie pas, un identifiant introuvable.
+          Mêlés, ils faisaient un tableau suivi de paragraphes flottants que rien
+          ne rattachait à rien.
+
+          Chaque signalement est coupé sur son premier tiret cadratin, que nos
+          propres messages posent entre la source et son explication (« Parlement
+          européen — votes non publiés : … »). Un message qui n'en porte pas est
+          rendu entier : on ne devine pas un intitulé qui n'existe pas. */}
+      {parcours.length > 0 && (
+        <div className="cp-carte cp-signal">
+          <div className="cp-gouv-tete">
+            <span className="cp-gouv-nom">Ce que le corpus ne dit pas de son parcours</span>
+            <span className="cp-gouv-periode cp-num">
+              {formatNumber(parcours.length)} point{parcours.length > 1 ? 's' : ''}
+            </span>
+          </div>
+          <dl className="cp-signal-dl">
+            {parcours.map((l) => (
+              <Fragment key={l.cle}>
+                <dt>{LIBELLE_LIMITE[l.cle] || 'Corpus'}</dt>
+                <dd>{l.texte}</dd>
+              </Fragment>
+            ))}
+          </dl>
+        </div>
+      )}
+
+      {collecte.length > 0 && (
+        <div className="cp-carte cp-signal">
+          <div className="cp-gouv-tete">
+            <span className="cp-gouv-nom">Ce que la collecte signale</span>
+            <span className="cp-gouv-periode cp-num">
+              {formatNumber(collecte.length)} signalement{collecte.length > 1 ? 's' : ''}
+            </span>
+          </div>
+          <dl className="cp-signal-dl">
+            {collecte.map((l) => {
+              const coupe = /^(.+?)\s+—\s+([\s\S]+)$/.exec(l.texte);
+              return (
+                <Fragment key={l.cle}>
+                  <dt>{coupe ? coupe[1] : 'Collecte'}</dt>
+                  <dd>{coupe ? coupe[2] : l.texte}</dd>
+                </Fragment>
+              );
+            })}
+          </dl>
+        </div>
+      )}
       {/* LE BLOC « ASSIDUITÉ / CLASSEMENT / 49.3 » EST RETIRÉ (#328). Mesuré
           sur la page rendue de `delphine-batho` : « aucun classement » y
           apparaissait TROIS fois — ici, dans le pied de la fiche juste en
@@ -1353,8 +1302,38 @@ function GrandsChiffres({ chiffres, parcours }) {
  * `tests/test_essentiel_328.py` documente.
  */
 
+/* L'intitulé de chaque limite de parcours : il nomme SUR QUOI elle porte, pour
+ * que trois phrases deviennent trois lignes rangées. Les clés viennent de
+ * `profilCandidat.js` ; une clé inconnue retombe sur « Corpus » plutôt que de
+ * rendre une ligne sans intitulé. */
+const LIBELLE_LIMITE = {
+  'position-non-declaree': 'Qualification du groupe',
+  suspension: 'Entrée au gouvernement',
+  'sieges-replies': 'Enregistrements de mandat',
+};
+
+/* DEUX SORTES DE LIMITES, ET ELLES NE DISENT PAS LA MÊME CHOSE.
+ *
+ * Les unes disent ce que le corpus NE DIT PAS de cette personne : la
+ * qualification que l'Assemblée n'a pas déclarée sur un mandat, la suspension
+ * pour fonction gouvernementale qu'aucun mandat électif ne renseigne, les
+ * enregistrements repliés sur un même siège. Les autres disent ce que la
+ * COLLECTE a rencontré : une source qui ne publie pas, un identifiant
+ * introuvable.
+ *
+ * Toutes restent en « ce qu'on n'a pas pu lire » — c'est la section qui parle
+ * des trous —, mais chacune sous son intitulé : mêlées, elles faisaient une
+ * suite de phrases sans rang. */
+const LIMITES_DU_PARCOURS = new Set([
+  'position-non-declaree',
+  'suspension',
+  'sieges-replies',
+]);
+
 export default function CandidateProfile({ candidate }) {
   const c = candidate;
+  const limitesDuParcours = (c.limites || []).filter((l) => LIMITES_DU_PARCOURS.has(l.cle));
+  const limitesDeCollecte = (c.limites || []).filter((l) => !LIMITES_DU_PARCOURS.has(l.cle));
 
   return (
     <main className="cp-main">
@@ -1365,11 +1344,17 @@ export default function CandidateProfile({ candidate }) {
       <header className="cp-entete">
         <p className="cp-sourcil">Candidat déclaré · élection présidentielle 2027</p>
         <h1>{c.nom}</h1>
+        {/* LA SOURCE TERMINE LA LIGNE QU'ELLE SOURCE. Elle était posée en
+            dessous, sur sa propre ligne : le lecteur devait rattacher un badge
+            flottant à un texte, alors qu'il atteste exactement ces faits-là —
+            profession, groupe, parti, naissance. */}
         <p className="cp-qui">
-          {[c.profession, c.groupe && `Groupe ${c.groupe}`, c.parti].filter(Boolean).join(' · ')}
-          {c.naissance && `. ${c.voix.ne} le ${jour(c.naissance.date)}${c.naissance.lieu ? ` à ${c.naissance.lieu}` : ''}.`}
+          <span>
+            {[c.profession, c.groupe && `Groupe ${c.groupe}`, c.parti].filter(Boolean).join(' · ')}
+            {c.naissance && `. ${c.voix.ne} le ${jour(c.naissance.date)}${c.naissance.lieu ? ` à ${c.naissance.lieu}` : ''}.`}
+          </span>
+          <BadgeSource url={c.sourceUrl} />
         </p>
-        <BadgeSource url={c.sourceUrl} />
       </header>
 
       {/* « Les grands chiffres » remplace « L'essentiel » (#328). Deux noms ont
@@ -1391,7 +1376,8 @@ export default function CandidateProfile({ candidate }) {
         titre="Les fonctions exercées"
         pied={
           <>
-            Les trois plus longues par catégorie ; un filet passé la moitié du mandat.{' '}
+            Les trois plus longues par catégorie ; ligne surlignée = expérience sur + de la
+            moitié du mandat.{' '}
             <Link to="/methodologie#fonctions">Pourquoi ce n’est pas un palmarès →</Link>
           </>
         }
@@ -1424,7 +1410,6 @@ export default function CandidateProfile({ candidate }) {
       <Section
         numero="3"
         titre={c.voix.titres.vote}
-        critere="Une position par texte, rangée par période politique. Aucun taux de participation n’est publié."
       >
         <Votes cause={c.causes.votes} votes={c.votes} />
       </Section>
@@ -1448,9 +1433,12 @@ export default function CandidateProfile({ candidate }) {
       <Section
         numero="6"
         titre="Ce qu’on n’a pas pu lire"
-        critere="Chaque liste porte son état et ses bornes, et chaque limite se déclare."
       >
-        <Couverture couverture={c.couverture} limites={c.limites} />
+        <Couverture
+          couverture={c.couverture}
+          parcours={limitesDuParcours}
+          collecte={limitesDeCollecte}
+        />
       </Section>
 
       {/* La licence SEULE. La phrase de refus qui l'accompagnait était la
