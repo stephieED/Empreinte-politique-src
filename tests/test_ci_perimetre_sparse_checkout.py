@@ -66,7 +66,20 @@ def _liste_blanche() -> frozenset[str]:
 #: contraire de ce qu'on veut — la CI doit continuer de ne pas l'avoir —, et
 #: construire le chemin autrement pour esquiver ce relevé masquerait le garde-fou
 #: au lieu de le déclarer. Cet ensemble reste minuscule ou il ne vaut rien.
-_NOMMES_POUR_ETRE_REFUSES = frozenset({".cache"})
+#:
+#: `raw_data` a rejoint `.cache` avec #791, et pour la même raison : la suite
+#: nomme désormais ces chemins pour les REFUSER. Le garde-fou de `conftest.py`
+#: lève sur toute ouverture d'un `.json` de `raw_data/` qu'un test n'a pas
+#: déclaré, et son témoin (`tests/test_raw_data_du_depot_791.py`) doit bien
+#: nommer un fichier réel pour vérifier qu'il lève.
+#:
+#: Ce que ce relevé faisait pour `raw_data/`, une règle plus forte le fait
+#: maintenant, à l'exécution : un chemin déclaré par
+#: `pytest.mark.lit_reference_committee` DOIT être dans la liste blanche, sans
+#: quoi le garde-fou refuse la déclaration elle-même — et
+#: `test_toute_declaration_est_couverte_par_le_sparse_checkout` le vérifie sur
+#: toute la suite, y compris pour les tests qui se `skip`ent en CI.
+_NOMMES_POUR_ETRE_REFUSES = frozenset({".cache", "raw_data"})
 
 
 def _chemins_lus() -> set[tuple[str, ...]]:
@@ -117,3 +130,14 @@ def test_le_cache_du_poste_reste_hors_de_la_liste_blanche():
     le sparse-checkout, les tests liraient de nouveau un cache réel — celui du
     runner — et le garde-fou de `conftest.py` deviendrait un mensonge."""
     assert ".cache" not in _liste_blanche()
+
+
+def test_raw_data_entier_reste_hors_de_la_liste_blanche():
+    """L'exemption de `raw_data` (#791) ne porte que sur le RÉPERTOIRE. Les
+    fichiers de configuration que la suite lit — `groupes_reels.json`,
+    `gouvernements_reels.json`, `candidats.json` — y sont nommés un par un, et
+    c'est cette liste que le marqueur `lit_reference_committee` interroge."""
+    blanche = _liste_blanche()
+    assert "raw_data" not in blanche
+    assert {"raw_data/groupes_reels.json", "raw_data/gouvernements_reels.json",
+            "raw_data/candidats.json"} <= blanche

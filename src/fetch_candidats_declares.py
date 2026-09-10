@@ -152,6 +152,7 @@ from bs4 import BeautifulSoup, Tag
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import correspondance_acteurs_an  # noqa: E402
 import gha  # noqa: E402
 import identifiants_wikidata as iw  # noqa: E402
 from text_utils import slugify  # noqa: E402
@@ -1019,7 +1020,10 @@ def _construire_parseur() -> argparse.ArgumentParser:
     )
     parseur.add_argument(
         "--correspondance",
-        default="raw_data/correspondance_acteurs_an.json",
+        # L'emplacement de la table se déclare à UN endroit
+        # (`correspondance_acteurs_an.CHEMIN_PAR_DEFAUT`) : un littéral recopié
+        # ici échappait au réglage des tests, qui servent une table figée (#791).
+        default=str(correspondance_acteurs_an.CHEMIN_PAR_DEFAUT),
         help="Table slug ↔ acteur AN, lue pour savoir quels slugs sont déjà pris.",
     )
     return parseur

@@ -81,6 +81,15 @@ jobs:
           # sur le push vers `main` (run 32773016491). Un fichier de premier
           # niveau compte autant qu'un répertoire.
           #
+          # `raw_data/candidats.json` (#791) : quatre tests de
+          # `test_fetch_candidats_declares_753.py` et un de
+          # `test_perimetre_candidats_760.py` portent sur la validité de ce
+          # fichier committé (pas de doublon de nom ni de slug, tout statut
+          # publié connu, aucune famille inventée). Hors liste, ils se
+          # `pytest.skip`aient : leur garantie ne tenait qu'en local, sur ce
+          # qu'un run avait laissé. C'est le canari que l'absence de
+          # `paths-ignore` ci-dessus veut précisément voir chanter — un commit
+          # de données du bot passe désormais sous ces assertions. 20 Kio.
           # `AGENTS.md`, `README.md`, `ROADMAP.md`, `docs/` : lus par
           # `tests/test_index_decisions.py`, qui vérifie que toute décision citée
           # dans le dépôt existe bien sous `docs/decisions/` et que l'index les
@@ -94,6 +103,7 @@ jobs:
             README.md
             ROADMAP.md
             docs
+            raw_data/candidats.json
             raw_data/gouvernements_reels.json
             raw_data/groupes_reels.json
             requirements.txt

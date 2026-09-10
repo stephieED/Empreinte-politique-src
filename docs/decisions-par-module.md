@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 273 décisions
+gouverne sans avoir à fouiller les 274 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -37,12 +37,11 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 
 | Module | Décisions qui le gouvernent |
 | --- | ---: |
-| `src/build_correspondance_acteurs_an.py` | 4 |
 | `src/parse_syceron.py` | 4 |
+| `src/perimetre_candidats.py` | 4 |
 | `src/audit_pipeline.py` | 3 |
 | `src/budget_collecte.py` | 3 |
 | `src/parltrack_dumps.py` | 3 |
-| `src/perimetre_candidats.py` | 3 |
 | `src/audit_gouvernement_dataset.py` | 2 |
 | `src/gouvernement_profile.py` | 2 |
 | `src/purge_mandats_dupliques.py` | 2 |
@@ -246,11 +245,12 @@ Le mentionnent sans le gouverner : [`mise-en-oeuvre-des-grands-chiffres-328`](de
 
 ## `src/build_correspondance_acteurs_an.py`
 
-4 décision(s) le gouvernent ; le module en cite 0.
+5 décision(s) le gouvernent ; le module en cite 4.
 
 | Décision | Nomme |
 | --- | --- |
 | [Une entrée dérivée gèle un slug fabriqué, elle ne prouve plus rien (#715) (2026-09-02)](decisions/entree-derivee-correspondance-715.md) | `_slugs_publies` |
+| [Un garde-fou posé sur `builtins.open` ne voit pas `pathlib` (#791) (2026-09-10)](decisions/lectures-du-depot-dans-les-tests-791.md) | `resolutions_candidats` |
 | [La liste des candidats se collecte, et un déclaré entre sans slug (#753)](decisions/liste-candidats-declares-753.md) | `slugs_fabriques` |
 | [La seconde déclaration lisait un champ que le corpus ne porte pas (#788)](decisions/nom-des-resolutions-vient-de-lappelant-788.md) | `resolutions_candidats` |
 | [Un membre de roster sans correspondance relue reçoit un slug, et la collision reste un refus (#708) (2026-09-02)](decisions/slug-fabrique-membre-de-roster-708.md) | `_slugs_publies` |
@@ -279,7 +279,7 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 
 ## `src/candidate_profile.py`
 
-82 décision(s) le gouvernent ; le module en cite 13.
+83 décision(s) le gouvernent ; le module en cite 13.
 
 | Décision | Nomme |
 | --- | --- |
@@ -331,6 +331,7 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 | [`_build_acteur_identite_index` : couvrir les élu⋅e⋅s dont le mandat est terminé via `AMO30`, pas en combinant `AMO20` par législature (#354) (2026-08-16)](decisions/identite-acteurs-amo30.md) | `AN_ACTEURS_HISTORIQUE_ZIP_URL`, `_build_acteur_identite_index`, `_build_acteur_positions_hemicycle_index`, `_build_organe_index`, `_ensure_acteurs_historique_zip_downloaded`, `_select_mandat_assemblee_courant`, `build_profile` |
 | [Index amendements shardé par acteur (#392) (2026-08-17)](decisions/index-amendements-sharde-par-acteur.md) | `_download_and_build_amendement_index`, `_expand_aggregated_amendements_index`, `fetch_amendements_officiels` |
 | [`extract-senat` ne collecte plus d'interventions : la collecte n'en retenait aucune, par construction (#501) (2026-08-20)](decisions/interventions-senat-501.md) | `build_profile`, `fetch_questions_officielles` |
+| [Un garde-fou posé sur `builtins.open` ne voit pas `pathlib` (#791) (2026-09-10)](decisions/lectures-du-depot-dans-les-tests-791.md) | `AMENDEMENTS_CACHE_DIR` |
 | [Le libellé d'organe du chef du gouvernement s'accorde en genre, la qualité jamais (#658) (2026-08-31)](decisions/libelle-chef-du-gouvernement-au-feminin-658.md) | `_build_acteur_mandats_index` |
 | [Un profil publie tous ses mandats de député, et le compteur devient un témoin de couverture (#640) (2026-08-31)](decisions/mandats-electifs-liste-complete-640.md) | `_select_mandat_assemblee_courant`, `_select_mandat_par_type_courant` |
 | [Le référentiel type l'organe, il n'y a rien à interpréter (#730) (2026-09-04)](decisions/mandats-gouvernementaux-en-commission-730.md) | `_TYPE_ORGANE_TO_CATEGORIE` |
@@ -399,13 +400,14 @@ Le mentionnent sans le gouverner : [`rattachement-scrutin-dossier-758`](decision
 
 ## `src/correspondance_acteurs_an.py`
 
-3 décision(s) le gouvernent ; le module en cite 2.
+4 décision(s) le gouvernent ; le module en cite 2.
 
 | Décision | Nomme |
 | --- | --- |
 | [La bascule : le roster des groupes AN vient d'AMO30 (#527, lot 1b de l'épic « une seule source AN ») (2026-08-26)](decisions/bascule-roster-an-amo30-527.md) | `CorrespondanceInvalide` |
 | [La correspondance slug ↔ acteur AN devient un artefact committé (#525, lot 2 de l'épic « une seule source AN ») (2026-08-26)](decisions/correspondance-acteurs-an-525.md) | `est_declare_hors_an`, `resoudre_acteur_ref` |
 | [Une entrée dérivée gèle un slug fabriqué, elle ne prouve plus rien (#715) (2026-09-02)](decisions/entree-derivee-correspondance-715.md) | `ECARTS_CONNUS` |
+| [Un garde-fou posé sur `builtins.open` ne voit pas `pathlib` (#791) (2026-09-10)](decisions/lectures-du-depot-dans-les-tests-791.md) | `CHEMIN_PAR_DEFAUT`, `charger_correspondance` |
 
 Le mentionnent sans le gouverner : [`civilite-et-pcs-insee-659`](decisions/civilite-et-pcs-insee-659.md), [`identite-profils-539`](decisions/identite-profils-539.md), [`larem-xv-apres-691-779`](decisions/larem-xv-apres-691-779.md), [`position-politique-groupes-686`](decisions/position-politique-groupes-686.md), [`preuve-de-borne-dite-une-fois-328`](decisions/preuve-de-borne-dite-une-fois-328.md), [`roster-an-derive-amo30-526`](decisions/roster-an-derive-amo30-526.md), [`slug-fabrique-membre-de-roster-708`](decisions/slug-fabrique-membre-de-roster-708.md), [`sparse-checkout-extract-an-674`](decisions/sparse-checkout-extract-an-674.md), [`tranches-derivees-lecteur-691`](decisions/tranches-derivees-lecteur-691.md).
 
@@ -458,7 +460,7 @@ Le mentionnent sans le gouverner : [`budget-collecte-interventions`](decisions/b
 | --- | --- |
 | [Le script pose `decline` quand la source nomme la cause (#763)](decisions/sortie-nommee-par-la-source-763.md) | `note_de_sortie` |
 
-Le mentionnent sans le gouverner : [`liste-candidats-declares-753`](decisions/liste-candidats-declares-753.md).
+Le mentionnent sans le gouverner : [`lectures-du-depot-dans-les-tests-791`](decisions/lectures-du-depot-dans-les-tests-791.md), [`liste-candidats-declares-753`](decisions/liste-candidats-declares-753.md).
 
 ## `src/garde_fou_blobs.py`
 
@@ -472,7 +474,7 @@ Le mentionnent sans le gouverner : [`collecte-interventions-reduite-au-theme-657
 
 ## `src/generate_all_profiles.py`
 
-24 décision(s) le gouvernent ; le module en cite 3.
+25 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
@@ -489,6 +491,7 @@ Le mentionnent sans le gouverner : [`collecte-interventions-reduite-au-theme-657
 | [Borner l'historique de données : ce que ça rend vraiment, et quand (#434) (2026-08-20)](decisions/fenetre-historique-donnees.md) | `_select_existants` |
 | [Comment naît l'identité d'un profil, et où vont les identifiants de source (#539) (2026-08-28)](decisions/identite-profils-539.md) | `WARNING_PREFIX_CHAMBRE_EN_ECHEC`, `_effective_slug`, `_select_existants`, `process_candidat` |
 | [`extract-senat` ne collecte plus d'interventions : la collecte n'en retenait aucune, par construction (#501) (2026-08-20)](decisions/interventions-senat-501.md) | `_manifest_append`, `build_profile_any_chambre` |
+| [Un garde-fou posé sur `builtins.open` ne voit pas `pathlib` (#791) (2026-09-10)](decisions/lectures-du-depot-dans-les-tests-791.md) | `_MEMBRES_GROUPES_SUSPENDUS`, `vider_index_groupes_suspendus` |
 | [`--limit` + `--skip-existing` sur `extract-roster-groupes` : sélection progressive + rafraîchissement (2026-08-12)](decisions/limit-skip-existing-roster-groupes.md) | `_select_candidats`, `_select_candidats_couverture`, `process_candidat` |
 | [`extract-an` en matrix strategy par candidat, pour isoler la perte en cas de shutdown signal runner (#344) (2026-08-16)](decisions/matrix-extract-an-par-candidat.md) | `process_candidat` |
 | [La seconde déclaration lisait un champ que le corpus ne porte pas (#788)](decisions/nom-des-resolutions-vient-de-lappelant-788.md) | `_normaliser_en_pivot`, `process_candidat` |
@@ -837,11 +840,12 @@ Le mentionnent sans le gouverner : [`freshness-timestamps-groupes-gouvernements-
 
 ## `src/perimetre_candidats.py`
 
-3 décision(s) le gouvernent ; le module en cite 0.
+4 décision(s) le gouvernent ; le module en cite 0.
 
 | Décision | Nomme |
 | --- | --- |
 | [Une candidature déclinée n'a plus de fiche dans l'interface (#761)](decisions/fiches-masquees-candidatures-declinees-761.md) | `STATUTS_GELES` |
+| [Un garde-fou posé sur `builtins.open` ne voit pas `pathlib` (#791) (2026-09-10)](decisions/lectures-du-depot-dans-les-tests-791.md) | `RESOLUTIONS_PAR_DEFAUT`, `_MEMO_RESOLUTIONS`, `declare_hors_an_par_identifiant` |
 | [La seconde déclaration lisait un champ que le corpus ne porte pas (#788)](decisions/nom-des-resolutions-vient-de-lappelant-788.md) | `declare_hors_an_par_identifiant` |
 | [Une candidature déclinée sort du périmètre de collecte, sa fiche reste publiée (#760)](decisions/perimetre-collecte-candidatures-declinees-760.md) | `STATUTS_GELES` |
 
