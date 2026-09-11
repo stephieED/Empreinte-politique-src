@@ -43,13 +43,13 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 | `src/budget_collecte.py` | 3 |
 | `src/parltrack_dumps.py` | 3 |
 | `src/audit_gouvernement_dataset.py` | 2 |
+| `src/fetch_candidats_declares.py` | 2 |
 | `src/gouvernement_profile.py` | 2 |
 | `src/purge_mandats_dupliques.py` | 2 |
 | `src/avertissements.py` | 1 |
 | `src/build_amendements_index.py` | 1 |
 | `src/candidate_profile_ue.py` | 1 |
 | `src/europarl_documents.py` | 1 |
-| `src/fetch_candidats_declares.py` | 1 |
 | `src/generate_lignee_profiles.py` | 1 |
 | `src/identifiants_wikidata.py` | 1 |
 | `src/json_io.py` | 1 |
@@ -474,10 +474,11 @@ Le mentionnent sans le gouverner : [`budget-collecte-interventions`](decisions/b
 
 ## `src/fetch_candidats_declares.py`
 
-1 décision(s) le gouvernent ; le module en cite 0.
+2 décision(s) le gouvernent ; le module en cite 0.
 
 | Décision | Nomme |
 | --- | --- |
+| [Les mandats antérieurs à la couverture de l'Assemblée entrent par une table relue (#860)](decisions/mandats-anterieurs-couverture-860.md) | `RAPPEL_MANDATS_ANTERIEURS`, `nouvelle_entree` |
 | [Le script pose `decline` quand la source nomme la cause (#763)](decisions/sortie-nommee-par-la-source-763.md) | `note_de_sortie` |
 
 Le mentionnent sans le gouverner : [`lectures-du-depot-dans-les-tests-791`](decisions/lectures-du-depot-dans-les-tests-791.md), [`liste-candidats-declares-753`](decisions/liste-candidats-declares-753.md).

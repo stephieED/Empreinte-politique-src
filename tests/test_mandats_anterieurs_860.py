@@ -157,3 +157,18 @@ def test_le_champ_est_repose_jamais_fusionne():
 
 def test_validate_profil_refuse_un_null_sans_motif():
     assert valider_mandats_anterieurs({"mandats_anterieurs": None})
+
+
+# ---------------------------------------------------------------------------
+# Le rappel là où passe qui relit un candidat neuf
+# ---------------------------------------------------------------------------
+
+def test_une_entree_neuve_rappelle_la_releve_des_mandats_anterieurs():
+    """La table ne se met pas à jour seule : l'entrée neuve le dit, avec ou sans slug."""
+    import fetch_candidats_declares as fcd
+
+    candidat = fcd.CandidatDeclare(nom="Un Nouveau", parti="Un parti", url=None)
+    for slug in ("un-nouveau", None):
+        notes = fcd.nouvelle_entree(candidat, "2026-09-11", slug)["notes"]
+        assert "raw_data/mandats_anterieurs.json" in notes, slug
+        assert "#860" in notes, slug

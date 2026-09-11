@@ -42,6 +42,26 @@ C'est une lecture indirecte, déclarée comme telle.
   **avant** la comparaison de #343, pour qu'une fiche inchangée garde ses
   horodatages ; `validate_profil` le tient s'il est présent.
 
+## La table ne se met pas à jour seule — le rappel est posé là où l'on passe
+
+Un candidat ajouté par `rafraichir-candidats` paraît `non_relu` sur sa fiche : ce
+n'est pas silencieux, mais rien n'invitait à le relire. Question de la
+propriétaire, 11/09/2026. Le rappel est donc écrit **aux deux endroits par où passe
+forcément qui touche à la liste** :
+
+- la **note de l'entrée neuve** dans `raw_data/candidats.json`, que
+  `fetch_candidats_declares.nouvelle_entree` compose déjà (« À relire — slug,
+  famille politique… ») et qui gagne `RAPPEL_MANDATS_ANTERIEURS`, avec ou sans slug ;
+- la **règle de domaine** `docs/regles/roster-et-sources.md`, chargée quand on
+  touche aux candidats.
+
+Les deux entrées déjà présentes sans relecture (Mlekuz, Mikolajczak) ne sont pas
+réécrites : une entrée existante ne se modifie jamais (#753) ; #847 les suit.
+
+**Écarté** : un signal non bloquant du portail listant les candidats non relus à
+chaque run — 27 lignes identiques d'un run à l'autre, un avertissement qu'on
+apprend à ne plus lire.
+
 ## Écarté
 
 | Option | Pourquoi |

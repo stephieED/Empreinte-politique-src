@@ -717,6 +717,18 @@ def attribuer_slugs(
     return attribues, refus
 
 
+
+#: Rappel écrit sur toute entrée neuve (#860) : la table des mandats antérieurs
+#: ne se met PAS à jour seule. Un candidat ajouté paraît `non_relu` sur sa fiche
+#: jusqu'à ce qu'une main relise sa carrière d'avant 2002 sur les sources
+#: primaires. La note est là où passe forcément qui relit l'entrée.
+RAPPEL_MANDATS_ANTERIEURS = (
+    "Mandats nationaux antérieurs au 19/06/2002 : à relire sur Sycomore et au "
+    "Journal officiel, puis à inscrire dans raw_data/mandats_anterieurs.json — "
+    "même une liste vide, qui veut dire « aucun » ; la fiche publie « non relu » "
+    "jusque-là (#860)."
+)
+
 def nouvelle_entree(
     candidat: CandidatDeclare, le_jour: str, slug: Optional[str] = None
 ) -> dict[str, Any]:
@@ -734,14 +746,16 @@ def nouvelle_entree(
             f"Ajouté le {le_jour} par src/fetch_candidats_declares.py ({origine}). "
             "Slug fabriqué depuis le nom ; l'acteur AN est résolu par identifiant "
             "externe et corroboré hors ligne (#757). Famille politique, date et "
-            "source primaire de la déclaration restent à compléter."
+            "source primaire de la déclaration restent à compléter. "
+            + RAPPEL_MANDATS_ANTERIEURS
         )
     else:
         notes = (
             f"Ajouté le {le_jour} par src/fetch_candidats_declares.py ({origine}). "
             "Sans slug : la chaîne d'identifiants n'a rien pu corroborer, donc ce "
             "candidat n'a pas de shard extract-an et n'est pas publié. À relire — "
-            "slug, famille politique, date et source primaire (#753, #757)."
+            "slug, famille politique, date et source primaire (#753, #757). "
+            + RAPPEL_MANDATS_ANTERIEURS
         )
     return {
         "nom": candidat.nom,
