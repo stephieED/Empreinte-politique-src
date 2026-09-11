@@ -128,6 +128,10 @@ SITES_PYTHON: dict[tuple[str, str], str] = {
     # -- Les groupes --------------------------------------------------------
     ("schema_groupe.py", "make_empty_profil_groupe"): GROUPE,
     ("schema_groupe.py", "validate_profil_groupe"): GROUPE,
+    # #836 — la fiche de LIGNÉE porte la chambre de ses maillons, pour la même
+    # raison qu'une fiche de groupe : c'est la chambre de l'organe, jamais le
+    # scalaire d'un profil que #494 retire.
+    ("schema_lignee.py", "make_empty_profil_lignee"): GROUPE,
     ("group_profile.py", "_mandats_electifs"): MANDAT,
     ("group_profile.py", "generate_groupe_profile_from_roster"): GROUPE,
     ("group_profile.py", "main"): GROUPE,
