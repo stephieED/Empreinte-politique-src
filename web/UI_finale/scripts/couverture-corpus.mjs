@@ -102,6 +102,21 @@ export const estParoleMinisterielle = (i) =>
  * l'Assemblée, et les 11 013 votes et 7 303 amendements n'étaient nulle part.
  * Le Sénat garde sa ligne : le mandat publié, l'activité hors périmètre (#528). */
 const PE = 'parlement_europeen';
+
+/* LA BORNE BASSE DE LA SOURCE EUROPÉENNE, mesurée sur les dumps ParlTrack
+ * (parltrack.org/dumps, ODbL) le 11/09/2026 — la seule chose ici qui ne vient
+ * pas de `pivot_data/`, et pour une raison : aucun profil ne la porte, le
+ * pipeline ne déclarant que la dernière parution (#683). Une borne basse
+ * d'archive ne vieillit pas comme une borne de fraîcheur (#484) : le premier
+ * scrutin de 2004 restera le premier.
+ *   - votes : 1er scrutin nominatif du dump `ep_votes` (44 648 scrutins,
+ *     15/09/2004 → 26/03/2026) ;
+ *   - amendements : 1er amendement daté du dump `ep_amendments` (commissions),
+ *     01/02/2008 — le dump des amendements de séance commence en 2019.
+ * Interventions et textes n'en ont pas : leurs dates sont celles de la
+ * republication ParlTrack du 22/11/2016 pour tout ce qui précède (#858), pas celles
+ * des séances. */
+const BORNES_BASSES_PE = { votes: '2004-09-15', amendements: '2008-02-01' };
 const HORS_ASSEMBLEE = new Set(['Senat', 'PE']);
 export const estMandatEuropeen = (m) => m?.chambre === 'PE' || m?.categorie_source === 'europarl';
 export const estMandatAssemblee = (m) =>
@@ -422,10 +437,11 @@ export function construireCouverture({ repoRoot, slugsPublies = null }) {
      * rendu. Un champ commun que la source ne remplit pas l'est, à zéro : « 0
      * sur 383 » dit que le sort d'un texte européen n'est pas publié.
      *
-     * AUCUNE BORNE DE SOURCE n'est dessinée : les `portee` européennes des
-     * profils vont de la première à la dernière donnée de chaque personne, ce
-     * ne sont pas des bornes de publication. Les faire passer pour telles
-     * dessinait sur l'Assemblée une hachure qui s'arrêtait en 2004. */
+     * LES `portee` EUROPÉENNES NE SONT PAS DES BORNES : elles vont de la
+     * première à la dernière donnée de chaque personne. Les faire passer pour
+     * telles dessinait sur l'Assemblée une hachure qui s'arrêtait en 2004. La
+     * borne basse vient des dumps (`BORNES_BASSES_PE`), la haute de la
+     * dernière parution que le pipeline déclare (`finsEuropeennes`). */
     {
       cle: 'PE',
       titre: 'Parlement européen',
@@ -450,7 +466,7 @@ export function construireCouverture({ repoRoot, slugsPublies = null }) {
         {
           cle: 'votes',
           titre: 'Votes et scrutins',
-          borne: null,
+          borne: BORNES_BASSES_PE.votes,
           finSource: finsPE.votes ?? null,
           couches: [couche('cand', CAND, votesPE, dVote)],
           champs: [
@@ -468,7 +484,7 @@ export function construireCouverture({ repoRoot, slugsPublies = null }) {
         {
           cle: 'amendements',
           titre: 'Amendements',
-          borne: null,
+          borne: BORNES_BASSES_PE.amendements,
           finSource: finsPE.amendements ?? null,
           couches: [couche('cand', CAND, amendementsPE, dAmdt)],
           champs: [

@@ -235,7 +235,7 @@ def test_le_parlement_europeen_a_ses_listes_et_ne_deplace_pas_la_borne_de_l_asse
         votesAN: total('AN', 'votes'), votesPE: total('PE', 'votes'),
         mandatsAN: total('AN', 'mandats'), mandatsPE: total('PE', 'mandats'),
         parolesAN: total('AN', 'interventions'), parolesPE: total('PE', 'interventions'),
-        bornePE: c.hierarchie.find((i) => i.cle === 'PE').pistes.every((p) => p.borne === null),
+        bornesPE: Object.fromEntries(c.hierarchie.find((i) => i.cle === 'PE').pistes.map((p) => [p.cle, p.borne])),
         finPE: c.hierarchie.find((i) => i.cle === 'PE').pistes.find((p) => p.cle === 'votes').finSource,
       }}));
     """
@@ -247,7 +247,8 @@ def test_le_parlement_europeen_a_ses_listes_et_ne_deplace_pas_la_borne_de_l_asse
         "votesAN": 1, "votesPE": 1,
         "mandatsAN": 1, "mandatsPE": 1,
         "parolesAN": 0, "parolesPE": 1,
-        "bornePE": True,
+        "bornesPE": {"mandats": None, "votes": "2004-09-15", "amendements": "2008-02-01",
+                     "textes_portes": None, "interventions": None},
         "finPE": "2017-05-17",
     }
 

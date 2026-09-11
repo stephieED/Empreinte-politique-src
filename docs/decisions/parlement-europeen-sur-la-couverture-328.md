@@ -31,15 +31,25 @@ vont de la première à la dernière donnée de chaque personne : ce sont des fa
 sur la personne, pas sur ce que la source publie. `bornesPubliees` les écarte ;
 une piste européenne déclare `borne: null` et la frise n'y hachure rien.
 
+**Avant la borne basse de la source, la hachure « non publié ».** Aucun profil
+ne la porte : elle est mesurée sur les dumps ParlTrack le 11/09/2026 et écrite,
+avec sa mesure, dans `couverture-corpus.mjs` (`BORNES_BASSES_PE`) — votes au
+**15/09/2004**, premier des 44 648 scrutins du dump `ep_votes` ; amendements au
+**01/02/2008**, premier du dump des commissions. Toutes deux sont postérieures
+au début de la frise (2000). Une borne basse d'archive ne vieillit pas comme une
+borne de fraîcheur (#484). Interventions et textes n'en ont pas : dans le dump
+`ep_mep_activities`, **346 073 des 411 098** activités dont la référence porte
+une date de séance sont datées du **22/11/2016**, jour où ParlTrack les a
+republiées (`date-type: datePublished`) ; le pipeline a repris cette date (#858), et
+**4 344 interventions et 314 textes** européens de Florian Philippot,
+Jean-Luc Mélenchon et Marine Le Pen sont datés de ce jour-là.
+
 **Après la dernière parution, la hachure « non publié ».** Le pipeline déclare,
 liste par liste et fiche par fiche, la date au-delà de laquelle la source ne
 publie plus rien dans ce corpus (`bornes_europeennes`, #683) ; pour le corpus,
 c'est la plus tardive — votes 11/03/2026, amendements 08/12/2025, textes
-14/01/2026, interventions 14/07/2026. **Avant la première donnée, rien** : sur
-cinq des sept fiches de candidats déclarés qui ont siégé au Parlement européen (Jordan Bardella, masqué, compris), les interventions
-commencent des années après le mandat — le 22/11/2016 pour Marine Le Pen,
-élue en 2004 —, et le dépôt ne dit pas si la source ne publie pas ou si la
-collecte ne l'a pas demandé. Hachure ou jaune, l'un des deux serait faux.
+14/01/2026, interventions 14/07/2026. Le « début tardif » des interventions européennes, qui semblait être un manque
+de source ou de collecte, est cette date de republication.
 
 **Le tableau « Ce qui manque » ne compte que les entrées de l'Assemblée** : il
 est rapporté aux fiches qui y ont siégé, et une fiche dont les seuls votes sont
