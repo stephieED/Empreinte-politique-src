@@ -280,11 +280,20 @@ def test_la_teinte_d_un_banc_est_declaree_une_seule_fois(feuille):
     seule fois, sur `.cp-main`, et tous leurs lecteurs les lisent (#328). Le
     test vérifie donc l'unicité, plus la coïncidence."""
     fiche = _corps(feuille, ".cp-main {", "\n}")
-    assert "--parl: #3f5166" in fiche and "--gouv: #8a6b4c" in fiche, (
-        "les deux teintes sont déclarées sur la fiche"
-    )
-    assert feuille.count("#3f5166") == 1 and feuille.count("#8a6b4c") == 1, (
-        "et une seule fois : une seconde occurrence est une copie qui divergera"
+    # Quatre institutions, trois teintes et une encre d'absence — le Sénat n'a
+    # pas de teinte propre, et la sarcelle #169E9E lui est réservée pour le jour
+    # où sa collecte sera rebranchée (docs/decisions/teintes-des-institutions-328.md).
+    teintes = {"--parl": "#803060", "--gouv": "#9e6f29", "--pe": "#003399", "--neutre": "#9a958d"}
+    for jeton, valeur in teintes.items():
+        assert f"{jeton}: {valeur}" in fiche, f"`{jeton}` est déclaré sur la fiche"
+        assert feuille.count(valeur) == 1, (
+            f"`{valeur}` une seule fois : une seconde occurrence est une copie qui divergera"
+        )
+    # Le Sénat ne porte pas une quatrième teinte : il POINTE sur l'encre des
+    # absences. Une valeur recopiée là ferait diverger les deux le jour où l'une
+    # bouge, et laisserait croire qu'il a une couleur à lui.
+    assert "--senat: var(--neutre)" in fiche, (
+        "le Sénat lit l'encre des absences, il n'a pas de teinte propre"
     )
     for regle, jeton in [
         (".cp-fs--parlement {", "var(--parl)"),

@@ -46,40 +46,37 @@ Trois formes, verified dans `src/components/Brand.jsx`/`Brand.css` et cotées da
 
 | Token | Valeur | Usage |
 |---|---|---|
-| Encre `--ink`/`--dark` | `#14151A` | Texte, bannières, fonds sombres — base de toute la hiérarchie |
-| Blanc cassé `--bg` | `#F7F6F4` | Fond de page. Jamais un blanc pur — toujours légèrement chaud |
-| Jaune signal `--accent` | `#DFFF00` | Accent unique : sélection active, badges, focus. **Jamais en texte sur fond clair** |
-| Gris sourd `--muted` | `#8B8794` | Texte secondaire, légendes, métadonnées |
-| Carte `--card` | `#FFFFFF` | Surface des cartes, contraste doux avec le fond |
-| Bordure | `#F0EEEB` · `#E7E4DF` | Séparateurs, contours discrets — deux valeurs, jamais du gris neutre générique |
-
-### Teintes d'origine et d'institution — *vérifiées*, `CandidateProfile.css` et `FriseCouverture.css`
-
-| Token | Valeur | Usage |
-|---|---|---|
-| Parlementaire `--parl` / `--pop-cand` | `#3F5166` | L'Assemblée sur la frise de la fiche ; les **fiches de candidats** sur celle de `/couverture` |
-| Gouvernemental `--gouv` / `--pop-gouv` | `#8A6B4C` | Le gouvernement sur la fiche ; les **fiches de gouvernement** sur `/couverture` |
-| **Européen `--pe`** | **`#514F96`** | **Le Parlement européen sur la frise et les colonnes de la fiche (#328)** |
-| **Sénatorial `--senat`** | **`#8F4A6D`** | **Le Sénat, idem — mandat publié, activité non collectée (#528)** |
-| Groupe `--pop-grp` | `#6F5B7A` | Les **fiches de groupe** — la troisième population, ajoutée par `/couverture` (#328) |
+| Européen `--pe` | `#003399` | Le Parlement européen — **Pantone Reflex Blue de l'emblème**, la seule couleur officielle des quatre qui soit réutilisable |
+| Gouvernemental `--gouv` | `#9E6F29` | Le gouvernement sur la fiche |
+| Parlementaire `--parl` | `#803060` | L'Assemblée sur la fiche |
+| Sénatorial `--senat` | `#9A958D` | **Pas de teinte propre** : l'encre des absences. La sarcelle `#169E9E` lui est **réservée** pour le jour où sa collecte sera rebranchée (11/09/2026) |
+| Populations de `/couverture` | `--pop-cand` `#3F5166` · `--pop-gouv` `#8A6B4C` · `--pop-grp` `#6F5B7A` | Les trois **populations de fiches**, un autre axe que les institutions — elles valaient celles de la fiche, elles ne les valent plus |
 
 Chacune porte sa rampe de quatre valeurs — `--x`, `--x-wash`, `--x-pale`, `--x-line` —, en clair
 seulement : l'UI n'a **pas** de mode nuit (`index.css` déclare `color-scheme: light`), et le
 fragment qui en restait sur `.cp-gc` a été retiré
 ([`bloc-sombre-mort-retire-328`](../../docs/decisions/bloc-sombre-mort-retire-328.md)).
 
-**« Trois teintes et pas quatre » a tenu jusqu'au 10/09/2026, et ce n'est plus la règle.** Elle
-disait vrai tant que la fiche ne connaissait que deux bancs. Le corpus en porte quatre — une
-carrière peut traverser l'Assemblée, le Sénat, le Parlement européen et le gouvernement —, et
-ranger un mandat européen sous la teinte de l'Assemblée n'était pas une économie de couleur,
-c'était un fait faux : `raphael-glucksmann`, qui n'a jamais siégé à l'Assemblée, y voyait ses
-4 mandats en commission européens.
+**« Trois teintes et pas quatre » tient toujours, et ce n'est plus une question de goût — c'est
+une mesure.** Une fois retirées les familles qui portent déjà un sens (vert « pour », rouge
+« contre », jaune d'emphase) et le bleu pris par l'Union, le cercle ne loge plus trois autres
+institutions **sans parenté** : il ne reste que deux arcs, le chaud et le magenta. Zéro
+combinaison sur les 32 teintes compatibles mesurées. La quatrième institution sort donc du
+système de couleurs, et c'est le Sénat, dont aucune activité n'est collectée (#528).
 
-Ce qui reste de la règle, et qui la remplace : **une teinte de plus se justifie par une mesure,
-jamais par un besoin de distinguer.** Les deux ajoutées portent 6,7:1 et 5,8:1 de contraste sur
-le fond, et **ΔE ≥ 33** de chacune des autres institutions **et** des couleurs de vote — sans
-quoi une institution se lirait comme une position. Elles distinguent des **origines**, qui n'ont
-toujours pas d'ordre : aucune rampe ne les met sur une échelle (§2 règle 1).
+**Une teinte n'est pas « distincte » parce que son ΔE passe.** Deux voisines de 42° se lisent
+comme une famille, donc comme une hiérarchie entre deux institutions de même rang. Le critère est
+double : l'écart mesuré **et** l'écart de famille — 72° minimum entre les trois retenues.
+
+**La couleur se calcule, elle ne s'estime pas.** `scripts/validate_palette.js` de la compétence
+`dataviz` rend cinq verdicts en une commande : bande de clarté, plancher de chroma, séparation
+sous daltonisme (ΔE ≥ 8 en OKLab), plancher en vision normale (≥ 15), contraste. La palette
+retenue donne 10,7 et 21,0 ; le seul échec porte sur `#003399`, plus sombre que la bande — c'est
+la couleur officielle. **Le validateur ne compare pas les palettes entre elles** : vérifier qu'une
+institution ne se lit pas comme une position de vote reste manuel, et cette vérification a écarté
+une famille qu'il acceptait (un gouvernement en olive à ΔE 1,8 du rouge « contre » sous
+protanopie).
+→ [`teintes-des-institutions-328`](../../docs/decisions/teintes-des-institutions-328.md)
 
 ### Couleurs de vote & d'issue — *vérifiées*, `src/utils/lecture.js` (`VOTE_STYLE` / `OUTCOME_COLOR`)
 

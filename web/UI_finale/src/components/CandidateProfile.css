@@ -25,28 +25,55 @@
  * qu'on lit, et ils sont désormais lus par la frise, par les colonnes
  * appariées et par les blocs de « Les fonctions exercées ».
  */
+/* LES QUATRE INSTITUTIONS, ET POURQUOI TROIS SEULEMENT ONT UNE TEINTE.
+ *
+ * Une seule des quatre a une couleur officielle réutilisable : l'Union
+ * européenne : le Reflex Blue de son emblème, porté par `--pe`. Le bleu France
+ * du DSFR est réservé par la loi aux services `.gouv.fr` ; le rouge du Sénat
+ * est celui du vote « contre ».
+ *
+ * Une fois ce bleu pris, le cercle des teintes ne loge plus trois institutions
+ * SANS PARENTÉ : retirées les familles qui portent déjà un sens — vert « pour »,
+ * rouge « contre », jaune d'emphase — il ne reste que deux arcs, le chaud et le
+ * magenta. Zéro combinaison sur les 32 teintes compatibles mesurées. Deux
+ * teintes voisines ne sont pas « distinctes » parce que leur ΔE passe : elles se
+ * lisent comme une famille, donc comme une hiérarchie entre deux institutions de
+ * même rang.
+ *
+ * Le Sénat sort donc du système de couleurs et prend l'encre des absences — sur
+ * les deux fiches concernées il n'a ni vote, ni amendement, ni intervention, la
+ * collecte étant hors périmètre (#528), et sa colonne est repliée d'entrée.
+ * **Le jour où le Sénat est rebranché, il prend la sarcelle `#169E9E`** :
+ * arbitrage rendu le 11/09/2026, teinte réservée d'avance pour qu'elle ne soit
+ * pas prise par autre chose.
+ *
+ * Mesuré au validateur de la compétence `dataviz` (OKLab) : ΔE 10,7 sous
+ * protanopie, 21,0 en vision normale, 72° d'écart minimum entre les trois. Le
+ * seul contrôle en échec porte sur le bleu de l'Union lui-même, plus sombre que
+ * la bande de clarté — c'est la couleur officielle, elle ne se négocie pas.
+ * → docs/decisions/teintes-des-institutions-328.md
+ */
 .cp-main {
-  --parl: #3f5166;
-  --parl-wash: #e9eef6;
-  --parl-line: #c6d4e8;
-  --parl-pale: #dce5f2;
-  --gouv: #8a6b4c;
-  --gouv-wash: #f6f0e4;
-  --gouv-line: #e3d2ab;
-  --gouv-pale: #efe4cc;
-  /* Deux teintes de plus, et le DESIGN_SYSTEM disait « trois et pas quatre ».
-     Ce qui a changé : le corpus a ajouté deux institutions, pas deux nuances.
-     Elles sont choisies par mesure, pas au goût — contraste 6,7:1 et 5,8:1 sur
-     le fond, et ΔE ≥ 33 de chacune des deux autres ET des couleurs de vote,
-     pour qu'une institution ne se lise jamais comme une position. */
-  --pe: #514f96;
-  --pe-wash: #eeeef5;
-  --pe-line: #d4d3e4;
-  --pe-pale: #e5e5ef;
-  --senat: #8f4a6d;
-  --senat-wash: #f4edf1;
-  --senat-line: #e3d2db;
-  --senat-pale: #eee4ea;
+  --parl: #803060;
+  --parl-wash: #f2eaef;
+  --parl-line: #dfcbd7;
+  --parl-pale: #ece0e7;
+  --gouv: #9e6f29;
+  --gouv-wash: #f5f1ea;
+  --gouv-line: #e7dbca;
+  --gouv-pale: #f0e9df;
+  --pe: #003399;
+  --pe-wash: #e6ebf5;
+  --pe-line: #bfcce6;
+  --pe-pale: #d9e0f0;
+  /* L'ENCRE DES ABSENCES, déclarée une seule fois et lue par ses deux
+     consommateurs : les cellules que la collecte ne remplit pas, et le Sénat,
+     qui n'a pas de teinte propre. */
+  --neutre: #9a958d;
+  --senat: var(--neutre);
+  --senat-wash: #f5f4f4;
+  --senat-line: #e6e4e2;
+  --senat-pale: #f0efee;
   /* La barre de sortie d'une porte de la cascade (#328). Hors rampe d'encre :
      elle ne marque aucune étape ATTEINTE, elle constate qu'aucun acte au-delà
      n'est enregistré à la date du corpus. Un gris, donc, et pas un cran. */
@@ -128,7 +155,6 @@
  * part ici, ni filet ni décor.
  */
 .cp-gc {
-  --neutre: #9a958d;
   --neutre-wash: #edebe7;
   --rail: #efede9;
   --gc-ombre: rgba(20, 21, 26, 0.13);
