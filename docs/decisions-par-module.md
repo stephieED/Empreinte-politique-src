@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 285 décisions
+gouverne sans avoir à fouiller les 286 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -897,6 +897,8 @@ Le mentionnent sans le gouverner : [`freshness-timestamps-groupes-gouvernements-
 | Décision | Nomme |
 | --- | --- |
 | [Les deux populations de `pivot_data/profiles/` sont portées par les outils, pas par une consigne (#630, 2026-08-30)](decisions/populations-profils-portees-par-les-outils-630.md) | `Ventilation`, `ventiler_chemins` |
+
+Le mentionnent sans le gouverner : [`agents-sans-comptes-volatils`](decisions/agents-sans-comptes-volatils.md).
 
 ## `src/profil_brut.py`
 

@@ -59,17 +59,18 @@ gouvernements → `check_quality_gate.py`, which gates every commit. `raw_data/`
 source-near; `pivot_data/` is the only layer `web/` reads.
 
 **`pivot_data/profiles/` holds two populations, and nothing on disk says so
-(#630).** 481 files, one directory, one naming pattern — a `glob` returns 481.
-`meta.provenance == "candidat_declare"` marks the **13** declared candidates,
-the ones `web/` publishes a page for; `meta.provenance == "roster_groupe"` marks
-the **468** group members, collected **to feed the group and government
-aggregates** — `group_profile.py` never reads their `identite` block, it
-consumes `nom`, `mandats`, `votes`, `interventions`, `amendements`, all lists.
-**What differs is the use, not the standard**: an identity **merge** fix covers
-13 profiles, an identity **quality** fix covers 481 (#556's 191 HATVP markers
-were in the roster). Name the population before you quote a figure — and the
-tools now do it for you: every profile count they print carries its breakdown,
-via `src/population_profils.py`.
+(#630).** One directory, one naming pattern — a `glob` returns both.
+`meta.provenance == "candidat_declare"` marks the declared candidates, the ones
+`web/` publishes a page for; `meta.provenance == "roster_groupe"` marks the
+group members, collected **to feed the group and government aggregates** —
+`group_profile.py` never reads their `identite` block, it consumes `nom`,
+`mandats`, `votes`, `interventions`, `amendements`, all lists. **What differs
+is the use, not the standard**: an identity **merge** fix covers the declared
+candidates only, an identity **quality** fix covers every profile (#556's HATVP
+markers were in the roster). Name the population before you quote a figure —
+and the tools do it for you: every profile count they print carries its
+breakdown, via `src/population_profils.py`. **The counts themselves are not
+here**: every run moves them, and this file is read as current.
 → `docs/decisions/populations-profils-portees-par-les-outils-630.md`
 
 ### The domain rules, and why they are not here
@@ -172,7 +173,7 @@ Before finishing a task, update only what actually changed — skip a file if no
 
 | File | Update when |
 |---|---|
-| `AGENTS.md` | **A rule that governs everything** — editorial, reporting, what to ask. A rule that governs **one area** goes to `docs/regles/`, never here (#737). Rare edit; stay terse. |
+| `AGENTS.md` | **A rule that governs everything** — editorial, reporting, what to ask. A rule that governs **one area** goes to `docs/regles/`, never here (#737). **Never a count that a run or a lot moves** — corpus sizes, profile populations, file inventories: here they are read as current long after they stopped being so. The figure lives in the decision that measured it, or in the tool that prints it. Rare edit; stay terse. |
 | `docs/regles/<domaine>.md` | **The rule you are about to add governs one module or one job.** Eight files, one per domain, indexed by `AGENTS.md` §3 — loaded when you touch that domain, not at every session. Keep the instruction, put the measurement and the incident in the decision file. `tests/test_regles_par_domaine_737.py` fails when a file empties, leaves the index, or when a section the repo cites stops being named in `AGENTS.md`. |
 | `README.md` | **The front door, one page.** A new setup step, a change to the editorial line or to a coverage limit, a doc that becomes an entry point. Never a command — that is the row below. |
 | `docs/commandes.md` | **An option is added or removed, a script is renamed or retired, a command's output moves.** Not when the pipeline changes: the file says what to type, never how the run works. `tests/test_commandes_documentees.py` fails on a script or a long option that no longer exists. |
@@ -298,8 +299,10 @@ When something does need deciding, five parts, in this order:
   a field the corpus does not carry. **A fixture describing the world as the code
   imagines it cannot reveal that the world moved.**
   → `docs/decisions/audit-champs-deplaces-726.md`
-- `src/check_quality_gate.py`: quality gate, fourteen blocks (1, 2, 3, 3b-3e, 4, 4b, 5, 5b, 5c, 6, §7).
-  The `n/4` denominators printed are themselves stale. Hard vs soft fail logic.
+- `src/check_quality_gate.py`: the quality gate, one numbered block per concern —
+  the list is the module's `main()` and the run summary, not this line, which
+  went stale the day a block was added. The `n/4` denominators printed are
+  themselves stale. Hard vs soft fail logic.
   Amendements coverage/freshness are deliberately never hard fails — see
   `docs/decisions/amendements-zero-pas-de-hard-fail.md`.
 - `docs/sources/`: external-source references, which drift with their provider and not
@@ -309,7 +312,7 @@ When something does need deciding, five parts, in this order:
 - `docs/extract-roster-groupes.md`: the roster-driven job, in depth (the other seven jobs are blocks in `docs/workflow-generate-data.md` §1).
 - `docs/commandes.md`: every command the owner may have to type, grouped by
   intention (generate, audit, check before committing, operate, see what the user
-  sees). 33 of the repo's 45 executables; the other 12 are pipeline-internal and
+  sees). The pipeline-internal executables are left out, and
   the file says so. Locked by `tests/test_commandes_documentees.py`.
 - `docs/data-architecture.md`: what the data becomes — the eight outputs of
   `pivot_data/` (profiles, groupes, lignees, gouvernements, partis, scrutins,
@@ -339,7 +342,7 @@ When something does need deciding, five parts, in this order:
   names. Open it when you are about to change a file under `src/` and want to
   know what governs it. `docs/decisions/table-inversee-decisions-par-module.md`
   holds the criterion and what it misses.
-- `docs/technical_decisions.md`: the index of the 158 decision files under
+- `docs/technical_decisions.md`: the generated index of every decision file under
   `docs/decisions/`, newest first — the chronological read. Frequent entry points:
   `docs/decisions/direction-artistique-empreinte.md` (positioning, naming, targets),
   `docs/decisions/collecte-vide-necrase-jamais.md` (merge), `docs/decisions/licences.md`,
