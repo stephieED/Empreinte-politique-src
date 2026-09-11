@@ -725,3 +725,36 @@ export const WHOLE_TEXT_VOTE_BOUND = {
   pourquoi:
     "L’Assemblée publie un même code de scrutin pour les votes sur l’ensemble d’un texte, sur un article et sur un amendement : rien dans la source ne les sépare. Nous reconnaissons donc ces votes à leur intitulé, qui commence par « l’ensemble du projet de loi… » ou « l’ensemble de la proposition de loi… ». Un vote sur un texte entier formulé autrement n’est pas repris ici. Nous préférons ce manque à un décompte gonflé : un vote absent ne dit rien, un vote attribué à tort affirme une position que la personne n’a pas prise.",
 };
+
+/**
+ * Législature portée par un identifiant d'amendement (`an:AMANR5L17…` → `'17'`).
+ *
+ * Lecture structurelle de l'identifiant, pas une déduction depuis la date :
+ * c'est l'AN qui l'y écrit. `null` si la forme n'est pas reconnue — on ne
+ * devine pas une législature pour aller chercher le mauvais fichier.
+ *
+ * Déplacée de `data/pivotAdapter.js` par #329 : la fiche de lignée la lit au
+ * BUILD (`scripts/vue-lignee.mjs`), et ce module-ci est le seul des deux que
+ * Node sait importer.
+ */
+export function legislatureDeAmendementId(amendementId) {
+  const m = /^an:AMANR5L(\d+)/.exec(amendementId || '');
+  return m ? m[1] : null;
+}
+
+/**
+ * La page d'un dossier législatif sur le site de l'Assemblée, depuis son
+ * identifiant (`DLR5L16N46116` → `…/dyn/16/dossiers/DLR5L16N46116`).
+ *
+ * Le pipeline construit ses liens de dossier sur `titreChemin`, que seuls les
+ * dossiers relus en entier transportent ; l'index des amendements ne porte que
+ * `dossier_id`. L'Assemblée résout aussi l'identifiant : vérifié le 11/09/2026
+ * sur quatre dossiers des XIVe, XVe et XVIe législatures, chaque page porte le
+ * titre que l'index publie — et un identifiant inconnu rend la page d'accueil,
+ * pas une erreur, d'où la forme vérifiée ici avant de construire quoi que ce
+ * soit. La législature est celle de l'identifiant, jamais une déduction.
+ */
+export function urlDossierAN(dossierId) {
+  const m = /^DLR5L(\d+)N\d+$/.exec(dossierId || '');
+  return m ? `https://www.assemblee-nationale.fr/dyn/${m[1]}/dossiers/${dossierId}` : null;
+}

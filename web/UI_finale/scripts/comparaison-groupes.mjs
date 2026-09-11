@@ -13,9 +13,9 @@
 // garde pas le document. Faire télécharger 15,1 Mo pour en afficher 150 Ko
 // serait le même défaut, de l'autre côté du fil.
 //
-// Le fichier produit est un ARTEFACT DE BUILD (`public/data/` est ignoré par
-// git) : il ne rejoint jamais `pivot_data/`, et aucun contrôle de perte ne le
-// surveille — c'est une copie réduite, régénérée à chaque `npm run build`.
+// Depuis la page de lignée (#329), elle n'est plus servie : `vue-lignee.mjs` la
+// lit en mémoire, au build, pour « Avec qui ils votent ». Elle ne rejoint
+// jamais `pivot_data/`, et aucun contrôle de perte ne la surveille.
 
 /** Clé de regroupement : une comparaison ne traverse ni chambre ni législature. */
 export function cleLegislature(groupe) {

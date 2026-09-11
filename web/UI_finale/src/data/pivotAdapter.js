@@ -1,6 +1,7 @@
 // Transforme un profil pivot individuel (schema_pivot.py) ou un profil de
-// groupe (schema_groupe.py) en objets directement consommables par
-// CandidateProfile.jsx / GroupProfile.jsx.
+// gouvernement en objets directement consommables par CandidateProfile.jsx /
+// GovernmentProfile.jsx. La fiche de groupe n'y passe plus depuis #329 : elle
+// lit une projection de lignée écrite au build (`scripts/vue-lignee.mjs`).
 //
 // La logique de classification (ancienneté, responsabilités dédupliquées,
 // position dans l'hémicycle, thème dominant) reprend celle déjà validée dans
@@ -9,8 +10,8 @@
 // "N/D", jamais 0 par défaut.
 //
 // Les règles de lecture ne sont PAS réécrites ici : les six fondations du lot 1
-// vivent dans `utils/lecture.js` (#326) et celles de la fiche de groupe dans
-// `utils/groupe.js` (#329). Cet adaptateur met en forme, il n'arbitre pas.
+// vivent dans `utils/lecture.js` (#326). Cet adaptateur met en forme, il
+// n'arbitre pas.
 
 import {
   INSTITUTION_PARLEMENT,
@@ -31,25 +32,7 @@ import {
   voixDuProfil,
   votesDuProfil,
 } from '../utils/profilCandidat';
-import {
-  ORDRE_POSTURES,
-  POSTURES_GROUPE,
-  REFUS_FICHE_GROUPE,
-  comparaisonParPosture,
-  convergences,
-  couvertureRoster,
-  dateDeReference,
-  effectifDuGroupe,
-  etiquettesThematiques,
-  fonctionsDuGroupe,
-  grandesLois,
-  partageDuGroupe,
-  postureDuGroupe,
-  quorumDeLaFiche,
-  siegeEtPasse,
-  troncatureTags,
-} from '../utils/groupe';
-import { LIBELLE_SORT_TEXTE, OUTCOME_COLOR } from '../utils/lecture';
+import { LIBELLE_SORT_TEXTE, legislatureDeAmendementId } from '../utils/lecture';
 import { ecartsAvecLeGroupe } from '../utils/ecartsGroupe';
 import {
   couvertureDesReperes,
@@ -64,39 +47,6 @@ import {
   plafondToutesPeriodes,
   qualifierInterventions,
 } from '../utils/parolesParPeriode';
-
-// Libellés des catégories de mandats_agreges (group_profile.MANDATS_AGREGES_CATEGORIES).
-// Périmètre élargi par #382/#386 : avant cette taxonomie, commissions
-// d'enquête, missions d'information, groupes d'études et délégations
-// s'affichaient tous sous « Commission » — ce qui trompait le lecteur sur la
-// nature du mandat (AGENTS.md §2.8). Chaque catégorie produite par le backend
-// doit avoir son libellé ici ; le repli sur la clé technique en fin de fichier
-// n'est qu'un filet, jamais un affichage acceptable.
-const MANDAT_CATEGORY_LABELS = {
-  commission: 'Commission',
-  commission_enquete: "Commission d'enquête",
-  mission_information: "Mission d'information",
-  groupe_etudes: "Groupe d'études",
-  delegation: 'Délégation',
-  groupe_amitie: "Groupe d'amitié",
-  extra_parlementaire: 'Engagement extra-parlementaire',
-};
-
-// Ordre d'affichage des catégories : les instances où l'appartenance est la
-// plus significative éditorialement d'abord. À volume élevé (mesuré : 430
-// agrégats pour un groupe de 61 membres, et davantage depuis #384), le tri
-// par le seul nombre de membres noyait les commissions permanentes sous les
-// groupes d'études ; ce rang sert de critère primaire, le nombre de membres
-// siégeant départageant ensuite au sein d'une même catégorie (#656).
-const MANDAT_CATEGORY_ORDER = [
-  'commission',
-  'commission_enquete',
-  'mission_information',
-  'delegation',
-  'groupe_etudes',
-  'groupe_amitie',
-  'extra_parlementaire',
-];
 
 // Ordre d'affichage + libellés (singulier/pluriel) des comptages par statut
 // d'un texte gouvernemental (schema_gouvernement.py). Entiers bruts
@@ -212,17 +162,10 @@ function joinVotes(votes, scrutinsIndex) {
     .filter(Boolean);
 }
 
-/**
- * Législature portée par un identifiant d'amendement (`an:AMANR5L17…` → `'17'`).
- *
- * Lecture structurelle de l'identifiant, pas une déduction depuis la date :
- * c'est l'AN qui l'y écrit. `null` si la forme n'est pas reconnue — on ne
- * devine pas une législature pour aller chercher le mauvais fichier.
- */
-export function legislatureDeAmendementId(amendementId) {
-  const m = /^an:AMANR5L(\d+)/.exec(amendementId || '');
-  return m ? m[1] : null;
-}
+/* `legislatureDeAmendementId` vit dans `utils/lecture.js` depuis #329 : la
+ * projection de lignée la lit au build, et Node n'importe pas ce module-ci.
+ * Réexportée ici pour ses lecteurs existants. */
+export { legislatureDeAmendementId };
 
 /**
  * Index des amendements (#431) : `{ '17': { 'an:AMANR5L17…': { sort, date, … } } }`.
@@ -503,275 +446,6 @@ export function buildCandidateView(
     }),
     limites: limitesDeclarees({ profil: pivot, roles, sieges }),
   };
-}
-
-/*
- * Les mandats agrégés, triés par rang de catégorie puis par « qui y siège »
- * (#656). Extrait de `buildGroupView` par #329 : le tri n'a pas changé, la
- * section qui le consomme, si.
- */
-function mandatsAgregesTries(groupe, effectifDeSecours) {
-  return (groupe.mandats_agreges || [])
-    .map((m) => {
-      // Les deux noms sont lus (#329) : sans ce repli, les 17 cartes des 2
-      // fiches Senat rendaient « undefined membre y a siégé au moins une fois ».
-      const compte = siegeEtPasse(m, effectifDeSecours);
-      return {
-        categorie: m.categorie,
-        categorieLabel: MANDAT_CATEGORY_LABELS[m.categorie] || m.categorie,
-        label: m.label,
-        siege: compte.siege,
-        passe: compte.passe,
-        effectifReference: compte.effectif,
-        siegeRapporteALaDate: compte.siegeRapporteALaDate,
-        parFonction: Object.entries(m.par_fonction || {})
-          .sort((a, b) => b[1] - a[1])
-          .map(([fonction, count]) => ({ fonction, count })),
-      };
-    })
-    .sort((a, b) => {
-      const ra = MANDAT_CATEGORY_ORDER.indexOf(a.categorie);
-      const rb = MANDAT_CATEGORY_ORDER.indexOf(b.categorie);
-      // Une catégorie inconnue de l'ordre passe en dernier plutôt qu'en tête
-      // (indexOf renverrait -1), sans masquer les catégories connues.
-      const ka = ra === -1 ? MANDAT_CATEGORY_ORDER.length : ra;
-      const kb = rb === -1 ? MANDAT_CATEGORY_ORDER.length : rb;
-      if (ka !== kb) return ka - kb;
-      // Une donnée absente ne prend pas la place d'un zéro dans le tri.
-      const sa = Number.isFinite(a.siege) ? a.siege : -1;
-      const sb = Number.isFinite(b.siege) ? b.siege : -1;
-      if (sb !== sa) return sb - sa;
-      const pa = Number.isFinite(a.passe) ? a.passe : -1;
-      const pb = Number.isFinite(b.passe) ? b.passe : -1;
-      if (pb !== pa) return pb - pa;
-      return (a.label || '').localeCompare(b.label || '', 'fr');
-    });
-}
-
-/*
- * La fiche de groupe reprise de bout en bout (#329).
- *
- * L'ordre des six sections est celui des questions qu'on se pose sur un groupe,
- * une seule focale à la fois — l'interne d'abord, la comparaison à la fin. Les
- * règles vivent dans `utils/groupe.js` ; cet adaptateur met en forme.
- *
- * `comparaison` est la projection des groupes de la MÊME législature
- * (`scripts/comparaison-groupes.mjs`), pas les fiches voisines : 51 Ko au lieu
- * de 15,1 Mo. Elle peut manquer — la page le dit alors, section par section,
- * plutôt que d'afficher des tableaux vides qui se liraient comme des zéros.
- */
-/* `lignee` : les autres fiches du MÊME groupe, dans l'ordre des législatures.
- *
- * Une fiche ne couvre qu'une législature (#700), et rien sur la page ne le
- * disait : « Droite Républicaine » se lisait comme LE groupe, pas comme une
- * tranche de son existence. Tant que la fiche agrégée par lignée n'existe pas,
- * la vue DÉCLARE sa portée et nomme ses voisines, au lieu de laisser croire
- * qu'elle les contient (§2 règle 5). */
-export function buildGroupView(groupe, scrutinsIndex = null, comparaison = null, lignee = []) {
-  const membres = groupe.membres || [];
-  const rosterTotal = groupe.meta?.couverture_roster?.roster_total
-    ?? groupe.effectif?.a_la_date_de_reference ?? 0;
-
-  // #653 : tous les comptes de la fiche se rapportent à cette date, publiée à
-  // côté d'eux. Absente des 2 fiches Senat gelées (#516) : l'interface le DIT
-  // plutôt que d'inventer une date ou de laisser lire « aujourd'hui ».
-  const dateRef = dateDeReference(groupe);
-  const dateReferenceLabel = formatFrDate(dateRef.date);
-  const effectif = effectifDuGroupe(groupe);
-  const profilsDisponibles = groupe.meta?.couverture_roster?.profils_disponibles ?? membres.length;
-
-  const sigle = groupe.groupe_sigle ?? null;
-  const scrutins = Array.isArray(scrutinsIndex) ? scrutinsIndex : Object.values(scrutinsIndex || {});
-
-  // ── 4 · le quorum, le partage, les grandes lois, les convergences ────────
-  const quorum = quorumDeLaFiche(groupe);
-  const partage = partageDuGroupe(groupe);
-  // Chaque scrutin partagé est nommé par son intitulé officiel et lié à sa
-  // source : un décompte sans le texte voté ne se vérifie pas (§2 règle 2).
-  const partageExemples = partage.exemples.map((e) => {
-    const scrutin = resolveScrutin(scrutinsIndex, e.scrutinId);
-    return {
-      ...e,
-      date: formatFrDate(scrutin?.date) || null,
-      texte: scrutin?.texte ?? null,
-      sourceUrl: scrutin?.source_url ?? null,
-    };
-  });
-
-  const lois = comparaison ? grandesLois(scrutins, comparaison, sigle) : null;
-  const accords = comparaison ? convergences(comparaison, sigle) : null;
-  const comparee = comparaison ? comparaisonParPosture(comparaison, sigle) : null;
-
-  // ── 3 · ce qu'ils proposent, par type de déposant ────────────────────────
-  const agg = groupe.amendements_agreges || {};
-
-  return {
-    id: groupe.groupe_id,
-    sigle,
-    title: groupe.groupe_nom,
-    chambreLabel: groupe.chambre === 'AN' ? 'Assemblée nationale' : 'Sénat',
-    // #686 lit le référentiel AMO30 : la qualification n'existe que pour l'AN.
-    chambreAN: groupe.chambre === 'AN',
-    legislature: groupe.legislature ?? null,
-    // Les 2 fiches Senat gelées n'ont pas de `legislature` : « Législature null »
-    // s'affichait tel quel. Une donnée absente ne se rend pas (§2 règle 5).
-    kicker: [
-      groupe.chambre === 'AN' ? 'Assemblée nationale' : 'Sénat',
-      groupe.legislature == null ? null : `Législature ${groupe.legislature}`,
-    ].filter(Boolean).join(' · '),
-    lignee,
-    periode: {
-      debut: groupe.periode?.debut ?? null,
-      fin: groupe.periode?.fin ?? null,
-      actif: groupe.periode?.actif ?? false,
-    },
-
-    // ── 1 · qui sont-ils ───────────────────────────────────────────────────
-    // La posture est expliquée ICI, une fois, et ne se répète pas : un
-    // avertissement répété devient une excuse.
-    posture: postureDuGroupe(groupe),
-    posturesConnues: ORDRE_POSTURES
-      .filter((cle) => cle === 'majorite' || cle === 'opposition' || cle === 'minoritaire')
-      .map((cle) => ({ cle, ...POSTURES_GROUPE[cle] })),
-    effectif: effectif.valeur,
-    effectifDenominateur: effectif.denominateur,
-    effectifRapporteALaDate: effectif.rapporteALaDate,
-    profilsDisponibles,
-    rosterTotal,
-    membres: membres.map((m) => ({
-      nom: m.nom,
-      // `present_a_la_date_de_reference` remplace `actif` (#653) : sur une fiche
-      // de législature close, « actif » désignait les membres encore députés
-      // aujourd'hui, pas ceux qui appartenaient au groupe.
-      present: m.present_a_la_date_de_reference ?? m.actif ?? null,
-      debut: formatFrDate(m.debut_dans_groupe) || null,
-      fin: formatFrDate(m.fin_dans_groupe) || null,
-    })),
-    // Une composition sans aucune entrée ni sortie en cours de législature est
-    // un fait, et il change la lecture de tous les comptes de la page.
-    compositionStable: compositionStable(membres),
-
-    // ── 2 · sur quoi ils choisissent de travailler ─────────────────────────
-    mandatsAgreges: mandatsAgregesTries(groupe, membres.length),
-    fonctions: fonctionsDuGroupe(groupe),
-    // Les SUJETS sur lesquels les membres sont intervenus, intitulés par la
-    // source — jamais des positions du groupe (§2 règle 8). Chaque étiquette
-    // part avec son `nb_membres_porteurs` et son dénominateur.
-    textesDebattus: etiquettesThematiques(groupe),
-    troncatureTextes: troncatureTags((groupe.tags_thematiques_agreges || []).length),
-
-    // ── 3 · ce qu'ils proposent, et ce qu'il en reste ──────────────────────
-    amendements: {
-      distincts: agg.nb_amendements ?? null,
-      // Déposer comme rapporteur de commission et déposer comme député sont
-      // deux actes : `AGENTS.md` §5 interdit d'en faire un taux commun. Deux
-      // lignes séparées, jamais additionnées.
-      parTypeDeposant: TYPES_DEPOSANT
-        .map((type) => {
-          const bloc = agg.par_type_deposant?.[type.cle] || {};
-          return {
-            ...type,
-            deposes: bloc.nb_amendements ?? null,
-            segments: segmentsDeSort(bloc),
-          };
-        })
-        .filter((t) => t.deposes != null && (t.deposes > 0 || t.zeroEstUnFait)),
-    },
-
-    // ── 4 · comment ils votent ─────────────────────────────────────────────
-    quorum,
-    partage: { ...partage, exemples: partageExemples },
-    grandesLois: lois,
-    convergences: accords,
-
-    // ── 5 · comment ils se situent ─────────────────────────────────────────
-    comparaison: comparee,
-
-    // ── 6 · ce que cette fiche ne dit pas ──────────────────────────────────
-    refus: REFUS_FICHE_GROUPE,
-    couvertureRoster: couvertureRoster(groupe),
-    avertissements: groupe.meta?.warnings || [],
-    genereLe: formatFrDate(groupe.meta?.genere_le) || null,
-    licence: groupe.meta?.licence_donnees ?? null,
-    dateReference: dateRef.date,
-    dateReferenceLabel,
-    dateReferenceOrigineLabel: dateRef.origineLabel,
-    dateReferenceDatee: dateRef.datee,
-  };
-}
-
-/*
- * Les quatre types de déposant du schéma. `gouvernement` à 0 est un FAIT DE
- * PROCÉDURE, pas une donnée manquante : un groupe parlementaire ne dépose pas
- * au nom du gouvernement. `inconnu` n'a rien à dire tant qu'il vaut 0, et se
- * déclare dès qu'il porte quelque chose (§2 règle 5).
- */
-const TYPES_DEPOSANT = [
-  {
-    cle: 'depute',
-    label: 'Déposés comme député',
-    phrase: "L'acte ordinaire d'un parlementaire.",
-    zeroEstUnFait: false,
-  },
-  {
-    cle: 'commission_rapporteur',
-    label: 'Déposés comme rapporteur de commission',
-    phrase: 'Le rapporteur porte le texte de sa commission ; ces amendements sont négociés en amont.',
-    zeroEstUnFait: false,
-  },
-  {
-    cle: 'gouvernement',
-    label: 'Déposés par le gouvernement',
-    phrase:
-      "Aucun, et ce n'est pas une donnée manquante : un groupe parlementaire ne dépose pas au nom du gouvernement.",
-    zeroEstUnFait: true,
-  },
-  {
-    cle: 'inconnu',
-    label: 'Type de déposant non renseigné',
-    phrase: "La source ne dit pas à quel titre ces amendements ont été déposés.",
-    zeroEstUnFait: false,
-  },
-];
-
-/*
- * Les cinq sorts d'un dépôt, dans l'ordre publié par `schema_groupe.py`. Le
- * dernier n'a pas de couleur : « sort non publié » n'est pas une issue, et lui
- * en donner une le rangerait parmi les quatre autres (§2 règle 5).
- */
-const SORTS_AMENDEMENT = [
-  { cle: 'nb_adoptes', label: 'adoptés', couleur: OUTCOME_COLOR['adopté'] },
-  { cle: 'nb_rejetes', label: 'rejetés', couleur: OUTCOME_COLOR['rejeté'] },
-  { cle: 'nb_irrecevables', label: 'irrecevables', couleur: OUTCOME_COLOR.irrecevable },
-  { cle: 'nb_retires_ou_tombes', label: 'retirés ou tombés', couleur: OUTCOME_COLOR['tombé'] },
-  { cle: 'nb_sort_non_renseigne', label: 'sort non publié', couleur: null },
-];
-
-function segmentsDeSort(bloc) {
-  const total = SORTS_AMENDEMENT.reduce(
-    (acc, s) => acc + (Number.isFinite(bloc?.[s.cle]) ? bloc[s.cle] : 0), 0,
-  );
-  if (!total) return [];
-  return SORTS_AMENDEMENT
-    .map((s) => ({
-      ...s,
-      valeur: Number.isFinite(bloc?.[s.cle]) ? bloc[s.cle] : 0,
-      part: (Number.isFinite(bloc?.[s.cle]) ? bloc[s.cle] : 0) / total,
-    }))
-    .filter((s) => s.valeur > 0);
-}
-
-/*
- * `true` seulement si TOUS les membres entrent et sortent aux mêmes dates. Sur
- * `AN:SOC:16`, les 31 membres sont entrés le 29 juin 2022 et sortis le 9 juin
- * 2024 : la composition n'a pas bougé, et c'est ce qui autorise à rapporter
- * tous les comptes de la page au même effectif.
- */
-function compositionStable(membres) {
-  if (membres.length < 2) return false;
-  const debuts = new Set(membres.map((m) => m.debut_dans_groupe ?? null));
-  const fins = new Set(membres.map((m) => m.fin_dans_groupe ?? null));
-  return debuts.size === 1 && fins.size === 1 && !debuts.has(null);
 }
 
 /** Construit l'objet consommé par GovernmentProfile.jsx à partir d'un profil de gouvernement v1 (schema_gouvernement.py). */

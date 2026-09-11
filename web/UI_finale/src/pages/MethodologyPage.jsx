@@ -1,5 +1,6 @@
 import StaticPage from '../components/StaticPage';
 import { LAST_READING_RULE, STATED_REFUSALS, WHOLE_TEXT_VOTE_BOUND } from '../utils/lecture';
+import { REFUS_FICHE_GROUPE } from '../utils/groupe';
 
 /* ── Une ancre par section de la fiche candidat (#328) ───────────────────────
  *
@@ -15,6 +16,12 @@ import { LAST_READING_RULE, STATED_REFUSALS, WHOLE_TEXT_VOTE_BOUND } from '../ut
  * emplacement de la fiche : elles sont réunies sous « Ce qui est proposé »,
  * chacune gardant son sous-titre. Une section de méthodologie qui ne
  * correspond à rien d'affichable est une section que personne n'atteint.
+ *
+ * LA FICHE DE GROUPE A LES SIENNES (#329), une par section de la fiche de
+ * lignée : lignee · paroles · depots · cohesion · convergences. Elles
+ * reçoivent ce que l'ancienne fiche écrivait en notes encadrées et en
+ * « Ce que cette fiche ne dit pas » : la règle de forme 2 veut la limite sur
+ * la fiche, le paragraphe ici.
  */
 const SECTIONS = [
   {
@@ -290,15 +297,117 @@ const SECTIONS = [
     ),
   },
   {
-    heading: 'Groupes',
+    id: 'lignee',
+    heading: 'Groupes : une fiche par lignée',
     body: (
       <>
         <p>
-          Les ratios de cohésion de vote ne sont montrés que scrutin par scrutin, avec le nombre de membres
-          éligibles et la fraction utilisée. Sans numérateur, dénominateur ou couverture suffisante, la
-          valeur publique est <code>N/D</code>.
+          L'Assemblée ouvre et ferme des groupes à chaque législature ; elle ne dit pas lequel
+          succède à lequel. Une <strong>lignée</strong> réunit les groupes successifs d'une même
+          formation — « Nouvelle Gauche », puis « Socialistes et apparentés » sous trois
+          législatures. Ce rattachement est une <strong>relecture humaine, datée</strong>, jamais
+          une ressemblance de sigle : un groupe qui prend la suite d'un autre sans le déclarer n'y
+          est pas rattaché.
         </p>
-        <p>Les écarts individuels au groupe restent des données de contrôle interne et ne sont pas publiés.</p>
+        <p>
+          La frise trace le nombre de membres jour par jour, depuis les dates d'entrée et de sortie
+          de chacun ; le nombre écrit au bout de chaque bande est celui que la fiche du groupe
+          publie à sa date de référence. Le motif dit comment l'Assemblée qualifie le groupe pour
+          cette législature : majoritaire, d'opposition, minoritaire — ou rien, quand elle ne le
+          déclare pas.
+        </p>
+        <p>
+          Un point par personne et par groupe : « nouveau dans la lignée » ne veut pas dire
+          « nouveau député ». La personne a pu siéger ailleurs avant ; la donnée ne porte que la
+          lignée, et la fiche n'en dit pas plus. Aucun taux de renouvellement n'est calculé : il
+          deviendrait une note comparée d'un groupe à l'autre.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: 'paroles',
+    heading: 'Groupes : sur quoi ils ont pris la parole',
+    body: (
+      <>
+        <p>
+          Les intitulés sont ceux que le compte rendu de l'Assemblée donne aux débats, recopiés tels
+          quels. Chacun porte le nombre de membres du groupe qui y sont intervenus, sur le nombre de
+          membres passés par le groupe pendant la législature. Ce sont des <strong>sujets
+          abordés</strong>, jamais des positions du groupe : intervenir sur un texte ne dit pas ce
+          qu'on en pense.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: 'depots',
+    heading: 'Groupes : ce qu’ils ont proposé',
+    body: (
+      <>
+        <p>
+          Un amendement compte <strong>une fois</strong>, quel que soit le nombre de membres qui
+          l'ont signé, et seulement s'il a été déposé sous la législature du groupe. Déposer comme
+          député et déposer comme rapporteur de commission sont deux actes différents : ils ne
+          s'additionnent pas, et aucun taux d'adoption commun n'est publié.
+        </p>
+        <p>
+          La matière est la commission saisie au fond du dossier, comme sur la fiche d'un candidat.
+          Les textes se rangent du plus récemment amendé au plus ancien, jamais par volume : déposer
+          beaucoup sur un texte peut être un travail de fond comme une obstruction, et le nombre ne
+          les distingue pas. Le sort d'un texte n'est affiché que lorsqu'un scrutin le rattache à
+          son dossier.
+        </p>
+        <p>
+          Les textes portés par les membres des groupes — propositions de loi, rapports — ne sont
+          pas encore collectés : le dossier législatif n'est relevé que pour les candidats déclarés.
+          La fiche le dit à l'endroit où ils manquent.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: 'cohesion',
+    heading: 'Groupes : ce qu’ils ont voté',
+    body: (
+      <>
+        <p>
+          Un groupe ne vote pas : ses membres votent. Pour dire s'il s'est exprimé d'une seule voix,
+          il faut qu'au moins la moitié de ses membres aient pris part au scrutin. En dessous, deux
+          ou trois voix ne décrivent pas le groupe, et rien n'est publié. Ce n'est pas une lacune de
+          collecte : les autres scrutins sont là, ils ne permettent simplement pas cette mesure.
+        </p>
+        <p>
+          « D'une seule voix » signifie que toutes les positions exprimées allaient dans le même
+          sens. Les absences ne sont jamais comptées, et aucune largeur affichée ne s'y rapporte :
+          ce serait un taux de présence sur des personnes nommées.
+        </p>
+        {REFUS_FICHE_GROUPE.map((refus) => (
+          <p key={refus.id}>
+            <strong>{refus.phrase}</strong> {refus.pourquoi}
+          </p>
+        ))}
+      </>
+    ),
+  },
+  {
+    id: 'convergences',
+    heading: 'Groupes : avec qui ils votent',
+    body: (
+      <>
+        <p>
+          La position majoritaire du groupe est comparée à celle de chaque autre groupe de la même
+          législature, sur la <strong>dernière lecture de chaque texte</strong>, et seulement là où
+          les deux atteignent leur quorum. Les dénominateurs diffèrent donc d'une ligne à l'autre,
+          et chacun est publié. L'ordre est celui du nombre de textes communs, jamais celui de
+          l'accord : trier par accord ferait un classement des alliés.
+        </p>
+        <p>
+          <strong>Voter dans le même sens n'est pas s'entendre.</strong> Deux groupes peuvent
+          rejeter un texte pour des raisons opposées, et la donnée ne dit rien de ces raisons. Et
+          « nuance » n'est pas « opposé » : une abstention face à une position exprimée n'est pas un
+          vote contraire.
+        </p>
       </>
     ),
   },
