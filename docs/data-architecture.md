@@ -806,6 +806,7 @@ sorties.
 graph TD
     PIV["pivot_data/profiles/"] --> SYNC["web/UI_finale/scripts/sync-data.mjs"]
     PGR["pivot_data/groupes/"] --> SYNC
+    PLI["pivot_data/lignees/<br/>lues, NON copiées"] --> SYNC
     PGO["pivot_data/gouvernements/"] --> SYNC
     SCR["pivot_data/scrutins.json"] --> SYNC
     AMD["pivot_data/amendements/"] --> SYNC
@@ -814,15 +815,17 @@ graph TD
     CAND["raw_data/candidats.json"] --> SYNC
     PAR["pivot_data/partis/<br/>NON copié — pas d'onglet Partis"]
 
-    SYNC --> MAN["public/data/manifest.json<br/>candidates + groupes + gouvernements<br/>(+ groupIds[] par candidat)"]
+    SYNC --> MAN["public/data/manifest.json<br/>candidates + groupes + lignees + gouvernements<br/>(+ groupIds[] par candidat)"]
     SYNC --> PUB["public/data/ — profiles · groupes · gouvernements<br/>+ scrutins.json + amendements/ + commissions_dossiers.json<br/>+ scrutins_dossiers.json"]
     SYNC --> CVR["public/data/couverture.json<br/>projection au build — ce que le dépôt porte,<br/>par institution / liste / champ"]
+    SYNC --> VLI["public/data/lignees/&lt;id&gt;.json<br/>projection au build — une par lignée (#329)"]
 
-    MAN --> IDX["src/data/index.js<br/>getCandidateProfile / getGroupProfile / …"]
+    MAN --> IDX["src/data/index.js<br/>getCandidateProfile / getLigneeProfile / …"]
     PUB --> IDX
-    IDX --> ADP["src/data/pivotAdapter.js<br/>buildCandidateView / buildGroupView"]
+    VLI --> IDX
+    IDX --> ADP["src/data/pivotAdapter.js<br/>buildCandidateView / buildGovernmentView"]
     ADP --> VC["Candidats — /candidats/:id"]
-    ADP --> VG["Groupes — /groupes/:id"]
+    IDX --> VG["Groupes — /groupes/:lignee<br/>LigneeProfile.jsx, sans adaptateur"]
     ADP --> VO["Gouvernement — GovernmentProfilePage.jsx"]
     CVR --> VCV["Couverture — /couverture"]
 ```
@@ -846,21 +849,35 @@ graph TD
   bornes déclarées et, par liste, les fiches où elle manque. Elle ne crée aucun
   fait — elle compte ce que les sept sorties portent déjà. En faire une sortie de
   `pivot_data/` ajouterait un job, un cache et un budget CI pour un fichier que
-  seule l'interface lit ; même raisonnement que `comparaison-*.json` (#329).
+  seule l'interface lit ; même raisonnement que la projection de lignée (#329).
   Le fichier n'est **pas versionné** (`public/data/` est ignoré par git) et sa
   reconstruction est conditionnée aux dates de ses entrées : lire les quatre
   index d'amendements coûte 17 à 28 s, et le refaire à chaque `npm run dev`
   rendrait le démarrage insupportable.
+- **La page de groupe lit une projection de lignée, pas une fiche** (#329).
+  L'interface publie une fiche par LIGNÉE déclarée (`pivot_data/lignees/`,
+  #836) ; `scripts/vue-lignee.mjs` en écrit, au build, ce que la page lit —
+  ~1 Mo pour la lignée socialiste, contre 5,3 Mo de fiche de lignée et 11 Mo de
+  maillons —, calculé par les règles de `src/utils/groupe.js` et
+  `src/utils/lignee.js` que le navigateur importe aussi. Les fiches de lignée ne
+  sont pas copiées ; les projections de comparaison par législature
+  (`comparaison-groupes.mjs`) ne sont plus servies, elles sont lues en mémoire.
+  `scripts/amendements-lignees.mjs` y ajoute les amendements de chaque maillon
+  par commission saisie au fond, relus dans les profils et l'index, et ne sert
+  la répartition d'un type de déposant que si elle **retombe sur le total
+  publié** par la fiche. Cache sur les dates, comme `couverture.json` : 59 s et
+  1,2 Gio de RSS pour tout `sync-data` à froid, mesurés le 11/09/2026.
 - Le manifeste liste les candidats **déclarés** de `raw_data/candidats.json`,
   filtrés sur l'existence d'un profil sur disque — ne pas fabriquer la promesse
   d'une page absente. `groupIds[]` est rattaché par candidat pour permettre le
   filtrage côté client sans télécharger les fiches de groupe (certaines dépassent
   500 Ko).
 - `src/data/index.js` expose l'API de fetch (`getCandidateProfile`,
-  `getGroupProfile`, `getCandidatesList`, `getGroupsList`) ;
-  `src/data/pivotAdapter.js` transforme le pivot en objets d'affichage : KPIs, tri
-  des votes, classification thématique, classification hémicycle
-  majorité/opposition.
+  `getLigneeProfile`, `getCandidatesList`, `getGroupsList`) ;
+  `src/data/pivotAdapter.js` transforme le pivot d'un candidat ou d'un
+  gouvernement en objets d'affichage. `getGroupsList` rend une entrée par
+  lignée ; une adresse de fiche par législature (`/groupes/AN-SOC-17`) mène à
+  sa lignée.
 - Les trois onglets sont **Candidats**, **Groupes**, **Gouvernement**. Il n'y a
   pas d'onglet Partis : `pivot_data/partis/` reste une sortie de données, pas une
   page.
