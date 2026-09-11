@@ -132,6 +132,31 @@ from merge_profile import (
 from normalize_europarl import normalize_europarl
 from normalize_profil import normalize_profil
 from schema_pivot import appliquer_chambres, poser_identifiant
+from mandats_anterieurs import (
+    CHEMIN_TABLE as CHEMIN_TABLE_MANDATS_ANTERIEURS,
+    appliquer_mandats_anterieurs,
+    charger_table as charger_table_mandats_anterieurs,
+)
+
+_TABLE_MANDATS_ANTERIEURS: Optional[dict[str, list[dict[str, Any]]]] = None
+
+
+def _table_mandats_anterieurs() -> dict[str, list[dict[str, Any]]]:
+    """La table relue (#860), chargée une fois par processus.
+
+    Une table absente ou invalide LÈVE : écrire les fiches sans elle publierait
+    « non relu » sur des candidats relus, en silence.
+    """
+    global _TABLE_MANDATS_ANTERIEURS
+    if _TABLE_MANDATS_ANTERIEURS is None:
+        _TABLE_MANDATS_ANTERIEURS = charger_table_mandats_anterieurs(CHEMIN_TABLE_MANDATS_ANTERIEURS)
+    return _TABLE_MANDATS_ANTERIEURS
+
+
+def vider_table_mandats_anterieurs() -> None:
+    """Oublie la table chargée — pour les tests, qui en servent une figée (#767)."""
+    global _TABLE_MANDATS_ANTERIEURS
+    _TABLE_MANDATS_ANTERIEURS = None
 from amendements_index import (
     DEFAULT_AMENDEMENTS_DIR,
     rafraichir as rafraichir_amendements,
@@ -1192,6 +1217,10 @@ def process_candidat(
                 _tprint(f"  [!] Lecture du pivot existant impossible ({pivot_path}) : {exc}")
         if not args.no_merge and existing_pivot is not None:
             pivot_profile = merge_pivot_profile(existing_pivot, pivot_profile)
+        # #860 — champ dérivé : reposé depuis la table relue APRÈS la fusion,
+        # jamais fusionné, comme `chambres` ; et AVANT la comparaison de #343,
+        # pour qu'une fiche inchangée garde ses horodatages.
+        appliquer_mandats_anterieurs(pivot_profile, _table_mandats_anterieurs())
         # #343 : ne pas ré-avancer genere_le/synchro_le quand --pivot-only re-dérive
         # un contenu strictement identique au pivot déjà commité (pas d'appel réseau).
         pivot_profile = preserve_stable_freshness_timestamps(existing_pivot, pivot_profile)
@@ -1455,6 +1484,8 @@ def process_candidat(
                     _tprint(f"  [!] Lecture du pivot existant impossible ({pivot_path}) : {exc}")
             if not args.no_merge and existing_pivot is not None:
                 pivot_profile = merge_pivot_profile(existing_pivot, pivot_profile)
+            # #860 — même champ dérivé, même place que sur le chemin pivot-only.
+            appliquer_mandats_anterieurs(pivot_profile, _table_mandats_anterieurs())
             # #343 : ne pas ré-avancer genere_le/synchro_le si le contenu régénéré
             # est strictement identique au pivot déjà commité.
             pivot_profile = preserve_stable_freshness_timestamps(existing_pivot, pivot_profile)
