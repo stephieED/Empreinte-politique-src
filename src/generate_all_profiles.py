@@ -522,8 +522,13 @@ def build_profile_any_chambre(
     budget_interventions_secondes: int = 0,
     budget_collecte_secondes: int = 0,
     budget_job: Optional[BudgetCollecte] = None,
+    acteur_ref: Optional[str] = None,
 ) -> tuple[Optional[dict], Optional[str], list[str]]:
     """Collecte le profil FR et renvoie `(profil_retenu, chambre_retenue, warnings)`.
+
+    `acteur_ref` est l'acteur AN que le roster désigne pour un membre de groupe
+    (#850) : transmis tel quel à `build_profile`, il n'est jamais re-deviné par
+    le nom.
 
     Avant #488, cette fonction s'arrêtait à la première chambre qui rendait une
     identité, et un `except Exception: continue` avalait les échecs sans laisser
@@ -640,6 +645,7 @@ def build_profile_any_chambre(
                 skip_dossiers_legislatifs=skip_dossiers_legislatifs,
                 budget_interventions=budget,
                 budget_collecte=budget_collecte_candidat,
+                acteur_ref=acteur_ref,
             )
         except Exception as exc:
             _tprint(f"  [!] Échec ({chambre}) pour {slug} : {exc}")
@@ -1252,6 +1258,12 @@ def process_candidat(
             budget_interventions_secondes=args.budget_interventions_secondes,
             budget_collecte_secondes=getattr(args, "budget_collecte_secondes", None) or 0,
             budget_job=budget_job,
+            # #850 — un membre de roster arrive avec l'acteur que l'organe
+            # AMO30 a désigné. Ne pas le transmettre, c'était obliger la
+            # collecte à le re-deviner par son nom : 6 membres « introuvables »
+            # au run 34575181245, pour une apostrophe, une barre ou un homonyme.
+            # Un candidat déclaré n'en porte pas : il passe par la table (#757).
+            acteur_ref=candidat.get("acteur_ref") if provenance == "roster_groupe" else None,
         )
         if result[0] is None:
             _tprint(f"  [!] Aucune identité trouvée pour {slug} dans {chambres_fr}.")

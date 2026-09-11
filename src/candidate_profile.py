@@ -3960,13 +3960,47 @@ def _resolve_acteur_ref_par_slug(slug: str, *, utiliser_table: bool = True) -> O
     return matches[0]
 
 
-def fetch_identite_officielle_par_slug(slug: str) -> tuple[Optional[dict[str, Any]], Optional[str]]:
+class ActeurContreditParLaTable(ValueError):
+    """Le roster et la table committée nomment deux acteurs AN pour un même slug (#850)."""
+
+
+def fetch_identite_officielle_par_slug(
+    slug: str, acteur_ref: Optional[str] = None
+) -> tuple[Optional[dict[str, Any]], Optional[str]]:
     """Résout l'identité officielle AN directement depuis le slug NosDéputés.fr,
     sans appel réseau préalable à NosDéputés pour en extraire l'URL AN —
     permet d'utiliser le référentiel historique AN comme source primaire de
     `fetch_identity` pour les députés (issue #355). Renvoie (fiche, acteur_ref)
     si trouvé, (None, None) sinon (absent du référentiel, ou homonymie — voir
-    _resolve_acteur_ref_par_slug)."""
+    _resolve_acteur_ref_par_slug).
+
+    ## `acteur_ref` : l'acteur que l'appelant CONNAÎT déjà (#850)
+
+    Un membre de roster arrive avec son acteur AN : c'est l'organe de groupe
+    d'AMO30 qui l'a désigné. Le re-résoudre depuis le slug revenait à le
+    **deviner** par son nom, et la correspondance par nom échoue là où le slug a
+    perdu de l'information — l'apostrophe de `claire o'petit`, la barre
+    d'`emeline k/bidi` — ou renonce, à raison, devant deux homonymes
+    (`beatrice-descamps` : PA392736 et PA720696). Six membres de roster étaient
+    ainsi « introuvables » au run `34575181245`, alors que le roster les
+    nommait. Fourni, l'acteur passe donc devant toute résolution.
+
+    **Sauf s'il contredit la table committée**, qui a tranché ce slug par une
+    relecture ou une dérivation : alors rien n'est collecté, et l'exception
+    nomme les deux acteurs. Un désaccord ne se tranche pas en silence — c'est la
+    règle que #757 applique déjà à l'écriture d'une entrée. Mesuré le
+    11/09/2026 : **0** contradiction sur les 1 174 entrées de la table.
+    """
+    if acteur_ref:
+        table = _correspondance_committee()
+        entree = table.get(slug) if table else None
+        if entree is not None and entree.get("acteur_ref") not in (None, acteur_ref):
+            raise ActeurContreditParLaTable(
+                f"{slug} : le roster nomme {acteur_ref}, la table committée "
+                f"{entree.get('acteur_ref')}. Aucune collecte sous ce slug tant "
+                "que les deux ne s'accordent pas (#850, #757)."
+            )
+        return _build_acteur_identite_index().get(acteur_ref), acteur_ref
     acteur_ref = _resolve_acteur_ref_par_slug(slug)
     if not acteur_ref:
         return None, None
@@ -5449,6 +5483,7 @@ def build_profile(
     skip_dossiers_legislatifs: bool = False,
     budget_interventions: Optional[BudgetCollecte] = None,
     budget_collecte: Optional[BudgetCollecte] = None,
+    acteur_ref: Optional[str] = None,
 ) -> dict:
     """Construit le profil complet d'un parlementaire (identité, mandats/responsabilités,
     votes, dossiers législatifs, interventions) à partir des données ouvertes
@@ -5474,7 +5509,10 @@ def build_profile(
         chambre: "deputes" (seule valeur acceptée depuis #528).
         slug: identifiant du parlementaire, qui est aussi le nom de son fichier
             de profil (ex. "jean-luc-melenchon"). Résolu en `acteur_ref` AN par
-            `_resolve_acteur_ref_par_slug` (#525).
+            `_resolve_acteur_ref_par_slug` (#525) — sauf si `acteur_ref` est fourni.
+        acteur_ref: l'acteur AN déjà connu de l'appelant — celui que le roster
+            désigne pour un membre de groupe (#850). Fourni, il n'est jamais
+            re-deviné par le nom ; voir `fetch_identite_officielle_par_slug`.
         skip_dossiers_legislatifs: si True, ne fait aucun appel réseau pour les dossiers
             législatifs (`profile["dossiers_legislatifs"]` reste vide). Voir mode
             d'extraction léger (#357) : utilisé quand seuls identité/mandats/votes/
@@ -5540,7 +5578,14 @@ def build_profile(
     acteur_ref_an: Optional[str] = None
     with budget_section(budget_collecte, "identité Assemblée nationale"):
         try:
-            identite_an, acteur_ref_an = fetch_identite_officielle_par_slug(slug)
+            identite_an, acteur_ref_an = fetch_identite_officielle_par_slug(
+                slug, acteur_ref=acteur_ref
+            )
+        except ActeurContreditParLaTable as exc:
+            # Imprimé ET consigné : le profil sans identité n'est pas écrit, et
+            # un avertissement porté par un profil jeté ne se lirait nulle part.
+            print(f"  [!] {exc}")
+            pre_profile_warnings.append(avertissement(str(exc), DESTINATAIRE_INTERNE))
         except Exception as exc:
             pre_profile_warnings.append(avertissement(
                 f"identité officielle (Assemblée nationale) indisponible : {exc}",

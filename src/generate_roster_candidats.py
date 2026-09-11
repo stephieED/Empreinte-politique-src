@@ -343,6 +343,12 @@ def build_roster_candidats_detaille(
                     else None
                 ),
                 "notes": f"Membre du groupe {groupe['groupe_sigle']} ({groupe['groupe_nom']}), issu du roster réel {groupe['chambre']}.",
+                # #850 — l'acteur que l'organe AMO30 désigne, EN CLAIR : la
+                # collecte le reçoit tel quel au lieu de le re-deviner depuis
+                # le slug. `source` en portait déjà l'identifiant, mais encodé
+                # dans une URL que rien ne relisait. `None` quand AMO30 ne l'a
+                # pas rendu — la collecte retombe alors sur la table.
+                "acteur_ref": membre.get("acteur_ref"),
             }
             membres_par_groupe[libelle] += 1
 

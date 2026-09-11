@@ -210,7 +210,10 @@ def test_output_reloadable_by_load_candidats(tmp_path, monkeypatch):
     candidats = load_candidats(str(out_path))
     assert {c["slug"] for c in candidats} == {"alice", "bob"}
     for c in candidats:
-        assert set(c) == {"nom", "slug", "parti", "famille_politique", "statut", "date_declaration", "source", "notes"}
+        # #850 : `acteur_ref` en clair, pour que la collecte ne re-devine plus
+        # par le nom un acteur que le roster désigne.
+        assert set(c) == {"nom", "slug", "parti", "famille_politique", "statut",
+                          "date_declaration", "source", "notes", "acteur_ref"}
 
 
 def test_main_missing_config_returns_error(tmp_path):
