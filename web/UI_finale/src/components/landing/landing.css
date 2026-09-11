@@ -366,132 +366,6 @@
   font-weight: 700;
 }
 
-.fact-demo-example-label {
-  font-size: 12px;
-  color: var(--muted);
-  margin-bottom: 8px;
-}
-
-.fact-demo-card {
-  border-radius: 18px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  padding: 20px;
-}
-
-.fact-demo-kicker {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 10px;
-}
-
-.fact-demo-position {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 9px;
-}
-
-.fact-demo-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-}
-
-.fact-demo-position-label {
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.fact-demo-titre {
-  font-size: 14px;
-  line-height: 1.4;
-  margin-bottom: 4px;
-}
-
-.fact-demo-meta {
-  font-size: 12px;
-  color: var(--muted);
-  margin-bottom: 16px;
-}
-
-.fact-demo-toggle {
-  border: none;
-  border-radius: 999px;
-  padding: 10px 20px;
-  font-size: 13px;
-  font-weight: 700;
-  font-family: inherit;
-  cursor: pointer;
-  background: var(--accent);
-  color: var(--ink);
-}
-
-.fact-demo-toggle:hover {
-  text-decoration: underline;
-}
-
-.fact-demo-toggle:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 2px;
-}
-
-.fact-demo-source {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
-}
-
-.fact-demo-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--dark);
-  background: var(--accent);
-  padding: 3px 9px;
-  border-radius: 999px;
-  margin-bottom: 12px;
-}
-
-.fact-demo-source-details {
-  display: grid;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.fact-demo-source-details dt {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 2px;
-}
-
-.fact-demo-source-details dd {
-  font-size: 13px;
-  color: var(--ink);
-  margin: 0;
-}
-
-.fact-demo-url {
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-  word-break: break-all;
-}
-
-.fact-demo-note {
-  font-size: 12px;
-  color: var(--muted);
-  margin: 0;
-}
-
 .how-it-works-steps {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -678,7 +552,7 @@
 }
 
 /* Below this width, HowItWorks only has half of .landing-main to itself
-   (paired with FactDemo) — its internal 4-column step grid needs the
+   (paired with SourcesFreshness) — its internal 4-column step grid needs the
    same 2-column relief mobile already gets, or steps get too cramped. */
 @media (max-width: 1180px) {
   .how-it-works-steps {
@@ -711,5 +585,194 @@
   .hero-pipeline-arrow {
     align-self: center;
     transform: rotate(90deg);
+  }
+}
+
+/* CE QUE NOUS LISONS, ET DEPUIS QUAND — une borne par institution, en tête de
+   « Sources & fraîcheur des données » (#328). Les teintes sont celles des
+   institutions sur les fiches et sur /couverture ; les deux absences gardent
+   leurs deux motifs, jamais confondus (DESIGN_SYSTEM §6 bis règle 7). */
+.ca {
+  --ca-an: #803060;
+  --ca-gouv: #85510d;
+  --ca-pe: #003399;
+  --ca-hachure: #e6e1da;
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.landing-section .ca-tete {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 12.5px;
+  margin-bottom: 8px;
+}
+
+.ca-tete span {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.ca-grille {
+  display: grid;
+  grid-template-columns: 124px minmax(0, 1fr) auto;
+  gap: 7px 12px;
+  align-items: center;
+}
+
+.ca-ligne {
+  display: contents;
+}
+
+.ca-axe {
+  position: relative;
+  height: 14px;
+  font-size: 10.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.ca-axe span {
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+.ca-nom {
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.ca-rail {
+  position: relative;
+  height: 14px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.ca-plein {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  border-radius: 2px;
+}
+
+.ca-plein--AN { background: var(--ca-an); }
+.ca-plein--gouvernement { background: var(--ca-gouv); }
+.ca-plein--PE { background: var(--ca-pe); }
+
+.ca-hors {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background: repeating-linear-gradient(45deg, var(--ca-hachure) 0 3px, transparent 3px 7px);
+}
+
+.ca-nonc {
+  position: absolute;
+  inset: 0;
+  border-radius: 2px;
+  background: repeating-linear-gradient(45deg, var(--accent) 0 4px, #fbffd6 4px 8px);
+  box-shadow: inset 0 0 0 1.2px #a9c400;
+}
+
+.ca-depuis {
+  white-space: nowrap;
+  font-size: 11.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.ca-depuis small {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.landing-section .ca-legende {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 12px 0 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.ca-cle {
+  display: inline-block;
+  width: 18px;
+  height: 9px;
+  border-radius: 2px;
+  margin-right: 5px;
+  vertical-align: -1px;
+}
+
+.ca-cle--collecte {
+  background: linear-gradient(90deg, var(--ca-an) 0 33.4%, var(--ca-gouv) 33.4% 66.7%, var(--ca-pe) 66.7%);
+}
+
+.ca-cle--nonc {
+  background: repeating-linear-gradient(45deg, var(--accent) 0 4px, #fbffd6 4px 8px);
+  box-shadow: inset 0 0 0 1.2px #a9c400;
+}
+
+.ca-cle--hors {
+  background: repeating-linear-gradient(45deg, var(--ca-hachure) 0 3px, transparent 3px 7px);
+}
+
+.ca-hc {
+  margin-top: 14px;
+}
+
+.landing-section .ca-hc-titre {
+  font-size: 12.5px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.ca-hc dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.ca-hc dt {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.ca-hc dd {
+  margin: 1px 0 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.ca-hc a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 3px;
+}
+
+.ca-hc a:hover {
+  text-decoration-color: currentcolor;
+}
+
+@media (max-width: 560px) {
+  .ca-grille {
+    grid-template-columns: 88px minmax(0, 1fr) auto;
+  }
+
+  /* Une graduation sur deux : six années sur 150 px se chevauchent. */
+  .ca-axe-mineure {
+    display: none;
   }
 }

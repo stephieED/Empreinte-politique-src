@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import sourcesConfig from '../../data/sources.config';
+import CouvertureAccueil from './CouvertureAccueil';
 import { DEFAULT_CANDIDATE_ID } from '../../data';
 import './landing.css';
 
@@ -15,6 +16,10 @@ export default function SourcesFreshness() {
   return (
     <section className="landing-section" aria-label="Sources et fraîcheur des données">
       <h2>Sources &amp; fraîcheur des données</h2>
+      {/* EN PREMIER : depuis quand chaque institution est lue. Un candidat dont
+          la carrière précède les sources ne doit pas passer pour un candidat
+          sans passé (relecture du 11/09/2026). */}
+      <CouvertureAccueil />
       <div className="sources-grid">
         {sourcesConfig.map((source) => (
           <details className="source-card" key={source.id}>

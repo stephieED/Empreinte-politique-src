@@ -370,6 +370,14 @@ export function construireCouverture({ repoRoot, slugsPublies = null }) {
         {
           cle: 'mandats',
           titre: 'Fonctions gouvernementales',
+          /* AUCUNE BORNE DÉCLARÉE (#859). La borne des mandats — le 19/06/2002
+           * de l'AMO30 — était reprise ici par sa clé de liste, alors que la
+           * plus ancienne fonction gouvernementale du corpus date du
+           * 18/05/2007 et que les gouvernements 2002-2007 manquent : la hachure
+           * affirmait « la source ne publie pas avant 2002 » sur un fait qui
+           * n'est pas établi. Rien n'est hachuré tant que la borne n'est pas
+           * déclarée. */
+          borne: null,
           couches: [
             couche('cand', CAND, mandatsGouv, dMandat),
             couche('gouv', GOUV, membresGouv, dMembreGouv),
@@ -539,6 +547,7 @@ export function construireCouverture({ repoRoot, slugsPublies = null }) {
     collecteLe: collecteLe(candidats),
     bornes,
     hierarchie,
+    accueil: accueil(hierarchie, bornes, candidats),
     institutions: institutions(candidats),
     couvertureFiches: couvertureFiches(candidats, bornes),
     reperes: reperes({ candidats, groupes, gouvernements }),
@@ -652,6 +661,58 @@ function finsEuropeennes(candidats) {
     }
   }
   return out;
+}
+
+/* L'ACCUEIL NE DIT QU'UNE CHOSE PAR INSTITUTION : depuis quand elle est lue
+ * (relecture du 11/09/2026 — « juste les bornes par institution, pour que
+ * quelqu'un ne se demande pas pourquoi le mandat d'un tel n'est pas visible »).
+ *
+ * `debut` est la plus ancienne des dates qui ouvrent une liste : sa borne
+ * déclarée, ou à défaut sa première donnée. `hachureJusqua` n'existe que si
+ * TOUTES les listes de l'institution déclarent une borne : la hachure dit « la
+ * source ne publie rien avant », et une seule liste sans borne suffit à ne plus
+ * pouvoir l'affirmer pour l'institution entière (le Gouvernement, #859 ; les
+ * mandats européens). */
+function accueil(hierarchie, bornes, candidats) {
+  const plusTot = (a, b) => (!a ? b : !b ? a : a < b ? a : b);
+  const institutions = hierarchie.map((inst) => {
+    let debut = null;
+    let hachure = null;
+    let toutesBornees = true;
+    for (const p of inst.pistes) {
+      const premiere = p.couches.reduce(
+        (m, c) => c.periodes.reduce((n, x) => plusTot(n, x[0]), m),
+        null,
+      );
+      const borne = 'borne' in p ? p.borne : bornes[p.cle];
+      const fin = borne ? plusTot(borne, premiere) : null;
+      if (!fin) toutesBornees = false;
+      hachure = plusTot(hachure, fin);
+      debut = plusTot(debut, fin ?? premiere);
+    }
+    return { cle: inst.cle, titre: inst.titre, debut, hachureJusqua: toutesBornees ? hachure : null };
+  });
+
+  /* LES FICHES HORS COUVERTURE, NOMMÉES — calculées sur les mandats publiés,
+   * jamais écrites à la main : une liste recopiée n'accueille pas le prochain
+   * candidat déclaré. La troisième ligne de la maquette — « mandat antérieur à
+   * la publication des données de l'Assemblée nationale » — attend le champ
+   * que le pipeline doit collecter sur la fiche : le corpus seul ne la déduit
+   * pas (vérifié le 11/09/2026 : la règle « premier mandat lu le 19/06/2002 »
+   * se trompait sur 3 des 5 cas). */
+  const personne = (d) => ({ id: d.id, nom: d.nom });
+  // Rangés par nom de famille — le dernier mot du nom publié.
+  const famille = (nom) => nom.split(' ').pop();
+  const parNom = (a, b) => famille(a.nom).localeCompare(famille(b.nom), 'fr') || a.nom.localeCompare(b.nom, 'fr');
+  const senat = candidats
+    .filter((d) => (d.mandats || []).some((m) => m.chambre === 'Senat'))
+    .map(personne)
+    .sort(parNom);
+  const sansMandat = candidats
+    .filter((d) => !(d.mandats || []).length)
+    .map(personne)
+    .sort(parNom);
+  return { institutions, horsCouverture: { senat, sansMandat } };
 }
 
 /** La date de collecte la plus récente parmi les fiches publiées. */

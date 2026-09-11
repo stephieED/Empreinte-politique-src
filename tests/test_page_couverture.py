@@ -296,3 +296,65 @@ def test_les_deux_mentions_de_fiche_renvoient_a_la_methodologie() -> None:
         assert "Ce que cette figure ne sait pas" in source, (
             "le chiffre reste sous la figure ; c'est le pourquoi qui déménage"
         )
+
+
+# ── L'accueil : une borne par institution, et les fiches hors couverture ─────
+
+
+def test_l_accueil_dit_depuis_quand_et_nomme_sans_rien_ecrire_a_la_main(tmp_path: Path) -> None:
+    """Relecture du 11/09/2026 : une borne par institution, et les fiches dont
+    une partie de la carrière est hors couverture. Tout est calculé au build ;
+    une liste recopiée n'accueillerait pas le prochain candidat déclaré."""
+    import json
+    import shutil
+    import subprocess
+
+    if shutil.which("node") is None:
+        pytest.skip("node absent")
+    racine = _corpus_minimal(tmp_path)
+    profils = racine / "pivot_data" / "profiles"
+    (profils / "s.pivot.json").write_text(json.dumps({
+        "id": "s", "nom": "Sénatrice Exemple", "meta": {"provenance": "candidat_declare"},
+        "mandats": [{"categorie": "mandat_electif", "chambre": "Senat", "debut": "2004-09-26"}],
+    }), encoding="utf-8")
+    (profils / "z.pivot.json").write_text(json.dumps({
+        "id": "z", "nom": "Zoé Sansmandat", "meta": {"provenance": "candidat_declare"}, "mandats": [],
+    }), encoding="utf-8")
+    script = f"""
+      const m = await import({json.dumps(GENERATEUR.as_uri())});
+      const c = m.construireCouverture({{ repoRoot: {json.dumps(str(racine))} }});
+      const i = Object.fromEntries(c.accueil.institutions.map((x) => [x.cle, x]));
+      process.stdout.write(JSON.stringify({{
+        an: i.AN.hachureJusqua, pe: i.PE.hachureJusqua, peDebut: i.PE.debut,
+        gouvBorne: c.hierarchie.find((x) => x.cle === 'gouvernement').pistes.find((p) => p.cle === 'mandats').borne,
+        senat: c.accueil.horsCouverture.senat.map((p) => p.id),
+        sansMandat: c.accueil.horsCouverture.sansMandat.map((p) => p.id),
+      }}));
+    """
+    res = subprocess.run(["node", "--input-type=module", "-e", script],
+                         capture_output=True, text=True, check=False)
+    assert res.returncode == 0, res.stderr
+    assert json.loads(res.stdout) == {
+        # L'Assemblée déclare une borne sur chacune de ses listes ; le fixture
+        # n'en déclare que pour les votes, donc aucune hachure d'institution.
+        "an": None,
+        # Les mandats européens n'ont pas de borne : la hachure ne s'affirme pas ;
+        # le début est la borne des votes, antérieure à la première donnée.
+        "pe": None, "peDebut": "2004-09-15",
+        # #859 : la borne de l'AMO30 n'est plus prêtée aux fonctions gouvernementales.
+        "gouvBorne": None,
+        "senat": ["s"], "sansMandat": ["z"],
+    }
+
+
+def test_l_accueil_lit_la_projection_et_ne_montre_plus_de_fait_fictif() -> None:
+    bloc = _sans_commentaires((SRC / "components" / "landing" / "CouvertureAccueil.jsx").read_text(encoding="utf-8"))
+    assert "loadCouverture" in bloc and "data.accueil" in bloc
+    assert not re.search(r"'[A-ZÉ][a-zé]+ [A-ZÉ][a-zé]+'", bloc), "aucun nom de candidat écrit dans le composant"
+    sources = (SRC / "components" / "landing" / "SourcesFreshness.jsx").read_text(encoding="utf-8")
+    assert sources.index("<CouvertureAccueil />") < sources.index("sourcesConfig.map"), (
+        "la borne de chaque institution ouvre le bloc des sources"
+    )
+    accueil = (SRC / "pages" / "LandingPage.jsx").read_text(encoding="utf-8")
+    assert "<FactDemo" not in accueil and not (SRC / "components" / "landing" / "FactDemo.jsx").exists()
+    assert "parcours politiques" in (SRC / "components" / "landing" / "Hero.jsx").read_text(encoding="utf-8")
