@@ -80,6 +80,7 @@ traité dans une version. Les arbitrages qui engagent :
 | Sujet | Tranché | Pourquoi, en une ligne |
 | --- | --- | --- |
 | « Qui sont-ils » | un point par personne et par groupe, trois états, survol qui allume le chemin | forme B sur trois comparées ; cinq agrégats avaient été écartés la veille |
+| La liste des personnes | une colonne par groupe de la lignée, dans l'ordre des points ; le survol d'un nom allume son chemin | une personne passée par trois groupes figure dans trois colonnes : c'est le chemin qui se lit |
 | Motifs de posture | majoritaire aplat, opposition diagonales, minoritaire mauve clair uni, non déclarée points serrés | les motifs d'origine se ressemblaient trop ; choisi sur quatre jeux |
 | « Ce qu'ils ont proposé » | le gabarit « amendements par matière » de la fiche candidat, switch exclusif député / rapporteur, textes au clic | même lecture à chaque niveau ; deux types, deux totaux |
 | Le lien de source | porté par l'intitulé, plus de badge « Source » | le badge répété sous chaque ligne |

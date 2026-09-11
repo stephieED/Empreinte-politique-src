@@ -362,10 +362,6 @@ function QuiSontIls({ lignee }) {
     return c;
   }, [lignee]);
   const colonnes = Math.max(...lignee.maillons.map((m) => m.presents.length)) > 150 ? 20 : 12;
-  const tous = useMemo(
-    () => [...lignee.personnes].sort((a, b) => a.nom.localeCompare(b.nom, 'fr')),
-    [lignee],
-  );
   const candidats = lignee.personnes.filter((p) => p.candidat);
   const nom = (p) => (p.candidat ? <Link to={`/candidats/${p.id}`}>{p.nom}</Link> : p.nom);
 
@@ -425,10 +421,32 @@ function QuiSontIls({ lignee }) {
             ? <><b>{lignee.personnes[survol].nom}</b> · {chemins[survol].map((i) => nomDuMaillon(lignee.maillons[i])).join(' → ')}</>
             : ' '}
         </p>
+        {/* Les noms en colonnes, UNE PAR GROUPE de la lignée (relecture du
+            11/09/2026), dans l'ordre des points : une personne passée par trois
+            groupes figure dans trois colonnes, et c'est le chemin qui se lit.
+            Le survol d'un nom allume son chemin dans la grille, comme un point. */}
         <details className="lp-tous">
-          <summary>Les {formatNumber(tous.length)} personnes</summary>
-          <div className="lp-tous-liste">
-            {tous.map((p) => <div key={p.id}>{nom(p)}</div>)}
+          <summary>Les {formatNumber(lignee.personnes.length)} personnes</summary>
+          <div className="lp-tous-colonnes" onMouseLeave={() => setSurvol(null)}>
+            {lignee.maillons.map((m) => (
+              <div className="lp-tous-colonne" key={m.id}>
+                <p className="lp-bloc-tete">
+                  {nomDuMaillon(m)} <small>· {formatNumber(m.presents.length)}</small>
+                </p>
+                <ul>
+                  {m.presents.map(([r, passage]) => (
+                    <li
+                      className={survol === r ? 'lp-tous-actif' : undefined}
+                      key={r}
+                      onMouseEnter={() => setSurvol(r)}
+                    >
+                      <i aria-hidden="true" className={`lp-point lp-point--${passage}`} />
+                      {nom(lignee.personnes[r])}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         </details>
       </div>
