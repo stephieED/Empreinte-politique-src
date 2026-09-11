@@ -82,6 +82,7 @@ from groupes_config import (
     CHEMIN_CONFIG_GROUPES,
     CorrespondanceSiglesInvalide,
     partitionner_groupes,
+    historique_noms_publie,
     position_politique_publiee,
     resume_suspension,
     succession_publiee,
@@ -293,6 +294,7 @@ def generate_all(
         try:
             position_politique = None
             succede_a = None
+            historique_noms = None
             if groupe.get("chambre") == "AN":
                 position_politique = position_politique_publiee(
                     groupe["groupe_sigle"], groupe.get("legislature"), chemin_config
@@ -303,6 +305,11 @@ def generate_all(
                 # su ». Une cible qui ne résout pas a déjà fait lever
                 # `charger_correspondance_sigles`.
                 succede_a = succession_publiee(
+                    groupe["groupe_sigle"], groupe.get("legislature"), chemin_config
+                )
+                # Les organes successifs du groupe dans sa législature (#815),
+                # de la même table et par le même chemin : aucune archive lue.
+                historique_noms = historique_noms_publie(
                     groupe["groupe_sigle"], groupe.get("legislature"), chemin_config
                 )
             generate_groupe_profile_from_roster(
@@ -321,6 +328,7 @@ def generate_all(
                 amendements_index=amendements_index,
                 position_politique=position_politique,
                 succede_a=succede_a,
+                historique_noms=historique_noms,
             )
         except CorrespondanceSiglesInvalide as exc:
             # Nommée à part de l'échec générique : ce n'est ni le réseau ni un

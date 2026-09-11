@@ -721,6 +721,32 @@ def organes_du_groupe(
     return [ref for _, ref in sorted(trouves)]
 
 
+def historique_organes(
+    index: dict[str, Any],
+    legislature: str,
+    sigles_an: Iterable[str],
+) -> list[dict[str, Any]]:
+    """Les organes successifs d'un groupe dans UNE législature, nom et dates (#815).
+
+    Ce que `historique_noms` publie : un groupe renommé en cours de législature
+    ferme un organe et en ouvre un autre — `SOC` puis `SOC-A` (XVIe), `MODEM`
+    puis `DEM` (XVe), `AD`, `UDR` puis `UDDPLR` (XVIIe). L'Assemblée publie
+    chacun avec son libellé et ses bornes ; rien n'est déduit ici. Même ordre
+    que `organes_du_groupe` — l'ordre d'ouverture —, pour que la table puisse
+    exiger que les deux listes coïncident. Fonction pure.
+    """
+    return [
+        {
+            "organe_an": organe_ref,
+            "sigle_an": index["organes"][organe_ref].get("sigle"),
+            "nom": index["organes"][organe_ref].get("libelle"),
+            "debut": index["organes"][organe_ref].get("debut"),
+            "fin": index["organes"][organe_ref].get("fin"),
+        }
+        for organe_ref in organes_du_groupe(index, legislature, sigles_an)
+    ]
+
+
 def _contigus(fin: Optional[str], debut_suivant: Optional[str]) -> bool:
     """Deux mandats se touchent-ils, ou y a-t-il une interruption entre eux ?
 
