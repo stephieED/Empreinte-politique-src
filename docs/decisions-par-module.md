@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 292 décisions
+gouverne sans avoir à fouiller les 293 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -55,6 +55,7 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 | `src/json_io.py` | 1 |
 | `src/licences.py` | 1 |
 | `src/lignee_profile.py` | 1 |
+| `src/mandats_anterieurs.py` | 1 |
 | `src/scrutins_dossiers_an.py` | 1 |
 | `src/scrutins_legislature.py` | 1 |
 | `src/textes_vises_figes.py` | 1 |
@@ -741,6 +742,14 @@ Le mentionnent sans le gouverner : [`contact-et-comptes-publics-328`](decisions/
 | --- | --- |
 | [Les dix lignées sont écrites, et une mesure corrige le motif du recalcul (#836)](decisions/generation-fiches-lignees-836.md) | `recalculer_agregats` |
 
+## `src/mandats_anterieurs.py`
+
+1 décision(s) le gouvernent ; le module en cite 0.
+
+| Décision | Nomme |
+| --- | --- |
+| [Les mandats antérieurs à la couverture de l'Assemblée entrent par une table relue (#860)](decisions/mandats-anterieurs-couverture-860.md) | `appliquer_mandats_anterieurs`, `charger_table` |
+
 ## `src/mep_profile.py`
 
 Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambres-profil-derivees.md), [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`id-pivot-sans-prefixe`](decisions/id-pivot-sans-prefixe.md), [`licences`](decisions/licences.md), [`mandats-officiels-an-369`](decisions/mandats-officiels-an-369.md).
@@ -980,7 +989,7 @@ Le mentionnent sans le gouverner : [`pivot-freshness-timestamps-stables`](decisi
 
 ## `src/schema_pivot.py`
 
-41 décision(s) le gouvernent ; le module en cite 5.
+42 décision(s) le gouvernent ; le module en cite 5.
 
 | Décision | Nomme |
 | --- | --- |
@@ -1004,6 +1013,7 @@ Le mentionnent sans le gouverner : [`pivot-freshness-timestamps-stables`](decisi
 | [Rien ne vérifiait que les clés publiées résolvent : le contrôle d'invariance (#485) (2026-08-20)](decisions/integrite-referentielle-pivot.md) | `validate_profil` |
 | [Données UE — investigation des sources (2026-08-04)](decisions/investigation-sources-ue.md) | `validate_profil` |
 | [Trois lectures du corpus passent à la projection, et chacune a son plafond dans un test (#635, 2026-08-30)](decisions/lectures-pipeline-par-projection-635.md) | `lire_chambres` |
+| [Les mandats antérieurs à la couverture de l'Assemblée entrent par une table relue (#860)](decisions/mandats-anterieurs-couverture-860.md) | `KNOWN_INSTITUTIONS_ANTERIEURES`, `validate_profil` |
 | [Normaliser les amendements : le coût n'est pas l'amendement, c'est sa liste de cosignataires (#431) (2026-08-19)](decisions/normalisation-amendements.md) | `validate_amendements_index`, `validate_profil` |
 | [Normaliser les votes : une liste partagée, un mapping, et deux invariants devenus des jointures (#432) (2026-08-19)](decisions/normalisation-votes.md) | `validate_profil`, `validate_scrutins_index` |
 | [`genere_le`/`synchro_le` des pivots ne doivent avancer que si le contenu change réellement (#343) (2026-08-16)](decisions/pivot-freshness-timestamps-stables.md) | `make_empty_profil` |
