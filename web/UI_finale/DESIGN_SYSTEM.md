@@ -47,7 +47,7 @@ Trois formes, verified dans `src/components/Brand.jsx`/`Brand.css` et cotées da
 | Token | Valeur | Usage |
 |---|---|---|
 | Européen `--pe` | `#003399` | Le Parlement européen — **Pantone Reflex Blue de l'emblème**, la seule couleur officielle des quatre qui soit réutilisable |
-| Gouvernemental `--gouv` | `#9E6F29` | Le gouvernement sur la fiche |
+| Gouvernemental `--gouv` | `#85510D` | Le gouvernement sur la fiche |
 | Parlementaire `--parl` | `#803060` | L'Assemblée sur la fiche |
 | Sénatorial `--senat` | `#9A958D` | **Pas de teinte propre** : l'encre des absences. La sarcelle `#169E9E` lui est **réservée** pour le jour où sa collecte sera rebranchée (11/09/2026) |
 | Populations de `/couverture` | `--pop-cand` `#3F5166` · `--pop-gouv` `#8A6B4C` · `--pop-grp` `#6F5B7A` | Les trois **populations de fiches**, un autre axe que les institutions — elles valaient celles de la fiche, elles ne les valent plus |

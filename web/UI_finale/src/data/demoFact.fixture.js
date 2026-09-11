@@ -6,7 +6,7 @@
 // confondue avec une vraie source.
 const demoFact = {
   acteur: 'Élu·e X',
-  mandat: 'Député·e (exemple fictif) — circonscription fictive',
+  mandat: 'Député(e) (exemple fictif) — circonscription fictive',
   fait: {
     texte: 'Vote sur le Texte Y — projet de loi (exemple fictif)',
     positionLabel: 'Pour',

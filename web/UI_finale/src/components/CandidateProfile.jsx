@@ -39,6 +39,7 @@ import {
   INSTITUTION_SENAT,
   LIBELLE_PISTE,
   pisteDuRole,
+  sigleDeGroupePolitique,
   LIBELLE_STADE,
   libellePosition,
   motifPosition,
@@ -121,6 +122,87 @@ function Position({ position }) {
  */
 const ECART_MINIMAL_REPERES = 3.4;
 
+/* CE QUI S'ÉCRIT DANS UN SEGMENT, ET CE QUI N'Y TIENT PAS.
+ *
+ * La bande ne portait aucun texte : « un libellé dans un segment de 2 % ne tient
+ * pas ». C'est vrai du libellé complet, pas de tout libellé — un mandat de cinq
+ * ans occupe un tiers de la frise et peut porter son groupe. L'étiquette se
+ * DÉGRADE donc au lieu de disparaître : le plus long qui tient, puis le groupe
+ * seul, puis rien — et la liste datée dessous continue de tout nommer.
+ *
+ * Largeur estimée à 820 px : la colonne fait 1 020 px au plus large, moins la
+ * marge intérieure de la carte, et moins ce que le sommaire prend à gauche ;
+ * sous-estimer fait taire une étiquette qui aurait tenu, surestimer la fait
+ * déborder. On sous-estime. */
+const LARGEUR_BANDE_ESTIMEE = 820;
+const POSITION_COURTE = {
+  majorite: 'majoritaire',
+  opposition: 'opposition',
+  minoritaire: 'minoritaire',
+};
+
+/* LES CANDIDATES D'UNE ÉTIQUETTE, de la plus complète à la plus courte. La
+ * première qui tient est écrite ; si aucune ne tient, le segment reste nu et la
+ * liste datée dessous fait le travail. Rien n'est tronqué en milieu de mot :
+ * « Secrétariat d'État auprès du mini… » ne dit pas mieux que rien. */
+function candidatesEtiquette(role) {
+  if (role.institution === INSTITUTION_GOUVERNEMENT) {
+    // `detail` porte « Ministère de l'intérieur · gouvernement BARNIER » : le
+    // portefeuille d'abord — le gouvernement est déjà dans la liste datée —,
+    // puis sa tête avant « auprès de » ou « chargé de », puis la fonction.
+    const portefeuille = (role.detail || '').split(' · ')[0] || '';
+    // « Ministère » tout court ne dit rien — on garde la tête seulement quand
+    // elle porte encore un rang, comme « Secrétariat d'État ».
+    const tete = portefeuille.split(/ aupr[èe]s | charg[ée] /)[0].replace(/,$/, '');
+    const court = /^minist[èe]re$/i.test(tete) ? null : tete;
+    return [portefeuille, role.role, court].filter(Boolean);
+  }
+  if (role.institution === INSTITUTION_MISSION) return [role.role];
+
+  // Un siège : le groupe et sa qualification. Le groupe se replie sur son sigle
+  // quand son intitulé est long — « Communiste, Républicain, Citoyen et des
+  // Sénateurs du Parti de Gauche » ne tient dans aucun segment.
+  const position = POSITION_COURTE[role.position] || null;
+  const groupe = role.detail || null;
+  const sigle = groupe ? sigleDeGroupePolitique(groupe) : null;
+  const formes = [groupe, sigle && sigle !== groupe ? sigle : null].filter(Boolean);
+  const candidates = [];
+  for (const forme of formes) {
+    if (position) candidates.push(`${forme} · ${position}`);
+    candidates.push(forme);
+  }
+  if (position) candidates.push(position);
+  // Dernier recours : le mandat lui-même. Il fait doublon avec la légende, mais
+  // un segment large et muet en dit moins — c'est le cas des sièges européens,
+  // dont le corpus ne porte aucun groupe politique.
+  candidates.push(role.role);
+  return candidates.filter(Boolean);
+}
+
+function etiquetteSegment(role, largeur) {
+  const place = (largeur / 100) * LARGEUR_BANDE_ESTIMEE;
+  for (const texte of candidatesEtiquette(role)) {
+    if (texte.length * 6.2 + 16 <= place) return texte;
+  }
+  return null;
+}
+
+/* LES ANNÉES SOUS LA BANDE. Deux bornes ne situent rien au milieu : un segment
+ * qui commence au tiers de la frise ne se date qu'en comptant. Le pas est choisi
+ * pour rendre entre quatre et huit repères, quelle que soit la carrière — deux
+ * ans pour Glucksmann, dix pour une carrière de quarante ans. */
+function anneesDeLAxe(bornes) {
+  const debut = Number(annee(bornes.debut));
+  const fin = Number(annee(bornes.fin));
+  if (!debut || !fin || fin <= debut) return [];
+  const pas = [1, 2, 5, 10, 20].find((p) => (fin - debut) / p <= 7) ?? 25;
+  const annees = [];
+  for (let a = Math.ceil(debut / pas) * pas; a <= fin; a += pas) annees.push(a);
+  if (annees[0] !== debut) annees.unshift(debut);
+  if (annees[annees.length - 1] !== fin) annees.push(fin);
+  return annees;
+}
+
 function classeInstitution(role) {
   if (role.institution === INSTITUTION_MISSION) return 'cp-fs--mission';
   if (role.institution === INSTITUTION_GOUVERNEMENT) {
@@ -183,7 +265,7 @@ function Frise({ parcours }) {
         ))}
       </div>
 
-      <div className="cp-bande">
+      <div className="cp-bande" style={{ height: Math.max(46, nbLignes * 24) }}>
         {roles.map((r) => {
           const gauche = positionSurAxe(r.debut, bornes);
           const largeur = Math.max(0.6, positionSurAxe(r.fin, bornes) - gauche);
@@ -198,14 +280,19 @@ function Frise({ parcours }) {
                 height: `${hauteurLigne.toFixed(2)}%`,
               }}
               title={`${r.role} — ${periode(r.debut, r.fin, r.actif)}`}
-            />
+            >
+              {etiquetteSegment(r, largeur)}
+            </span>
           );
         })}
       </div>
 
       <div className="cp-axe">
-        <span>{annee(bornes.debut)}</span>
-        <span>{annee(bornes.fin)}</span>
+        {anneesDeLAxe(bornes).map((a) => (
+          <span key={a} style={{ left: `${positionSurAxe(`${a}-01-01`, bornes).toFixed(2)}%` }}>
+            {a}
+          </span>
+        ))}
       </div>
 
       <div className="cp-legende">

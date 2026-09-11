@@ -283,7 +283,7 @@ def test_la_teinte_d_un_banc_est_declaree_une_seule_fois(feuille):
     # Quatre institutions, trois teintes et une encre d'absence — le Sénat n'a
     # pas de teinte propre, et la sarcelle #169E9E lui est réservée pour le jour
     # où sa collecte sera rebranchée (docs/decisions/teintes-des-institutions-328.md).
-    teintes = {"--parl": "#803060", "--gouv": "#9e6f29", "--pe": "#003399", "--neutre": "#9a958d"}
+    teintes = {"--parl": "#803060", "--gouv": "#85510d", "--pe": "#003399", "--neutre": "#9a958d"}
     for jeton, valeur in teintes.items():
         assert f"{jeton}: {valeur}" in fiche, f"`{jeton}` est déclaré sur la fiche"
         assert feuille.count(valeur) == 1, (

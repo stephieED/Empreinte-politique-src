@@ -58,10 +58,13 @@
   --parl-wash: #f2eaef;
   --parl-line: #dfcbd7;
   --parl-pale: #ece0e7;
-  --gouv: #9e6f29;
-  --gouv-wash: #f5f1ea;
-  --gouv-line: #e7dbca;
-  --gouv-pale: #f0e9df;
+  /* Assombri pour porter du texte : la frise écrit dans ses segments, et le
+     blanc sur l'ocre d'avant rendait 4,41:1 — sous le seuil AA. À 6,60:1 il
+     passe, et les cinq contrôles de palette tiennent (ΔE 10,7 / 15,3). */
+  --gouv: #85510d;
+  --gouv-wash: #f3eee7;
+  --gouv-line: #e0d4c2;
+  --gouv-pale: #ede5db;
   --pe: #003399;
   --pe-wash: #e6ebf5;
   --pe-line: #bfcce6;
@@ -804,25 +807,44 @@
   background: var(--border-strong);
 }
 
+/* La hauteur vient du NOMBRE DE LIGNES, en ligne : une bande de 46 px répartie
+   sur quatre pistes donne 11 px par segment, où aucun texte ne tient. */
 .cp-bande {
   position: relative;
-  height: 46px;
   background: var(--border);
   border-radius: 6px;
   overflow: hidden;
 }
 
 /*
- * Un segment de bande. La TEINTE porte l'institution, le MOTIF porte la
- * position. Le motif est un `::after` en `inset: 0` — c'est sans risque ici
- * parce que la bande ne porte AUCUN texte : un libellé peint par-dessous
- * deviendrait illisible, et c'est précisément le défaut corrigé sur la maquette.
+ * Un segment de bande. La TEINTE porte l'institution, et le segment ÉCRIT ce
+ * qu'il est quand il en a la place — groupe et position pour un siège, le
+ * portefeuille pour un ministère. L'étiquette se dégrade plutôt que de déborder
+ * (`etiquetteSegment`), et la liste datée dessous nomme tout, toujours.
+ *
+ * L'encre suit la teinte : blanc sur les trois foncées, encre sur le neutre et
+ * sur le jaune du chef de gouvernement. Mesuré — blanc sur `--gouv` rendait
+ * 4,41:1 avant que la teinte soit assombrie, il rend 6,60:1.
  */
 .cp-fs {
   position: absolute;
+  display: flex;
+  align-items: center;
   border-radius: 3px;
   min-width: 5px;
   overflow: hidden;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  color: #fff;
+}
+
+.cp-fs--senat,
+.cp-fs--chef,
+.cp-fs--mission {
+  color: var(--ink);
 }
 
 .cp-fs--parlement {
@@ -850,14 +872,31 @@
   border: 1.5px dashed var(--gouv);
 }
 
+/* Les années sont POSÉES sur l'axe, pas réparties : une graduation doit tomber
+   sous ce qu'elle date. Les deux extrêmes se rabattent vers l'intérieur pour ne
+   pas déborder de la carte. */
 .cp-axe {
-  display: flex;
-  justify-content: space-between;
+  position: relative;
+  height: 14px;
   margin-top: 7px;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.05em;
   color: var(--muted);
+}
+
+.cp-axe span {
+  position: absolute;
+  transform: translateX(-50%);
+  font-variant-numeric: tabular-nums;
+}
+
+.cp-axe span:first-child {
+  transform: none;
+}
+
+.cp-axe span:last-child {
+  transform: translateX(-100%);
 }
 
 /* NI TITRE, NI FILET. « Légende » nommait ce que la forme dit déjà — des pavés

@@ -224,9 +224,9 @@ export function siegesElectifs(mandats) {
 }
 
 const CHAMBRE_ROLE = {
-  AN: 'Député·e',
-  Senat: 'Sénateur·rice',
-  PE: 'Député·e européen·ne',
+  AN: 'Député(e)',
+  Senat: 'Sénateur(rice)',
+  PE: 'Député(e) européen(ne)',
   mairie: 'Maire',
 };
 
