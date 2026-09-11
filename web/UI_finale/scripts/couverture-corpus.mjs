@@ -217,6 +217,7 @@ export function construireCouverture({ repoRoot, slugsPublies = null }) {
   const amendements = lireAmendements(repoRoot, candidats);
 
   const bornes = bornesPubliees(candidats);
+  const finsPE = finsEuropeennes(candidats);
 
   const dMandat = (m) => iso(m.debut);
   const dVote = (s) => iso(s.date);
@@ -450,6 +451,7 @@ export function construireCouverture({ repoRoot, slugsPublies = null }) {
           cle: 'votes',
           titre: 'Votes et scrutins',
           borne: null,
+          finSource: finsPE.votes ?? null,
           couches: [couche('cand', CAND, votesPE, dVote)],
           champs: [
             champ('avec une date de scrutin', [
@@ -467,6 +469,7 @@ export function construireCouverture({ repoRoot, slugsPublies = null }) {
           cle: 'amendements',
           titre: 'Amendements',
           borne: null,
+          finSource: finsPE.amendements ?? null,
           couches: [couche('cand', CAND, amendementsPE, dAmdt)],
           champs: [
             champ('avec une date de dépôt', [
@@ -487,6 +490,7 @@ export function construireCouverture({ repoRoot, slugsPublies = null }) {
           cle: 'textes_portes',
           titre: 'Textes portés',
           borne: null,
+          finSource: finsPE.textes_portes ?? null,
           couches: [couche('cand', CAND, textesPE, dTexte)],
           champs: [
             champ('rattachés à leur texte ou dossier', [
@@ -507,6 +511,7 @@ export function construireCouverture({ repoRoot, slugsPublies = null }) {
           cle: 'interventions',
           titre: 'Interventions',
           borne: null,
+          finSource: finsPE.interventions ?? null,
           couches: [couche('cand', CAND, parolesPE, dParole)],
           champs: champsInterventions(parolesPE, dParole, CAND),
         },
@@ -605,6 +610,28 @@ function bornesPubliees(candidats) {
         if (e.etat !== 'couvert' && e.etat !== 'fait_etabli') continue;
         const debut = iso(e.portee?.debut);
         if (debut && (!out[liste] || debut < out[liste])) out[liste] = debut;
+      }
+    }
+  }
+  return out;
+}
+
+/* CE QUE LA SOURCE EUROPÉENNE DÉCLARE, ET SEULEMENT CELA.
+ *
+ * `couverture_profil.bornes_europeennes` (#683) écrit, liste par liste, la
+ * dernière date parue chez la source pour chaque fiche : « ce qui suit n'est
+ * pas absent, il n'est pas encore paru chez elle ». Pour le corpus, c'est la
+ * PLUS TARDIVE des fiches. Le début, lui, n'est pas une borne — la première
+ * donnée d'une personne dit quand elle a commencé, pas depuis quand la source
+ * publie — et rien n'est dessiné avant. */
+function finsEuropeennes(candidats) {
+  const out = {};
+  for (const d of candidats) {
+    for (const [liste, etats] of Object.entries(d.couverture || {})) {
+      for (const e of etats || []) {
+        if (e.source !== PE || e.etat !== 'couvert') continue;
+        const fin = iso(e.portee?.fin);
+        if (fin && (!out[liste] || fin > out[liste])) out[liste] = fin;
       }
     }
   }

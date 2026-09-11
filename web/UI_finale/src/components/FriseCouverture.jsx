@@ -10,10 +10,11 @@ import './FriseCouverture.css';
  * institution, ses listes ; sous chaque liste, ses champs.
  *
  * LA FICHE D'ORIGINE n'est ni un niveau ni une teinte : candidats,
- * gouvernements, groupes vivent dans le MÊME rail, en une seule encre —
- * « données collectées » (11/09/2026). Elle a été une teinte par population ;
- * le bleu des candidats se lisait comme celui de l'Union une fois les
- * institutions teintées (#328). Le survol d'un segment nomme encore la fiche.
+ * gouvernements, groupes vivent dans le MÊME rail, une seule catégorie —
+ * « données collectées » (11/09/2026). La teinte est celle de l'INSTITUTION,
+ * la même que sur les fiches (`teintes-des-institutions-328`) : Assemblée
+ * prune, Gouvernement ocre, Parlement européen bleu de l'Union. Le survol d'un
+ * segment nomme encore la fiche d'où il vient.
  */
 
 const AXE_DEBUT = 2000;
@@ -122,9 +123,26 @@ export default function FriseCouverture({ couverture }) {
       );
     });
 
+  /* APRÈS LA DERNIÈRE PARUTION À LA SOURCE. Le Parlement européen déclare, liste
+   * par liste, la date au-delà de laquelle sa source ne publie plus rien dans
+   * ce corpus (`couverture_profil.bornes_europeennes`, #683) : ce qui suit n'est
+   * pas absent, il n'est pas encore paru chez elle. C'est un fait sur la
+   * source — la hachure pâle, pas le jaune. */
+  const apresSource = (piste) => {
+    if (!piste.finSource || piste.finSource >= collecteLe) return null;
+    return (
+      <span
+        className="fc-horssource"
+        style={{ left: `${posDate(piste.finSource)}%`, right: 0 }}
+        title={`rien de paru à la source après le ${jour(piste.finSource)}`}
+      />
+    );
+  };
+
   const rail = (piste, couches, avecQueue) => (
     <div className="fc-rail">
       {avantBorne(piste)}
+      {apresSource(piste)}
       {couches.map((c) => (
         <div
           key={c.origine || c.titre}
@@ -166,7 +184,7 @@ export default function FriseCouverture({ couverture }) {
           </div>
 
           {hierarchie.map((inst) => (
-            <div className="fc-groupe" key={inst.cle}>
+            <div className={`fc-groupe fc-groupe--${inst.cle}`} key={inst.cle}>
               <div className="fc-groupe-titre">{inst.titre}</div>
               {inst.pistes.map((piste) => {
                 const cle = `${inst.cle}-${piste.cle}`;

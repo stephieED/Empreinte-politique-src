@@ -31,6 +31,16 @@ vont de la première à la dernière donnée de chaque personne : ce sont des fa
 sur la personne, pas sur ce que la source publie. `bornesPubliees` les écarte ;
 une piste européenne déclare `borne: null` et la frise n'y hachure rien.
 
+**Après la dernière parution, la hachure « non publié ».** Le pipeline déclare,
+liste par liste et fiche par fiche, la date au-delà de laquelle la source ne
+publie plus rien dans ce corpus (`bornes_europeennes`, #683) ; pour le corpus,
+c'est la plus tardive — votes 11/03/2026, amendements 08/12/2025, textes
+14/01/2026, interventions 14/07/2026. **Avant la première donnée, rien** : sur
+cinq des sept fiches de candidats déclarés qui ont siégé au Parlement européen (Jordan Bardella, masqué, compris), les interventions
+commencent des années après le mandat — le 22/11/2016 pour Marine Le Pen,
+élue en 2004 —, et le dépôt ne dit pas si la source ne publie pas ou si la
+collecte ne l'a pas demandé. Hachure ou jaune, l'un des deux serait faux.
+
 **Le tableau « Ce qui manque » ne compte que les entrées de l'Assemblée** : il
 est rapporté aux fiches qui y ont siégé, et une fiche dont les seuls votes sont
 européens n'en porte aucun de l'Assemblée.

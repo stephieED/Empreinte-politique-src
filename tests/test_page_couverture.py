@@ -122,6 +122,8 @@ def test_les_origines_se_superposent_dans_un_seul_rail(frise: str) -> None:
     assert "--pop-" not in feuille and "fc-couche--" not in frise, (
         "les faits portés sont une seule catégorie, « Données collectées »"
     )
+    for inst in ("AN", "gouvernement", "PE"):
+        assert f".fc-groupe--{inst} {{ --fc-inst:" in feuille, f"la teinte de l'institution {inst} manque"
     assert "Données collectées" in frise
     assert "position: absolute" in feuille and "inset: 0" in feuille
 
@@ -234,6 +236,7 @@ def test_le_parlement_europeen_a_ses_listes_et_ne_deplace_pas_la_borne_de_l_asse
         mandatsAN: total('AN', 'mandats'), mandatsPE: total('PE', 'mandats'),
         parolesAN: total('AN', 'interventions'), parolesPE: total('PE', 'interventions'),
         bornePE: c.hierarchie.find((i) => i.cle === 'PE').pistes.every((p) => p.borne === null),
+        finPE: c.hierarchie.find((i) => i.cle === 'PE').pistes.find((p) => p.cle === 'votes').finSource,
       }}));
     """
     res = subprocess.run(["node", "--input-type=module", "-e", script],
@@ -245,6 +248,7 @@ def test_le_parlement_europeen_a_ses_listes_et_ne_deplace_pas_la_borne_de_l_asse
         "mandatsAN": 1, "mandatsPE": 1,
         "parolesAN": 0, "parolesPE": 1,
         "bornePE": True,
+        "finPE": "2017-05-17",
     }
 
 

@@ -439,7 +439,7 @@ Le mentionnent sans le gouverner : [`absences-publiees-comme-faits-556-558-560`]
 
 ## `src/couverture_profil.py`
 
-7 décision(s) le gouvernent ; le module en cite 3.
+8 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
@@ -449,6 +449,7 @@ Le mentionnent sans le gouverner : [`absences-publiees-comme-faits-556-558-560`]
 | [Une exception n'est pas une preuve, et un défaut de notre code n'est pas une panne de l'Assemblée nationale (#562) (2026-08-28)](decisions/defaut-collecte-vs-panne-562.md) | `MOTIFS_PANNE`, `_preuve_defaut_collecte` |
 | [`meta.warnings[]` déclare son destinataire, dans un jumeau typé et aligné (#642) (2026-08-31)](decisions/destinataire-avertissements-642.md) | `MOTIFS_DEFAUT_COLLECTE`, `MOTIFS_JAMAIS_PANNE`, `MOTIFS_PANNE` |
 | [Les dossiers du roster passent sous une case, le motif qui les écartait est tombé (#817)](decisions/dossiers-legislatifs-sous-le-formulaire-817.md) | `DECISIONS_ROSTER` |
+| [Le Parlement européen prend sa place sur `/couverture`, et cesse de déplacer les bornes de l'Assemblée — 11/09/2026 (#328)](decisions/parlement-europeen-sur-la-couverture-328.md) | `bornes_europeennes` |
 | [L'européen entre dans les listes que la fiche a déjà (#683, lot 2)](decisions/stockage-europeen-dans-les-listes-existantes-683.md) | `bornes_europeennes` |
 
 Le mentionnent sans le gouverner : [`couverture-remplacee-par-liste-602`](decisions/couverture-remplacee-par-liste-602.md), [`fiches-groupe-17e-legislature-700`](decisions/fiches-groupe-17e-legislature-700.md), [`lecture-dumps-parltrack-683`](decisions/lecture-dumps-parltrack-683.md), [`pied-de-site-et-section-6-328`](decisions/pied-de-site-et-section-6-328.md), [`preuve-de-borne-dite-une-fois-328`](decisions/preuve-de-borne-dite-une-fois-328.md).
