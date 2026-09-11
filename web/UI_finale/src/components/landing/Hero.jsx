@@ -98,7 +98,7 @@ export default function Hero() {
             Voir un profil candidat
           </Link>
           <Link className="landing-cta" to={`/groupes/${DEFAULT_GROUP_ID}`}>
-            Voir un profil de groupe
+            Voir un profil de groupe parlementaire
           </Link>
           <Link className="landing-cta" to={`/gouvernements/${DEFAULT_GOVERNMENT_ID}`}>
             Voir un profil de gouvernement
