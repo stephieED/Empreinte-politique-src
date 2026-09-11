@@ -169,6 +169,7 @@ function Frise({ parcours }) {
   const deuxNiveaux = reperes.some((r) => r.niveau === 1);
 
   return (
+    <>
     <div className="cp-carte cp-frise">
       <div className="cp-reperes" style={{ height: deuxNiveaux ? 46 : 30 }}>
         {reperes.map((r) => (
@@ -217,18 +218,6 @@ function Frise({ parcours }) {
             </span>
           ))}
         </div>
-        {/* LA NOTE DEVIENT UN RENVOI. Elle disait « Majorité, minorité et
-            opposition selon l'AN » — la seule phrase qui rattachait les trois
-            postures à l'Assemblée plutôt qu'à nous (§2 règle 2). La frise ne les
-            porte plus, mais la liste des rôles les écrit toujours : le fait doit
-            donc rester dit quelque part. Il l'est là où vivent les explications,
-            et la fiche ne garde que le renvoi — même forme que les cinq autres
-            sections. */}
-        <p className="cp-methodo">
-          <Link to="/methodologie#fonctions">
-            Majorité, minorité et opposition : la qualification vient de l’Assemblée →
-          </Link>
-        </p>
       </div>
 
       {/* Le détail daté se replie : c'est du DÉTAIL, et il n'a pas à s'imposer
@@ -258,6 +247,21 @@ function Frise({ parcours }) {
       </ul>
       </details>
     </div>
+
+    {/* LE RENVOI EST UN PIED DE SECTION, pas une variante : c'est la forme que
+        `Section` rend sous le bloc blanc — `cp-section-pied`, et la flèche en
+        fin de ligne. « En bref » n'est pas un `Section` et ne peut pas passer
+        par sa prop `pied` ; la classe, elle, est la même, donc le lecteur voit
+        le même objet au même endroit.
+
+        Il remplace la note « Majorité, minorité et opposition selon l'AN » — la
+        seule phrase qui rattachait les trois postures à l'Assemblée plutôt qu'à
+        nous (§2 règle 2). La frise ne les porte plus, mais la liste des rôles
+        les écrit toujours : le fait reste dit, là où vivent les explications. */}
+    <p className="cp-section-pied">
+      <Link to="/methodologie#fonctions">Majorité, minorité et opposition, selon l’Assemblée →</Link>
+    </p>
+    </>
   );
 }
 
