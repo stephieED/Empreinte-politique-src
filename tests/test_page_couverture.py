@@ -170,11 +170,87 @@ def test_les_trois_marqueurs_sont_des_champs_publies(generateur: str) -> None:
 
 
 def test_le_senat_et_le_parlement_europeen_sortent_de_la_piste_assemblee(generateur: str) -> None:
-    """Leur mandat est publié, leur activité n'est pas collectée (#528) : les
-    ranger sous « Assemblée nationale » dirait une activité que nous n'avons
-    pas."""
+    """Ni l'un ni l'autre n'est de l'activité à l'Assemblée : les ranger sous
+    « Assemblée nationale » dirait une activité qui n'y a pas eu lieu."""
     assert "const HORS_ASSEMBLEE = new Set(['Senat', 'PE'])" in generateur
     assert "estMandatAssemblee" in generateur
+
+
+def _corpus_minimal(tmp_path: Path) -> Path:
+    """Une fiche de candidat qui porte un vote de chaque institution, et les
+    deux `couverture` que la collecte écrit : la borne de l'Assemblée, et la
+    `portee` européenne, qui va de la première à la dernière donnée."""
+    import json
+
+    profils = tmp_path / "pivot_data" / "profiles"
+    profils.mkdir(parents=True)
+    (tmp_path / "pivot_data" / "scrutins.json").write_text(json.dumps({"scrutins": [
+        {"id": "an:16:1", "date": "2023-02-01", "source_url": "https://www.assemblee-nationale.fr/s1"},
+    ]}), encoding="utf-8")
+    fiche = {
+        "id": "x", "nom": "X", "meta": {"provenance": "candidat_declare", "genere_le": "2026-09-11"},
+        "mandats": [
+            {"categorie": "mandat_electif", "chambre": "AN", "debut": "2022-06-22", "categorie_source": "an"},
+            {"categorie": "commission", "debut": "2010-01-01", "categorie_source": "europarl"},
+        ],
+        "votes": [
+            {"scrutin_id": "an:16:1", "position": "pour"},
+            {"scrutin_id": None, "position": "contre", "scrutin_non_resolu": {
+                "institution": "parlement_europeen", "date": "2005-03-10",
+                "reference_dossier": "2004/0001(COD)", "source_url": "https://www.europarl.europa.eu/v"}},
+        ],
+        "interventions": [
+            {"date": "2006-01-01", "sujet": "S", "source": {"institution": "parlement_europeen"}},
+        ],
+        "couverture": {"votes": [
+            {"etat": "couvert", "portee": {"debut": "2012-06-20"}},
+            {"etat": "couvert", "source": "parlement_europeen", "portee": {"debut": "2004-09-15", "fin": "2017-05-17"}},
+        ]},
+    }
+    (profils / "x.pivot.json").write_text(json.dumps(fiche), encoding="utf-8")
+    return tmp_path
+
+
+def test_le_parlement_europeen_a_ses_listes_et_ne_deplace_pas_la_borne_de_l_assemblee(tmp_path: Path) -> None:
+    """Mesuré le 11/09/2026 sur les 30 fiches de candidats publiées : 160 mandats, 383 textes et 5 329 interventions
+    européens comptés sous l'Assemblée, 11 013 votes et 7 303 amendements nulle
+    part, et la `portee` européenne d'une fiche prise pour la borne des votes de
+    l'Assemblée — 2004 au lieu de 2012. Rien de tout cela ne lève d'erreur."""
+    import json
+    import shutil
+    import subprocess
+
+    if shutil.which("node") is None:
+        pytest.skip("node absent")
+    racine = _corpus_minimal(tmp_path)
+    script = f"""
+      const m = await import({json.dumps(GENERATEUR.as_uri())});
+      const c = m.construireCouverture({{ repoRoot: {json.dumps(str(racine))} }});
+      const total = (inst, cle) => c.hierarchie.find((i) => i.cle === inst)
+        .pistes.find((p) => p.cle === cle).couches.reduce((s, x) => s + x.total, 0);
+      process.stdout.write(JSON.stringify({{
+        borne: c.bornes.votes,
+        votesAN: total('AN', 'votes'), votesPE: total('PE', 'votes'),
+        mandatsAN: total('AN', 'mandats'), mandatsPE: total('PE', 'mandats'),
+        parolesAN: total('AN', 'interventions'), parolesPE: total('PE', 'interventions'),
+        bornePE: c.hierarchie.find((i) => i.cle === 'PE').pistes.every((p) => p.borne === null),
+      }}));
+    """
+    res = subprocess.run(["node", "--input-type=module", "-e", script],
+                         capture_output=True, text=True, check=False)
+    assert res.returncode == 0, res.stderr
+    assert json.loads(res.stdout) == {
+        "borne": "2012-06-20",
+        "votesAN": 1, "votesPE": 1,
+        "mandatsAN": 1, "mandatsPE": 1,
+        "parolesAN": 0, "parolesPE": 1,
+        "bornePE": True,
+    }
+
+
+def test_le_parlement_europeen_n_est_plus_une_ligne_non_collectee(frise: str) -> None:
+    assert "cle: 'PE'" not in frise, "le Parlement européen a ses listes : il vit dans la hiérarchie"
+    assert "cle: 'Senat'" in frise, "le Sénat garde sa ligne — mandat publié, activité hors périmètre"
 
 
 # ── Règle 4 : deux absences, deux colonnes ──────────────────────────────────

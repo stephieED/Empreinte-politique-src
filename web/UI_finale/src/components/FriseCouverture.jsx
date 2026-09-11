@@ -30,7 +30,6 @@ const GRADUATIONS = [2005, 2010, 2015, 2020, 2025];
  * hachure pâle de ce qu'on ne peut pas lire. */
 const SANS_ACTIVITE = [
   { cle: 'Senat', titre: 'Sénat', quoi: 'Le mandat est publié, l’activité n’est pas collectée.' },
-  { cle: 'PE', titre: 'Parlement européen', quoi: 'Le mandat est publié, l’activité n’est pas collectée.' },
   { cle: 'local', titre: 'Mandats locaux', quoi: 'Aucune source identifiée : ni le mandat, ni l’activité.' },
 ];
 
@@ -67,7 +66,11 @@ export default function FriseCouverture({ couverture }) {
    * la première donnée réellement portée. Une hachure ne passe jamais par-dessus
    * un fait. */
   const avantBorne = (piste) => {
-    const b = bornes[piste.cle];
+    // Une piste qui déclare `borne: null` n'a pas de borne de source connue
+    // (le Parlement européen) : rien n'est hachuré, plutôt qu'une hachure posée
+    // sur sa première donnée, qui ne dirait rien.
+    if ('borne' in piste && !piste.borne) return null;
+    const b = piste.borne ?? bornes[piste.cle];
     const mini = piste.couches.reduce(
       (m, c) => c.periodes.reduce((n, x) => (!n || x[0] < n ? x[0] : n), m),
       null,

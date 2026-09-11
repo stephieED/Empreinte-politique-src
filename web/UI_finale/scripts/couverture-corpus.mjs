@@ -87,12 +87,29 @@ export const estTexteMinisteriel = (t) => t?.role === 'initiateur_projet_de_loi'
 export const estParoleMinisterielle = (i) =>
   Boolean(i?.fonction) && QUALITE_GOUVERNEMENTALE.test(i.fonction);
 
-/* Les mandats hors Assemblée ne sont pas de l'activité parlementaire française
- * publiée : le Sénat et le Parlement européen ont leur propre ligne, où la
- * page dit que le mandat est publié et l'activité non collectée (#528). */
+/* LE PARLEMENT EUROPÉEN EST UNE INSTITUTION DU DÉPÔT, pas une ligne « non
+ * collectée » (11/09/2026). Le corpus en porte les cinq listes, collectées via
+ * ParlTrack, et chacune le dit par un marqueur publié — jamais par un intitulé :
+ *   - un mandat : `chambre === 'PE'` ou `categorie_source === 'europarl'` —
+ *     180 commissions et délégations ne portent pas de `chambre` ;
+ *   - un vote : `scrutin_non_resolu.institution`, l'Assemblée seule publiant
+ *     un identifiant de scrutin que l'index partagé résout ;
+ *   - un amendement : `amendement_non_resolu.institution` ;
+ *   - un texte : `institution` ;
+ *   - une intervention : `source.institution`.
+ * Mesuré sur les 30 fiches de candidats publiées le 11/09/2026 : sans ces marqueurs, 160
+ * mandats, 383 textes et 5 329 interventions européens étaient comptés sous
+ * l'Assemblée, et les 11 013 votes et 7 303 amendements n'étaient nulle part.
+ * Le Sénat garde sa ligne : le mandat publié, l'activité hors périmètre (#528). */
+const PE = 'parlement_europeen';
 const HORS_ASSEMBLEE = new Set(['Senat', 'PE']);
+export const estMandatEuropeen = (m) => m?.chambre === 'PE' || m?.categorie_source === 'europarl';
 export const estMandatAssemblee = (m) =>
-  !estMandatGouvernemental(m) && !HORS_ASSEMBLEE.has(m?.chambre);
+  !estMandatGouvernemental(m) && !HORS_ASSEMBLEE.has(m?.chambre) && !estMandatEuropeen(m);
+export const estVoteEuropeen = (v) => v?.scrutin_non_resolu?.institution === PE;
+export const estAmendementEuropeen = (a) => a?.amendement_non_resolu?.institution === PE;
+export const estTexteEuropeen = (t) => t?.institution === PE;
+export const estParoleEuropeenne = (i) => i?.source?.institution === PE;
 
 /* ── Construction ───────────────────────────────────────────────────────── */
 
@@ -167,12 +184,21 @@ export function construireCouverture({ repoRoot, slugsPublies = null }) {
   const mandats = candidats.flatMap((d) => d.mandats || []);
   const mandatsAN = mandats.filter(estMandatAssemblee);
   const mandatsGouv = mandats.filter(estMandatGouvernemental);
+  const mandatsPE = mandats.filter(estMandatEuropeen);
   const textes = candidats.flatMap((d) => d.textes_portes || []);
   const textesMinistre = textes.filter(estTexteMinisteriel);
-  const textesParlement = textes.filter((t) => !estTexteMinisteriel(t));
+  const textesPE = textes.filter(estTexteEuropeen);
+  const textesParlement = textes.filter((t) => !estTexteMinisteriel(t) && !estTexteEuropeen(t));
   const paroles = candidats.flatMap((d) => d.interventions || []);
   const parolesGouv = paroles.filter(estParoleMinisterielle);
-  const parolesAN = paroles.filter((i) => !estParoleMinisterielle(i));
+  const parolesPE = paroles.filter(estParoleEuropeenne);
+  const parolesAN = paroles.filter((i) => !estParoleMinisterielle(i) && !estParoleEuropeenne(i));
+  // Un vote ou un amendement européen porte ses champs sous son `*_non_resolu`
+  // (§5) : c'est ce bloc qui est lu, pas un identifiant qu'il n'a pas.
+  const votesPE = candidats.flatMap((d) => d.votes || []).filter(estVoteEuropeen)
+    .map((v) => v.scrutin_non_resolu);
+  const amendementsPE = candidats.flatMap((d) => d.amendements || []).filter(estAmendementEuropeen)
+    .map((a) => a.amendement_non_resolu);
 
   // Un vote pivot ne porte que { scrutin_id, position } : sa date vit dans
   // l'index partagé (#432). Le scrutin est joint, jamais deviné.
@@ -226,6 +252,10 @@ export function construireCouverture({ repoRoot, slugsPublies = null }) {
             champ('avec un lien vers la source', [
               apport('cand', CAND, mandatsAN, (m) => m.source_url, dMandat),
             ]),
+            champ('avec une date de fin ou de sortie', [
+              apport('grp', GRP, membresGroupes, (m) => iso(m.fin_dans_groupe), dMembreGroupe),
+            ]),
+            // Propre à l'Assemblée : après les champs communs aux institutions.
             champ('appartenances de groupe avec le banc déclaré', [
               apport(
                 'cand',
@@ -234,9 +264,6 @@ export function construireCouverture({ repoRoot, slugsPublies = null }) {
                 (m) => m.position_dans_hemicycle,
                 dMandat,
               ),
-            ]),
-            champ('avec une date de fin ou de sortie', [
-              apport('grp', GRP, membresGroupes, (m) => iso(m.fin_dans_groupe), dMembreGroupe),
             ]),
           ],
         },
@@ -255,6 +282,11 @@ export function construireCouverture({ repoRoot, slugsPublies = null }) {
             champ('rattachés à leur texte ou dossier', [
               apport('cand', CAND, votes, dossierDuScrutin, dVote),
             ]),
+            champ('avec un lien vers la source', [
+              apport('cand', CAND, votes, (s) => s.source_url, dVote),
+              apport('grp', GRP, cohesion, (c) => c.scrutin?.source_url, dCohesion),
+            ]),
+            // Propres à l'Assemblée : après les champs communs aux institutions.
             champ('avec la commission saisie au fond', [
               apport(
                 'cand',
@@ -383,6 +415,103 @@ export function construireCouverture({ repoRoot, slugsPublies = null }) {
         },
       ],
     },
+    /* LES MÊMES SOUS-PARTIES QUE L'ASSEMBLÉE, ET LES MÊMES CHAMPS quand la
+     * donnée a la même nature. Un champ propre à l'Assemblée — la commission
+     * saisie au fond, le banc déclaré — n'a pas d'équivalent ici et n'est pas
+     * rendu. Un champ commun que la source ne remplit pas l'est, à zéro : « 0
+     * sur 383 » dit que le sort d'un texte européen n'est pas publié.
+     *
+     * AUCUNE BORNE DE SOURCE n'est dessinée : les `portee` européennes des
+     * profils vont de la première à la dernière donnée de chaque personne, ce
+     * ne sont pas des bornes de publication. Les faire passer pour telles
+     * dessinait sur l'Assemblée une hachure qui s'arrêtait en 2004. */
+    {
+      cle: 'PE',
+      titre: 'Parlement européen',
+      pistes: [
+        {
+          cle: 'mandats',
+          titre: 'Mandats et appartenances',
+          borne: null,
+          couches: [couche('cand', CAND, mandatsPE, dMandat)],
+          champs: [
+            champ('avec une date de début ou d’entrée', [
+              apport('cand', CAND, mandatsPE, (m) => iso(m.debut), dMandat),
+            ]),
+            champ('avec un lien vers la source', [
+              apport('cand', CAND, mandatsPE, (m) => m.source_url, dMandat),
+            ]),
+            champ('avec une date de fin ou de sortie', [
+              apport('cand', CAND, mandatsPE, (m) => iso(m.fin), dMandat),
+            ]),
+          ],
+        },
+        {
+          cle: 'votes',
+          titre: 'Votes et scrutins',
+          borne: null,
+          couches: [couche('cand', CAND, votesPE, dVote)],
+          champs: [
+            champ('avec une date de scrutin', [
+              apport('cand', CAND, votesPE, (s) => iso(s.date), dVote),
+            ]),
+            champ('rattachés à leur texte ou dossier', [
+              apport('cand', CAND, votesPE, (s) => s.reference_dossier, dVote),
+            ]),
+            champ('avec un lien vers la source', [
+              apport('cand', CAND, votesPE, (s) => s.source_url, dVote),
+            ]),
+          ],
+        },
+        {
+          cle: 'amendements',
+          titre: 'Amendements',
+          borne: null,
+          couches: [couche('cand', CAND, amendementsPE, dAmdt)],
+          champs: [
+            champ('avec une date de dépôt', [
+              apport('cand', CAND, amendementsPE, (a) => iso(a.date), dAmdt),
+            ]),
+            champ('rattachés à leur texte ou dossier', [
+              apport('cand', CAND, amendementsPE, (a) => a.texte_vise, dAmdt),
+            ]),
+            champ('avec un sort publié', [
+              apport('cand', CAND, amendementsPE, (a) => a.sort, dAmdt),
+            ]),
+            champ('avec un lien vers la source', [
+              apport('cand', CAND, amendementsPE, (a) => a.source_url, dAmdt),
+            ]),
+          ],
+        },
+        {
+          cle: 'textes_portes',
+          titre: 'Textes portés',
+          borne: null,
+          couches: [couche('cand', CAND, textesPE, dTexte)],
+          champs: [
+            champ('rattachés à leur texte ou dossier', [
+              apport('cand', CAND, textesPE, (t) => t.dossier_id, dTexte),
+            ]),
+            champ('avec leur stade de procédure', [
+              apport('cand', CAND, textesPE, (t) => t.stade_procedural, dTexte),
+            ]),
+            champ('avec un sort ou un statut publié', [
+              apport('cand', CAND, textesPE, (t) => t.sort, dTexte),
+            ]),
+            champ('avec un lien vers la source', [
+              apport('cand', CAND, textesPE, (t) => t.source_url, dTexte),
+            ]),
+          ],
+        },
+        {
+          cle: 'interventions',
+          titre: 'Interventions',
+          borne: null,
+          couches: [couche('cand', CAND, parolesPE, dParole)],
+          champs: champsInterventions(parolesPE, dParole, CAND),
+        },
+      ],
+    },
   ];
 
   return {
@@ -464,6 +593,11 @@ function bornesPubliees(candidats) {
   for (const d of candidats) {
     for (const [liste, etats] of Object.entries(d.couverture || {})) {
       for (const e of etats || []) {
+        /* Une entrée européenne n'est pas une borne : sa `portee` va de la
+         * première à la dernière donnée de la personne. La prendre pour une
+         * borne de publication faisait commencer les votes de l'Assemblée au
+         * 15/09/2004 — la première donnée européenne d'une fiche. */
+        if (e.source === PE) continue;
         /* `couvert` et `fait_etabli` disent tous deux « publiée à partir
          * de » : les interventions portent le second, et ne retenir que le
          * premier laissait leur borne vide — donc aucune hachure, donc un
@@ -527,11 +661,14 @@ function couvertureFiches(candidats, bornes) {
       .map((m) => iso(m.fin) || '9999-99-99')
       .sort()
       .pop();
+  /* Rapporté aux fiches qui ont SIÉGÉ À L'ASSEMBLÉE, un manquant ne se
+   * comble pas par des entrées européennes : une fiche dont les seuls votes
+   * sont européens n'en porte aucun de l'Assemblée. */
   const LISTES = [
-    ['votes', 'Votes', (d) => (d.votes || []).length],
-    ['amendements', 'Amendements', (d) => (d.amendements || []).length],
-    ['textes_portes', 'Textes portés', (d) => (d.textes_portes || []).length],
-    ['interventions', 'Interventions', (d) => (d.interventions || []).length],
+    ['votes', 'Votes', (d) => (d.votes || []).filter((v) => !estVoteEuropeen(v)).length],
+    ['amendements', 'Amendements', (d) => (d.amendements || []).filter((a) => !estAmendementEuropeen(a)).length],
+    ['textes_portes', 'Textes portés', (d) => (d.textes_portes || []).filter((t) => !estTexteEuropeen(t)).length],
+    ['interventions', 'Interventions', (d) => (d.interventions || []).filter((i) => !estParoleEuropeenne(i)).length],
   ];
   return {
     fiches: candidats.length,
