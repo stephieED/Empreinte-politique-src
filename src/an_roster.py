@@ -761,7 +761,18 @@ def fusionner_intervalles(
     Une période ouverte (`fin is None`) absorbe tout ce qui la suit : rien ne
     commence après ce qui n'a pas fini.
     """
-    datees = sorted((d, f) for d, f in periodes if d)
+    # La clé de tri ne compare JAMAIS une fin ouverte à une date : deux mandats
+    # de même début dont l'un est clos et l'autre ouvert faisaient comparer
+    # `None` à une chaîne, et `sorted` levait. Un seul couple de tout l'index
+    # GP porte cette forme au 11/09/2026 — Stéphane Lenormand (`PA795244`),
+    # LIOT-17, 2024-07-19 → 2025-02-28 puis 2024-07-19 → ouvert — et il
+    # suffisait à faire tomber le roster du groupe (#815). À début égal,
+    # l'ordre est indifférent : la période ouverte absorbe l'autre dans les
+    # deux sens.
+    datees = sorted(
+        ((d, f) for d, f in periodes if d),
+        key=lambda p: (str(p[0]), p[1] is None, str(p[1] or "")),
+    )
     if not datees:
         return []
     fusionnees: list[tuple[Optional[str], Optional[str]]] = []

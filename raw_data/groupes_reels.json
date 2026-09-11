@@ -712,6 +712,236 @@
           "AN:ECOLO:16"
         ],
         "ecart_motif": "Publication configurée par #815, pour fermer une lignée entre la XVe et la XVIIe. L'organe PO845439 est relu dans l'index AMO30 des groupes politiques le 2026-09-10 : sigle `ECOS` (libelleAbrev ; `EcoS` en libelleAbrege), « Écologiste et Social », 2024-07-18 → en cours. 39 mandats pour 38 acteurs distincts, et 38 après filtrage des mandats de transit (an_roster.est_mandat_de_transit) : aucun transit sur cet organe. 24 des 38 ont déjà une entrée dans raw_data/correspondance_acteurs_an.json ; les 14 autres reçoivent un slug fabriqué au roster (#527, #708 §3) puis leur entrée dérivée à la passe hors ligne (#715). `effectif_publie` reste null jusqu'à la parution."
+      },
+      {
+        "groupe_sigle": "DEM",
+        "groupe_id": "AN:DEM:15",
+        "legislature": "15",
+        "fichier": "groupe-AN-DEM-15.json",
+        "sigles_an": [
+          "MODEM",
+          "DEM"
+        ],
+        "organes_an": [
+          "PO730970",
+          "PO774834"
+        ],
+        "position_politique_an": {
+          "position": "minoritaire",
+          "verifie_le": "2026-09-11",
+          "organes": [
+            {
+              "organe_an": "PO730970",
+              "sigle_an": "MODEM",
+              "valeur_source": "Minoritaire",
+              "position": "minoritaire"
+            },
+            {
+              "organe_an": "PO774834",
+              "sigle_an": "DEM",
+              "valeur_source": "Minoritaire",
+              "position": "minoritaire"
+            }
+          ]
+        },
+        "effectif_amo30": 67,
+        "effectif_publie": null,
+        "verifie_le": "2026-09-11",
+        "membres_avec_slug": 11,
+        "ecart_membres": [],
+        "ecart_motif": "Publication configurée par #815, pour déclarer la lignée MoDem. Deux organes successifs dans la même législature, relus dans l'index AMO30 des groupes politiques le 2026-09-11 : PO730970 (`MODEM`, « Mouvement Démocrate et apparentés », 2017-06-27 → 2020-09-23) puis PO774834 (`DEM`, « Mouvement Démocrate (MoDem) et Démocrates apparentés », 2020-09-24 → 2022-06-21). Même motif que `SOC`/`SOC-A` sur la XVIe : l'AN ferme un organe et rouvre le suivant le lendemain, et c'est l'UNION des deux qui rend le groupe — sans elle, trois ans sur cinq seraient perdus. 131 mandats pour 67 acteurs distincts, et 67 après filtrage des mandats de transit (an_roster.est_mandat_de_transit) : aucun transit sur ces organes. 11 des 67 ont déjà une entrée dans raw_data/correspondance_acteurs_an.json ; les 56 autres reçoivent un slug fabriqué au roster (#527, #708 §3) puis leur entrée dérivée à la passe hors ligne (#715). `effectif_publie` reste null jusqu'à la parution."
+      },
+      {
+        "groupe_sigle": "DEM",
+        "groupe_id": "AN:DEM:16",
+        "legislature": "16",
+        "fichier": "groupe-AN-DEM-16.json",
+        "sigles_an": [
+          "DEM"
+        ],
+        "organes_an": [
+          "PO800484"
+        ],
+        "position_politique_an": {
+          "position": "minoritaire",
+          "verifie_le": "2026-09-11",
+          "organes": [
+            {
+              "organe_an": "PO800484",
+              "sigle_an": "DEM",
+              "valeur_source": "Minoritaire",
+              "position": "minoritaire"
+            }
+          ]
+        },
+        "effectif_amo30": 58,
+        "effectif_publie": null,
+        "verifie_le": "2026-09-11",
+        "membres_avec_slug": 5,
+        "ecart_membres": [],
+        "succede_a": [
+          "AN:DEM:15"
+        ],
+        "ecart_motif": "Publication configurée par #815, pour déclarer la lignée MoDem. L'organe PO800484 est relu dans l'index AMO30 des groupes politiques le 2026-09-11 : sigle `DEM` (libelleAbrev ; `Dem` en libelleAbrege), « Démocrate (MoDem et Indépendants) », 2022-06-28 → 2024-06-09. 62 mandats pour 58 acteurs distincts, et 58 après filtrage des mandats de transit (an_roster.est_mandat_de_transit) : aucun transit sur cet organe. 5 des 58 ont déjà une entrée dans raw_data/correspondance_acteurs_an.json ; les 53 autres reçoivent un slug fabriqué au roster (#527, #708 §3) puis leur entrée dérivée à la passe hors ligne (#715). `effectif_publie` reste null jusqu'à la parution."
+      },
+      {
+        "groupe_sigle": "DEM",
+        "groupe_id": "AN:DEM:17",
+        "legislature": "17",
+        "fichier": "groupe-AN-DEM-17.json",
+        "sigles_an": [
+          "DEM"
+        ],
+        "organes_an": [
+          "PO845454"
+        ],
+        "position_politique_an": {
+          "position": "non_declaree",
+          "verifie_le": "2026-09-11",
+          "organes": [
+            {
+              "organe_an": "PO845454",
+              "sigle_an": "DEM",
+              "valeur_source": null,
+              "position": null
+            }
+          ]
+        },
+        "effectif_amo30": 42,
+        "effectif_publie": null,
+        "verifie_le": "2026-09-11",
+        "membres_avec_slug": 6,
+        "ecart_membres": [],
+        "succede_a": [
+          "AN:DEM:16"
+        ],
+        "ecart_motif": "Publication configurée par #815, pour déclarer la lignée MoDem. L'organe PO845454 est relu dans l'index AMO30 des groupes politiques le 2026-09-11 : sigle `DEM` (libelleAbrev ; `Dem` en libelleAbrege), « Les Démocrates », 2024-07-18 → en cours. 46 mandats pour 42 acteurs distincts, et 42 après filtrage des mandats de transit (an_roster.est_mandat_de_transit) : aucun transit sur cet organe. 6 des 42 ont déjà une entrée dans raw_data/correspondance_acteurs_an.json ; les 36 autres reçoivent un slug fabriqué au roster (#527, #708 §3) puis leur entrée dérivée à la passe hors ligne (#715). `effectif_publie` reste null jusqu'à la parution."
+      },
+      {
+        "groupe_sigle": "HOR",
+        "groupe_id": "AN:HOR:16",
+        "legislature": "16",
+        "fichier": "groupe-AN-HOR-16.json",
+        "sigles_an": [
+          "HOR"
+        ],
+        "organes_an": [
+          "PO800514"
+        ],
+        "position_politique_an": {
+          "position": "minoritaire",
+          "verifie_le": "2026-09-11",
+          "organes": [
+            {
+              "organe_an": "PO800514",
+              "sigle_an": "HOR",
+              "valeur_source": "Minoritaire",
+              "position": "minoritaire"
+            }
+          ]
+        },
+        "effectif_amo30": 36,
+        "effectif_publie": null,
+        "verifie_le": "2026-09-11",
+        "membres_avec_slug": 12,
+        "ecart_membres": [],
+        "ecart_motif": "Publication configurée par #815, pour déclarer la lignée Horizons. L'organe PO800514 est relu dans l'index AMO30 des groupes politiques le 2026-09-11 : sigle `HOR` (libelleAbrev ; `HOR` en libelleAbrege), « Horizons et apparentés », 2022-06-28 → 2024-06-09. 40 mandats pour 36 acteurs distincts, et 36 après filtrage des mandats de transit (an_roster.est_mandat_de_transit) : aucun transit sur cet organe. 12 des 36 ont déjà une entrée dans raw_data/correspondance_acteurs_an.json ; les 24 autres reçoivent un slug fabriqué au roster (#527, #708 §3) puis leur entrée dérivée à la passe hors ligne (#715). `effectif_publie` reste null jusqu'à la parution."
+      },
+      {
+        "groupe_sigle": "HOR",
+        "groupe_id": "AN:HOR:17",
+        "legislature": "17",
+        "fichier": "groupe-AN-HOR-17.json",
+        "sigles_an": [
+          "HOR"
+        ],
+        "organes_an": [
+          "PO845470"
+        ],
+        "position_politique_an": {
+          "position": "non_declaree",
+          "verifie_le": "2026-09-11",
+          "organes": [
+            {
+              "organe_an": "PO845470",
+              "sigle_an": "HOR",
+              "valeur_source": null,
+              "position": null
+            }
+          ]
+        },
+        "effectif_amo30": 44,
+        "effectif_publie": null,
+        "verifie_le": "2026-09-11",
+        "membres_avec_slug": 14,
+        "ecart_membres": [],
+        "succede_a": [
+          "AN:HOR:16"
+        ],
+        "ecart_motif": "Publication configurée par #815, pour déclarer la lignée Horizons. L'organe PO845470 est relu dans l'index AMO30 des groupes politiques le 2026-09-11 : sigle `HOR` (libelleAbrev ; `HOR` en libelleAbrege), « Horizons & Indépendants », 2024-07-18 → en cours. 52 mandats pour 44 acteurs distincts, et 44 après filtrage des mandats de transit (an_roster.est_mandat_de_transit) : aucun transit sur cet organe. 14 des 44 ont déjà une entrée dans raw_data/correspondance_acteurs_an.json ; les 30 autres reçoivent un slug fabriqué au roster (#527, #708 §3) puis leur entrée dérivée à la passe hors ligne (#715). `effectif_publie` reste null jusqu'à la parution."
+      },
+      {
+        "groupe_sigle": "LIOT",
+        "groupe_id": "AN:LIOT:16",
+        "legislature": "16",
+        "fichier": "groupe-AN-LIOT-16.json",
+        "sigles_an": [
+          "LIOT"
+        ],
+        "organes_an": [
+          "PO800532"
+        ],
+        "position_politique_an": {
+          "position": "opposition",
+          "verifie_le": "2026-09-11",
+          "organes": [
+            {
+              "organe_an": "PO800532",
+              "sigle_an": "LIOT",
+              "valeur_source": "Opposition",
+              "position": "opposition"
+            }
+          ]
+        },
+        "effectif_amo30": 22,
+        "effectif_publie": null,
+        "verifie_le": "2026-09-11",
+        "membres_avec_slug": 5,
+        "ecart_membres": [],
+        "ecart_motif": "Publication configurée par #815, pour déclarer la lignée LIOT. L'organe PO800532 est relu dans l'index AMO30 des groupes politiques le 2026-09-11 : sigle `LIOT` (libelleAbrev ; `LIOT` en libelleAbrege), « Libertés, Indépendants, Outre-mer et Territoires », 2022-06-28 → 2024-06-09. 23 mandats pour 22 acteurs distincts, et 22 après filtrage des mandats de transit (an_roster.est_mandat_de_transit) : aucun transit sur cet organe. 5 des 22 ont déjà une entrée dans raw_data/correspondance_acteurs_an.json ; les 17 autres reçoivent un slug fabriqué au roster (#527, #708 §3) puis leur entrée dérivée à la passe hors ligne (#715). `effectif_publie` reste null jusqu'à la parution."
+      },
+      {
+        "groupe_sigle": "LIOT",
+        "groupe_id": "AN:LIOT:17",
+        "legislature": "17",
+        "fichier": "groupe-AN-LIOT-17.json",
+        "sigles_an": [
+          "LIOT"
+        ],
+        "organes_an": [
+          "PO845485"
+        ],
+        "position_politique_an": {
+          "position": "non_declaree",
+          "verifie_le": "2026-09-11",
+          "organes": [
+            {
+              "organe_an": "PO845485",
+              "sigle_an": "LIOT",
+              "valeur_source": null,
+              "position": null
+            }
+          ]
+        },
+        "effectif_amo30": 26,
+        "effectif_publie": null,
+        "verifie_le": "2026-09-11",
+        "membres_avec_slug": 5,
+        "ecart_membres": [],
+        "succede_a": [
+          "AN:LIOT:16"
+        ],
+        "ecart_motif": "Publication configurée par #815, pour déclarer la lignée LIOT. L'organe PO845485 est relu dans l'index AMO30 des groupes politiques le 2026-09-11 : sigle `LIOT` (libelleAbrev ; `LIOT` en libelleAbrege), « Libertés, Indépendants, Outre-mer et Territoires », 2024-07-18 → en cours. 30 mandats pour 26 acteurs distincts, et 26 après filtrage des mandats de transit (an_roster.est_mandat_de_transit) : aucun transit sur cet organe. 5 des 26 ont déjà une entrée dans raw_data/correspondance_acteurs_an.json ; les 21 autres reçoivent un slug fabriqué au roster (#527, #708 §3) puis leur entrée dérivée à la passe hors ligne (#715). `effectif_publie` reste null jusqu'à la parution."
       }
     ]
   },
@@ -971,6 +1201,76 @@
       "chambre": "AN",
       "legislature": "17",
       "fichier": "groupe-AN-ECOS-17.json"
+    },
+    {
+      "roster_chambre": "deputes",
+      "groupe_id": "AN:DEM:15",
+      "lignee_id": "AN:LIGNEE:DEM",
+      "groupe_sigle": "DEM",
+      "groupe_nom": "Mouvement Démocrate (MoDem) et Démocrates apparentés",
+      "chambre": "AN",
+      "legislature": "15",
+      "fichier": "groupe-AN-DEM-15.json"
+    },
+    {
+      "roster_chambre": "deputes",
+      "groupe_id": "AN:DEM:16",
+      "lignee_id": "AN:LIGNEE:DEM",
+      "groupe_sigle": "DEM",
+      "groupe_nom": "Démocrate (MoDem et Indépendants)",
+      "chambre": "AN",
+      "legislature": "16",
+      "fichier": "groupe-AN-DEM-16.json"
+    },
+    {
+      "roster_chambre": "deputes",
+      "groupe_id": "AN:DEM:17",
+      "lignee_id": "AN:LIGNEE:DEM",
+      "groupe_sigle": "DEM",
+      "groupe_nom": "Les Démocrates",
+      "chambre": "AN",
+      "legislature": "17",
+      "fichier": "groupe-AN-DEM-17.json"
+    },
+    {
+      "roster_chambre": "deputes",
+      "groupe_id": "AN:HOR:16",
+      "lignee_id": "AN:LIGNEE:HOR",
+      "groupe_sigle": "HOR",
+      "groupe_nom": "Horizons et apparentés",
+      "chambre": "AN",
+      "legislature": "16",
+      "fichier": "groupe-AN-HOR-16.json"
+    },
+    {
+      "roster_chambre": "deputes",
+      "groupe_id": "AN:HOR:17",
+      "lignee_id": "AN:LIGNEE:HOR",
+      "groupe_sigle": "HOR",
+      "groupe_nom": "Horizons & Indépendants",
+      "chambre": "AN",
+      "legislature": "17",
+      "fichier": "groupe-AN-HOR-17.json"
+    },
+    {
+      "roster_chambre": "deputes",
+      "groupe_id": "AN:LIOT:16",
+      "lignee_id": "AN:LIGNEE:LIOT",
+      "groupe_sigle": "LIOT",
+      "groupe_nom": "Libertés, Indépendants, Outre-mer et Territoires",
+      "chambre": "AN",
+      "legislature": "16",
+      "fichier": "groupe-AN-LIOT-16.json"
+    },
+    {
+      "roster_chambre": "deputes",
+      "groupe_id": "AN:LIOT:17",
+      "lignee_id": "AN:LIGNEE:LIOT",
+      "groupe_sigle": "LIOT",
+      "groupe_nom": "Libertés, Indépendants, Outre-mer et Territoires",
+      "chambre": "AN",
+      "legislature": "17",
+      "fichier": "groupe-AN-LIOT-17.json"
     }
   ],
   "lignees": [
@@ -1042,6 +1342,27 @@
       "lignee_nom": "Socialiste, Écologiste et Républicain (Sénat)",
       "chambre": "Senat",
       "fichier": "lignee-Senat-SER.json",
+      "verifie_le": "2026-09-11"
+    },
+    {
+      "lignee_id": "AN:LIGNEE:DEM",
+      "lignee_nom": "Les Démocrates",
+      "chambre": "AN",
+      "fichier": "lignee-AN-DEM.json",
+      "verifie_le": "2026-09-11"
+    },
+    {
+      "lignee_id": "AN:LIGNEE:HOR",
+      "lignee_nom": "Horizons & Indépendants",
+      "chambre": "AN",
+      "fichier": "lignee-AN-HOR.json",
+      "verifie_le": "2026-09-11"
+    },
+    {
+      "lignee_id": "AN:LIGNEE:LIOT",
+      "lignee_nom": "Libertés, Indépendants, Outre-mer et Territoires",
+      "chambre": "AN",
+      "fichier": "lignee-AN-LIOT.json",
       "verifie_le": "2026-09-11"
     }
   ]
