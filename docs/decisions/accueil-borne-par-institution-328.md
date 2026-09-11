@@ -2,7 +2,7 @@
 
 `2026-09-11`
 
-> **En bref** — un candidat dont la carrière précède ce que publient les sources voit une partie de son parcours absente de sa fiche, et la propriétaire veut que le lecteur le sache **dès l'accueil**, sans ouvrir `/couverture` ; « Sources & fraîcheur des données » passe en tête de la colonne de droite et s'ouvre sur **une borne par institution**, sans le détail des listes, rendue en maquette puis annotée (artifact `a946d942`, cinq versions) ; en dessous, **« Les mandats hors couverture »** nomme les fiches concernées, calculées au build : **2** avec un mandat au Sénat collecté mais non exploitable, **11 sur 30** sans aucun mandat dans le corpus (« Mandats locaux et autres ») ; la troisième ligne, « Mandat antérieur à la publication des données de l'Assemblée nationale », **attend un champ de la fiche**, car la règle calculable sur le corpus — « premier mandat lu le 19/06/2002 » — se trompait sur **3 des 5 cas** vérifiés sur Sycomore, senat.fr et Légifrance ; la hachure d'une institution n'est dessinée que si **toutes** ses listes déclarent une borne, d'où **aucune hachure pour le Gouvernement**, dont la borne était empruntée à l'AMO30 alors que le corpus ne porte aucune fonction gouvernementale avant le 18/05/2007 (#859) ; « Un fait, une source », un fait fictif relevé par l'audit du 29/08, est retiré ; l'accroche devient « … des parcours **politiques** ».
+> **En bref** — un candidat dont la carrière précède ce que publient les sources voit une partie de son parcours absente de sa fiche, et la propriétaire veut que le lecteur le sache **dès l'accueil**, sans ouvrir `/couverture` ; « Sources & fraîcheur des données » passe en tête de la colonne de droite et s'ouvre sur **une borne par institution**, sans le détail des listes, rendue en maquette puis annotée (artifact `a946d942`, cinq versions) ; en dessous, **« Les mandats hors couverture »** nomme les fiches concernées, calculées au build : **2** avec un mandat au Sénat collecté mais non exploitable, **11 sur 30** sans aucun mandat dans le corpus (« Mandats locaux et autres ») ; la troisième ligne, « Mandat antérieur à la publication des données de l'Assemblée nationale », **se lit dans un champ de la fiche relu à la main** (#860), car la règle calculable sur le corpus — « premier mandat lu le 19/06/2002 » — se trompait sur **3 des 5 cas** vérifiés sur Sycomore, senat.fr et Légifrance ; la hachure d'une institution n'est dessinée que si **toutes** ses listes déclarent une borne, d'où **aucune hachure pour le Gouvernement**, dont la borne était empruntée à l'AMO30 alors que le corpus ne porte aucune fonction gouvernementale avant le 18/05/2007 (#859) ; « Un fait, une source », un fait fictif relevé par l'audit du 29/08, est retiré ; l'accroche devient « … des parcours **politiques** ».
 
 ## Contexte
 
@@ -35,13 +35,14 @@ liste sans borne suffit à ne plus pouvoir le dire de l'institution entière.
 de famille, chacun menant à sa fiche. « Mandats locaux et autres » est la formulation
 retenue par la propriétaire pour les fiches sans aucun mandat dans le corpus.
 
-**La ligne des mandats antérieurs attend la fiche.** Vérifié le 11/09/2026 sur les
-sources officielles : Ségolène Royal, Nicolas Dupont-Aignan, Bernard Cazeneuve,
-Bruno Retailleau et Jean-Luc Mélenchon ont exercé un mandat national avant ce que
-publient les sources. La règle « premier mandat lu le jour de la borne » n'en
-retrouvait que deux. Le besoin est transmis à la session Backend ; le choix des
-sources (Sycomore, Wikidata au-delà de P4123, Légifrance, senat.fr) revient à la
-propriétaire, car il touche au périmètre (AGENTS §7, #528).
+**La ligne des mandats antérieurs se lit sur la fiche.** Vérifié le 11/09/2026
+sur les sources officielles : Ségolène Royal, Nicolas Dupont-Aignan, Bernard
+Cazeneuve, Bruno Retailleau et Jean-Luc Mélenchon ont exercé un mandat national
+avant ce que publient les sources. La règle « premier mandat lu le jour de la
+borne » n'en retrouvait que deux. La propriétaire a tranché pour une table relue
+à la main, portée par chaque fiche sous `mandats_anterieurs` (#860, PR #861) ;
+l'accueil nomme les fiches dont la liste est non vide, et une fiche « non relue »
+(`null`) n'y figure pas. La ligne paraît au premier run après la fusion de #861.
 
 ## Alternative écartée
 

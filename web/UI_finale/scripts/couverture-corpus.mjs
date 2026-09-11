@@ -693,13 +693,16 @@ function accueil(hierarchie, bornes, candidats) {
     return { cle: inst.cle, titre: inst.titre, debut, hachureJusqua: toutesBornees ? hachure : null };
   });
 
-  /* LES FICHES HORS COUVERTURE, NOMMÉES — calculées sur les mandats publiés,
+  /* LES FICHES HORS COUVERTURE, NOMMÉES — calculées sur les fiches publiées,
    * jamais écrites à la main : une liste recopiée n'accueille pas le prochain
-   * candidat déclaré. La troisième ligne de la maquette — « mandat antérieur à
-   * la publication des données de l'Assemblée nationale » — attend le champ
-   * que le pipeline doit collecter sur la fiche : le corpus seul ne la déduit
-   * pas (vérifié le 11/09/2026 : la règle « premier mandat lu le 19/06/2002 »
-   * se trompait sur 3 des 5 cas). */
+   * candidat déclaré.
+   *
+   * « MANDAT ANTÉRIEUR À LA PUBLICATION DES DONNÉES DE L'ASSEMBLÉE NATIONALE »
+   * se lit dans `mandats_anterieurs`, la table relue sur Sycomore et le Journal
+   * officiel que le pipeline porte sur chaque fiche (#860). Le corpus seul ne la
+   * déduisait pas : la règle « premier mandat lu le 19/06/2002 » se trompait sur
+   * 3 des 5 cas (11/09/2026). Une fiche « non relue » (`null`) n'y figure pas :
+   * absent n'est pas « aucun ». */
   const personne = (d) => ({ id: d.id, nom: d.nom });
   // Rangés par nom de famille — le dernier mot du nom publié.
   const famille = (nom) => nom.split(' ').pop();
@@ -712,7 +715,11 @@ function accueil(hierarchie, bornes, candidats) {
     .filter((d) => !(d.mandats || []).length)
     .map(personne)
     .sort(parNom);
-  return { institutions, horsCouverture: { senat, sansMandat } };
+  const anterieurs = candidats
+    .filter((d) => Array.isArray(d.mandats_anterieurs) && d.mandats_anterieurs.length > 0)
+    .map(personne)
+    .sort(parNom);
+  return { institutions, horsCouverture: { anterieurs, senat, sansMandat } };
 }
 
 /** La date de collecte la plus récente parmi les fiches publiées. */

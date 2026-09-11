@@ -320,6 +320,15 @@ def test_l_accueil_dit_depuis_quand_et_nomme_sans_rien_ecrire_a_la_main(tmp_path
     (profils / "z.pivot.json").write_text(json.dumps({
         "id": "z", "nom": "Zoé Sansmandat", "meta": {"provenance": "candidat_declare"}, "mandats": [],
     }), encoding="utf-8")
+    # Relue avec un mandat antérieur ; relue sans ; non relue (`null`) : seule
+    # la première est nommée — absent n'est pas « aucun ».
+    for slug, anterieurs in (("r", [{"institution": "assemblee_nationale", "debut": "1988-06-13"}]),
+                             ("v", []), ("n", None)):
+        (profils / f"{slug}.pivot.json").write_text(json.dumps({
+            "id": slug, "nom": f"Nom {slug.upper()}", "meta": {"provenance": "candidat_declare"},
+            "mandats": [{"categorie": "mandat_electif", "chambre": "AN", "debut": "2002-06-19"}],
+            "mandats_anterieurs": anterieurs,
+        }), encoding="utf-8")
     script = f"""
       const m = await import({json.dumps(GENERATEUR.as_uri())});
       const c = m.construireCouverture({{ repoRoot: {json.dumps(str(racine))} }});
@@ -327,6 +336,7 @@ def test_l_accueil_dit_depuis_quand_et_nomme_sans_rien_ecrire_a_la_main(tmp_path
       process.stdout.write(JSON.stringify({{
         an: i.AN.hachureJusqua, pe: i.PE.hachureJusqua, peDebut: i.PE.debut,
         gouvBorne: c.hierarchie.find((x) => x.cle === 'gouvernement').pistes.find((p) => p.cle === 'mandats').borne,
+        anterieurs: c.accueil.horsCouverture.anterieurs.map((p) => p.id),
         senat: c.accueil.horsCouverture.senat.map((p) => p.id),
         sansMandat: c.accueil.horsCouverture.sansMandat.map((p) => p.id),
       }}));
@@ -343,7 +353,7 @@ def test_l_accueil_dit_depuis_quand_et_nomme_sans_rien_ecrire_a_la_main(tmp_path
         "pe": None, "peDebut": "2004-09-15",
         # #859 : la borne de l'AMO30 n'est plus prêtée aux fonctions gouvernementales.
         "gouvBorne": None,
-        "senat": ["s"], "sansMandat": ["z"],
+        "anterieurs": ["r"], "senat": ["s"], "sansMandat": ["z"],
     }
 
 

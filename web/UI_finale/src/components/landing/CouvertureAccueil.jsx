@@ -74,10 +74,17 @@ export default function CouvertureAccueil() {
         <span><i className="ca-cle ca-cle--nonc" />Non collectées</span>
         <span><i className="ca-cle ca-cle--hors" />Non publiées par la source</span>
       </p>
-      {(horsCouverture.senat.length > 0 || horsCouverture.sansMandat.length > 0) && (
+      {(horsCouverture.anterieurs?.length > 0 || horsCouverture.senat.length > 0
+        || horsCouverture.sansMandat.length > 0) && (
         <div className="ca-hc">
           <p className="ca-hc-titre">Les mandats hors couverture</p>
           <dl>
+            {horsCouverture.anterieurs?.length > 0 && (
+              <div>
+                <dt>Mandat antérieur à la publication des données de l'Assemblée nationale</dt>
+                <dd>{fiches(horsCouverture.anterieurs)}</dd>
+              </div>
+            )}
             {horsCouverture.senat.length > 0 && (
               <div>
                 <dt>Mandat au Sénat collecté mais non exploitable</dt>
