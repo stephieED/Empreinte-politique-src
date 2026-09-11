@@ -149,9 +149,11 @@ Full rationale: `web/old/v3/methodologie.html` — do not duplicate prose here.
 
 **"No French source is collected from Regards Citoyens any more" does not mean "the corpus
 is under Licence Ouverte" (#530).** Share-alike survives on two counts: Parltrack is a
-*live* source under ODbL, and 475 of 476 published profiles still carry a
-`sources[].type` of `nosdeputes`/`nossenateurs` (511 published interventions still link to
-`www.nosdeputes.fr`) — `merge_pivot_profile` unions `sources[]` by type, so additive
+*live* source under ODbL, and — **measured on 27/08/2026, commit `74c77c2`** — 475 of
+476 published profiles still carried a `sources[].type` of `nosdeputes`/`nossenateurs`
+(511 published interventions still linked to `www.nosdeputes.fr`). The date is part of
+the evidence: re-measure before relying on it, never read it as today's corpus
+(`docs/decisions/licence-lot-6-530.md`). `merge_pivot_profile` unions `sources[]` by type, so additive
 regeneration never drops them. Attribution stays due while the fields stay published
 (§2 rule 2), exactly as `docs/decisions/retrait-senat-528.md` §4 already ruled.
 
@@ -317,15 +319,12 @@ When something does need deciding, five parts, in this order:
 - `docs/data-architecture.md`: what the data becomes — the eight outputs of
   `pivot_data/` (profiles, groupes, lignees, gouvernements, partis, scrutins,
   amendements, commissions_dossiers). `lignees/` est arrivé avec #836 : **une**
-  fiche par LIGNÉE de groupe — 23 fiches de groupe publiées pour 10 lignées — et
-  c'est la seule collection que l'interface publie côté groupes. **`commissions_dossiers.json` est produit et versionné depuis le commit de
-  données `5de11422`** (02/09/2026) — 6 024 dossiers, 1,2 Mo : la ligne qui disait ici qu'il
-  « n'a jamais été produit » et que l'empreinte thématique de la fiche candidat
-  « est donc inerte » (#328) est périmée. Les **huit** outputs sont sur disque.
-  Sa jointure `dossier_id` → commission saisie au fond résout **381/381** des
-  dossiers déposés à l'AN et **0** des 174 déposés au Sénat : le référentiel est
-  celui de l'AN, et le Sénat est hors périmètre (#528) — une absence de cause
-  connue, à déclarer et non à combler.
+  fiche par LIGNÉE de groupe, et c'est la seule collection que l'interface
+  publie côté groupes. Les **huit** outputs sont produits et versionnés.
+  `commissions_dossiers.json` ne résout que les dossiers **déposés à l'AN** : le
+  référentiel est celui de l'AN et le Sénat est hors périmètre (#528) — une
+  absence de cause connue, à déclarer et non à combler. Ses volumes et son taux
+  de résolution vivent dans `docs/data-architecture.md`, pas ici.
 - `docs/workflow-generate-data.md`: what a run does — the nine jobs one by one, the
   form, caches, artifacts, budgets, push, automatic retry. **Start here for "what was
   that job again, and why like that".**
