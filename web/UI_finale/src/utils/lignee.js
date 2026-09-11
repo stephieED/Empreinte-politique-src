@@ -284,6 +284,94 @@ function reunirTextes(listes) {
     .sort((x, y) => String(y.dernier ?? '').localeCompare(String(x.dernier ?? '')) || x.dossier.localeCompare(y.dossier));
 }
 
+/* ── Règle : les textes qu'un groupe a portés, un dossier une fois ───────────
+ *
+ * La cascade de la fiche candidat, pour le groupe (annotation de la
+ * propriétaire, 11/09/2026 : « le gabarit candidat, sankey et barres, avec le
+ * switch auteur / rapporteur »). La collecte des textes portés couvre les
+ * membres des groupes depuis le run du 11/09/2026 (`collect_dossiers_legislatifs`,
+ * #835) : 993 des 1 148 profils de membres en portent, 10 092 entrées.
+ *
+ * LA POPULATION EST CELLE DES AMENDEMENTS. Un texte compte pour un maillon s'il
+ * figure dans les `textes_portes[]` d'un de ses membres et que sa `legislature`
+ * est celle du maillon — la règle de #821, lue sur un champ et jamais sur une
+ * date. UN DOSSIER COMPTE UNE FOIS : une proposition de loi cosignée par
+ * quarante membres est un texte, pas quarante (#643, même règle que les
+ * amendements distincts).
+ *
+ * DEUX QUALITÉS, JAMAIS UNE TROISIÈME. Auteur (d'une proposition de loi ou de
+ * résolution) et rapporteur (ou co-rapporteur). `initiateur_projet_de_loi` est
+ * écarté : un projet de loi est signé comme MINISTRE, et un membre du
+ * gouvernement ne porte pas un texte au nom de son groupe (#689). Un même
+ * dossier peut porter les deux qualités — un membre l'a déposé, un autre en est
+ * rapporteur : il est alors dans les deux, et une seule fois quand les deux
+ * sont retenues ensemble, comme `cumulerTypes`.
+ *
+ * LE STADE D'UN DOSSIER EST LE PLUS AVANCÉ que ses copies portent : c'est un
+ * fait du dossier, recopié sur chaque profil à la date de sa collecte. */
+export const QUALITES_TEXTE = {
+  auteur: ['auteur_proposition_de_loi', 'auteur_proposition_de_resolution', 'auteur'],
+  rapporteur: ['rapporteur', 'co-rapporteur'],
+};
+const QUALITE_DU_ROLE = Object.fromEntries(
+  Object.entries(QUALITES_TEXTE).flatMap(([q, roles]) => roles.map((r) => [r, q])),
+);
+const ORDRE_STADES = ['depose', 'examine_commission', 'inscrit_ordre_jour', 'discute_seance', 'adopte', 'promulgue'];
+const rangStade = (s) => ORDRE_STADES.indexOf(s);
+
+export function qualiteDuRole(role) {
+  return QUALITE_DU_ROLE[role] ?? null;
+}
+
+export function textesDuMaillon(entrees, commissionDuDossier = () => null) {
+  const parDossier = new Map();
+  for (const t of entrees || []) {
+    const qualite = qualiteDuRole(t?.role);
+    if (!qualite || !t.dossier_id) continue;
+    let d = parDossier.get(t.dossier_id);
+    if (!d) {
+      const c = commissionDuDossier(t.dossier_id);
+      d = {
+        dossier_id: t.dossier_id,
+        titre: t.titre ?? null,
+        nature_texte: t.nature_texte ?? null,
+        stade_procedural: t.stade_procedural ?? null,
+        sort: t.sort ?? null,
+        sort_non_resolu: t.sort_non_resolu ?? null,
+        date_min: t.date_min ?? null,
+        date_max: t.date_max ?? null,
+        legislature: t.legislature ?? null,
+        source_url: t.source_url ?? null,
+        commission: c ? { sigle: c.sigle ?? null, nom: c.nom ?? null } : null,
+        roles: {},
+      };
+      parDossier.set(t.dossier_id, d);
+    }
+    if (rangStade(t.stade_procedural) > rangStade(d.stade_procedural)) {
+      d.stade_procedural = t.stade_procedural;
+      d.sort = t.sort ?? d.sort;
+      d.sort_non_resolu = t.sort_non_resolu ?? d.sort_non_resolu;
+    }
+    if (t.date_min && (!d.date_min || t.date_min < d.date_min)) d.date_min = t.date_min;
+    if (t.date_max && (!d.date_max || t.date_max > d.date_max)) d.date_max = t.date_max;
+    if (!d.source_url && t.source_url) d.source_url = t.source_url;
+    // Le rôle retenu par qualité : le premier rencontré, qui se relit tel quel
+    // dans la liste ; le compte des membres qui le portent n'est pas publié —
+    // il se lirait comme un palmarès interne au groupe (§2 règle 1).
+    if (!d.roles[qualite]) d.roles[qualite] = t.role;
+  }
+  return [...parDossier.values()].sort((a, b) => String(b.date_max || '').localeCompare(String(a.date_max || '')));
+}
+
+/* Les textes d'une sélection de qualités, sous la forme que `textesPortes` de
+ * la fiche candidat attend : la même règle de cascade, pas une seconde. */
+export function textesDesQualites(textes, qualites) {
+  const retenues = (qualites || []).filter((q) => QUALITES_TEXTE[q]);
+  return (textes || [])
+    .filter((t) => retenues.some((q) => t.roles?.[q]))
+    .map((t) => ({ ...t, role: retenues.map((q) => t.roles[q]).find(Boolean) }));
+}
+
 /* ── Règle : ce qu'on n'a pas pu lire se dit fiche par fiche ─────────────────
  *
  * La section 6 porte ce que CHAQUE fiche de groupe signale d'elle-même, et

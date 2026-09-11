@@ -23,8 +23,9 @@ import './LigneeProfile.css';
 import NavigationPeriodes from './NavigationPeriodes';
 import { ListeVide } from './Lecture';
 import { LAST_READING_LABEL, formatNumber, styleForPosition } from '../utils/lecture';
-import { cumulerTypes, LISTES_SIGNALEES, motifDePosture, ORDRE_PASSAGES, PASSAGES } from '../utils/lignee';
-import { MATIERE_NON_ETABLIE } from '../utils/profilCandidat';
+import { cumulerTypes, LISTES_SIGNALEES, motifDePosture, ORDRE_PASSAGES, PASSAGES, QUALITES_TEXTE, textesDesQualites } from '../utils/lignee';
+import { Cascade, ListeCascade } from './CascadeTextes';
+import { MATIERE_NON_ETABLIE, textesPortes } from '../utils/profilCandidat';
 import { GRIS_SANS_MATIERE, PALETTE_MATIERE } from '../utils/matiere';
 
 const MOIS = [
@@ -515,6 +516,69 @@ const TYPES_DEPOSANT = {
   depute: 'Comme députés',
   commission_rapporteur: 'Comme rapporteurs de commission',
 };
+const LIBELLES_QUALITE = {
+  auteur: 'Comme auteurs',
+  rapporteur: 'Comme rapporteurs',
+};
+
+/* LES TEXTES QU'ILS ONT PORTÉS — la cascade de la fiche candidat, la même
+ * figure importée (`CascadeTextes.jsx`) et la même règle (`textesPortes`,
+ * utils/profilCandidat.js). Seule change la population : les dossiers portés
+ * par les membres du groupe dans la législature, un dossier une fois
+ * (`textesDuMaillon`, utils/lignee.js). Les deux qualités se sélectionnent
+ * ensemble, comme les types de déposant des amendements. Sous le seuil de
+ * l'examen en commission, rien n'est publié (AGENTS §6). */
+function TextesPortes({ maillon, rangs }) {
+  const [qualites, setQualites] = useState(Object.keys(QUALITES_TEXTE));
+  const [sel, setSel] = useState(null);
+  const textes = useMemo(() => {
+    if (!maillon.textes) return null;
+    const retenus = textesDesQualites(maillon.textes, qualites);
+    const parDossier = new Map(retenus.map((t) => [t.dossier_id, t.commission]));
+    return textesPortes(retenus, (dossier) => parDossier.get(dossier) ?? null);
+  }, [maillon, qualites]);
+  if (!textes) return null;
+  const presentes = Object.keys(QUALITES_TEXTE).filter((q) => maillon.textes.some((t) => t.roles?.[q]));
+  const basculer = (q) => {
+    // Une qualité au moins reste retenue : une cascade vide se lirait « aucun texte ».
+    const suivantes = qualites.includes(q) ? qualites.filter((x) => x !== q) : [...qualites, q];
+    if (suivantes.length) { setQualites(suivantes); setSel(null); }
+  };
+  return (
+    <div className="lp-carte lp-textes">
+      <div className="lp-mat-tete">
+        <span className="lp-mat-titre">Les textes qu'ils ont portés</span>
+        <span className="lp-mat-totaux lp-num">
+          <b>{formatNumber(textes.publies.length)}</b> publiés · <b>{formatNumber(textes.promulgues)}</b>{' '}
+          promulgué{textes.promulgues > 1 ? 's' : ''}
+        </span>
+      </div>
+      {presentes.length > 1 && (
+        <div aria-label="Qualités retenues" className="lp-onglets" role="group">
+          {presentes.map((q) => (
+            <button
+              aria-pressed={qualites.includes(q)}
+              className="lp-filtre"
+              key={q}
+              onClick={() => basculer(q)}
+              type="button"
+            >
+              {LIBELLES_QUALITE[q]}
+            </button>
+          ))}
+        </div>
+      )}
+      {textes.cascade.total > 0 ? (
+        <>
+          <Cascade cascade={textes.cascade} onSelection={setSel} rangs={rangs} selection={sel} />
+          <ListeCascade cascade={textes.cascade} onRaz={() => setSel(null)} selection={sel} />
+        </>
+      ) : (
+        <p className="lp-rien">Aucun de ces textes n'a atteint l'examen en commission.</p>
+      )}
+    </div>
+  );
+}
 const STATUTS_TEXTE = {
   promulgue: 'promulgué',
   adopte: 'adopté',
@@ -564,6 +628,15 @@ function CeQuIlsOntPropose({ lignee }) {
   const actifs = types.filter((t) => choisis.includes(t));
   const selection = actifs.length ? actifs : types.slice(0, 1);
   const bloc = cumulerTypes(m.amendements.parType, selection);
+  /* UNE TEINTE PAR COMMISSION POUR TOUTE LA SECTION : le rang suit le volume
+   * d'amendements du maillon, tous types réunis, et ne bouge ni avec les
+   * boutons ni d'une figure à l'autre — la cascade des textes et les barres
+   * d'amendements colorient pareil (DESIGN_SYSTEM : la couleur suit l'entité,
+   * jamais son rang dans une sélection). */
+  const rangs = useMemo(() => {
+    const tous = cumulerTypes(m.amendements.parType, Object.keys(m.amendements.parType));
+    return new Map((tous?.lignes || []).filter((l) => l.amendements > 0).map((l, i) => [l.commission, i]));
+  }, [m]);
   const basculer = (t) => {
     // Un bouton au moins reste sélectionné : une vue vide se lirait « aucun amendement ».
     const suivants = selection.includes(t) ? selection.filter((x) => x !== t) : [...selection, t];
@@ -580,10 +653,10 @@ function CeQuIlsOntPropose({ lignee }) {
 
   return (
     <Section
-      critere="Amendements distincts : un amendement cosigné par vingt membres compte une fois."
+      critere="Textes et amendements distincts : cosigné par vingt membres, un texte ou un amendement compte une fois."
       numero="3"
       pied={limites.join(' · ') || null}
-      renvoi={{ ancre: 'depots', texte: 'Quels amendements sont retenus, et pourquoi aucun taux d’adoption' }}
+      renvoi={{ ancre: 'depots', texte: 'Quels textes et quels amendements sont retenus, et pourquoi aucun taux d’adoption' }}
       titre="Ce qu'ils ont proposé"
     >
       <Navigation
@@ -594,12 +667,9 @@ function CeQuIlsOntPropose({ lignee }) {
         unite="amendements"
         uniteSingulier="amendement"
       />
-      <ListeVide
-        cause="non_collecte"
-        motif="Les textes portés par les membres des groupes ne sont pas collectés : le dossier législatif n'est relevé que pour les candidats déclarés."
-      />
+      <TeteDePeriode maillon={m} />
+      {m.textes ? <TextesPortes key={m.id} maillon={m} rangs={rangs} /> : null}
       <div className="lp-carte">
-        <TeteDePeriode maillon={m} />
         {!bloc ? <Vide maillon={m} /> : (
           <>
             {types.length > 1 && (
@@ -625,17 +695,20 @@ function CeQuIlsOntPropose({ lignee }) {
               </span>
             </div>
             <div className="lp-mat">
+              {/* Les cases vides d'en-tête portent la classe des barres qu'elles
+                  surplombent : sous 720 px les barres disparaissent, et une case
+                  restée décalait toute la ligne d'une colonne. */}
               <div className="lp-mr lp-mr--tete">
                 <span />
-                <span />
+                <span className="lp-mr-rail" />
                 <span className="lp-mr-n">amendements</span>
                 <span className="lp-mr-n">ratio par texte</span>
-                <span />
+                <span className="lp-mr-rail" />
                 <span className="lp-mr-n">textes distincts</span>
               </div>
               {lignes.map((l, r) => {
                 const densite = l.textes ? l.amendements / l.textes : null;
-                const teinte = PALETTE_MATIERE[r % PALETTE_MATIERE.length];
+                const teinte = PALETTE_MATIERE[(rangs.get(l.commission) ?? r) % PALETTE_MATIERE.length];
                 const ouvert = ouverte === l.commission;
                 return (
                   <div key={l.commission}>
@@ -670,7 +743,7 @@ function CeQuIlsOntPropose({ lignee }) {
                     <span className="lp-mr-rail"><i style={{ background: GRIS_SANS_MATIERE, width: `${((100 * nd.amendements) / maxA).toFixed(1)}%` }} /></span>
                     <span className="lp-mr-n">{formatNumber(nd.amendements)}</span>
                     <span className="lp-mr-n">—</span>
-                    <span />
+                    <span className="lp-mr-rail" />
                     <span className="lp-mr-n lp-mr-n--textes">{nd.textes ? formatNumber(nd.textes) : '—'}</span>
                   </button>
                   {ouverte === MATIERE_NON_ETABLIE && nd.detail.length > 0 && <TextesAmendes detail={nd.detail} />}

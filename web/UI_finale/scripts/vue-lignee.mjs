@@ -205,6 +205,9 @@ export function construireVueLignee({ fichier, lignee, fiches, idsDeFiche, scrut
         denominateur: (groupe.membres || []).length,
       },
       amendements: amendementsDuMaillon(groupe, repartitions.get(maillon.fichier)),
+      // Les textes portés par ses membres, un dossier une fois — `null` quand
+      // la fiche n'en permet pas la lecture (Sénat), jamais une liste vide.
+      textes: repartitions.get(maillon.fichier)?.textes ?? null,
       quorum: quorumDeLaFiche(groupe),
       partage: {
         mesurables: partage.mesurables,

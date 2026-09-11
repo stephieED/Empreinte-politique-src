@@ -425,6 +425,18 @@ def test_ce_qu_on_n_a_pas_pu_lire_renvoie_le_corpus_a_la_page_de_couverture(proj
     assert "warnings" not in section
 
 
+def test_les_textes_portes_reprennent_la_figure_et_la_regle_de_la_fiche_candidat(projection, composant):
+    """La même cascade (`CascadeTextes.jsx`) et la même règle (`textesPortes`) :
+    une figure recopiée divergerait au premier correctif."""
+    assert "import { Cascade, ListeCascade } from './CascadeTextes'" in composant
+    assert "textesPortes(" in composant and "textesDesQualites(" in composant
+    assert "function Cascade(" not in composant
+    candidat = lire(SRC / "components" / "CandidateProfile.jsx")
+    assert "from './CascadeTextes'" in candidat and "function Cascade(" not in candidat
+    assert "textes: repartitions.get(maillon.fichier)?.textes ?? null" in projection
+    assert "ne sont pas collectés" not in composant, "les textes portés des membres sont collectés depuis #835"
+
+
 def test_un_maillon_sans_liste_dit_pourquoi(projection, composant):
     assert "couvertureRoster(groupe)" in projection
     assert "causeListeVide" in composant, "une liste vide dit POURQUOI (#326)"

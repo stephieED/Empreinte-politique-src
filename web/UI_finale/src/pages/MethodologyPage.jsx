@@ -360,9 +360,14 @@ const SECTIONS = [
           son dossier.
         </p>
         <p>
-          Les textes portés par les membres des groupes — propositions de loi, rapports — ne sont
-          pas encore collectés : le dossier législatif n'est relevé que pour les candidats déclarés.
-          La fiche le dit à l'endroit où ils manquent.
+          Les textes portés se lisent avec la même cascade que sur la fiche d'un candidat : jusqu'où
+          chaque texte est allé, de l'examen en commission à la promulgation. Un texte compte
+          <strong> une fois</strong> pour le groupe, quel que soit le nombre de membres qui l'ont
+          déposé ou rapporté, et seulement s'il relève de la législature du groupe. Deux qualités se
+          lisent séparément ou ensemble — auteur d'une proposition, rapporteur d'un texte — et un
+          dossier qui porte les deux ne compte qu'une fois. Un projet de loi n'y figure pas : il est
+          signé par un membre du gouvernement, pas au nom d'un groupe. Sous l'examen en commission,
+          rien n'est publié.
         </p>
       </>
     ),

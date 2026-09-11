@@ -15,6 +15,12 @@
   /* Groupe minoritaire, retenu en maquette le 11/09/2026 : un mauve clair uni,
      dans la famille de l'Assemblée — jamais une teinte de plus. */
   --parl-mauve: #c9a3b9;
+  /* La cascade des textes portés (`CascadeTextes.jsx`) lit les teintes de la
+     fiche candidat : ses colonnes « parlement » et « gouvernement », et la
+     barre de sortie d'une porte. Mêmes valeurs que `CandidateProfile.css`. */
+  --gouv: #85510d;
+  --gouv-wash: #f3eee7;
+  --ter-sortie: #a9a4b0;
   --texte-2: #6e6a78;
   --lavis: #fbfaf8;
 
@@ -1165,4 +1171,8 @@ button.lp-part[aria-pressed='true'] {
   flex-wrap: wrap;
   gap: 6px 20px;
   justify-content: space-between;
+}
+
+.lp-textes {
+  margin-bottom: 14px;
 }

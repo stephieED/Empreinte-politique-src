@@ -20,7 +20,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { legislatureDeAmendementId } from '../src/utils/lecture.js';
-import { TYPES_DEPOSANT_GROUPE, repartitionParCommission } from '../src/utils/lignee.js';
+import { TYPES_DEPOSANT_GROUPE, qualiteDuRole, repartitionParCommission, textesDuMaillon } from '../src/utils/lignee.js';
 
 const lire = (p) => JSON.parse(readFileSync(p, 'utf-8'));
 
@@ -44,7 +44,7 @@ export function repartitionsDesMaillons({ fiches, profilesDir, amendementsDir, c
     const leg = groupe.legislature == null ? null : String(groupe.legislature);
     if (!leg || groupe.chambre !== 'AN') continue;
     if (!parLegislature.has(leg)) parLegislature.set(leg, []);
-    parLegislature.get(leg).push({ fichier, groupe, ids: new Set() });
+    parLegislature.get(leg).push({ fichier, groupe, ids: new Set(), textes: [] });
   }
 
   for (const [leg, maillons] of parLegislature) {
@@ -61,9 +61,16 @@ export function repartitionsDesMaillons({ fiches, profilesDir, amendementsDir, c
     for (const [membreId, siens] of maillonsDe) {
       const profilPath = path.join(profilesDir, `${membreId}.pivot.json`);
       if (!existsSync(profilPath)) continue;
-      for (const a of lire(profilPath).amendements || []) {
+      const profil = lire(profilPath);
+      for (const a of profil.amendements || []) {
         if (legislatureDeAmendementId(a?.amendement_id) !== leg) continue;
         for (const m of siens) m.ids.add(a.amendement_id);
+      }
+      // Les textes portés, lus dans la même passe : même population, même
+      // règle de législature (`textesDuMaillon`, utils/lignee.js).
+      for (const t of profil.textes_portes || []) {
+        if (t?.legislature == null || String(t.legislature) !== leg || !qualiteDuRole(t.role)) continue;
+        for (const m of siens) m.textes.push(t);
       }
     }
 
@@ -79,7 +86,7 @@ export function repartitionsDesMaillons({ fiches, profilesDir, amendementsDir, c
         if (recompte !== attendu) ecarts.push({ type, recompte, attendu });
         else if (types[type]) verifies[type] = types[type];
       }
-      resultat.set(m.fichier, { types: verifies, ecarts });
+      resultat.set(m.fichier, { types: verifies, ecarts, textes: textesDuMaillon(m.textes, commissionDuDossier) });
     }
   }
   return resultat;

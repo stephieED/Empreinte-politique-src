@@ -331,3 +331,38 @@ def test_les_motifs_suivent_le_gabarit_du_pipeline():
         .map(([cle, motif]) => [cle, messages.filter((m) => motif.test(m)).length]));
     """)
     assert res == {"votesSansScrutin": 1, "interventionsSansLegislature": 1, "amendementsIntrouvables": 1}
+
+
+# ── Les textes portés par un groupe ──────────────────────────────────────────
+
+def test_un_dossier_porte_par_plusieurs_membres_compte_une_fois_au_stade_le_plus_avance():
+    res = executer("""
+      const entrees = [
+        { dossier_id: 'D1', role: 'auteur_proposition_de_loi', stade_procedural: 'depose', titre: 'T1', date_max: '2024-01-01' },
+        { dossier_id: 'D1', role: 'auteur_proposition_de_loi', stade_procedural: 'adopte', sort: 'adopte', date_max: '2024-05-01' },
+        { dossier_id: 'D1', role: 'rapporteur', stade_procedural: 'adopte' },
+        { dossier_id: 'D2', role: 'initiateur_projet_de_loi', stade_procedural: 'promulgue' },
+        { dossier_id: null, role: 'auteur', stade_procedural: 'depose' },
+        { dossier_id: 'D3', role: 'co-rapporteur', stade_procedural: 'examine_commission' },
+      ];
+      const t = lignee.textesDuMaillon(entrees, (d) => (d === 'D1' ? { sigle: 'Lois', nom: 'Commission des lois' } : null));
+      return {
+        dossiers: t.map((x) => x.dossier_id),
+        d1: { stade: t.find((x) => x.dossier_id === 'D1').stade_procedural, roles: t.find((x) => x.dossier_id === 'D1').roles,
+              commission: t.find((x) => x.dossier_id === 'D1').commission, date: t.find((x) => x.dossier_id === 'D1').date_max },
+        auteurs: lignee.textesDesQualites(t, ['auteur']).map((x) => x.dossier_id),
+        rapporteurs: lignee.textesDesQualites(t, ['rapporteur']).map((x) => x.dossier_id),
+        deux: lignee.textesDesQualites(t, ['auteur', 'rapporteur']).map((x) => x.dossier_id),
+      };
+    """)
+    # Le projet de loi est signé comme ministre : il n'est pas un texte du groupe.
+    assert sorted(res["dossiers"]) == ["D1", "D3"]
+    assert res["d1"] == {
+        "stade": "adopte",
+        "roles": {"auteur": "auteur_proposition_de_loi", "rapporteur": "rapporteur"},
+        "commission": {"sigle": "Lois", "nom": "Commission des lois"},
+        "date": "2024-05-01",
+    }
+    assert res["auteurs"] == ["D1"]
+    assert sorted(res["rapporteurs"]) == ["D1", "D3"]
+    assert sorted(res["deux"]) == ["D1", "D3"], "deux qualités réunies : un dossier une fois"

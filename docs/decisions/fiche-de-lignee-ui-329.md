@@ -91,6 +91,7 @@ traité dans une version. Les arbitrages qui engagent :
 | Barre de partage | trois parts, cliquables, qui filtrent la liste | « d'une seule voix » par date ; les parts partagées par voix minoritaires, jamais affichées |
 | Groupes voisins | liés à leur lignée | un lien de sigle survit au renouvellement |
 | Liste datée de « En bref » | du plus récent au plus ancien, chaque ligne gardant le numéro de son repère | le groupe d'aujourd'hui se lit d'abord ; la frise, elle, court dans l'ordre du temps |
+| Les textes portés | la cascade de la fiche candidat, **extraite dans `CascadeTextes.jsx`** et importée par les deux fiches, sur la règle `textesPortes` ; population : les dossiers portés par les membres dans la législature du maillon, **un dossier une fois** au stade le plus avancé (`textesDuMaillon`) ; deux qualités, auteur et rapporteur, qui se réunissent sans doublon ; `initiateur_projet_de_loi` écarté ; une teinte par commission pour toute la section, fixée par le volume d'amendements du maillon tous types réunis | collecte des textes portés des membres au run du 11/09/2026 (#835) : 993 profils de membres sur 1 148, 10 092 entrées ; SOC XVIIe, 203 textes publiés dont 6 portés aux deux titres ; la cascade et les barres d'amendements coloriaient la même commission de deux teintes |
 | « Ce qu'on n'a pas pu lire » | la section de la fiche candidat, réduite à ce que **chaque fiche de groupe signale d'elle-même** — membres déclarés sans profil, interventions sans législature gardées, amendements sans identifiant, votes sans scrutin écartés, Sénat hors périmètre —, rangé par liste dans l'ordre des sections, maillon par maillon ; deux renvois, `/couverture` et `/methodologie#couverture` (`signalementsDuMaillon`) | le partage de `page-couverture-commune-328` : trois avertissements sont identiques en nature sur les 28 fiches AN (source AMO30, date de référence et effectif, carrière écartée des agrégats) et relèvent de `/couverture` ; restent cinq signalements sur **14 fiches sur 30**, soit 9 lignées sur 13 — les 4 autres le disent en une ligne. Deux signalements ne vivent que dans `meta.warnings` : leur motif est ancré sur le gabarit de `group_profile.py`, relu par un test |
 
 **Deux propositions de la réponse automatique de l'artifact ont été
@@ -140,11 +141,6 @@ propriétaire**, et ce lot ne touche pas à la fiche candidat.
 
 ## Ce que ce lot ne fait pas
 
-- **Le Sankey des textes portés** : `textes_portes` n'existe que sur 17 profils
-  sur 1 174, tous candidats déclarés — 4 personnes sur 96 dans la lignée
-  socialiste. La collecte existe derrière la case `collect_dossiers_legislatifs`
-  (#835) ; le besoin d'un agrégat par maillon a été transmis à la session
-  Backend. La page le dit à l'endroit où il manque.
 - **La frise à 400 px** se lit en entier mais petit : aucune mise en page propre
   au téléphone n'a été faite. Aucun débordement horizontal, mesuré.
 - **Nommer les membres déclarés sans profil** : 7 entrées de roster sur 5 fiches AN
