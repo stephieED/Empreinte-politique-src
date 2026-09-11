@@ -33,7 +33,6 @@ import {
   INSTITUTION_SENAT,
   LIBELLE_PISTE,
   pisteDuRole,
-  sigleDeGroupePolitique,
   libellePosition,
   motifPosition,
   positionSurAxe,
@@ -152,24 +151,18 @@ function candidatesEtiquette(role) {
   }
   if (role.institution === INSTITUTION_MISSION) return [role.role];
 
-  // Un siège : le groupe et sa qualification. Le groupe se replie sur son sigle
-  // quand son intitulé est long — « Communiste, Républicain, Citoyen et des
-  // Sénateurs du Parti de Gauche » ne tient dans aucun segment.
+  // Un siège : LE SIGLE DU GROUPE ET LA PLACE DANS L'HÉMICYCLE, et rien d'autre
+  // (maquette « En bref », 11/09/2026). La fonction se lit sur la couleur et la
+  // légende, le nom complet du groupe au survol et dans la liste datée. Sans
+  // sigle établi (`sigleDuSiege`) — un groupe européen, un groupe du Sénat —,
+  // le segment se tait plutôt que de répéter la légende.
   const position = POSITION_COURTE[role.position] || null;
-  const groupe = role.detail || null;
-  const sigle = groupe ? sigleDeGroupePolitique(groupe) : null;
-  const formes = [groupe, sigle && sigle !== groupe ? sigle : null].filter(Boolean);
+  const sigle = role.sigle ?? null;
   const candidates = [];
-  for (const forme of formes) {
-    if (position) candidates.push(`${forme} · ${position}`);
-    candidates.push(forme);
-  }
+  if (sigle && position) candidates.push(`${sigle} · ${position}`);
+  if (sigle) candidates.push(sigle);
   if (position) candidates.push(position);
-  // Dernier recours : le mandat lui-même. Il fait doublon avec la légende, mais
-  // un segment large et muet en dit moins — c'est le cas des sièges européens,
-  // dont le corpus ne porte aucun groupe politique.
-  candidates.push(role.role);
-  return candidates.filter(Boolean);
+  return candidates;
 }
 
 function etiquetteSegment(role, largeur) {
@@ -972,9 +965,10 @@ function Couverture({ couverture, parcours, collecte }) {
  * l'inverse.
  */
 
-/* Une cellule. **Seuls les nombres sont en gros** : mettre l'objet à la même
- * échelle que le chiffre faisait lire « Orientation et réussite des étudiants »
- * comme la mesure, alors que la mesure est 211. */
+/* Une cellule : UNE LIGNE AU CORPS DU TEXTE, le nombre en gras (forme « la
+ * phrase », maquette « En bref » du 11/09/2026). Les grands chiffres donnaient à
+ * 3 933 interventions le poids visuel de 28 textes portés ; aucun nombre ne
+ * domine plus les autres. Le total du rang vient en tête, le détail dessous. */
 function CelluleChiffre({ cellule: c, piste }) {
   // La PISTE est portée par la cellule, pas déduite de sa position (#328). La
   // règle d'avant partait de l'en-tête « gouvernement » et descendait sur tous
@@ -1004,29 +998,11 @@ function CelluleChiffre({ cellule: c, piste }) {
       </p>
       {c.quantifieur && (
         <p className="cp-gc-q">
+          {c.quantifieur.avant ? `${c.quantifieur.avant} ` : ''}
           <span className="cp-num">{formatNumber(c.quantifieur.nombre)}</span>{' '}
           {c.quantifieur.texte}
+          {c.quantifieur.suite ? ` · ${c.quantifieur.suite}` : ''}
         </p>
-      )}
-      {c.barre && (
-        <>
-          <span className="cp-gc-barre">
-            {c.barre.segments.map((s) => (
-              <span
-                key={s.cle}
-                className={`cp-gc-part cp-gc-stade--${s.cle}`}
-                style={{ width: `${s.part.toFixed(2)}%` }}
-              />
-            ))}
-          </span>
-          <span className="cp-gc-barre-leg">
-            {c.barre.segments.map((s) => (
-              <em key={s.cle} className={`cp-gc-cle-stade cp-gc-stade--${s.cle}`}>
-                <b>{formatNumber(s.nombre)}</b>&nbsp;{s.libelle}
-              </em>
-            ))}
-          </span>
-        </>
       )}
       {c.detail && <p className="cp-gc-d">{c.detail}</p>}
     </div>

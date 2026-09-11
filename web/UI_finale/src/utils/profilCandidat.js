@@ -172,6 +172,23 @@ function periodesDePosition(mandats, categorie) {
  * (SOC) ». Il n'existe pas de champ pour lui. Sans parenthèse, on rend
  * l'intitulé tel que la source l'écrit plutôt que d'inventer un sigle.
  */
+/* LE SIGLE D'UN SIÈGE, pour la frise (maquette « En bref », 11/09/2026) : un
+ * segment ne porte que le sigle du groupe et la place dans l'hémicycle.
+ *
+ * L'intitulé entre parenthèses est un sigle quand il en a la forme (« FI »,
+ * « LaREM ») ; ailleurs l'Assemblée y écrit le nom complet (« Ensemble pour la
+ * République »), et le sigle vit sur la fiche de groupe. `siglesParNom` vient
+ * des fiches de groupe du manifeste : un nom qui y porte deux sigles n'y figure
+ * pas. Sans sigle établi, rien — jamais une abréviation fabriquée. */
+const FORME_DE_SIGLE = /^[\p{L}&-]{1,8}$/u;
+
+export function sigleDuSiege(detail, siglesParNom = new Map()) {
+  const d = (detail || '').trim();
+  if (!d) return null;
+  if (FORME_DE_SIGLE.test(d)) return d;
+  return siglesParNom.get(d) ?? null;
+}
+
 export function sigleDeGroupePolitique(label) {
   const m = /\(([^)]+)\)\s*$/.exec(label || '');
   return m ? m[1] : label || null;
@@ -2153,30 +2170,17 @@ export const LIBELLE_PISTE = {
  * dépose pas d'amendement » — et il se distingue d'une liste vide, qui est un
  * fait sur la collecte.
  */
-function cellule({ nombre, objet, sur = null, objetSur = null, quantifieur = null, detail = null, barre = null }) {
-  return { nombre, objet, sur, objetSur, quantifieur, detail, barre };
+function cellule({ nombre, objet, sur = null, objetSur = null, quantifieur = null, detail = null }) {
+  return { nombre, objet, sur, objetSur, quantifieur, detail };
 }
 
 function celluleAbsente(motif) {
   return { absent: motif };
 }
 
-/* La barre des stades : une part par stade publié, dans l'ordre de la
- * procédure. Elle ne porte AUCUN taux — elle montre une forme, et chaque
- * segment publie son compte (§2 règle 7). */
-function barreDesStades(textes) {
-  const parStade = new Map();
-  for (const t of textes) parStade.set(t.stadeCle, (parStade.get(t.stadeCle) || 0) + 1);
-  const total = textes.length;
-  if (!total) return null;
-  const segments = STADES_PUBLIES.filter((cle) => parStade.has(cle)).map((cle) => ({
-    cle,
-    libelle: LIBELLE_STADE[cle],
-    nombre: parStade.get(cle),
-    part: (parStade.get(cle) / total) * 100,
-  }));
-  return segments.length ? { segments, total } : null;
-}
+/* LA BARRE DES STADES EST RETIRÉE (maquette « En bref », 11/09/2026) : le bloc
+ * ne garde que des nombres. Les stades se lisent dans la cascade de « Ce qu'il
+ * a proposé », qui les porte déjà un par un. */
 
 /* ── Le bloc ─────────────────────────────────────────────────────────────────
  *
@@ -2285,7 +2289,7 @@ export function grandsChiffres({
     .join(' · ');
   const celluleTextes = (lot, objet, detail) =>
     lot.length
-      ? cellule({ nombre: lot.length, objet, barre: barreDesStades(lot), detail: detail || null })
+      ? cellule({ nombre: lot.length, objet, detail: detail || null })
       : null;
   lignes.push({
     cle: 'textes',
@@ -2310,19 +2314,20 @@ export function grandsChiffres({
     // sélectionne toujours 10 % des dossiers, donc il ne peut JAMAIS se taire.
     const tete = (d?.nommes ?? []).slice().sort((a, b) => (b.depots ?? 0) - (a.depots ?? 0))[0] ?? null;
     const concentre = tete && tete.depots * 2 > totalAuteur ? tete : null;
+    // LE TOTAL EN TÊTE, LE DÉTAIL DESSOUS (maquette « En bref », 11/09/2026) :
+    // « 2 968 et 25 » au même corps se lisaient comme une fraction.
     celluleAmendements = cellule({
       nombre: totalAuteur,
-      objet: 'amendements sur',
-      sur: d?.distincts ?? null,
-      objetSur: 'dossiers législatifs',
-      quantifieur: concentre
-        ? { nombre: concentre.depots, texte: `d’entre eux sur « ${concentre.titre} »` }
+      objet: 'amendements',
+      quantifieur: d?.distincts != null
+        ? { avant: 'sur', nombre: d.distincts, texte: pluriel(d.distincts, 'dossier législatif', 'dossiers législatifs') }
+        : null,
+      detail: concentre
+        ? `${formatNumber(concentre.depots)} d’entre eux sur « ${concentre.titre} »`
         : null,
       // Les dossiers se listent PAR DATE, jamais par volume : déposer beaucoup
       // sur un texte peut être un travail de fond comme une stratégie de
       // blocage, et le nombre ne les distingue pas.
-      detail: null,
-      barre: null,
     });
   }
   lignes.push({
@@ -2349,14 +2354,15 @@ export function grandsChiffres({
     const classees = [...parCommission.entries()].sort(
       (a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'fr'),
     );
+    // Le TOTAL des mandats en tête ; la commission la plus fréquentée dessous,
+    // à côté du nombre de commissions distinctes.
     return cellule({
-      nombre: classees[0][1],
-      objet: 'mandats sur',
-      sur: lot.length,
-      objetSur: `à la ${classees[0][0]}`,
+      nombre: lot.length,
+      objet: pluriel(lot.length, 'mandat', 'mandats'),
       quantifieur: {
         nombre: parCommission.size,
         texte: pluriel(parCommission.size, 'commission distincte', 'commissions distinctes'),
+        suite: `${formatNumber(classees[0][1])} à la ${classees[0][0]}`,
       },
     });
   };
@@ -2406,15 +2412,17 @@ export function grandsChiffres({
     const parSujet = new Map();
     for (const i of situees) parSujet.set(i.sujet, (parSujet.get(i.sujet) || 0) + 1);
     const classes = [...parSujet.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'fr'));
+    // Le TOTAL des interventions en tête ; « 309 sur les retraites » était un
+    // détail affiché plus gros que le total qu'il détaille.
     return cellule({
-      nombre: classes[0][1],
-      objet: 'sur',
-      sur: situees.length,
-      objetSur: `situées, dont « ${classes[0][0]} »`,
+      nombre: lot.length,
+      objet: pluriel(lot.length, 'intervention', 'interventions'),
       quantifieur: {
-        nombre: parSujet.size,
-        texte: `${pluriel(parSujet.size, 'sujet distinct', 'sujets distincts')} sur ${formatNumber(lot.length)} interventions`,
+        nombre: situees.length,
+        texte: pluriel(situees.length, 'située', 'situées'),
+        suite: `${formatNumber(parSujet.size)} ${pluriel(parSujet.size, 'sujet distinct', 'sujets distincts')}`,
       },
+      detail: `${formatNumber(classes[0][1])} sur « ${classes[0][0]} »`,
     });
   };
   lignes.push({
