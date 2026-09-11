@@ -238,6 +238,34 @@ function loadFichesGroupe(manifest, entry) {
   );
 }
 
+/* La page de groupe vers laquelle le libellé affiché peut mener — ou `null`.
+ *
+ * Deux conditions, et les deux sont nécessaires :
+ *   1. la personne est membre de cette fiche — `groupIds`, apparié par
+ *      `sync-data` sur `membre_id`, jamais sur un nom (#639) ;
+ *   2. cette fiche porte le nom qu'on AFFICHE. Sans cette seconde condition, le
+ *      lien mènerait ailleurs que là où le texte le dit — c'était le cas de
+ *      Delphine Batho et François Ruffin tant que la fiche ECOS XVIIe n'était
+ *      pas publiée.
+ *
+ * La fiche la plus récente est seule candidate : c'est celle que le libellé
+ * courant peut nommer. Le lien mène à sa LIGNÉE, la page de groupe depuis #329 —
+ * la fiche par législature n'a plus de page. Mesuré le 11/09/2026 : 12 des 30
+ * fiches de candidats publiées portent un lien ; les 18 autres nomment un
+ * parti, un groupe du Parlement européen ou « Non inscrit ».
+ */
+function ficheDuGroupeAffiche(manifest, entry, pivot) {
+  const libelle = (pivot?.groupe || '').trim();
+  if (!libelle) return null;
+  const fiches = (entry.groupIds || [])
+    .map((gid) => (manifest.groupes || []).find((g) => g.id === gid))
+    .filter(Boolean)
+    .sort((a, b) => (Number(a.legislature) || 0) - (Number(b.legislature) || 0));
+  const recente = fiches[fiches.length - 1];
+  if (!recente || (recente.nom || '').trim() !== libelle) return null;
+  return { id: recente.lignee ?? recente.id, nom: recente.nom, legislature: recente.legislature };
+}
+
 export async function getCandidateProfile(id) {
   const manifest = await loadManifest();
   const entry = manifest.candidates.find((c) => c.slug === id);
@@ -266,6 +294,7 @@ export async function getCandidateProfile(id) {
     // demande la chronologie entière. Les dates vivent déjà dans le manifeste,
     // aucune fiche supplémentaire n'est téléchargée.
     manifest.gouvernements || [],
+    ficheDuGroupeAffiche(manifest, entry, pivot),
   );
 }
 

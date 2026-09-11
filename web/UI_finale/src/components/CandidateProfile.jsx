@@ -1517,7 +1517,24 @@ export default function CandidateProfile({ candidate }) {
             profession, groupe, parti, naissance. */}
         <p className="cp-qui">
           <span>
-            {[c.profession, c.groupe && `Groupe ${c.groupe}`, c.parti].filter(Boolean).join(' · ')}
+            {[c.profession].filter(Boolean).map((t) => `${t} · `)}
+            {c.groupe && (
+              <>
+                {/* LE LIEN N'EST POSÉ QUE S'IL MÈNE AU GROUPE QUE LE TEXTE
+                    NOMME — voir `ficheDuGroupeAffiche`. Sans fiche, le libellé
+                    reste du texte : « Parti socialiste », « Sans étiquette » ou
+                    un groupe du Parlement européen ne sont pas des fiches, et un
+                    lien mort vaut moins que pas de lien. */}
+                {/* Un libellé du Parlement européen commence déjà par « Groupe » :
+                    « Groupe Groupe de l'Alliance… » sur Raphaël Glucksmann. */}
+                {/^groupe\b/i.test(c.groupe) ? '' : 'Groupe '}
+                {c.groupeFiche
+                  ? <Link to={`/groupes/${c.groupeFiche.id}`}>{c.groupe}</Link>
+                  : c.groupe}
+                {c.parti ? ' · ' : ''}
+              </>
+            )}
+            {c.parti}
             {c.naissance && `. ${c.voix.ne} le ${jour(c.naissance.date)}${c.naissance.lieu ? ` à ${c.naissance.lieu}` : ''}.`}
           </span>
           <BadgeSource url={c.sourceUrl} />

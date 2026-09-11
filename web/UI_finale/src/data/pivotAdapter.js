@@ -269,6 +269,7 @@ export function buildCandidateView(
   commissionsDossiers = null,
   scrutinsDossiers = null,
   tousLesGouvernements = null,
+  ficheDuGroupe = null,
 ) {
   const mandats = pivot.mandats || [];
   const votes = joinVotes(pivot.votes || [], scrutinsIndex);
@@ -355,6 +356,25 @@ export function buildCandidateView(
     nom: pivot.nom,
     parti: pivot.parti || manifestEntry.parti || '',
     groupe: pivot.groupe || '',
+    /* LE LIEN VERS LA FICHE DE GROUPE, ET SEULEMENT QUAND IL MÈNE AU BON.
+     *
+     * `pivot.groupe` est un LIBELLÉ, et il ne nomme pas toujours un groupe
+     * parlementaire : sur les 30 candidats déclarés, il vaut « Parti
+     * socialiste », « Lutte Ouvrière (LO) », « Sans étiquette », ou un groupe du
+     * Parlement européen. Dix-huit d'entre eux ne correspondent à aucune fiche.
+     *
+     * ET UN LIBELLÉ PEUT DEVANCER LA FICHE, ce qui est pire qu'aucun lien :
+     * tant que la fiche ECOS XVIIe n'était pas publiée, Delphine Batho et
+     * François Ruffin portaient « Écologiste et Social » quand leur fiche la
+     * plus récente était un AUTRE groupe.
+     *
+     * `ficheDuGroupe` est donc calculé en amont, sur `groupIds` — l'appariement
+     * structurel `membre_id` → slug que `sync-data` établit fiche par fiche,
+     * jamais une ressemblance de nom (#639) — et il n'est posé que si le nom de
+     * cette fiche est bien celui qu'on affiche. La comparaison de libellés n'est
+     * pas ici une jointure : c'est le garde-fou qui empêche d'envoyer le lecteur
+     * ailleurs que là où le texte le dit. */
+    groupeFiche: ficheDuGroupe,
     // La voix du texte vient de `identite.civilite`, la seule source du genre
     // dans le corpus. Absente, la page n'en invente pas : elle parle de « cette
     // personne » (§2 règle 5).
