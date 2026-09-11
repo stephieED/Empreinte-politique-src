@@ -9,11 +9,11 @@ import './FriseCouverture.css';
  * image ce que nous lisons et ce que nous ne lisons pas. Sous chaque
  * institution, ses listes ; sous chaque liste, ses champs.
  *
- * LA FICHE D'ORIGINE n'est pas un niveau, c'est une TEINTE : candidats,
- * gouvernements, groupes. Trois fiches peuvent porter le même fait sur la même
- * période — elles vivent alors dans le MÊME rail, superposées, et le mélange se
- * voit. En faire un niveau de hiérarchie dédoublerait la frise pour ne rien
- * dire de plus.
+ * LA FICHE D'ORIGINE n'est ni un niveau ni une teinte : candidats,
+ * gouvernements, groupes vivent dans le MÊME rail, en une seule encre —
+ * « données collectées » (11/09/2026). Elle a été une teinte par population ;
+ * le bleu des candidats se lisait comme celui de l'Union une fois les
+ * institutions teintées (#328). Le survol d'un segment nomme encore la fiche.
  */
 
 const AXE_DEBUT = 2000;
@@ -125,7 +125,7 @@ export default function FriseCouverture({ couverture }) {
       {couches.map((c) => (
         <div
           key={c.origine || c.titre}
-          className={`fc-couche fc-couche--${c.pop}`}
+          className="fc-couche"
           title={c.origine || c.titre}
         >
           {avecQueue ? apresChamp(c.periodes, finDe(piste, c.origine)) : null}
@@ -246,9 +246,7 @@ export default function FriseCouverture({ couverture }) {
       </div>
 
       <p className="fc-legende">
-        <span><i className="fc-cle fc-cle--cand" />Fiches de candidats</span>
-        <span><i className="fc-cle fc-cle--gouv" />Fiches de gouvernement</span>
-        <span><i className="fc-cle fc-cle--grp" />Fiches de groupe</span>
+        <span><i className="fc-cle fc-cle--collecte" />Données collectées</span>
         <span><i className="fc-cle fc-cle--nonc" />Données non collectées</span>
         <span><i className="fc-cle fc-cle--hors" />Données non publiées</span>
       </p>

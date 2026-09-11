@@ -117,10 +117,12 @@ def test_les_origines_se_superposent_dans_un_seul_rail(frise: str) -> None:
     )
     assert "couches.map" in frise
     feuille = FRISE_CSS.read_text(encoding="utf-8")
-    assert "mix-blend-mode: multiply" in feuille, (
-        "sans mélange, la couche du dessus masque celle du dessous et la "
-        "superposition ne se voit plus"
+    # Une seule encre depuis le 11/09/2026 (frise-couverture-donnees-collectees-328) :
+    # la fiche d'origine n'est plus une teinte, donc plus de mélange à voir.
+    assert "--pop-" not in feuille and "fc-couche--" not in frise, (
+        "les faits portés sont une seule catégorie, « Données collectées »"
     )
+    assert "Données collectées" in frise
     assert "position: absolute" in feuille and "inset: 0" in feuille
 
 

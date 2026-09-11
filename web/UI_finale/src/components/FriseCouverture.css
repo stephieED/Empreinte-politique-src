@@ -1,12 +1,10 @@
-/* La frise de couverture — mêmes teintes que la fiche candidat.
-   `--parl` et `--gouv` sont ceux de CandidateProfile.css : sur une fiche, la
-   teinte dit déjà d'où vient le fait, et la frise ne réinvente pas un code
-   couleur que le lecteur devrait réapprendre. `--pop-grp` est le troisième,
-   pour les fiches de groupe. */
+/* La frise de couverture — UNE seule catégorie de fait porté, en noir.
+   Les trois teintes de population (candidats, gouvernements, groupes) sont
+   retirées le 11/09/2026 : le bleu ardoise des candidats se lisait comme le
+   bleu de l'Union depuis `teintes-des-institutions-328`, et la propriétaire a
+   écarté les deux reprises aux teintes d'institution qui lui ont été rendues.
+   → docs/decisions/frise-couverture-donnees-collectees-328.md */
 .fc {
-  --pop-cand: #3f5166;
-  --pop-gouv: #8a6b4c;
-  --pop-grp: #6f5b7a;
   --fc-rule: #e7e4df;
   --fc-rule-fin: #f0eeeb;
   --fc-hachure: #eae6e0;
@@ -134,29 +132,20 @@
   background: none;
 }
 
-/* UNE SEULE PISTE, PAS DES COUCHES EMPILÉES. Les segments des différentes
-   origines vivent dans le MÊME rail, à la même hauteur. `mix-blend-mode:
-   multiply` fait le reste : une origine seule garde sa teinte, deux origines
-   qui se recouvrent en produisent une troisième, plus sombre. */
+/* UNE SEULE PISTE. Les segments des différentes fiches vivent dans le MÊME
+   rail, à la même hauteur, dans la même encre : la frise dit ce que le dépôt
+   porte, pas de quelle fiche le trait vient — le survol le nomme encore. */
 .fc-couche {
   position: absolute;
   inset: 0;
 }
-
-.fc-couche .fc-seg {
-  mix-blend-mode: multiply;
-}
-
-.fc-couche--cand { --pop: var(--pop-cand); }
-.fc-couche--gouv { --pop: var(--pop-gouv); }
-.fc-couche--grp { --pop: var(--pop-grp); }
 
 .fc-seg {
   position: absolute;
   top: 0;
   bottom: 0;
   border-radius: 3px;
-  background: var(--pop, var(--ink));
+  background: var(--ink);
 }
 
 /* CE QUE LA SOURCE NE DONNE PAS — hachure discrète, sans contour : c'est un
@@ -266,9 +255,7 @@
   margin-right: 6px;
 }
 
-.fc-cle--cand { background: var(--pop-cand); }
-.fc-cle--gouv { background: var(--pop-gouv); }
-.fc-cle--grp { background: var(--pop-grp); }
+.fc-cle--collecte { background: var(--ink); }
 
 .fc-cle--nonc {
   background: repeating-linear-gradient(45deg, var(--accent) 0 5px, #fbffd6 5px 10px);
