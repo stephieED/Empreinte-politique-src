@@ -118,7 +118,7 @@ def test_la_repartition_compte_des_amendements_distincts_par_type_et_ne_devine_a
     depute = rep["types"]["depute"]
     assert depute["amendements"] == 4 and depute["adoptes"] == 1 and depute["dossiers"] == 2
     assert rep["types"]["commission_rapporteur"]["amendements"] == 1, (
-        "deux types, deux totaux : ils ne s'additionnent jamais (AGENTS.md §6)"
+        "chaque type garde son total ; les réunir est un choix du lecteur, fait par `cumulerTypes`"
     )
     assert rep["introuvables"] == 1
     finances = depute["lignes"][0]
@@ -142,6 +142,38 @@ def test_les_textes_d_une_commission_se_rangent_par_date_jamais_par_volume():
     """)
     detail = rep["types"]["depute"]["lignes"][0]["detail"]
     assert [d["dossier"] for d in detail] == ["DLR5L17N2", "DLR5L15N1"]
+
+
+def test_deux_types_reunis_additionnent_les_amendements_et_unissent_les_textes():
+    """Relecture du 11/09/2026 : les deux boutons ensemble, des comptes réunis.
+
+    Un amendement n'a qu'un type : la somme est le compte distinct. Un dossier
+    peut être amendé par les deux : la somme le compterait deux fois."""
+    res = executer("""
+      const d = (dossier, amendements, adoptes, dernier) => ({ dossier, titre: dossier, amendements, adoptes, dernier, statut: null });
+      const parType = {
+        depute: { amendements: 12, adoptes: 3, dossiers: 2,
+          lignes: [{ commission: 'Finances', amendements: 10, textes: 2, detail: [d('D1', 7, 2, '2024-01-01'), d('D2', 3, 1, '2023-01-01')] }],
+          nonEtablie: { amendements: 2, textes: 0, detail: [] } },
+        commission_rapporteur: { amendements: 4, adoptes: 4, dossiers: 2,
+          lignes: [{ commission: 'Finances', amendements: 3, textes: 1, detail: [d('D1', 3, 3, '2025-01-01')] },
+                   { commission: 'Lois', amendements: 1, textes: 1, detail: [d('D3', 1, 1, '2022-01-01')] }],
+          nonEtablie: null },
+      };
+      return { deux: lignee.cumulerTypes(parType, ['depute', 'commission_rapporteur']),
+               seul: lignee.cumulerTypes(parType, ['depute']) === parType.depute };
+    """)
+    deux = res["deux"]
+    assert (deux["amendements"], deux["adoptes"]) == (16, 7), "les amendements et les adoptés s'additionnent"
+    assert deux["dossiers"] == 3, "D1 est amendé par les deux types : 3 dossiers, pas 4"
+    finances = deux["lignes"][0]
+    assert (finances["commission"], finances["amendements"], finances["textes"]) == ("Finances", 13, 2)
+    d1 = finances["detail"][0]
+    assert (d1["dossier"], d1["amendements"], d1["adoptes"], d1["dernier"]) == ("D1", 10, 5, "2025-01-01"), (
+        "un texte amendé par les deux types réunit ses comptes, et garde sa date la plus récente"
+    )
+    assert deux["nonEtablie"] == {"amendements": 2, "textes": 0, "detail": []}
+    assert res["seul"] is True, "un type seul se lit tel quel"
 
 
 # ── Le partage, en trois listes ─────────────────────────────────────────────

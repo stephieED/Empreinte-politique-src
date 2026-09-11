@@ -127,9 +127,8 @@ export function personnesParMaillon(lignee) {
  * « Ce qu'ils ont proposé » reprend le gabarit de la fiche candidat
  * (annotation de la propriétaire, 11/09/2026) : une barre par commission, le
  * ratio par texte au milieu, les textes distincts au bout. Les deux types de
- * déposant d'un groupe se SUPERPOSENT — deux lignes par commission — et ne
- * s'additionnent jamais (`AGENTS.md` §6) : chacun compte contre son propre
- * total, que cette règle rend séparément.
+ * déposant d'un groupe se lisent séparément, ou RÉUNIS quand le lecteur
+ * sélectionne les deux (relecture du 11/09/2026) — voir `cumulerTypes`.
  *
  * LA POPULATION EST CELLE DE LA FICHE, et elle se VÉRIFIE. Un amendement compte
  * pour un maillon s'il figure dans l'`amendements[]` d'un de ses membres ET que
@@ -248,4 +247,80 @@ export const MOTIFS_POSTURE = {
 
 export function motifDePosture(posture) {
   return (posture?.declaree && MOTIFS_POSTURE[posture.valeur]) || 'absente';
+}
+
+/* ── Règle : les deux types de déposant, réunis ──────────────────────────────
+ *
+ * La propriétaire veut pouvoir sélectionner « comme députés » ET « comme
+ * rapporteurs de commission », et lire alors des comptes portant sur les deux
+ * catégories réunies (relecture du 11/09/2026). Deux comptes ne se réunissent
+ * pas de la même façon :
+ *
+ *  - les AMENDEMENTS s'additionnent : un amendement n'a qu'un type de déposant,
+ *    donc les deux ensembles sont disjoints, et la somme est le compte distinct ;
+ *    même chose pour les adoptés ;
+ *  - les TEXTES ne s'additionnent pas : un même dossier peut être amendé par un
+ *    député et par un rapporteur, et la somme le compterait deux fois. Ils se
+ *    réunissent sur `dossier` — une union, jamais une somme.
+ *
+ * Ce qui reste interdit ne change pas : aucun TAUX d'adoption commun aux types
+ * de déposant (`AGENTS.md` §6). Réunir deux comptes n'est pas en faire un taux.
+ *
+ * Rend un bloc de la même forme qu'un type seul, pour que le rendu n'ait
+ * qu'une lecture. Un seul type sélectionné rend son bloc tel quel.
+ */
+function reunirTextes(listes) {
+  const parDossier = new Map();
+  for (const detail of listes) {
+    for (const d of detail || []) {
+      const t = parDossier.get(d.dossier);
+      if (!t) { parDossier.set(d.dossier, { ...d }); continue; }
+      t.amendements += d.amendements;
+      t.adoptes += d.adoptes;
+      if (d.dernier && (!t.dernier || d.dernier > t.dernier)) t.dernier = d.dernier;
+    }
+  }
+  return [...parDossier.values()]
+    .sort((x, y) => String(y.dernier ?? '').localeCompare(String(x.dernier ?? '')) || x.dossier.localeCompare(y.dossier));
+}
+
+export function cumulerTypes(parType, types) {
+  const blocs = (types || []).map((t) => parType?.[t]).filter(Boolean);
+  if (blocs.length <= 1) return blocs[0] ?? null;
+
+  const parCommission = new Map();
+  for (const bloc of blocs) {
+    for (const l of bloc.lignes || []) {
+      if (!parCommission.has(l.commission)) parCommission.set(l.commission, { amendements: 0, details: [] });
+      const c = parCommission.get(l.commission);
+      c.amendements += l.amendements;
+      c.details.push(l.detail);
+    }
+  }
+  const lignes = [...parCommission.entries()]
+    .map(([commission, c]) => {
+      const detail = reunirTextes(c.details);
+      return { commission, amendements: c.amendements, textes: detail.length, detail };
+    })
+    .sort((x, y) => y.amendements - x.amendements || x.commission.localeCompare(y.commission, 'fr'));
+
+  const nonEtablies = blocs.map((b) => b.nonEtablie).filter(Boolean);
+  const detailNonEtabli = reunirTextes(nonEtablies.map((n) => n.detail));
+  const dossiers = new Set();
+  for (const l of lignes) for (const d of l.detail) dossiers.add(d.dossier);
+  for (const d of detailNonEtabli) dossiers.add(d.dossier);
+
+  return {
+    amendements: blocs.reduce((a, b) => a + b.amendements, 0),
+    adoptes: blocs.reduce((a, b) => a + b.adoptes, 0),
+    dossiers: dossiers.size,
+    lignes,
+    nonEtablie: nonEtablies.length
+      ? {
+        amendements: nonEtablies.reduce((a, n) => a + n.amendements, 0),
+        textes: detailNonEtabli.length,
+        detail: detailNonEtabli,
+      }
+      : null,
+  };
 }

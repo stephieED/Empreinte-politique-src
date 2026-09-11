@@ -252,13 +252,14 @@ def test_les_types_de_deposant_restent_separes(regles_lignee, composant, amendem
         "les deux types qu'un groupe porte ; `gouvernement` n'en est pas un — sa ligne « 0 » "
         "ne disait rien au lecteur (règle de forme 1)"
     )
-    # Les deux types se SUPERPOSENT depuis la relecture du 11/09/2026 — deux
-    # lignes par commission, deux totaux en tête —, et ne s'additionnent jamais.
+    # Depuis la relecture du 11/09/2026, les deux types se sélectionnent
+    # ENSEMBLE et les comptes portent alors sur les deux réunis. La réunion est
+    # une RÈGLE (`cumulerTypes`), exécutée par `test_regles_de_lignee_329` ; le
+    # composant ne l'écrit pas une seconde fois.
     propose = corps(composant, "function CeQuIlsOntPropose(")
-    assert "blocs.map(([t, bloc])" in propose, "un total PAR TYPE en tête, jamais un total commun"
-    assert not re.search(r"\.amendements\s*\+|\+\s*\w+\.amendements|adoptes\s*\+", propose), (
-        "aucune somme entre les deux types : deux natures ne partagent jamais un "
-        "dénominateur (AGENTS.md §6, règle de forme 4)"
+    assert "cumulerTypes(m.amendements.parType, selection)" in propose
+    assert not re.search(r"\.amendements\s*\+|adoptes\s*\+|\.reduce\(", propose), (
+        "le composant n'additionne rien : la règle le fait, une fois"
     )
     for source, nom in ((composant, COMPOSANT.name), (amendements, AMENDEMENTS.name),
                         (projection, PROJECTION.name), (regles_lignee, "lignee.js")):

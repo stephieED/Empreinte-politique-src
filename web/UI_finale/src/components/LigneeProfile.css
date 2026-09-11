@@ -638,7 +638,10 @@ button.lp-point {
   margin-bottom: 12px;
 }
 
-.lp-onglet {
+/* Une pilule de filtre multi-état : les deux types se sélectionnent ensemble.
+   Contour encre inversé quand elle est active (DESIGN_SYSTEM §5) — le jaune
+   plein reste à l'onglet exclusif, et les deux ne se confondent pas. */
+.lp-filtre {
   border: 1px solid var(--border-strong);
   background: var(--card);
   border-radius: 999px;
@@ -650,11 +653,10 @@ button.lp-point {
   color: var(--ink);
 }
 
-/* Un onglet exclusif : fond plein jaune signal (DESIGN_SYSTEM §5). */
-.lp-onglet[aria-pressed='true'] {
-  background: var(--accent);
-  border-color: var(--accent);
-  font-weight: 800;
+.lp-filtre[aria-pressed='true'] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
 }
 
 .lp-mat-tete {
@@ -674,82 +676,6 @@ button.lp-point {
 .lp-mat-totaux {
   font-size: 12.5px;
   color: var(--texte-2);
-  display: grid;
-  gap: 2px;
-  text-align: right;
-}
-
-/* Les deux types de déposant : des filtres activables ENSEMBLE — la pilule de
-   filtre multi-état du DESIGN_SYSTEM §5, fond d'encre quand elle est active. */
-.lp-filtres {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.lp-filtre {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border: 1px solid var(--border-strong);
-  background: var(--card);
-  border-radius: 999px;
-  padding: 6px 14px;
-  font: inherit;
-  font-weight: 600;
-  font-size: 13px;
-  cursor: pointer;
-  color: var(--ink);
-}
-
-.lp-filtre[aria-pressed='true'] {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: #fff;
-}
-
-/* La marque d'un type, la même dans les filtres, les totaux et les textes :
-   plein pour les députés, hachuré pour les rapporteurs. */
-.lp-type {
-  display: inline-block;
-  width: 14px;
-  height: 9px;
-  border-radius: 2px;
-  vertical-align: middle;
-  background: var(--texte-2);
-}
-
-.lp-type--commission_rapporteur {
-  background: repeating-linear-gradient(135deg, var(--texte-2) 0 2px, transparent 2px 4px);
-  box-shadow: inset 0 0 0 1px var(--texte-2);
-}
-
-.lp-filtre[aria-pressed='true'] .lp-type {
-  background: #fff;
-}
-
-.lp-filtre[aria-pressed='true'] .lp-type--commission_rapporteur {
-  background: repeating-linear-gradient(135deg, #fff 0 2px, transparent 2px 4px);
-  box-shadow: inset 0 0 0 1px #fff;
-}
-
-/* Deux lignes pour une commission : un filet les tient ensemble. */
-.lp-mr-paire {
-  padding: 3px 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.lp-mr-paire .lp-mr {
-  padding: 1px 0;
-}
-
-.lp-mr-paire .lp-mr-rail {
-  height: 10px;
-}
-
-.lp-deroule-type {
-  white-space: nowrap;
 }
 
 .lp-mat-totaux b {

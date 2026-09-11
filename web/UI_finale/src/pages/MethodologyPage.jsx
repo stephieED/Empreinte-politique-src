@@ -348,8 +348,9 @@ const SECTIONS = [
         <p>
           Un amendement compte <strong>une fois</strong>, quel que soit le nombre de membres qui
           l'ont signé, et seulement s'il a été déposé sous la législature du groupe. Déposer comme
-          député et déposer comme rapporteur de commission sont deux actes différents : ils ne
-          s'additionnent pas, et aucun taux d'adoption commun n'est publié.
+          député et déposer comme rapporteur de commission sont deux actes différents : ils se lisent
+          séparément, et ne se réunissent que si le lecteur sélectionne les deux — un texte amendé
+          au titre des deux ne compte alors qu'une fois. Aucun taux d'adoption commun n'est publié.
         </p>
         <p>
           La matière est la commission saisie au fond du dossier, comme sur la fiche d'un candidat.
