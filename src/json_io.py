@@ -18,10 +18,27 @@ pratique — le commit de données du 2026-08-18 affichait 16,6 millions de lign
 modifiées sur 239 fichiers, un diff que personne ne lit.
 
 D'où le partage :
-  - **compact** — `raw_data/profiles/` et `pivot_data/profiles/` (le volume) ;
+  - **compact** — `raw_data/profiles/` et `pivot_data/profiles/` (le volume),
+    et `pivot_data/lignees/` depuis #836 ;
   - **indenté** — `pivot_data/groupes`, `pivot_data/gouvernements`,
     `pivot_data/partis`, les rosters, les rapports d'audit et les checkpoints :
-    9,8 Mo au total, effectivement relus à la main lors des audits.
+    9,8 Mo au total à l'écriture de cette note, effectivement relus à la main
+    lors des audits.
+
+Le critère est « relu à la main », jamais le voisinage de répertoire (#836)
+--------------------------------------------------------------------------
+Une fiche de LIGNÉE est l'union de ses maillons : `AN:LIGNEE:REN` pèse **11,5
+Mo** indentée, dont 5,0 Mo de `cohesion_votes` et 2,7 Mo de `mandats_agreges`
+— 53 Mo pour les dix, contre 36 en compact. Personne n'ouvre un document de
+11 Mo, et son diff est « une seule ligne changée » dans les deux formats : la
+contrepartie assumée ci-dessus est déjà payée, l'économie de 32 %, elle, ne
+l'est pas. La ranger avec `pivot_data/groupes` parce qu'elle en est voisine
+appliquerait la LISTE au lieu du CRITÈRE.
+
+À relire : les 9,8 Mo cités plus haut datent de #433. `pivot_data/groupes` en
+pèse 64 à lui seul depuis que 23 fiches y sont publiées, et le jour où ces
+fiches cesseront elles aussi d'être ouvertes à la main, c'est le même
+raisonnement qui s'appliquera — mesure à l'appui, pas par analogie.
 
 Le format n'est jamais porteur de sens : `preserve_stable_freshness_timestamps`
 et les comparaisons de contenu de #343 travaillent sur la structure déjà

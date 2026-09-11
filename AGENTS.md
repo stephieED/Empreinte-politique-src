@@ -47,7 +47,7 @@ Any schema/display change must preserve them:
 Three files carry what this section deliberately does not. **Why** a rule
 exists: one file per decision under `docs/decisions/`, indexed by
 `docs/technical_decisions.md`. **What the data becomes** — flow, files, schemas,
-volumetry: `docs/data-architecture.md` — the seven outputs of `pivot_data/`,
+volumetry: `docs/data-architecture.md` — the eight outputs of `pivot_data/`,
 rewritten from the code on 30/08/2026 (#606). **What a run does** — the nine
 jobs, caches, artifacts, budgets, the launch form, the push, the automatic
 retry: `docs/workflow-generate-data.md`. **The rules stay here**, because a rule
@@ -311,12 +311,14 @@ When something does need deciding, five parts, in this order:
   intention (generate, audit, check before committing, operate, see what the user
   sees). 33 of the repo's 45 executables; the other 12 are pipeline-internal and
   the file says so. Locked by `tests/test_commandes_documentees.py`.
-- `docs/data-architecture.md`: what the data becomes — the seven outputs of
-  `pivot_data/` (profiles, groupes, gouvernements, partis, scrutins, amendements,
-  commissions_dossiers). **`commissions_dossiers.json` est produit et versionné depuis le commit de
+- `docs/data-architecture.md`: what the data becomes — the eight outputs of
+  `pivot_data/` (profiles, groupes, lignees, gouvernements, partis, scrutins,
+  amendements, commissions_dossiers). `lignees/` est arrivé avec #836 : **une**
+  fiche par LIGNÉE de groupe — 23 fiches de groupe publiées pour 10 lignées — et
+  c'est la seule collection que l'interface publie côté groupes. **`commissions_dossiers.json` est produit et versionné depuis le commit de
   données `5de11422`** (02/09/2026) — 6 024 dossiers, 1,2 Mo : la ligne qui disait ici qu'il
   « n'a jamais été produit » et que l'empreinte thématique de la fiche candidat
-  « est donc inerte » (#328) est périmée. Les **sept** outputs sont sur disque.
+  « est donc inerte » (#328) est périmée. Les **huit** outputs sont sur disque.
   Sa jointure `dossier_id` → commission saisie au fond résout **381/381** des
   dossiers déposés à l'AN et **0** des 174 déposés au Sénat : le référentiel est
   celui de l'AN, et le Sénat est hors périmètre (#528) — une absence de cause

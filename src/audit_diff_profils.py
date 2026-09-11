@@ -320,6 +320,29 @@ COLLECTION_GROUPES = Collection(
                "amendements_agreges.par_type_deposant.depute.nb_amendements"),
 )
 
+# Les fiches de LIGNÉE (#836). Une collection à part de `groupes`, et c'est le
+# point de la décision : le contrôle de perte raisonne par collection, et deux
+# types de documents dans un même répertoire est le défaut que #630 a payé.
+#
+# `membres` et `cohesion_votes` y sont des UNIONS, donc stables au même titre
+# que sur la fiche de groupe — une union ne perd un élément que si aucun maillon
+# ne le porte plus. `maillons` est stable pour une raison plus forte : sa
+# longueur est le nombre de fiches de la lignée, et la voir baisser est le seul
+# signal qu'une déclaration a été retirée sans que personne ne le veuille.
+COLLECTION_LIGNEES = Collection(
+    nom="lignees",
+    sous_chemin="lignees",
+    listes_stables=("maillons", "membres", "cohesion_votes", "mandats_agreges",
+                    "tags_thematiques_agreges",
+                    "amendements_agreges.par_type_deposant"),
+    listes_signalees=("sources",),
+    listes_nommees=("tags_thematiques_agreges",),
+    scalaires=("lignee_id", "lignee_nom", "chambre", "periode.debut",
+               "effectif.cumul_historique",
+               "amendements_agreges.nb_amendements",
+               "amendements_agreges.taux_adoption"),
+)
+
 COLLECTION_PARTIS = Collection(
     nom="partis",
     sous_chemin="partis",
@@ -410,6 +433,7 @@ COLLECTION_INDEX_AMENDEMENTS = Collection(
 
 COLLECTIONS_AGREGATS: tuple[Collection, ...] = (
     COLLECTION_GROUPES,
+    COLLECTION_LIGNEES,
     COLLECTION_PARTIS,
     COLLECTION_GOUVERNEMENTS,
     COLLECTION_INDEX_SCRUTINS,

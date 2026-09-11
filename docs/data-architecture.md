@@ -1,8 +1,8 @@
-# Ce que devient la donnée — les sept sorties de `pivot_data/`
+# Ce que devient la donnée — les huit sorties de `pivot_data/`
 
 Ce fichier décrit le **flux** : les sources, les fichiers, les schémas, la
-volumétrie, et ce que le web lit. Il couvre les sept sorties de `pivot_data/` —
-`profiles`, `groupes`, `partis`, `gouvernements`, `scrutins.json`,
+volumétrie, et ce que le web lit. Il couvre les huit sorties de `pivot_data/` —
+`profiles`, `groupes`, `lignees`, `partis`, `gouvernements`, `scrutins.json`,
 `amendements/`, `commissions_dossiers.json`.
 
 Trois voisins, et ce qui les sépare :
@@ -433,12 +433,13 @@ horodatage de fraîcheur qui n'a pas de raison de bouger.
 → `docs/decisions/collecte-vide-necrase-jamais.md`, et les autres entrées de
 fusion indexées par `docs/technical_decisions.md`.
 
-## Les sept sorties publiées
+## Les huit sorties publiées
 
 | Sortie | Produite par | Schéma | Volumétrie au 30/08/2026 |
 |---|---|---|---|
 | `pivot_data/profiles/` | `normalize_profil.py`, `normalize_europarl.py` | `src/schema_pivot.py` | **481** fiches committées, 623 Mo |
 | `pivot_data/groupes/` | `group_profile.py` (roster réel + pivots locaux) | `src/schema_groupe.py` | **7** fiches, 11 Mo |
+| `pivot_data/lignees/` | `generate_lignee_profiles.py` → `lignee_profile.py` (#836) | `src/schema_lignee.py` | **10** fiches, 37 Mo — une par LIGNÉE de groupe, c'est-à-dire par suite de fiches chaînées sur `succede_a` : 23 fiches de groupe publiées pour 10 lignées (mesuré 11/09/2026). `membres` et `cohesion_votes` y sont des UNIONS, `amendements_agreges` et `tags_thematiques_agreges` des RECALCULS depuis `profiles[].amendements`. Écrites en **compact** : le critère de #433 est « relu à la main », et une fiche de lignée pèse jusqu'à 11,5 Mo. C'est la SEULE collection que l'interface publie pour les groupes — une fiche de lignée absente est une page du site en moins, d'où la §4c du portail |
 | `pivot_data/partis/` | `parti_profile.py` (agrégation éditoriale) | `src/schema_parti.py` | **10** fiches, < 1 Mo |
 | `pivot_data/gouvernements/` | `gouvernement_roster.py` + `gouvernement_textes.py` → `gouvernement_profile.py` | `src/schema_gouvernement.py` | **10** fiches, < 1 Mo |
 | `pivot_data/scrutins.json` | index partagé, ci-dessus | `scrutins-v1` | **17 748** scrutins, 9 Mo (~10,2 Mo une fois la qualification de #639 régénérée) |

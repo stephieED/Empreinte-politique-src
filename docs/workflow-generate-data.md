@@ -400,7 +400,12 @@ committe pas ;
 `--enrich-parltrack` ; **seconde** passe `--pivot-only` sur le
 `roster_candidats.json` du run ; profils de parti ; **la table des commissions
 saisies au fond** (`build_commissions_dossiers.py`, #328 — non bloquante, elle
-dérive du référentiel et non du corpus) ; profils de groupe parlementaire réel,
+dérive du référentiel et non du corpus) ; profils de groupe parlementaire réel, **fiches de lignée de groupe**
+(`generate_lignee_profiles.py`, #836 — lues sur les fiches de groupe que le step
+précédent vient d'écrire, jamais du réseau, donc APRÈS lui et insensibles à son
+code 2 ; `continue-on-error`, même arbitrage que le step gouvernement, la §4c du
+portail hard-failant sur une fiche absente ou invalide ; **104 s et 1 453 Mio de
+RSS** mesurés pour les 10 lignées), profils
 de gouvernement ; `check_quality_gate. Une seconde étape marche **le même arbre sur les mêmes archives** pour publier le **rattachement des scrutins à leur dossier** (`build_scrutins_dossiers.py`, #758) — un scrutin AN ne nomme pas le texte qu'il tranche, et sans cette table la section « Ce qu'il a voté » ne peut dire ni sur quoi porte un texte voté ni ce qu'il est devenu. Non bloquante et additive comme la première ; le `git add` du push la protège par un test d'existence, l'étape étant `continue-on-error`.
 
 **Et une étape amont, dans les trois jobs qui cachent ces archives** (`rafraichir_dossiers_actifs.py`, #762) : elle reprend la seule législature **encore vivante** quand la clé hebdomadaire n'a pas été touchée (`cache-hit != 'true'`). Sans elle, le `restore-keys` de préfixe ramenait le répertoire de la semaine d'avant et rien n'était jamais retéléchargé — la rotation se désamorçait elle-même, comme dans #749. Les législatures dissoutes ne sont jamais reprises : 23 Mo hebdomadaires pour un contenu identique. L'étape est aussi gardée par `!inputs.cold_start`, le `rm -rf .cache` du démarrage à froid la suivant dans deux des trois jobs.py` ; les **quatre contrôles** de la §8 ;
