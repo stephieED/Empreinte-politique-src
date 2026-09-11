@@ -1109,6 +1109,49 @@ KNOWN_PROVENANCES: frozenset[str] = frozenset({"candidat_declare", "roster_group
 #: n'y a pas pensé », ce que le bloc existe précisément pour éviter (§2.5).
 KNOWN_IDENTIFIANTS: frozenset[str] = frozenset({"an", "senat", "europarl", "hatvp"})
 
+#: Institutions d'un mandat national ANTÉRIEUR à la couverture de l'Assemblée
+#: (#860), porté par `mandats_anterieurs` depuis `raw_data/mandats_anterieurs.json`.
+#: Le Sénat n'y est pas : #528 a sorti du périmètre jusqu'à l'usage biographique
+#: « a été sénateur de … à … ». L'y ajouter est la reprise de cette décision.
+KNOWN_INSTITUTIONS_ANTERIEURES: frozenset[str] = frozenset({"assemblee_nationale", "gouvernement"})
+
+#: Motif d'une fin de mandat antérieur publiée `null` (§2 règle 5).
+KNOWN_MOTIFS_MANDAT_ANTERIEUR_NON_RESOLU: frozenset[str] = frozenset({"source_primaire_non_trouvee"})
+
+#: Motif d'un `mandats_anterieurs` publié `null` sur une fiche de candidat.
+KNOWN_MOTIFS_MANDATS_ANTERIEURS_NON_RESOLUS: frozenset[str] = frozenset({"non_relu"})
+
+
+def valider_mandats_anterieurs(profil: dict[str, Any]) -> list[str]:
+    """`mandats_anterieurs` (#860) : une liste relue, ou `null` avec son motif."""
+    errors: list[str] = []
+    valeur = profil.get("mandats_anterieurs")
+    non_resolu = profil.get("mandats_anterieurs_non_resolu")
+    if valeur is None:
+        motif = (non_resolu or {}).get("motif") if isinstance(non_resolu, dict) else None
+        if motif not in KNOWN_MOTIFS_MANDATS_ANTERIEURS_NON_RESOLUS:
+            errors.append(
+                "'mandats_anterieurs' vaut null sans 'mandats_anterieurs_non_resolu.motif' "
+                f"dans {sorted(KNOWN_MOTIFS_MANDATS_ANTERIEURS_NON_RESOLUS)} (§2 règle 5)."
+            )
+        return errors
+    if not isinstance(valeur, list):
+        return ["'mandats_anterieurs' doit être une liste ou null."]
+    if non_resolu is not None:
+        errors.append("'mandats_anterieurs_non_resolu' présent sur une liste relue.")
+    for i, m in enumerate(valeur):
+        if not isinstance(m, dict):
+            errors.append(f"mandats_anterieurs[{i}] : objet attendu."); continue
+        if m.get("institution") not in KNOWN_INSTITUTIONS_ANTERIEURES:
+            errors.append(f"mandats_anterieurs[{i}] : institution {m.get('institution')!r} inconnue.")
+        if not m.get("source_url"):
+            errors.append(f"mandats_anterieurs[{i}] : source_url absente (§2 règle 2).")
+        if not m.get("debut"):
+            errors.append(f"mandats_anterieurs[{i}] : debut absent.")
+        if m.get("fin") is None and (m.get("fin_non_resolue") or {}).get("motif") not in KNOWN_MOTIFS_MANDAT_ANTERIEUR_NON_RESOLU:
+            errors.append(f"mandats_anterieurs[{i}] : fin nulle sans motif (§2 règle 5).")
+    return errors
+
 #: Forme attendue de chaque identifiant. `None` = aucune contrainte de forme.
 #: `an` reprend le motif de `correspondance_acteurs_an` mot pour mot : deux
 #: expressions du même invariant divergeraient en silence.
@@ -1900,6 +1943,12 @@ def validate_profil(
     # est une erreur, un bloc absent n'en est pas une.
     if "couverture" in profil:
         errors.extend(valider_couverture(profil.get("couverture")))
+
+    # #860 — facultatif, comme `couverture` : seuls les candidats déclarés le
+    # portent, et un profil de roster n'en a pas l'usage. Présent, il est tenu :
+    # une liste relue dont chaque ligne a sa source, ou `null` et son motif.
+    if "mandats_anterieurs" in profil:
+        errors.extend(valider_mandats_anterieurs(profil))
 
     # `identite.uri_hatvp` porte un LIEN, donc une chaîne ou `null` — jamais un
     # objet (#556).

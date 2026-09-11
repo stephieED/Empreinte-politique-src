@@ -189,6 +189,15 @@ les charger, ni à les faire grossir. -->
   requires *both* sources to be silent, and any disagreement writes nothing, names the
   slug, and lets §5b block.
   → `docs/decisions/boucle-perimetre-candidats-757.md`
+- **A new declared candidate's pre-2002 career is reviewed by hand — the loop does not
+  do it (#860).** `raw_data/mandats_anterieurs.json` is a reviewed table, not a
+  collection: nothing updates it when `rafraichir-candidats` adds someone, and the
+  candidate's sheet publishes `mandats_anterieurs: null` + `non_relu` until a hand
+  reads Sycomore and the Journal officiel and writes the slug in — **an empty list
+  included**, which means « none » and is not « not reviewed ». Whoever reviews a new
+  entry of `raw_data/candidats.json` does this too: its `notes` say so
+  (`RAPPEL_MANDATS_ANTERIEURS`, written by `fetch_candidats_declares.nouvelle_entree`).
+  → `docs/decisions/mandats-anterieurs-couverture-860.md`
 - **A declined candidacy leaves the collection perimeter; its published sheet stays (#760).**
   `src/perimetre_candidats.py` is the **single** predicate, used by both `prepare-an-matrix`
   and `generate_all_profiles` — the filter lived inline in the YAML, and a second copy would

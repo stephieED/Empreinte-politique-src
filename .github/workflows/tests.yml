@@ -90,6 +90,10 @@ jobs:
           # qu'un run avait laissé. C'est le canari que l'absence de
           # `paths-ignore` ci-dessus veut précisément voir chanter — un commit
           # de données du bot passe désormais sous ces assertions. 20 Kio.
+          # `raw_data/mandats_anterieurs.json` (#860) : la table relue des mandats
+          # antérieurs à la couverture AN. `tests/test_mandats_anterieurs_860.py` en
+          # vérifie la validité — une source primaire par ligne, rien après la borne
+          # du 19/06/2002 —, et la déclare par `lit_reference_committee`. 5 Kio.
           # `AGENTS.md`, `README.md`, `ROADMAP.md`, `docs/` : lus par
           # `tests/test_index_decisions.py`, qui vérifie que toute décision citée
           # dans le dépôt existe bien sous `docs/decisions/` et que l'index les
@@ -106,6 +110,7 @@ jobs:
             raw_data/candidats.json
             raw_data/gouvernements_reels.json
             raw_data/groupes_reels.json
+            raw_data/mandats_anterieurs.json
             requirements.txt
             requirements-dev.txt
             scripts

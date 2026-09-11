@@ -340,6 +340,12 @@ FIXTURE_CORRESPONDANCE = (
 FIXTURE_RESOLUTIONS = (
     Path(__file__).resolve().parent / "fixtures" / "resolutions_candidats_neutre.json")
 
+#: `raw_data/mandats_anterieurs.json` (#860) : une table relue que chaque
+#: écriture de pivot de candidat relit. Servie figée, pour qu'aucun test qui
+#: écrit un pivot ne dépende de ce que la table committée contient ce jour-là.
+FIXTURE_MANDATS_ANTERIEURS = (
+    Path(__file__).resolve().parent / "fixtures" / "mandats_anterieurs_extrait.json")
+
 #: `(module, attribut, valeur)`. Réglés sur les modules **déjà importés** : le
 #: conftest n'importe rien de `src/` pour lui-même, sans quoi il paierait
 #: l'import de toute la chaîne à chaque session, y compris pour les tests qui
@@ -349,6 +355,7 @@ _DEFAUTS_FIGES = (
     ("build_correspondance_acteurs_an", "CHEMIN_PAR_DEFAUT", FIXTURE_CORRESPONDANCE),
     ("check_quality_gate", "CORRESPONDANCE_PAR_DEFAUT", FIXTURE_CORRESPONDANCE),
     ("perimetre_candidats", "RESOLUTIONS_PAR_DEFAUT", str(FIXTURE_RESOLUTIONS)),
+    ("generate_all_profiles", "CHEMIN_TABLE_MANDATS_ANTERIEURS", FIXTURE_MANDATS_ANTERIEURS),
 )
 
 #: `(module, fonction)` — les mémos de module à vider aux DEUX bouts.
@@ -356,6 +363,7 @@ _MEMOS_A_VIDER = (
     ("correspondance_acteurs_an", "vider_memo"),
     ("perimetre_candidats", "vider_memo_resolutions"),
     ("generate_all_profiles", "vider_index_groupes_suspendus"),
+    ("generate_all_profiles", "vider_table_mandats_anterieurs"),
 )
 
 
