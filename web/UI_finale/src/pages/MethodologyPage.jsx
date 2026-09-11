@@ -472,6 +472,17 @@ const SECTIONS = [
           législature en cours —, la fiche l'écrit et s'arrête là. Le déduire d'un comportement de
           vote serait un jugement, pas une lecture.
         </p>
+        <h3>Sur une fiche de groupe : ce qui est écarté, ce qui est gardé</h3>
+        <p>
+          Un vote sans identifiant de scrutin est <strong>écarté</strong> : sans scrutin, il ne se
+          rattache à aucun texte ni à aucune législature, et n'entre dans aucun décompte. Une
+          intervention dont l'identifiant ne porte pas de législature est <strong>gardée</strong> :
+          rien ne prouve qu'elle soit hors de la période, et l'écarter ferait passer une ignorance
+          pour un fait. Un amendement sans identifiant ne peut pas être reconnu d'un cosignataire à
+          l'autre : il est compté une fois par signataire. Un membre déclaré par l'Assemblée dont
+          le profil manque n'entre dans aucune section. Chaque fiche dit lesquels de ces cas la
+          concernent, et combien.
+        </p>
         <h3>Pourquoi un siège peut porter deux enregistrements</h3>
         <p>
           La source rend parfois plusieurs enregistrements de mandat électif pour un même siège :

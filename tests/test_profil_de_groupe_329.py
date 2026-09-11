@@ -58,13 +58,14 @@ AMENDEMENTS = UI / "scripts" / "amendements-lignees.mjs"
 COMPARAISON = UI / "scripts" / "comparaison-groupes.mjs"
 SYNC = UI / "scripts" / "sync-data.mjs"
 
-#: Les cinq sections, dans l'ordre où la fiche les rend.
+#: Les six sections, dans l'ordre où la fiche les rend.
 SECTIONS = (
     "Qui sont-ils",
     "Sur quoi ils ont pris la parole",
     "Ce qu'ils ont proposé",
     "Ce qu'ils ont voté",
     "Avec qui ils votent",
+    "Ce qu'on n'a pas pu lire",
 )
 
 #: Une ancre de méthodologie par section — minuscules seules : c'est la forme
@@ -173,12 +174,12 @@ def test_le_composant_ne_recalcule_rien(composant):
         assert calcul not in composant, f"`{calcul.rstrip('(')}` est calculé au build, pas à l'écran"
 
 
-# ── Les cinq sections, dans l'ordre ──────────────────────────────────────────
+# ── Les six sections, dans l'ordre ───────────────────────────────────────────
 
-def test_les_cinq_sections_sont_rendues_dans_l_ordre(composant):
+def test_les_six_sections_sont_rendues_dans_l_ordre(composant):
     positions = []
     for titre in SECTIONS:
-        motif = re.escape(titre).replace(r"\'", "['’]")
+        motif = re.escape(titre).replace("\\'", "'").replace("'", "['’]")
         trouve = re.search(rf'titre="{motif}"', composant)
         assert trouve, f"la section « {titre} » a disparu du rendu (#329)"
         positions.append(trouve.start())
@@ -411,6 +412,17 @@ def test_l_intitule_porte_le_lien_de_source(composant):
     assert "lien de source non publié" in composant, (
         "sans URL publiée, l'intitulé le dit — « non publié » parle de nous (DESIGN_SYSTEM §5)"
     )
+
+
+def test_ce_qu_on_n_a_pas_pu_lire_renvoie_le_corpus_a_la_page_de_couverture(projection, composant):
+    """Le partage de `page-couverture-commune-328` : la fiche ne garde que ce
+    que CHAQUE fiche signale d'elle-même ; ce qui vaut pour tout le corpus vit
+    sur `/couverture`, le pourquoi sous `/methodologie#couverture`."""
+    assert "signalementsDuMaillon(groupe)" in projection
+    section = corps(composant, "function CeQuOnNaPasPuLire(")
+    assert "vers: '/couverture'" in section and "vers: '/methodologie#couverture'" in section
+    assert "m.signalements" in section, "la section rend la projection, elle ne relit pas les avertissements"
+    assert "warnings" not in section
 
 
 def test_un_maillon_sans_liste_dit_pourquoi(projection, composant):

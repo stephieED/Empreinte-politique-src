@@ -33,7 +33,7 @@ import {
   scrutinsParPartage,
 } from '../src/utils/groupe.js';
 import { isWholeTextVote } from '../src/utils/lecture.js';
-import { personnesParMaillon, serieEffectif } from '../src/utils/lignee.js';
+import { personnesParMaillon, serieEffectif, signalementsDuMaillon } from '../src/utils/lignee.js';
 
 /* Les amendements d'un maillon : le total distinct publié, et la répartition
  * par commission des deux types de déposant qu'un groupe porte, VÉRIFIÉE contre
@@ -191,6 +191,9 @@ export function construireVueLignee({ fichier, lignee, fiches, idsDeFiche, scrut
       // (Sénat, #528) déclare pourquoi elles sont vides, et c'est ce que la page
       // écrit à leur place — jamais un zéro (§2 règle 5).
       couverture: couvertureRoster(groupe),
+      // Ce que la fiche signale d'elle-même, et qui varie d'un maillon à
+      // l'autre — la section 6. Le reste des limites vit sur `/couverture`.
+      signalements: signalementsDuMaillon(groupe),
       serie: serieEffectif(groupe.membres, fin ?? aujourdhui),
       // [rang de la personne, état de passage] — la liste des noms est portée
       // une fois, au niveau de la lignée.

@@ -211,6 +211,63 @@
   cursor: pointer;
 }
 
+/* § 6 — la grammaire de « Ce que la collecte signale » de la fiche candidat :
+   l'intitulé de la liste à gauche, ses signalements à droite, un par maillon. */
+.lp-signal {
+  display: grid;
+  gap: 12px;
+  margin: 14px 0 0;
+  font-size: 13px;
+}
+
+.lp-signal-rang {
+  display: grid;
+  grid-template-columns: minmax(120px, 180px) minmax(0, 1fr);
+  gap: 4px 20px;
+}
+
+.lp-signal dt {
+  grid-row: span var(--lignes, 1);
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.lp-signal dd {
+  grid-column: 2;
+  margin: 0;
+  color: var(--texte-2);
+  line-height: 1.55;
+}
+
+.lp-signal dd b {
+  display: inline-block;
+  min-width: 7.5em;
+  margin-right: 10px;
+  color: var(--ink);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 720px) {
+  .lp-signal-rang {
+    grid-template-columns: 1fr;
+  }
+
+  .lp-signal dt,
+  .lp-signal dd {
+    grid-column: 1;
+  }
+
+  .lp-signal dt {
+    grid-row: auto;
+  }
+
+  .lp-signal dd b {
+    display: block;
+    min-width: 0;
+  }
+}
+
 .lp-rien {
   margin: 8px 0 0;
   font-size: 13px;

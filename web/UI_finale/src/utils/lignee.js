@@ -13,7 +13,7 @@
  * une fiche de groupe, et ses règles ne changent pas parce qu'on l'enchaîne.
  */
 
-import { urlDossierAN } from './lecture.js';
+import { formatNumber, urlDossierAN } from './lecture.js';
 
 /* ── Règle : l'effectif se recompte jour par jour, et retombe sur le publié ──
  *
@@ -282,6 +282,110 @@ function reunirTextes(listes) {
   }
   return [...parDossier.values()]
     .sort((x, y) => String(y.dernier ?? '').localeCompare(String(x.dernier ?? '')) || x.dossier.localeCompare(y.dossier));
+}
+
+/* ── Règle : ce qu'on n'a pas pu lire se dit fiche par fiche ─────────────────
+ *
+ * La section 6 porte ce que CHAQUE fiche de groupe signale d'elle-même, et
+ * rien d'autre (arbitrage de `page-couverture-commune-328`) : une limite vraie
+ * de tout le corpus vit sur `/couverture`, son raisonnement sous
+ * `/methodologie#couverture`. Mesuré sur les 30 fiches du 11/09/2026 : trois
+ * avertissements sont identiques en nature sur les 28 fiches AN — la source
+ * AMO30, la date de référence, l'effectif min/max, et la carrière écartée des
+ * agrégats — et ne sont donc PAS repris ici. Restent cinq signalements, portés
+ * par 14 fiches sur 30 : 9 lignées sur 13 en ont au moins un.
+ *
+ * LA POPULATION EST CELLE DES PROFILS. Un vote sans identifiant de scrutin est
+ * compté sur toute la carrière des membres, faute de législature lisible — la
+ * phrase dit donc « des profils de ses membres », jamais « du groupe ».
+ *
+ * LU DANS LES CHAMPS QUAND IL Y EN A UN. `couverture_roster` et
+ * `amendements_agreges.nb_sans_identifiant` sont structurés. Deux faits ne
+ * vivent que dans `meta.warnings`, écrits par `group_profile.py` sur un gabarit
+ * fixe : le motif s'ancre sur ce gabarit, et un test le relit dans le source
+ * Python — un message reformulé casse le test, pas la page en silence.
+ *
+ * L'ordre est celui des sections de la page : membres (§1), interventions
+ * (§2), amendements (§3), votes (§4 et §5). */
+export const LISTES_SIGNALEES = {
+  membres: 'Membres',
+  interventions: 'Interventions',
+  amendements: 'Amendements',
+  votes: 'Votes',
+};
+
+export const MOTIFS_AVERTISSEMENT = {
+  votesSansScrutin: /^cohesion_votes : (\d+) vote\(s\) sans scrutin_id écarté\(s\)/,
+  interventionsSansLegislature: /^tags_thematiques_agreges : (\d+) intervention\(s\) dont l'identifiant ne porte pas de législature sont CONSERVÉES/,
+  amendementsIntrouvables: /^amendements_agreges : (\d+) amendement\(s\) introuvable\(s\) dans l'index partagé/,
+};
+
+const pluriel = (n, un, plusieurs) => (n > 1 ? plusieurs : un);
+
+export function signalementsDuMaillon(groupe) {
+  const out = [];
+  const lu = (motif) => {
+    for (const w of groupe?.meta?.warnings || []) {
+      const m = motif.exec(w);
+      if (m) return Number(m[1]);
+    }
+    return 0;
+  };
+
+  const roster = groupe?.meta?.couverture_roster || {};
+  const total = roster.roster_total;
+  const profils = roster.profils_disponibles;
+  if (Number.isInteger(total) && Number.isInteger(profils) && profils < total) {
+    const manquent = total - profils;
+    out.push({
+      liste: 'membres',
+      n: manquent,
+      texte: roster.etat === 'hors_perimetre'
+        ? `${formatNumber(profils)} profils pour ${formatNumber(total)} membres : le Sénat est hors du périmètre`
+        : `${formatNumber(manquent)} ${pluriel(manquent, 'membre', 'membres')} sur ${formatNumber(total)} sans profil, `
+          + `donc sans vote, amendement ni intervention lus`,
+    });
+  }
+
+  const interventions = lu(MOTIFS_AVERTISSEMENT.interventionsSansLegislature);
+  if (interventions) {
+    out.push({
+      liste: 'interventions',
+      n: interventions,
+      texte: `${formatNumber(interventions)} ${pluriel(interventions, 'intervention', 'interventions')} des profils `
+        + `de ses membres sans législature dans leur identifiant, gardées dans les sujets`,
+    });
+  }
+
+  const sansId = groupe?.amendements_agreges?.nb_sans_identifiant || 0;
+  if (sansId) {
+    out.push({
+      liste: 'amendements',
+      n: sansId,
+      texte: `${formatNumber(sansId)} ${pluriel(sansId, 'amendement', 'amendements')} sans identifiant, `
+        + `comptés une fois par signataire`,
+    });
+  }
+  const introuvables = lu(MOTIFS_AVERTISSEMENT.amendementsIntrouvables);
+  if (introuvables) {
+    out.push({
+      liste: 'amendements',
+      n: introuvables,
+      texte: `${formatNumber(introuvables)} ${pluriel(introuvables, 'amendement', 'amendements')} introuvables `
+        + `dans l'index, écartés`,
+    });
+  }
+
+  const votes = lu(MOTIFS_AVERTISSEMENT.votesSansScrutin);
+  if (votes) {
+    out.push({
+      liste: 'votes',
+      n: votes,
+      texte: `${formatNumber(votes)} ${pluriel(votes, 'vote', 'votes')} des profils de ses membres sans identifiant `
+        + `de scrutin, écartés`,
+    });
+  }
+  return out;
 }
 
 export function cumulerTypes(parType, types) {

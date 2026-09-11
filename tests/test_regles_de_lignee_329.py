@@ -12,6 +12,7 @@ petits, et chacun porte le défaut qu'il empêche.
 
 from __future__ import annotations
 
+import ast
 import json
 import shutil
 import subprocess
@@ -268,3 +269,65 @@ def test_le_lien_d_un_dossier_ne_se_construit_que_sur_un_identifiant_reconnu():
       return [lecture.urlDossierAN('DLR5L15N43849'), lecture.urlDossierAN('PRJLANR5L16B0017'), lecture.urlDossierAN(null)];
     """)
     assert res == ["https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N43849", None, None]
+
+
+# ── Ce qu'on n'a pas pu lire ─────────────────────────────────────────────────
+
+def test_seuls_les_signalements_propres_a_la_fiche_sont_retenus():
+    """Les avertissements identiques en nature sur toutes les fiches — source,
+    date de référence, carrière écartée — partent sur `/couverture` (#328)."""
+    res = executer("""
+      const fiche = {
+        meta: {
+          couverture_roster: { roster_total: 24, profils_disponibles: 23, etat: 'dans_le_perimetre' },
+          warnings: [
+            "fraicheur_donnees : composition dérivée du référentiel AMO30…",
+            "date_reference : tous les comptes de cette fiche se rapportent au 2024-06-09…",
+            "cohesion_votes : 1570 vote(s) sans scrutin_id écarté(s) — aucun rattachement…",
+            "tags_thematiques_agreges : 31980 intervention(s) tenue(s) sous une autre législature que la 15e…",
+            "tags_thematiques_agreges : 1803 intervention(s) dont l'identifiant ne porte pas de législature sont CONSERVÉES — rien…",
+          ],
+        },
+        amendements_agreges: { nb_sans_identifiant: 154 },
+      };
+      return lignee.signalementsDuMaillon(fiche).map((s) => [s.liste, s.n]);
+    """)
+    assert res == [["membres", 1], ["interventions", 1803], ["amendements", 154], ["votes", 1570]]
+
+
+def test_une_fiche_sans_signalement_n_en_invente_aucun_et_le_senat_se_dit_hors_perimetre():
+    res = executer("""
+      const propre = { meta: { couverture_roster: { roster_total: 42, profils_disponibles: 42 }, warnings: [] } };
+      const senat = { meta: { couverture_roster: { roster_total: 235, profils_disponibles: 15, etat: 'hors_perimetre' } } };
+      return [lignee.signalementsDuMaillon(propre), lignee.signalementsDuMaillon(senat).map((s) => s.texte)];
+    """)
+    assert res[0] == []
+    assert "hors du périmètre" in res[1][0] and "235" in res[1][0]
+
+
+def _messages_du_pipeline():
+    """Les avertissements que `group_profile.py` écrit, reconstruits depuis son
+    source : un f-string rend ses valeurs sous la forme `12`."""
+    arbre = ast.parse((RACINE / "src" / "group_profile.py").read_text(encoding="utf-8"))
+    messages = []
+    for noeud in ast.walk(arbre):
+        if (isinstance(noeud, ast.Call) and isinstance(noeud.func, ast.Attribute)
+                and noeud.func.attr == "append" and noeud.args):
+            arg = noeud.args[0]
+            if isinstance(arg, ast.JoinedStr):
+                messages.append("".join(
+                    v.value if isinstance(v, ast.Constant) else "12" for v in arg.values
+                ))
+    return messages
+
+
+def test_les_motifs_suivent_le_gabarit_du_pipeline():
+    """Deux signalements ne vivent que dans `meta.warnings` : un message
+    reformulé côté pipeline doit casser ce test, pas vider la section."""
+    messages = _messages_du_pipeline()
+    res = executer(f"""
+      const messages = {json.dumps(messages, ensure_ascii=False)};
+      return Object.fromEntries(Object.entries(lignee.MOTIFS_AVERTISSEMENT)
+        .map(([cle, motif]) => [cle, messages.filter((m) => motif.test(m)).length]));
+    """)
+    assert res == {"votesSansScrutin": 1, "interventionsSansLegislature": 1, "amendementsIntrouvables": 1}

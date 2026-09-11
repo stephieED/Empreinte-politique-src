@@ -23,7 +23,7 @@ import './LigneeProfile.css';
 import NavigationPeriodes from './NavigationPeriodes';
 import { ListeVide } from './Lecture';
 import { LAST_READING_LABEL, formatNumber, styleForPosition } from '../utils/lecture';
-import { cumulerTypes, motifDePosture, ORDRE_PASSAGES, PASSAGES } from '../utils/lignee';
+import { cumulerTypes, LISTES_SIGNALEES, motifDePosture, ORDRE_PASSAGES, PASSAGES } from '../utils/lignee';
 import { MATIERE_NON_ETABLIE } from '../utils/profilCandidat';
 import { GRIS_SANS_MATIERE, PALETTE_MATIERE } from '../utils/matiere';
 
@@ -69,8 +69,10 @@ function LienSource({ url, children }) {
 
 /* Un en-tête de section, la grammaire de la fiche candidat : numéro, titre
  * surligné, critère court ; la limite et le renvoi en pied, APRÈS le contenu.
- * `id` et `data-section` servent `SommaireSections`, qui lit la page. */
-function Section({ numero, titre, critere, pied, renvoi, children }) {
+ * `id` et `data-section` servent `SommaireSections`, qui lit la page.
+ * `renvoi` mène à une ancre de la méthodologie ; une section qui pose deux
+ * questions distinctes en porte deux, sous `renvois` (DESIGN_SYSTEM §7). */
+function Section({ numero, titre, critere, pied, renvoi, renvois, children }) {
   return (
     <section className="lp-section" data-section={titre} id={`section-${numero}`}>
       <div className="lp-section-bande">
@@ -84,6 +86,16 @@ function Section({ numero, titre, critere, pied, renvoi, children }) {
       {renvoi && (
         <p className="lp-methodo">
           <Link to={`/methodologie#${renvoi.ancre}`}>{renvoi.texte}</Link>
+        </p>
+      )}
+      {renvois && (
+        <p className="lp-methodo">
+          {renvois.map((r, i) => (
+            <span key={r.vers}>
+              {i > 0 && ' · '}
+              <Link to={r.vers}>{r.texte}</Link>
+            </span>
+          ))}
         </p>
       )}
     </section>
@@ -941,6 +953,69 @@ function TextesCompares({ entrees, scrutins, moi, autre }) {
   );
 }
 
+/* ── § 6 — ce qu'on n'a pas pu lire ──────────────────────────────────────────
+ *
+ * La même section que la fiche candidat, et le même partage (#328) : ce qui
+ * est vrai de tout le corpus — les bornes de source, les textes portés non
+ * collectés pour les membres, la carrière écartée des agrégats — est dit UNE
+ * fois, sur `/couverture` et sous `/methodologie#couverture`. Une limite de
+ * source écrite sous le nom d'un groupe se lirait comme une limite de ce
+ * groupe. Ne reste ici que ce que CHAQUE fiche signale d'elle-même, rangé par
+ * liste dans l'ordre des sections, maillon par maillon du plus récent au plus
+ * ancien — comme la liste de « En bref ».
+ *
+ * Une lignée sans signalement le dit en une ligne : une section absente se
+ * lirait comme un oubli. */
+function CeQuOnNaPasPuLire({ lignee }) {
+  const parListe = Object.keys(LISTES_SIGNALEES)
+    .map((cle) => ({
+      cle,
+      lignes: [...lignee.maillons].reverse().flatMap((m) => (m.signalements || [])
+        .filter((s) => s.liste === cle)
+        .map((s) => ({ maillon: m, texte: s.texte }))),
+    }))
+    .filter((l) => l.lignes.length);
+  const total = parListe.reduce((n, l) => n + l.lignes.length, 0);
+
+  return (
+    <Section
+      critere="Les limites propres aux fiches de ces groupes, liste par liste."
+      numero="6"
+      renvois={[
+        { vers: '/couverture', texte: 'Ce que le dépôt porte, et depuis quand' },
+        { vers: '/methodologie#couverture', texte: 'Pourquoi ces limites se déclarent au lieu de se combler' },
+      ]}
+      titre="Ce qu’on n’a pas pu lire"
+    >
+      {total === 0 ? (
+        <p className="lp-rien">Aucun signalement propre aux fiches de cette lignée.</p>
+      ) : (
+        <div className="lp-carte">
+          <div className="lp-mat-tete">
+            <span className="lp-mat-titre">Ce que la collecte signale</span>
+            <span className="lp-mat-totaux lp-num">
+              {formatNumber(total)} signalement{total > 1 ? 's' : ''}
+            </span>
+          </div>
+          <dl className="lp-signal">
+            {parListe.map((l) => (
+              <div className="lp-signal-rang" key={l.cle}>
+                <dt style={{ '--lignes': l.lignes.length }}>{LISTES_SIGNALEES[l.cle]}</dt>
+                {l.lignes.map(({ maillon, texte }) => (
+                  <dd key={`${maillon.id}-${texte}`}>
+                    {lignee.maillons.length > 1 && <b>{nomDuMaillon(maillon)}</b>}
+                    {texte}
+                  </dd>
+                ))}
+              </div>
+            ))}
+          </dl>
+        </div>
+      )}
+    </Section>
+  );
+}
+
 export default function LigneeProfile({ lignee }) {
   const aujourdhui = lignee.genereLe || new Date().toISOString().slice(0, 10);
   const noms = [];
@@ -971,6 +1046,7 @@ export default function LigneeProfile({ lignee }) {
       <CeQuIlsOntPropose lignee={lignee} />
       <CeQuIlsOntVote lignee={lignee} />
       <AvecQuiIlsVotent lignee={lignee} />
+      <CeQuOnNaPasPuLire lignee={lignee} />
 
       <footer className="lp-pied">
         <span>
