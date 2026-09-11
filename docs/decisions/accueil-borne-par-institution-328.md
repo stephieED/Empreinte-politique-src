@@ -44,6 +44,16 @@ borne » n'en retrouvait que deux. La propriétaire a tranché pour une table re
 l'accueil nomme les fiches dont la liste est non vide, et une fiche « non relue »
 (`null`) n'y figure pas. La ligne paraît au premier run après la fusion de #861.
 
+## Deux sources citées, pas collectées
+
+`mandats_anterieurs` cite, ligne par ligne, **Sycomore** (la base des députés de
+l'Assemblée depuis 1789) et le **Journal officiel** via Légifrance. Validé par la
+propriétaire le 11/09/2026, elles entrent dans `sources.config.js`, la page des
+mentions légales et `AGENTS.md` §7, qui doivent dire la même chose : le Journal
+officiel sous Licence Ouverte 2.0 (page open data de Légifrance) ; Sycomore,
+publiée « © Tous droits réservés », dont seuls des faits — une fonction, deux
+dates — sont repris, chacun avec son lien. Aucun collecteur ne les interroge.
+
 ## Alternative écartée
 
 **Écrire la liste des cinq en dur dans l'interface.** Elle est vraie aujourd'hui, et

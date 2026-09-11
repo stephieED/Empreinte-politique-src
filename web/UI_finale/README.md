@@ -67,6 +67,9 @@ src/
 │   ├── ScrollRow             # Conteneur générique à défilement horizontal drag-able
 │   ├── CandidateProfile      # Fiche candidat (KPIs, onglets Votes / Textes / Données)
 │   ├── LigneeProfile         # Fiche d'une lignée de groupe (#329) — une page par lignée
+│   ├── CascadeTextes         # Cascade des textes portés, partagée par les deux fiches
+│   ├── FriseCouverture       # Frise de /couverture, par institution
+│   ├── landing/              # Sections de l'accueil ; CouvertureAccueil = une borne par institution
 │   └── NotFoundProfile       # Fallback 404
 ├── pages/                    # Pages routées (chargement async → composant)
 │   ├── CandidateProfilePage  # Résout l'id URL → CandidateProfile

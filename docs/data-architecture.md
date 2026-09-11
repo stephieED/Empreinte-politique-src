@@ -858,6 +858,14 @@ graph TD
   fait — elle compte ce que les sept sorties portent déjà. En faire une sortie de
   `pivot_data/` ajouterait un job, un cache et un budget CI pour un fichier que
   seule l'interface lit ; même raisonnement que la projection de lignée (#329).
+  Depuis le 11/09/2026 il porte le **Parlement européen comme institution** à
+  cinq listes, lues sur leurs marqueurs publiés (`scrutin_non_resolu.institution`,
+  `amendement_non_resolu.institution`, `institution`, `source.institution`,
+  `categorie_source`), et un bloc **`accueil`** — une borne par institution, et
+  les fiches hors couverture (Sénat, aucun mandat, `mandats_anterieurs`) — que
+  la page d'accueil lit. Une `portee` européenne de profil n'y est jamais prise
+  pour une borne : c'était le cas, et les votes de l'Assemblée commençaient en
+  2004.
   Le fichier n'est **pas versionné** (`public/data/` est ignoré par git) et sa
   reconstruction est conditionnée aux dates de ses entrées : lire les quatre
   index d'amendements coûte 17 à 28 s, et le refaire à chaque `npm run dev`
@@ -873,7 +881,11 @@ graph TD
   `scripts/amendements-lignees.mjs` y ajoute les amendements de chaque maillon
   par commission saisie au fond, relus dans les profils et l'index, et ne sert
   la répartition d'un type de déposant que si elle **retombe sur le total
-  publié** par la fiche. Cache sur les dates, comme `couverture.json` : 59 s et
+  publié** par la fiche. La même passe relève les **textes portés** des membres
+  dans la législature du maillon — un dossier une fois, au stade le plus
+  avancé (`textesDuMaillon`) —, que la page dessine avec la cascade de la fiche
+  candidat ; aucune fiche de groupe ne publie cet agrégat. Chaque maillon porte
+  aussi ses `signalements`, ce que sa fiche signale d'elle-même (section 6). Cache sur les dates, comme `couverture.json` : 59 s et
   1,2 Gio de RSS pour tout `sync-data` à froid, mesurés le 11/09/2026.
 - Le manifeste liste les candidats **déclarés** de `raw_data/candidats.json`,
   filtrés sur l'existence d'un profil sur disque — ne pas fabriquer la promesse

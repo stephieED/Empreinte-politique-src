@@ -50,6 +50,8 @@ Le détail et le raisonnement : [`AGENTS.md`](AGENTS.md) §2 et §6.
 | [Open data de l'Assemblée nationale](https://data.assemblee-nationale.fr/) | **La seule source française** depuis #529 : identité, mandats, votes, amendements, dossiers, comptes rendus Syceron, questions | quotidienne | Licence Ouverte (Etalab) — attribution |
 | [Parltrack](https://parltrack.org) | Le volet européen des anciens eurodéputés | hebdomadaire (environ) | ODbL v1.0 — **partage à l'identique** |
 | [Parlement européen](https://data.europarl.europa.eu/) | Le mandat européen | en direct, à chaque run | CC BY 4.0 — attribution, `User-Agent` identifiant le réutilisateur, 500 requêtes / 5 min |
+| [Sycomore](https://www2.assemblee-nationale.fr/sycomore/recherche) (Assemblée nationale) | **Citée, pas collectée** : les mandats de député antérieurs au 19/06/2002, relus à la main un par un (#860) | aucune — table relue | tous droits réservés — **seuls des faits** (fonction, dates) repris, avec leur lien |
+| Journal officiel ([Légifrance](https://www.legifrance.gouv.fr/)) | **Cité, pas collecté** : les fonctions gouvernementales antérieures au corpus, décret par décret (#860) | aucune — table relue | Licence Ouverte 2.0 (Etalab) — attribution |
 | Wikipédia / Wikidata | Le suivi des candidatures déclarées | immédiate | CC BY-SA 4.0 / CC0 |
 | NosDéputés / NosSénateurs | **Plus collectées** depuis #528/#529, mais des champs déjà publiés en dérivent | — | ODbL v1.0 — **partage à l'identique** |
 
@@ -146,14 +148,18 @@ vers les deux index partagés. Pourquoi, et ce que ça a fait gagner :
 
 Le site le publie, et pas seulement ce fichier : **[« Ce que contient ce corpus »](https://empreinte-politique.fr/couverture)**
 (`/couverture`) montre, pour les trois populations publiées, ce que le dépôt
-porte et depuis quand, puis par liste les fiches où elle manque. Deux tiers des
+porte et depuis quand, puis par liste les fiches où elle manque. **L'accueil en
+donne la version courte** — une borne par institution, et les candidats dont une
+partie des mandats est hors couverture, nommés (#328). Deux tiers des
 limites de couverture étaient jusque-là recopiés à l'identique sous chaque fiche,
 où ils se lisaient comme des faits sur la personne affichée (#328).
 → [`docs/decisions/page-couverture-commune-328.md`](docs/decisions/page-couverture-commune-328.md)
 
-- **Groupes** : seuls les **12 groupes** déclarés dans
+- **Groupes** : seuls les groupes déclarés dans
   `raw_data/groupes_reels.json` sont produits, pas tous ceux qui existent — une
-  fiche par groupe **et par législature**. Les **5 groupes de la XVIIe** y sont
+  fiche par groupe **et par législature** (30 au 11/09/2026), que l'interface
+  publie en **une page par lignée** : 13 pages, la suite des fiches d'un même
+  groupe (#329, #836). Les **5 groupes de la XVIIe** y sont
   entrés le 01/09/2026 (#700) ; leurs fiches paraissent au premier run qui
   suit, et couvriront **305 des 461** membres, les autres n'ayant pas encore de
   correspondance slug ↔ acteur AN. Les **2 groupes du Sénat sont suspendus**
@@ -164,7 +170,10 @@ où ils se lisaient comme des faits sur la personne affichée (#328).
   [`docs/decisions/retrait-senat-528.md`](docs/decisions/retrait-senat-528.md),
   [`docs/decisions/extraction-groupe-suspendue-516.md`](docs/decisions/extraction-groupe-suspendue-516.md)
 - **Gouvernements** : seuls ceux déclarés dans
-  `raw_data/gouvernements_reels.json`, pas toute la Ve République.
+  `raw_data/gouvernements_reels.json`, pas toute la Ve République. Aucune
+  fonction gouvernementale du corpus n'est antérieure au 18/05/2007, et les
+  mandats 2002-2007 de Xavier Bertrand manquent dans une période que sa fiche
+  dit couverte : #859.
   `membres[].portefeuille` et `premier_ministre` restent `null` quand aucun
   pivot local ne les porte — jamais un « Ministre » générique ni un nom déduit
   du libellé du gouvernement.
@@ -177,6 +186,9 @@ où ils se lisaient comme des faits sur la personne affichée (#328).
   selon les dumps disponibles.
 - **Sénat** : hors périmètre depuis #528 — pas de job de collecte, pas de
   chambre `senateurs`. Les mandats sénatoriaux déjà publiés le restent.
+- **Parlement européen** : les cinq listes sont publiées (ParlTrack), mais les
+  interventions et textes antérieurs au 22/11/2016 portent la date de leur
+  republication par ParlTrack, pas celle de la séance : #858.
 - **Interventions** : Syceron est la seule source depuis #529, et sa résolution
   d'identifiants d'acteur nus reste livrée inactive (#510) — une collecte
   fraîche ne rend donc que les questions officielles. Les prises de parole déjà
