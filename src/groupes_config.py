@@ -591,9 +591,11 @@ def succession_publiee(
     **Une liste depuis #815**, parce qu'un groupe peut succéder à plusieurs.
     La forme unique décrivait bien la succession simple (`LR-16` → `DR-17`) et
     ne savait écrire ni une **fusion** — deux groupes qui n'en font qu'un —, ni
-    une **scission**, où le sortant continue d'exister : `AD` quitte `DR` le
-    11/09/2024 pendant que `DR` poursuit, et aucun des deux ne succède à
-    l'autre au sens d'un remplacement.
+    une **scission**, où le sortant continue d'exister et où aucun des deux ne
+    succède à l'autre au sens d'un remplacement. #815 croyait en tenir un cas,
+    « `AD` quitte `DR` le 11/09/2024 » ; la mesure l'a infirmé le 11/09/2026 —
+    0 des 16 membres d'`AD` n'a siégé dans `DR`, les deux groupes naissent le
+    même jour —, et le corpus n'en porte aucun à ce jour.
 
     `None` quand l'entrée ne déclare pas de prédécesseur — les 5 groupes de la
     XVIe, dont la XVe n'est pas couverte par ce dépôt. C'est un périmètre, pas

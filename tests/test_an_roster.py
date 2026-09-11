@@ -497,11 +497,17 @@ def test_la_17e_est_servie_par_amo30(actif):
         assert all(m["legislature"] == "17" for m in membres)
         mesures[entree["groupe_sigle"]] = rapport["effectif_mesure"]
     # #815 — SEPT groupes depuis que `GDR-17` et `ECOS-17` ferment leurs
-    # lignées, DIX depuis que MoDem, Horizons et LIOT ont la leur (11/09/2026).
-    # Les sept d'avant gardent leur effectif au membre près : c'est ce qui
+    # lignées, DIX depuis que MoDem, Horizons et LIOT ont la leur (11/09/2026),
+    # ONZE avec UDR, union de trois organes renommés (AD, UDR, UDDPLR).
+    # Ceux d'avant gardent leur effectif au membre près : c'est ce qui
     # distingue un élargissement d'une régression.
     assert mesures == {"EPR": 123, "SOC": 70, "RN": 131, "LFI": 73, "DR": 64,
-                       "GDR": 18, "ECOS": 38, "DEM": 42, "HOR": 44, "LIOT": 26}
+                       "GDR": 18, "ECOS": 38, "DEM": 42, "HOR": 44, "LIOT": 26,
+                       "UDR": 18}
+
+
+#: Groupes de la 17e déclarés SANS prédécesseur, par décision datée (#815).
+SANS_PREDECESSEUR_17E = frozenset({"AN:UDR:17"})
 
 
 def test_le_perimetre_de_la_17e_est_ecrit_groupe_par_groupe():
@@ -513,12 +519,19 @@ def test_le_perimetre_de_la_17e_est_ecrit_groupe_par_groupe():
     """
     entrees = _entrees_table("17")
     # #815 : sept depuis que `GDR-17` et `ECOS-17` ferment leurs lignées, dix
-    # depuis `DEM-17`, `HOR-17` et `LIOT-17`.
-    assert len(entrees) == 10
+    # depuis `DEM-17`, `HOR-17` et `LIOT-17`, onze avec `UDR-17`.
+    assert len(entrees) == 11
     total, deja = 0, 0
     for entree in entrees:
         assert entree["effectif_publie"] is None, "aucune fiche 17e n'est publiée"
-        assert entree["succede_a"], "chaque groupe de la 17e nomme son prédécesseur"
+        # Chaque groupe de la 17e nomme son prédécesseur, SAUF ceux qu'une
+        # décision datée déclare sans : UDR (#815, 11/09/2026), dont 0 membre
+        # sur 16 ne vient de DR et 2 seulement de LR-16. La liste est explicite
+        # pour qu'un oubli de `succede_a` reste un échec, pas une exception.
+        if entree["groupe_id"] in SANS_PREDECESSEUR_17E:
+            assert "succede_a" not in entree, entree["groupe_id"]
+        else:
+            assert entree["succede_a"], "chaque groupe de la 17e nomme son prédécesseur"
         assert isinstance(entree["membres_avec_slug"], int)
         assert 0 <= entree["membres_avec_slug"] <= entree["effectif_amo30"]
         total += entree["effectif_amo30"]
@@ -527,8 +540,9 @@ def test_le_perimetre_de_la_17e_est_ecrit_groupe_par_groupe():
     # en collecte 17 de plus sur la 17e. Le couple est écrit plutôt que
     # recalculé — c'est ce qui fait qu'élargir se décide au lieu de se subir.
     # Puis +112 (DEM 42, HOR 44, LIOT 26), dont 25 ont déjà une entrée dans la
-    # table : 87 de plus sur la 17e (11/09/2026).
-    assert (total, deja) == (629, 369)
+    # table : 87 de plus sur la 17e (11/09/2026). Puis +18 (UDR), dont 2 ont
+    # déjà une entrée — Ciotti et D'Intorni, venus de LR-16 : 16 de plus.
+    assert (total, deja) == (647, 371)
 
 
 # --------------------------------------------------------------------------

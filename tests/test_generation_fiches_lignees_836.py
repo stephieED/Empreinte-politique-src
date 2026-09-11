@@ -10,7 +10,8 @@ Un fichier par lot (#840). Ce qu'ils vérifient, et pourquoi chacun existe :
   et c'est le défaut que #815 a payé, où seule l'une des deux listes du fichier
   avait été corrigée ;
 - une succession qui traverse deux lignées est **refusée**. C'est la porte qui
-  tient la scission `AD`/`DR` tant que sa forme n'est pas tranchée ;
+  tient une scission tant que sa forme n'est pas tranchée — un cas abstrait :
+  celui qu'on croyait tenir, `AD`/`DR`, a été infirmé par la mesure (#815) ;
 - un maillon déclaré sans fiche publiée est **refusé**, pas publié amputé ;
 - l'union dédoublonne réellement, sur une chaîne complète et non sur un appel
   isolé — la leçon de #809, dont les tests sautaient le filtre qui jetait le
@@ -188,7 +189,7 @@ def test_un_groupe_dans_la_mauvaise_chambre_est_refuse(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# La partition contre la chaîne — la porte qui tient la scission
+# La partition contre la chaîne — la porte qui tiendrait une scission
 # ---------------------------------------------------------------------------
 
 def _fiche(groupe_id, legislature, membres, succede_a=None, cohesion=()):
@@ -215,12 +216,17 @@ def _fiche(groupe_id, legislature, membres, succede_a=None, cohesion=()):
 
 
 def test_une_succession_qui_traverse_deux_lignees_est_refusee():
-    """La scission `AD`/`DR` échoue plutôt que d'être absorbée (#815, #836)."""
+    """Une succession entre deux lignées déclarées échoue plutôt que d'être absorbée.
+
+    Sigles neutres, et c'est voulu : l'exemple portait `DR` et `UDR`, un cas que
+    la mesure du 11/09/2026 a infirmé (#815). Un test ne met pas de vrais
+    sigles sur un fait inventé.
+    """
     fiches = {
-        "AN:DR:17": _fiche("AN:DR:17", "17", ["a"], succede_a=["AN:LR:16"]),
-        "AN:LR:16": _fiche("AN:LR:16", "16", ["a"]),
+        "AN:B:17": _fiche("AN:B:17", "17", ["a"], succede_a=["AN:A:16"]),
+        "AN:A:16": _fiche("AN:A:16", "16", ["a"]),
     }
-    appartenances = {"AN:DR:17": "AN:LIGNEE:UDR", "AN:LR:16": "AN:LIGNEE:LR"}
+    appartenances = {"AN:B:17": "AN:LIGNEE:Y", "AN:A:16": "AN:LIGNEE:X"}
     with pytest.raises(LigneeIncoherente, match="SCISSION"):
         verifier_partition(fiches, appartenances)
 

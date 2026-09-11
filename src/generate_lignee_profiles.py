@@ -29,10 +29,12 @@ répertoires, deux scripts, deux codes de retour — c'est déjà la règle que
    lignée, l'un des deux se trompe, et publier l'un des deux reviendrait à
    choisir en silence. La lignée est alors refusée, nommément.
 
-   C'est cette porte qui tient la **scission** : `AD` quitte `DR` le 11/09/2024
-   pendant que `DR` poursuit, et la façon de l'écrire n'est pas tranchée (#815,
-   #836). Tant qu'elle ne l'est pas, une déclaration bancale échoue au lieu de
-   publier une lignée qui absorberait un groupe qui n'a succédé à personne.
+   C'est cette porte qui tient une **scission** tant que sa forme n'est pas
+   tranchée : une déclaration bancale échoue au lieu de publier une lignée qui
+   absorberait un groupe qui n'a succédé à personne. #815 et #836 en croyaient
+   tenir un cas, « `AD` quitte `DR` » ; mesuré le 11/09/2026, aucun des 16
+   membres d'`AD` n'a siégé dans `DR`, et UDR est entrée comme lignée à elle
+   seule, sans prédécesseur. Le corpus ne porte aucune scission à ce jour.
 
 2. **Un maillon déclaré dont la fiche n'est pas sur le disque.** La lignée est
    refusée plutôt que publiée amputée : une union à qui il manque un maillon

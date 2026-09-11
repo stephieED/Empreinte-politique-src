@@ -188,8 +188,9 @@ Format d'un profil de groupe v1 :
                                         # plusieurs. La forme unique décrivait la succession
                                         # simple (LR-16 → DR-17) et ne savait écrire ni une
                                         # FUSION — deux groupes qui n'en font qu'un —, ni une
-                                        # SCISSION, où le sortant continue d'exister : `AD`
-                                        # quitte `DR` le 11/09/2024 pendant que `DR` poursuit.
+                                        # SCISSION, où le sortant continue d'exister — aucun
+                                        # cas dans le corpus : « AD quitte DR » a été infirmé
+                                        # par la mesure du 11/09/2026 (#815).
                                         # Le groupe de la législature précédente dont celui-ci
                                         # prend la suite. L'Assemblée ouvre et ferme des organes,
                                         # elle ne les chaîne pas : cette continuité est une
