@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 281 décisions
+gouverne sans avoir à fouiller les 282 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -89,6 +89,8 @@ Le mentionnent sans le gouverner : [`lectures-pipeline-par-projection-635`](deci
 | [Le roster des groupes AN est dérivé d'AMO30, derrière un drapeau baissé (#526, lot 1 de l'épic « une seule source AN ») (2026-08-26)](decisions/roster-an-derive-amo30-526.md) | `AN_ROSTER_ACTIF`, `RosterAnIndisponible`, `fetch_full_roster_an` |
 | [Un membre de roster sans correspondance relue reçoit un slug, et la collision reste un refus (#708) (2026-09-02)](decisions/slug-fabrique-membre-de-roster-708.md) | `MOTIFS_SLUG_NON_ATTRIBUE`, `resoudre_slugs` |
 | [Trois fiches, et six lignées qui remontent enfin (#815, lot 2)](decisions/trois-fiches-de-continuite-815.md) | `est_mandat_de_transit` |
+
+Le mentionnent sans le gouverner : [`periodes-jetees-par-le-filtre-809`](decisions/periodes-jetees-par-le-filtre-809.md).
 
 ## `src/audit_collecte_non_publiee.py`
 
@@ -623,7 +625,7 @@ Le mentionnent sans le gouverner : [`audit-pipeline-gouvernement`](decisions/aud
 
 ## `src/group_profile.py`
 
-27 décision(s) le gouvernent ; le module en cite 4.
+28 décision(s) le gouvernent ; le module en cite 4.
 
 | Décision | Nomme |
 | --- | --- |
@@ -646,6 +648,7 @@ Le mentionnent sans le gouverner : [`audit-pipeline-gouvernement`](decisions/aud
 | [Normalisation de `par_fonction` dans `mandats_agreges`, et requalification du défaut « catégorie commission » (#379) (2026-08-17)](decisions/normalisation-fonction-mandats-agreges.md) | `_aggregate_mandats`, `_normalize_fonction_mandat` |
 | [Normaliser les votes : une liste partagée, un mapping, et deux invariants devenus des jointures (#432) (2026-08-19)](decisions/normalisation-votes.md) | `_votes_de_legislature` |
 | [L'appartenance publiée cesse d'être une enveloppe (#809)](decisions/periodes-appartenance-809.md) | `_appartenance_couvre` |
+| [Un champ traverse la chaîne, ou il n'existe pas (#809)](decisions/periodes-jetees-par-le-filtre-809.md) | `_appartenance_couvre`, `appartenances_depuis_roster`, `projeter_profil_membre` |
 | [Un profil de roster ne porte pas une liste que sa propre collecte déclare écartée — purge des 49 `textes_portes` résiduels (#747)](decisions/purge-textes-portes-roster-747.md) | `BLOCS_LUS_MEMBRE` |
 | [Résoudre la `legislature` d'un vote : deux mécanismes, pas un seul (#432) (2026-08-19)](decisions/resolution-legislature-deux-mecanismes-432.md) | `_votes_de_legislature` |
 | [Restaurer 789 interventions sans revenir sur le reste du schéma (#460) (2026-08-19)](decisions/restauration-interventions.md) | `aggregate_tags_thematiques` |
@@ -659,12 +662,13 @@ Le mentionnent sans le gouverner : [`civilite-et-pcs-insee-659`](decisions/civil
 
 ## `src/group_roster.py`
 
-8 décision(s) le gouvernent ; le module en cite 3.
+9 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
 | [La bascule : le roster des groupes AN vient d'AMO30 (#527, lot 1b de l'épic « une seule source AN ») (2026-08-26)](decisions/bascule-roster-an-amo30-527.md) | `ERREURS_ROSTER`, `fetch_full_roster` |
 | [Suspendre l'extraction des deux groupes Sénat, sans les retirer de la config (#516) (2026-08-24)](decisions/extraction-groupe-suspendue-516.md) | `fetch_full_roster` |
+| [Un champ traverse la chaîne, ou il n'existe pas (#809)](decisions/periodes-jetees-par-le-filtre-809.md) | `filter_roster_by_sigle` |
 | [Le plafond de lecture du roster, et le commit qui ne paie plus pour une source lente (#518, second incident) (2026-08-24)](decisions/plafond-roster-et-commit-518.md) | `fetch_full_roster` |
 | [NosDéputés sort du pipeline (#529, lot 5 de l'épic « une seule source AN ») (2026-08-27)](decisions/retrait-nosdeputes-529.md) | `ERREURS_ROSTER`, `fetch_full_roster`, `filter_roster_by_sigle` |
 | [Le Sénat sort du périmètre, et le job qui concluait vert sans rien produire est retiré (#528, lot 3 de l'épic « une seule source AN ») (2026-08-26)](decisions/retrait-senat-528.md) | `ERREURS_ROSTER`, `filter_roster_by_sigle` |

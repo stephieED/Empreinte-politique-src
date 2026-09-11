@@ -245,6 +245,20 @@ def filter_roster_by_sigle(
             "groupe_sigle": member.get("groupe_sigle"),
             "mandat_debut": member.get("mandat_debut"),
             "mandat_fin": mandat_fin,
+            # #809 — LES DEUX BORNES SONT UNE ENVELOPPE, ET LE DÉTAIL DOIT
+            # TRAVERSER AVEC ELLES. `mandat_debut`/`mandat_fin` recollent en un
+            # intervalle des appartenances qui en comptent plusieurs : 33
+            # membres de 8 fiches étaient dits dans leur groupe pendant qu'ils
+            # étaient au gouvernement, jusqu'à 1 110 jours masqués.
+            #
+            # Ce filtre est une projection par clés, et #809 l'avait manqué :
+            # le champ était produit par `an_roster`, lu par
+            # `appartenances_depuis_roster` et publié par la fiche, mais **jeté
+            # ici**, au milieu. Le run 34538350163 a régénéré les 23 fiches
+            # sans qu'aucune ne porte `periodes[]`. C'est la règle de
+            # `docs/regles/fusion-et-index.md` : un champ ajouté n'atteint pas
+            # tout seul un consommateur qui recopie les entrées à la main.
+            "mandat_periodes": member.get("mandat_periodes"),
             "actif": not mandat_fin,
             # `acteur_ref` (le `PA######` d'AMO30) traverse le filtre depuis
             # #529 : c'est ce qui permet à `generate_roster_candidats` de
