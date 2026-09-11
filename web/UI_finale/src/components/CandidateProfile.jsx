@@ -169,7 +169,6 @@ function Frise({ parcours }) {
   const deuxNiveaux = reperes.some((r) => r.niveau === 1);
 
   return (
-    <>
     <div className="cp-carte cp-frise">
       <div className="cp-reperes" style={{ height: deuxNiveaux ? 46 : 30 }}>
         {reperes.map((r) => (
@@ -247,21 +246,6 @@ function Frise({ parcours }) {
       </ul>
       </details>
     </div>
-
-    {/* LE RENVOI EST UN PIED DE SECTION, pas une variante : c'est la forme que
-        `Section` rend sous le bloc blanc — `cp-section-pied`, et la flèche en
-        fin de ligne. « En bref » n'est pas un `Section` et ne peut pas passer
-        par sa prop `pied` ; la classe, elle, est la même, donc le lecteur voit
-        le même objet au même endroit.
-
-        Il remplace la note « Majorité, minorité et opposition selon l'AN » — la
-        seule phrase qui rattachait les trois postures à l'Assemblée plutôt qu'à
-        nous (§2 règle 2). La frise ne les porte plus, mais la liste des rôles
-        les écrit toujours : le fait reste dit, là où vivent les explications. */}
-    <p className="cp-section-pied">
-      <Link to="/methodologie#fonctions">Majorité, minorité et opposition, selon l’Assemblée →</Link>
-    </p>
-    </>
   );
 }
 
@@ -1372,6 +1356,20 @@ function GrandsChiffres({ chiffres, parcours }) {
           </div>
         </details>
       </div>
+
+      {/* LE PIED EST HORS DE LA CARTE, comme celui de toutes les sections :
+          `Section` rend sa prop `pied` après `cp-section-corps`, jamais dedans.
+          « En bref » n'est pas un `Section` — il compose sa bande et son titre à
+          la main —, donc il compose aussi son pied, avec la même classe et au
+          même endroit relatif.
+
+          Il remplace la note « Majorité, minorité et opposition selon l'AN », la
+          seule phrase qui rattachait les trois postures à l'Assemblée plutôt
+          qu'à nous (§2 règle 2) : la frise ne les porte plus, mais la liste des
+          rôles les écrit toujours. */}
+      <p className="cp-section-pied">
+        <Link to="/methodologie#fonctions">Majorité, minorité et opposition, selon l’Assemblée →</Link>
+      </p>
     </section>
   );
 }
