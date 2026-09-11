@@ -1,3 +1,4 @@
+import { INSTITUTION_PARLEMENT, sigleDuSiege } from '../utils/profilCandidat';
 import {
   buildCandidateView,
   buildGovernmentView,
@@ -281,7 +282,7 @@ export async function getCandidateProfile(id) {
   // L'index des amendements se charge APRÈS le profil : ce sont les
   // identifiants du mapping qui disent quelles législatures aller chercher.
   const amendements = await loadAmendementsPour(pivot);
-  return buildCandidateView(
+  const view = buildCandidateView(
     pivot,
     entry,
     scrutins,
@@ -296,6 +297,26 @@ export async function getCandidateProfile(id) {
     manifest.gouvernements || [],
     ficheDuGroupeAffiche(manifest, entry, pivot),
   );
+  return avecSiglesDeSiege(view, manifest);
+}
+
+/* Le sigle de chaque siège, lu sur les fiches de groupe du manifeste quand
+ * l'intitulé du mandat porte le nom complet (`sigleDuSiege`). */
+function avecSiglesDeSiege(view, manifest) {
+  if (!view?.parcours?.roles) return view;
+  const parNom = new Map();
+  const ambigus = new Set();
+  for (const g of manifest.groupes || []) {
+    if (g.chambre !== 'AN' || !g.nom || !g.sigle) continue;
+    const nom = g.nom.trim();
+    if (parNom.has(nom) && parNom.get(nom) !== g.sigle) ambigus.add(nom);
+    parNom.set(nom, g.sigle);
+  }
+  for (const nom of ambigus) parNom.delete(nom);
+  const roles = view.parcours.roles.map((r) => (r.institution === INSTITUTION_PARLEMENT
+    ? { ...r, sigle: sigleDuSiege(r.detail, parNom) }
+    : r));
+  return { ...view, parcours: { ...view.parcours, roles } };
 }
 
 /**

@@ -223,15 +223,26 @@ def test_le_troisieme_cas_ne_rend_aucune_ligne(regles):
 # ── Ce que chaque chiffre porte ─────────────────────────────────────────────
 
 
-def test_seuls_les_nombres_sont_en_gros(feuille):
-    """« 24 / 67 mandats » — et quoi ? Chaque cellule nomme ce sur quoi elle
-    porte, et l'objet reste à l'échelle des libellés : le mettre à celle du
-    chiffre faisait lire le titre du texte comme la mesure."""
+def test_aucun_nombre_ne_domine_les_autres(feuille):
+    """Forme « la phrase », retenue le 11/09/2026 : les grands chiffres donnaient
+    à 3 933 interventions le poids visuel de 28 textes portés. Le nombre est en
+    gras AU CORPS DU TEXTE, et l'objet se lit à la même taille, dans la même encre."""
     i = feuille.index(".cp-gc-n {")
-    grand = feuille[i : feuille.index("}", i)]
-    petit = feuille[feuille.index(".cp-gc-n small {") : feuille.index("}", feuille.index(".cp-gc-n small {"))]
-    assert "font-size: 24px" in grand
-    assert "font-size: 13px" in petit
+    phrase = feuille[i : feuille.index("}", i)]
+    j = feuille.index(".cp-gc-n small {")
+    objet = feuille[j : feuille.index("}", j)]
+    assert "font-size: 15px" in phrase and "font-size: 15px" in objet
+    assert "color: var(--ink)" in objet
+    assert "font-size: 24px" not in phrase
+
+
+def test_le_total_du_rang_vient_en_tete(regles):
+    """« 309 sur 3 595 », « 16 mandats sur 36 » : le détail passait avant le
+    total qu'il détaille. Le nombre de la cellule est désormais le TOTAL."""
+    bloc = _corps(regles, "export function grandsChiffres(", "\nexport ")
+    assert "nombre: lot.length,\n      objet: pluriel(lot.length, 'mandat', 'mandats')" in bloc
+    assert "nombre: lot.length,\n      objet: pluriel(lot.length, 'intervention', 'interventions')" in bloc
+    assert "objet: 'amendements sur'" not in bloc
 
 
 def test_la_concentration_ne_s_affirme_que_la_ou_elle_se_prouve(regles):
@@ -530,14 +541,11 @@ def test_la_legende_ne_porte_plus_de_note(composant):
 # FOND et qu'on pose sur autre chose qu'un fond.
 
 
-def test_la_legende_ne_porte_pas_la_classe_du_segment(composant):
-    """Les `<em>` de la légende portaient `cp-gc-part--<stade>`, la classe du
-    segment de barre, qui pose un fond. Résultat : `var(--parl)` (#3f5166)
-    derrière un texte `var(--muted)` (#8b8794), soit 1,9:1. « 15 promulgué »
-    était illisible."""
-    bloc = _corps(composant, 'className="cp-gc-barre-leg"', "</span>")
-    assert "cp-gc-part--" not in bloc, "la légende ne réutilise pas la classe du segment"
-    assert "cp-gc-cle-stade" in bloc
+def test_la_barre_des_stades_a_quitte_le_bloc(composant, regles):
+    """Retirée le 11/09/2026 : le bloc ne garde que des nombres ; les stades se
+    lisent dans la cascade de « Ce qu'il a proposé »."""
+    assert 'className="cp-gc-barre"' not in composant
+    assert "barreDesStades(" not in regles
 
 
 def test_la_pastille_porte_la_teinte_et_le_libelle_reste_neutre(feuille):
@@ -593,3 +601,13 @@ def test_la_rampe_des_cinq_stades_monte(feuille, regles):
     assert [int(m.group(1)) for m in degres] == [1, 2, 3, 4, 5], (
         "la rampe suit l'ordre des stades, sans palier ni retour en arrière"
     )
+
+
+def test_un_segment_de_siege_ne_porte_que_le_sigle_et_la_place(composant, regles):
+    """Maquette « En bref » du 11/09/2026 : sur la frise, un siège ne dit que le
+    sigle de son groupe et sa place dans l'hémicycle. Plus de nom long, plus de
+    repli sur la fonction, qui répétait la légende ; un sigle ne se fabrique pas."""
+    bloc = _corps(composant, "function candidatesEtiquette(", "\n}\n")
+    assert "role.sigle" in bloc
+    assert "candidates.push(role.role)" not in bloc
+    assert "export function sigleDuSiege(" in regles

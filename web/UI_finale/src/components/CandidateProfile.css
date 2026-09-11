@@ -423,7 +423,7 @@
 
 .cp-gc-cell {
   border-top: 1px solid var(--border);
-  padding: 16px 0 18px;
+  padding: 12px 0 14px;
 
   /* La famille de teintes de la colonne. Déclarée ICI, sur la cellule, et non
      déduite du voisinage dans la grille — voir le bloc des stades plus bas. */
@@ -460,29 +460,34 @@
 
 /* **Seuls les nombres sont en gros.** Mettre l'objet à la même échelle que le
  * chiffre faisait lire le titre du texte comme la mesure. */
+/* LA PHRASE, PAS LE GRAND CHIFFRE (maquette « En bref », 11/09/2026) : le
+   nombre en gras au corps du texte, l'objet à la suite dans la même encre. */
 .cp-gc-n {
-  font-size: 24px;
-  font-weight: 800;
-  letter-spacing: -0.012em;
-  line-height: 1.15;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.45;
   margin: 0;
 }
 
+.cp-gc-n b {
+  font-weight: 800;
+}
+
 .cp-gc-n small {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--muted);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
 }
 
 .cp-gc-q {
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--muted);
   margin: 4px 0 0;
 }
 
 .cp-gc-d {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
   margin: 6px 0 0;
   /* Ce qui SE DIT sans se crier : la part écartée par le seuil de publication,

@@ -215,6 +215,9 @@ SITES_UI: dict[tuple[str, str], str] = {
     # `succede_a` refait ici (l'accès `tete`) est parti. La chambre sert à
     # griser les deux lignées du Sénat dans la barre.
     ("src/data/index.js", "l"): GROUPE,
+    # Les sigles des sièges se lisent sur les fiches de groupe de l'Assemblée
+    # du manifeste (`avecSiglesDeSiege`, maquette « En bref » du 11/09/2026).
+    ("src/data/index.js", "g"): GROUPE,
 }
 
 # Le dernier consommateur du champ profil de l'interface — `chambreLabel(
