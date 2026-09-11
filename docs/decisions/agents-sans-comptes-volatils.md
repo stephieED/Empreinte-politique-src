@@ -28,15 +28,19 @@ mesure.
 fichier chargé à chaque session transforme une date en décor : on lit le nombre,
 pas le jour. C'est exactement ce qui s'est passé.
 
-## Ce qui reste, et n'est pas traité ici
+## Deux passages qui servaient d'argument, arbitrés à part
 
-Deux passages d'`AGENTS.md` portent encore des mesures qui bougent avec la
-donnée, et chacun sert d'**argument** plutôt que d'inventaire :
+Deux passages portaient des mesures qui bougent avec la donnée, mais chacun
+servait d'**argument** plutôt que d'inventaire. Arbitré par la propriétaire le
+11/09/2026, sur recommandation :
 
-- §7 — « 475 of 476 published profiles », « 511 published interventions » :
-  la preuve que la clause ODbL survit (#530) ;
-- Références, `commissions_dossiers.json` — 6 024 dossiers, 1,2 Mo, 381/381 et
-  0 sur 174.
+| Passage | Rôle du chiffre | Sort |
+| --- | --- | --- |
+| §7 — « 475 of 476 profiles », « 511 interventions » | la preuve que la clause ODbL survit (#530) | **gardé et daté** (27/08/2026, `74c77c2`) : c'est la preuve d'une obligation légale, et elle doit se lire au moment où l'on décide — mais comme une mesure datée, à refaire avant de s'y fier |
+| Références — `commissions_dossiers.json` (6 024 dossiers, 381/381, 0 sur 174) | inventaire | **retiré** : `docs/data-architecture.md` porte déjà ces chiffres ; reste le constat structurel, le référentiel est celui de l'AN |
 
-Les retirer change la force d'un raisonnement, pas seulement un décor : c'est
-laissé à l'arbitrage.
+Le même paragraphe portait un compte ajouté la veille par #845 lui-même — « 23
+fiches de groupe publiées pour 10 lignées » —, déjà faux au moment de cette
+relecture : 30 fiches et 13 lignées étaient déclarées depuis #846. Il sort avec
+le reste. C'est l'argument de cette décision en une ligne : le compte avait un
+jour.
