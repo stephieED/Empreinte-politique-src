@@ -40,7 +40,6 @@ import {
   LIBELLE_PISTE,
   pisteDuRole,
   LIBELLE_STADE,
-  POSITION_NON_DECLAREE,
   libellePosition,
   motifPosition,
   positionSurAxe,
@@ -127,23 +126,24 @@ function classeInstitution(role) {
   if (role.institution === INSTITUTION_GOUVERNEMENT) {
     return role.chef ? 'cp-fs--chef' : 'cp-fs--gouvernement cp-fs--motif-rayures';
   }
-  // La TEINTE porte la chambre, le MOTIF porte la position. Un siège européen
-  // n'a pas de qualification de groupe dans le corpus : son motif est celui de
-  // la position non déclarée, et c'est un fait, pas un repli (§2 règle 5).
-  return `cp-fs--${pisteDuRole(role)} cp-fs--motif-${motifPosition(role.position)}`;
+  // LA FRISE DIT L'INSTITUTION, ET RIEN D'AUTRE. Elle portait aussi la
+  // qualification du groupe — majoritaire, opposition, minoritaire, non
+  // déclarée — par quatre motifs. Deux encodages sur la même bande, dont un que
+  // la légende devait expliquer : la qualification reste écrite en toutes
+  // lettres dans la liste des rôles, à côté du mandat qu'elle qualifie, et
+  // c'est là qu'elle se lit sans décodeur.
+  return `cp-fs--${pisteDuRole(role)}`;
 }
 
-/* La légende ne montre QUE ce que la frise porte. Elle listait sept entrées sur
- * toutes les fiches, y compris les quatre motifs de groupe sur un profil qui
- * n'a jamais siégé à l'Assemblée. Chaque entrée dit à quelle piste elle
- * appartient, et la frise ne garde que les pistes présentes. */
+/* La légende ne montre QUE ce que la frise porte, et la frise ne porte plus que
+ * l'institution : les quatre motifs de qualification de groupe sont retirés avec
+ * elle. Chaque entrée dit à quelle piste elle appartient, et seules les pistes
+ * présentes sur la fiche sont rendues — elle listait sept entrées partout, dont
+ * quatre motifs de groupe sur des profils qui n'ont jamais siégé à l'Assemblée. */
 const LEGENDE_FRISE = [
-  { piste: INSTITUTION_PARLEMENT, classe: 'cp-fs--parlement cp-fs--motif-plein', label: 'Députée ou député · groupe majoritaire' },
-  { piste: INSTITUTION_PARLEMENT, classe: 'cp-fs--parlement cp-fs--motif-diagonales', label: "Députée ou député · groupe d'opposition" },
-  { piste: INSTITUTION_PARLEMENT, classe: 'cp-fs--parlement cp-fs--motif-points', label: 'Députée ou député · groupe minoritaire' },
-  { piste: INSTITUTION_PARLEMENT, classe: 'cp-fs--parlement cp-fs--motif-fines-rayures', label: POSITION_NON_DECLAREE.label },
-  { piste: INSTITUTION_SENAT, classe: 'cp-fs--senat cp-fs--motif-fines-rayures', label: 'Sénatrice ou sénateur' },
-  { piste: INSTITUTION_PE, classe: 'cp-fs--pe cp-fs--motif-fines-rayures', label: 'Députée ou député européen' },
+  { piste: INSTITUTION_PARLEMENT, classe: 'cp-fs--parlement', label: 'Député(e)' },
+  { piste: INSTITUTION_SENAT, classe: 'cp-fs--senat', label: 'Sénateur(rice)' },
+  { piste: INSTITUTION_PE, classe: 'cp-fs--pe', label: 'Député(e) européen(ne)' },
   { piste: INSTITUTION_GOUVERNEMENT, classe: 'cp-fs--gouvernement cp-fs--motif-rayures', label: 'Membre du gouvernement' },
   { piste: INSTITUTION_GOUVERNEMENT, classe: 'cp-fs--chef', label: 'Chef du gouvernement' },
   { piste: INSTITUTION_MISSION, classe: 'cp-fs--mission', label: 'Parlementaire en mission auprès d’un ministère' },
@@ -218,16 +218,12 @@ function Frise({ parcours }) {
             </span>
           ))}
         </div>
-        {/* La note ne garde que ce qui est SOURCÉ. Le reste — désaturation, absence
-            de progression, lisibilité en niveaux de gris, scission de la bande —
-            expliquait comment lire la frise, et c'est exactement le texte
-            explicatif qu'on coupe partout ailleurs (#326, règle 2). Ce qui reste
-            n'est pas de l'explication : c'est la seule phrase de toute la fiche
-            qui dit que les trois postures viennent de l'Assemblée et pas de nous
-            (§2 règle 2). 766 caractères, puis 188. */}
-          <p className="cp-legende-note">
-            Majorité, minorité et opposition <b>selon l’AN</b>.
-          </p>
+        {/* LA NOTE EST PARTIE AVEC CE QU'ELLE NOMMAIT. Elle disait « Majorité,
+            minorité et opposition selon l'AN » — la seule phrase qui rattachait
+            les trois postures à l'Assemblée plutôt qu'à nous (§2 règle 2). La
+            frise ne les porte plus : la qualification se lit désormais en toutes
+            lettres dans la liste des rôles, et son attribution à l'Assemblée
+            reste dite par la limite de couverture et par la méthodologie. */}
       </div>
 
       {/* Le détail daté se replie : c'est du DÉTAIL, et il n'a pas à s'imposer

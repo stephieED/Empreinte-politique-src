@@ -499,21 +499,27 @@ def test_le_detail_date_du_parcours_se_replie(composant):
     )
 
 
-def test_la_note_de_legende_ne_garde_que_sa_phrase_de_source(composant):
-    """766 caractères, puis 188. Ce qui part expliquait comment LIRE la frise —
-    désaturation, absence de progression, niveaux de gris — et c'est le texte
-    explicatif qu'on coupe partout (#326, règle 2). Ce qui reste est la seule
-    phrase de la fiche disant que les trois postures viennent de l'Assemblée et
-    pas de nous (§2 règle 2)."""
-    bloc = _corps(composant, 'className="cp-legende-note"', "</p>")
-    # « Majorité, minorité et opposition sont les trois valeurs que l'Assemblée
-    # nationale publie elle-même… » (188 caractères) est devenu « Majorité,
-    # minorité et opposition selon l'AN. » Ce que le test garde est le FAIT —
-    # ces trois valeurs viennent de l'Assemblée, pas de nous (§2 règle 2) —, pas
-    # la formulation qui le portait.
-    assert "selon l’AN" in bloc, "la phrase de source survit"
-    for parti in ("désaturées", "niveaux de gris", "aucune progression", "rangement"):
-        assert parti not in bloc, f"« {parti} » expliquait comment lire, pas d'où ça vient"
+def test_la_legende_ne_porte_plus_de_note(composant):
+    """La note disait « Majorité, minorité et opposition selon l'AN » — la seule
+    phrase de la fiche qui rattachait les trois postures à l'Assemblée plutôt
+    qu'à nous (§2 règle 2). Elle est partie avec ce qu'elle nommait : la frise ne
+    porte plus la qualification du groupe, seulement l'institution.
+
+    Ce que ce test garde, c'est le FAIT qu'elle portait, pas sa formulation. La
+    qualification reste écrite en toutes lettres dans la liste des rôles, et son
+    attribution à l'Assemblée est dite deux fois ailleurs : par la limite de
+    couverture (« n'est pas déclarée par l'Assemblée sur N de ses M mandats ») et
+    par la méthodologie. Si ces deux-là disparaissaient, la fiche publierait une
+    qualification sans dire d'où elle vient."""
+    assert 'className="cp-legende-note"' not in composant, (
+        "la note est retirée avec les motifs de groupe qu'elle expliquait"
+    )
+    assert "selon l’AN" not in composant
+
+    regles = MODULE_REGLES.read_text(encoding="utf-8")
+    assert "n'est pas déclarée " in regles and "l'Assemblée" in regles, (
+        "l'attribution des trois postures à l'Assemblée survit dans la limite de couverture"
+    )
 
 
 # ── Les teintes des stades : une déclaration, deux lectures ──────────────────

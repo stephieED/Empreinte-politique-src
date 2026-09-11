@@ -850,28 +850,12 @@
   border: 1.5px dashed var(--gouv);
 }
 
-.cp-fs--motif-diagonales::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(45deg, transparent 0 5px, rgba(247, 246, 244, 0.3) 5px 10px);
-}
-
-.cp-fs--motif-points::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(rgba(247, 246, 244, 0.3) 1.6px, transparent 1.7px);
-  background-size: 8px 8px;
-}
-
-.cp-fs--motif-fines-rayures::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(90deg, transparent 0 6px, rgba(247, 246, 244, 0.3) 6px 8px);
-}
-
+/* LE SEUL MOTIF QUI RESTE, et il ne dit pas une qualification de groupe : il
+   distingue le banc du gouvernement du siège parlementaire. Les quatre autres —
+   plein, diagonales, points, fines rayures — encodaient majoritaire, opposition,
+   minoritaire et non déclarée sur la même bande que l'institution : deux
+   lectures superposées, dont une qui demandait la légende. La qualification est
+   écrite en toutes lettres dans la liste des rôles, à côté de son mandat. */
 .cp-fs--motif-rayures::after {
   content: '';
   position: absolute;
@@ -926,19 +910,6 @@
   border-radius: 3px;
   flex: 0 0 auto;
   overflow: hidden;
-}
-
-.cp-legende-note {
-  margin-top: 14px;
-  font-size: 12.5px;
-  color: #6e6a78;
-  line-height: 1.55;
-  max-width: 82ch;
-}
-
-.cp-legende-note b {
-  color: var(--ink);
-  font-weight: 700;
 }
 
 .cp-roles {
