@@ -850,19 +850,6 @@
   border: 1.5px dashed var(--gouv);
 }
 
-/* LE SEUL MOTIF QUI RESTE, et il ne dit pas une qualification de groupe : il
-   distingue le banc du gouvernement du siège parlementaire. Les quatre autres —
-   plein, diagonales, points, fines rayures — encodaient majoritaire, opposition,
-   minoritaire et non déclarée sur la même bande que l'institution : deux
-   lectures superposées, dont une qui demandait la légende. La qualification est
-   écrite en toutes lettres dans la liste des rôles, à côté de son mandat. */
-.cp-fs--motif-rayures::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(90deg, transparent 0 7px, rgba(247, 246, 244, 0.28) 7px 9px);
-}
-
 .cp-axe {
   display: flex;
   justify-content: space-between;

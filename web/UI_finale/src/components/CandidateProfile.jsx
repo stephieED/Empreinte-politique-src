@@ -124,7 +124,7 @@ const ECART_MINIMAL_REPERES = 3.4;
 function classeInstitution(role) {
   if (role.institution === INSTITUTION_MISSION) return 'cp-fs--mission';
   if (role.institution === INSTITUTION_GOUVERNEMENT) {
-    return role.chef ? 'cp-fs--chef' : 'cp-fs--gouvernement cp-fs--motif-rayures';
+    return role.chef ? 'cp-fs--chef' : 'cp-fs--gouvernement';
   }
   // LA FRISE DIT L'INSTITUTION, ET RIEN D'AUTRE. Elle portait aussi la
   // qualification du groupe — majoritaire, opposition, minoritaire, non
@@ -144,7 +144,7 @@ const LEGENDE_FRISE = [
   { piste: INSTITUTION_PARLEMENT, classe: 'cp-fs--parlement', label: 'Député(e)' },
   { piste: INSTITUTION_SENAT, classe: 'cp-fs--senat', label: 'Sénateur(rice)' },
   { piste: INSTITUTION_PE, classe: 'cp-fs--pe', label: 'Député(e) européen(ne)' },
-  { piste: INSTITUTION_GOUVERNEMENT, classe: 'cp-fs--gouvernement cp-fs--motif-rayures', label: 'Membre du gouvernement' },
+  { piste: INSTITUTION_GOUVERNEMENT, classe: 'cp-fs--gouvernement', label: 'Membre du gouvernement' },
   { piste: INSTITUTION_GOUVERNEMENT, classe: 'cp-fs--chef', label: 'Chef du gouvernement' },
   { piste: INSTITUTION_MISSION, classe: 'cp-fs--mission', label: 'Parlementaire en mission auprès d’un ministère' },
 ];
@@ -218,12 +218,18 @@ function Frise({ parcours }) {
             </span>
           ))}
         </div>
-        {/* LA NOTE EST PARTIE AVEC CE QU'ELLE NOMMAIT. Elle disait « Majorité,
-            minorité et opposition selon l'AN » — la seule phrase qui rattachait
-            les trois postures à l'Assemblée plutôt qu'à nous (§2 règle 2). La
-            frise ne les porte plus : la qualification se lit désormais en toutes
-            lettres dans la liste des rôles, et son attribution à l'Assemblée
-            reste dite par la limite de couverture et par la méthodologie. */}
+        {/* LA NOTE DEVIENT UN RENVOI. Elle disait « Majorité, minorité et
+            opposition selon l'AN » — la seule phrase qui rattachait les trois
+            postures à l'Assemblée plutôt qu'à nous (§2 règle 2). La frise ne les
+            porte plus, mais la liste des rôles les écrit toujours : le fait doit
+            donc rester dit quelque part. Il l'est là où vivent les explications,
+            et la fiche ne garde que le renvoi — même forme que les cinq autres
+            sections. */}
+        <p className="cp-methodo">
+          <Link to="/methodologie#fonctions">
+            Majorité, minorité et opposition : la qualification vient de l’Assemblée →
+          </Link>
+        </p>
       </div>
 
       {/* Le détail daté se replie : c'est du DÉTAIL, et il n'a pas à s'imposer
