@@ -831,6 +831,12 @@ function AvecQuiIlsVotent({ lignee }) {
   const [m, index, setIndex] = useMaillon(lignee);
   const [ouvert, setOuvert] = useState(null);
   const lignes = (m.convergences || []).filter((a) => a.communs > 0);
+  /* UNE SEULE ÉCHELLE pour toutes les lignes (relecture du 11/09/2026) : la
+   * barre la plus longue est le groupe qui partage le plus de textes, et les
+   * autres raccourcissent d'autant. Ramener chaque barre à toute la largeur
+   * faisait lire 48 et 58 textes communs comme la même base — une barre
+   * « normalisée à effet visuel », ce que le DESIGN_SYSTEM §5 interdit. */
+  const communsMax = Math.max(1, ...lignes.map((a) => a.communs));
   const basculer = (sigle, nature) => setOuvert(ouvert?.sigle === sigle && ouvert.nature === nature ? null : { sigle, nature });
 
   return (
@@ -870,7 +876,7 @@ function AvecQuiIlsVotent({ lignee }) {
                     <small>{a.ligneeNom || a.nom}</small>
                   </span>
                   <div>
-                    <div className="lp-accord-barre">
+                    <div className="lp-accord-barre" style={{ width: `${((100 * a.communs) / communsMax).toFixed(1)}%` }}>
                       {NATURES.map((n) => (
                         <button
                           aria-label={`${valeurs[n.cle] || 0} ${LIBELLES_NATURE[n.cle]}`}
