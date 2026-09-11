@@ -75,6 +75,16 @@ les charger, ni à les faire grossir. -->
   actor that contradicts a committed entry collects nothing and names both. A declared
   candidate carries no roster actor — it resolves through the table (#757).
   → `docs/decisions/acteur-du-roster-850.md`
+- **A group's name history is the Assembly's organs, committed and confronted
+  (#815).** `historique_noms` lists the group's successive AN organs **within its
+  legislature** — libelle, bounds, `organe_an` — copied from
+  `correspondance_sigles_an[].historique_organes_an`, measured on AMO30 like the
+  political position (#686): the group step reads no archive. It must name exactly
+  `organes_an`, in order, or the table is refused; a test confronts every XVIe and
+  XVIIe entry with the AMO30 fixture. **A succession is not a rename**: `succede_a`
+  links fiches across legislatures and needs a membership that carries it — LIOT and
+  Horizons get no XVe predecessor (7 of 22, 6 of 36), UDR none at all.
+  → `docs/decisions/historique-noms-et-filiations-815.md`
 - **The AN group roster comes from AMO30, and `AN_ROSTER_ACTIF` is a kill switch (#527)** —
   lowered → `RosterAnInactif`, never an empty roster. `ERREURS_ROSTER` unites both sources'
   failures so an absent archive stays a named « roster indisponible » (`exit 2`, committed

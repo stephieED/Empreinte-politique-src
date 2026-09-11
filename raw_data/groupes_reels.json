@@ -26,6 +26,15 @@
         "organes_an": [
           "PO800538"
         ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO800538",
+            "sigle_an": "RE",
+            "nom": "Renaissance",
+            "debut": "2022-06-28",
+            "fin": "2024-06-09"
+          }
+        ],
         "position_politique_an": {
           "position": "majorite",
           "verifie_le": "2026-09-01",
@@ -79,6 +88,22 @@
           "PO800496",
           "PO830170"
         ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO800496",
+            "sigle_an": "SOC",
+            "nom": "Socialistes et apparentés (membre de l’intergroupe NUPES)",
+            "debut": "2022-06-28",
+            "fin": "2023-10-18"
+          },
+          {
+            "organe_an": "PO830170",
+            "sigle_an": "SOC-A",
+            "nom": "Socialistes et apparentés",
+            "debut": "2023-10-19",
+            "fin": "2024-06-09"
+          }
+        ],
         "position_politique_an": {
           "position": "opposition",
           "verifie_le": "2026-09-01",
@@ -117,6 +142,15 @@
         "organes_an": [
           "PO800520"
         ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO800520",
+            "sigle_an": "RN",
+            "nom": "Rassemblement National",
+            "debut": "2022-06-28",
+            "fin": "2024-06-09"
+          }
+        ],
         "position_politique_an": {
           "position": "opposition",
           "verifie_le": "2026-09-01",
@@ -145,6 +179,15 @@
         ],
         "organes_an": [
           "PO800490"
+        ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO800490",
+            "sigle_an": "LFI-NUPES",
+            "nom": "La France insoumise - Nouvelle Union Populaire écologique et sociale",
+            "debut": "2022-06-28",
+            "fin": "2024-06-09"
+          }
         ],
         "position_politique_an": {
           "position": "opposition",
@@ -177,6 +220,15 @@
         ],
         "organes_an": [
           "PO800508"
+        ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO800508",
+            "sigle_an": "LR",
+            "nom": "Les Républicains",
+            "debut": "2022-06-28",
+            "fin": "2024-06-09"
+          }
         ],
         "position_politique_an": {
           "position": "opposition",
@@ -217,6 +269,15 @@
         "organes_an": [
           "PO845407"
         ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO845407",
+            "sigle_an": "EPR",
+            "nom": "Ensemble pour la République",
+            "debut": "2024-07-18",
+            "fin": null
+          }
+        ],
         "position_politique_an": {
           "position": "non_declaree",
           "verifie_le": "2026-09-01",
@@ -249,6 +310,15 @@
         ],
         "organes_an": [
           "PO845419"
+        ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO845419",
+            "sigle_an": "SOC",
+            "nom": "Socialistes et apparentés",
+            "debut": "2024-07-18",
+            "fin": null
+          }
         ],
         "position_politique_an": {
           "position": "non_declaree",
@@ -283,6 +353,15 @@
         "organes_an": [
           "PO845401"
         ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO845401",
+            "sigle_an": "RN",
+            "nom": "Rassemblement National",
+            "debut": "2024-07-18",
+            "fin": null
+          }
+        ],
         "position_politique_an": {
           "position": "non_declaree",
           "verifie_le": "2026-09-01",
@@ -315,6 +394,15 @@
         ],
         "organes_an": [
           "PO845413"
+        ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO845413",
+            "sigle_an": "LFI-NFP",
+            "nom": "La France insoumise - Nouveau Front Populaire",
+            "debut": "2024-07-18",
+            "fin": null
+          }
         ],
         "position_politique_an": {
           "position": "non_declaree",
@@ -349,6 +437,15 @@
         "organes_an": [
           "PO845425"
         ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO845425",
+            "sigle_an": "DR",
+            "nom": "Droite Républicaine",
+            "debut": "2024-07-18",
+            "fin": null
+          }
+        ],
         "position_politique_an": {
           "position": "non_declaree",
           "verifie_le": "2026-09-01",
@@ -382,6 +479,15 @@
         "organes_an": [
           "PO800526"
         ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO800526",
+            "sigle_an": "ECOLO",
+            "nom": "Écologiste - NUPES",
+            "debut": "2022-06-28",
+            "fin": "2024-06-09"
+          }
+        ],
         "position_politique_an": {
           "position": "opposition",
           "verifie_le": "2026-09-08",
@@ -411,6 +517,15 @@
         ],
         "organes_an": [
           "PO800502"
+        ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO800502",
+            "sigle_an": "GDR-NUPES",
+            "nom": "Gauche démocrate et républicaine - NUPES",
+            "debut": "2022-06-28",
+            "fin": "2024-06-09"
+          }
         ],
         "position_politique_an": {
           "position": "opposition",
@@ -445,6 +560,15 @@
         "organes_an": [
           "PO730958"
         ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO730958",
+            "sigle_an": "FI",
+            "nom": "La France insoumise",
+            "debut": "2017-06-27",
+            "fin": "2022-06-21"
+          }
+        ],
         "position_politique_an": {
           "position": "opposition",
           "verifie_le": "2026-09-08",
@@ -475,6 +599,15 @@
         "organes_an": [
           "PO730946"
         ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO730946",
+            "sigle_an": "NG",
+            "nom": "Nouvelle Gauche",
+            "debut": "2017-06-27",
+            "fin": "2018-09-11"
+          }
+        ],
         "position_politique_an": {
           "position": "opposition",
           "verifie_le": "2026-09-08",
@@ -504,6 +637,15 @@
         ],
         "organes_an": [
           "PO758835"
+        ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO758835",
+            "sigle_an": "SOC",
+            "nom": "Socialistes et apparentés",
+            "debut": "2018-09-12",
+            "fin": "2022-06-21"
+          }
         ],
         "position_politique_an": {
           "position": "opposition",
@@ -538,6 +680,15 @@
         "organes_an": [
           "PO771789"
         ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO771789",
+            "sigle_an": "EDS",
+            "nom": "Écologie Démocratie Solidarité",
+            "debut": "2020-05-20",
+            "fin": "2020-10-16"
+          }
+        ],
         "position_politique_an": {
           "position": "minoritaire",
           "verifie_le": "2026-09-08",
@@ -567,6 +718,15 @@
         ],
         "organes_an": [
           "PO730940"
+        ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO730940",
+            "sigle_an": "GDR",
+            "nom": "Gauche démocrate et républicaine",
+            "debut": "2017-06-27",
+            "fin": "2022-06-21"
+          }
         ],
         "position_politique_an": {
           "position": "opposition",
@@ -598,6 +758,15 @@
         "organes_an": [
           "PO730964"
         ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO730964",
+            "sigle_an": "LAREM",
+            "nom": "La République en Marche",
+            "debut": "2017-06-27",
+            "fin": "2022-06-21"
+          }
+        ],
         "position_politique_an": {
           "position": "majorite",
           "verifie_le": "2026-09-09",
@@ -628,6 +797,15 @@
         "organes_an": [
           "PO730934"
         ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO730934",
+            "sigle_an": "LR",
+            "nom": "Les Républicains",
+            "debut": "2017-06-27",
+            "fin": "2022-06-21"
+          }
+        ],
         "position_politique_an": {
           "position": "opposition",
           "verifie_le": "2026-09-10",
@@ -657,6 +835,15 @@
         ],
         "organes_an": [
           "PO845514"
+        ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO845514",
+            "sigle_an": "GDR",
+            "nom": "Gauche Démocrate et Républicaine",
+            "debut": "2024-07-18",
+            "fin": null
+          }
         ],
         "position_politique_an": {
           "position": "non_declaree",
@@ -690,6 +877,15 @@
         ],
         "organes_an": [
           "PO845439"
+        ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO845439",
+            "sigle_an": "ECOS",
+            "nom": "Écologiste et Social",
+            "debut": "2024-07-18",
+            "fin": null
+          }
         ],
         "position_politique_an": {
           "position": "non_declaree",
@@ -725,6 +921,22 @@
         "organes_an": [
           "PO730970",
           "PO774834"
+        ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO730970",
+            "sigle_an": "MODEM",
+            "nom": "Mouvement Démocrate et apparentés",
+            "debut": "2017-06-27",
+            "fin": "2020-09-23"
+          },
+          {
+            "organe_an": "PO774834",
+            "sigle_an": "DEM",
+            "nom": "Mouvement Démocrate (MoDem) et Démocrates apparentés",
+            "debut": "2020-09-24",
+            "fin": "2022-06-21"
+          }
         ],
         "position_politique_an": {
           "position": "minoritaire",
@@ -762,6 +974,15 @@
         "organes_an": [
           "PO800484"
         ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO800484",
+            "sigle_an": "DEM",
+            "nom": "Démocrate (MoDem et Indépendants)",
+            "debut": "2022-06-28",
+            "fin": "2024-06-09"
+          }
+        ],
         "position_politique_an": {
           "position": "minoritaire",
           "verifie_le": "2026-09-11",
@@ -794,6 +1015,15 @@
         ],
         "organes_an": [
           "PO845454"
+        ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO845454",
+            "sigle_an": "DEM",
+            "nom": "Les Démocrates",
+            "debut": "2024-07-18",
+            "fin": null
+          }
         ],
         "position_politique_an": {
           "position": "non_declaree",
@@ -828,6 +1058,15 @@
         "organes_an": [
           "PO800514"
         ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO800514",
+            "sigle_an": "HOR",
+            "nom": "Horizons et apparentés",
+            "debut": "2022-06-28",
+            "fin": "2024-06-09"
+          }
+        ],
         "position_politique_an": {
           "position": "minoritaire",
           "verifie_le": "2026-09-11",
@@ -857,6 +1096,15 @@
         ],
         "organes_an": [
           "PO845470"
+        ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO845470",
+            "sigle_an": "HOR",
+            "nom": "Horizons & Indépendants",
+            "debut": "2024-07-18",
+            "fin": null
+          }
         ],
         "position_politique_an": {
           "position": "non_declaree",
@@ -891,6 +1139,15 @@
         "organes_an": [
           "PO800532"
         ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO800532",
+            "sigle_an": "LIOT",
+            "nom": "Libertés, Indépendants, Outre-mer et Territoires",
+            "debut": "2022-06-28",
+            "fin": "2024-06-09"
+          }
+        ],
         "position_politique_an": {
           "position": "opposition",
           "verifie_le": "2026-09-11",
@@ -920,6 +1177,15 @@
         ],
         "organes_an": [
           "PO845485"
+        ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO845485",
+            "sigle_an": "LIOT",
+            "nom": "Libertés, Indépendants, Outre-mer et Territoires",
+            "debut": "2024-07-18",
+            "fin": null
+          }
         ],
         "position_politique_an": {
           "position": "non_declaree",
@@ -957,6 +1223,29 @@
           "PO845520",
           "PO847173",
           "PO872880"
+        ],
+        "historique_organes_an": [
+          {
+            "organe_an": "PO845520",
+            "sigle_an": "AD",
+            "nom": "À Droite",
+            "debut": "2024-07-18",
+            "fin": "2024-09-11"
+          },
+          {
+            "organe_an": "PO847173",
+            "sigle_an": "UDR",
+            "nom": "UDR",
+            "debut": "2024-09-12",
+            "fin": "2025-09-04"
+          },
+          {
+            "organe_an": "PO872880",
+            "sigle_an": "UDDPLR",
+            "nom": "Union des droites pour la République",
+            "debut": "2025-09-05",
+            "fin": null
+          }
         ],
         "position_politique_an": {
           "position": "non_declaree",
