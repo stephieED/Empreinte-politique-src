@@ -8,6 +8,14 @@ dit où.
 Toutes les commandes se lancent **depuis la racine du dépôt**, environnement
 virtuel activé (voir `README.md`, section Installation).
 
+**Python 3.12, et pas un autre.** C'est la version de la CI, et `src/` en emploie
+la syntaxe : sous 3.11, `src/an_roster.py` ne se lit pas. Le piège est d'être
+**silencieux** : `scripts/generer_decisions_par_module.py` ignorait le module et
+écrivait une table différente de celle de la CI, que la suite refusait ensuite
+sans dire pourquoi (11/09/2026). Il refuse désormais de tourner sous une version plus ancienne — mais
+le `python3` d'une session cloud peut être un 3.11 : vérifier `python3 --version`,
+ou appeler le Python du venv.
+
 Les 45 exécutables du dépôt ne sont pas tous ici : **une commande est
 documentée si la propriétaire peut avoir à la lancer elle-même**. Ce qui est
 écarté et pourquoi : dernière section.
