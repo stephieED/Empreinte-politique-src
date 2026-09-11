@@ -737,9 +737,13 @@ export function grandesLois(scrutins, comparaison, sigleDuGroupe, limite = NB_GR
  *
  * La comparaison ne porte que sur les scrutins où LES DEUX groupes atteignent
  * leur quorum : les dénominateurs diffèrent donc d'une ligne à l'autre, et
- * chacun est publié à côté de son numérateur (§2 règle 7). L'ordre est celui du
- * nombre de scrutins comparables, jamais celui de l'accord — trier par accord
- * ferait un classement des alliés (§2 règle 1).
+ * chacun est publié à côté de son numérateur (§2 règle 7). L'ordre est d'abord
+ * celui du nombre de scrutins comparables : trier sur l'accord SEUL rangerait
+ * des parts calculées sur des bases différentes, et ferait un classement des
+ * alliés (§2 règle 1). À base égale, et seulement là, l'accord départage
+ * (relecture de la propriétaire, 11/09/2026) : deux groupes qui partagent le
+ * même nombre de textes se comparent sur le même dénominateur, et le nombre de
+ * votes dans le même sens dit alors la même chose que sa part.
  *
  * Trois natures, et la troisième est ce qui empêche la lecture fausse :
  *
@@ -813,8 +817,12 @@ export function convergences(comparaison, sigleDuGroupe) {
         denominateurLabel: 'scrutins où les deux groupes atteignent leur quorum',
       };
     })
-    .sort((a, b) => b.communs - a.communs || a.sigle.localeCompare(b.sigle, 'fr'));
+    .sort((a, b) => b.communs - a.communs
+      || memeSens(b) - memeSens(a)
+      || a.sigle.localeCompare(b.sigle, 'fr'));
 }
+
+const memeSens = (ligne) => ligne.natures.find((n) => n.cle === 'meme_sens')?.valeur ?? 0;
 
 /*
  * Les scrutins derrière chaque segment de `convergences`, pour les dérouler au

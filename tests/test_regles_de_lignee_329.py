@@ -235,6 +235,23 @@ def test_chaque_segment_deroule_exactement_son_compte():
     )
 
 
+def test_a_base_egale_l_accord_departage_et_seulement_la():
+    """Relecture du 11/09/2026 : textes communs d'abord, accord ensuite."""
+    ordre = executer("""
+      const comparaison = { groupes: [
+        { sigle: 'A', positions: { s1: 'pour', s2: 'pour', s3: 'pour', s4: 'pour' } },
+        { sigle: 'B', positions: { s1: 'contre', s2: 'contre', s3: 'pour' } },
+        { sigle: 'C', positions: { s1: 'pour', s2: 'pour', s3: 'contre' } },
+        { sigle: 'D', positions: { s1: 'contre', s2: 'contre', s3: 'contre', s4: 'contre' } },
+      ] };
+      return groupe.convergences(comparaison, 'A').map((l) => l.sigle);
+    """)
+    assert ordre == ["D", "C", "B"], (
+        "D partage 4 textes et passe en tête malgré 0 accord ; C et B en partagent 3, et "
+        "C, d'accord 2 fois, passe devant B, d'accord une fois"
+    )
+
+
 # ── Motifs de posture et liens ───────────────────────────────────────────────
 
 def test_le_motif_se_lit_sur_la_posture_declaree():

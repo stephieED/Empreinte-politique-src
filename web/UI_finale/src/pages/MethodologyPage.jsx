@@ -400,8 +400,10 @@ const SECTIONS = [
           La position majoritaire du groupe est comparée à celle de chaque autre groupe de la même
           législature, sur la <strong>dernière lecture de chaque texte</strong>, et seulement là où
           les deux atteignent leur quorum. Les dénominateurs diffèrent donc d'une ligne à l'autre,
-          et chacun est publié. L'ordre est celui du nombre de textes communs, jamais celui de
-          l'accord : trier par accord ferait un classement des alliés.
+          et chacun est publié. L'ordre est d'abord celui du nombre de textes communs ; à nombre
+          égal seulement, l'accord départage, parce que les deux groupes se comparent alors sur la
+          même base. Trier sur l'accord seul rangerait des parts calculées sur des bases
+          différentes, et ferait un classement des alliés.
         </p>
         <p>
           <strong>Voter dans le même sens n'est pas s'entendre.</strong> Deux groupes peuvent

@@ -818,8 +818,9 @@ function Repli({ entrees, scrutins }) {
  *
  * Position majoritaire du groupe face à celle de chaque autre, sur la DERNIÈRE
  * lecture de chaque texte (relecture du 11/09/2026), là où les deux atteignent
- * leur quorum. Rangés par nombre de textes communs, jamais par accord (§2
- * règle 1). Chaque groupe mène à SA lignée ; chaque segment déroule ses textes. */
+ * leur quorum. Rangés par nombre de textes communs, puis — à base égale
+ * seulement — par votes dans le même sens (relecture du 11/09/2026). Chaque
+ * groupe mène à SA lignée ; chaque segment déroule ses textes. */
 const NATURES = [
   { cle: 'meme_sens', classe: 'lp-part--une' },
   { cle: 'nuance', classe: 'lp-part--nuance' },
@@ -843,7 +844,7 @@ function AvecQuiIlsVotent({ lignee }) {
     <Section
       critere="Position du groupe face à celle de chaque autre, sur la dernière lecture de chaque texte, quorum atteint des deux côtés."
       numero="5"
-      pied={lignes.length ? `${LAST_READING_LABEL} · rangés par nombre de textes communs, jamais par accord` : null}
+      pied={lignes.length ? `${LAST_READING_LABEL} · rangés par nombre de textes communs, puis de votes dans le même sens` : null}
       renvoi={{ ancre: 'convergences', texte: 'Voter dans le même sens n’est pas s’entendre' }}
       titre="Avec qui ils votent"
     >

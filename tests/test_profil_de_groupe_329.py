@@ -299,12 +299,19 @@ def test_non_declaree_reste_distincte_d_un_champ_absent(regles, regles_lignee):
 
 # ── 5. Les convergences ──────────────────────────────────────────────────────
 
-def test_l_ordre_des_convergences_est_celui_des_textes_communs(regles):
+def test_l_ordre_des_convergences_est_celui_des_textes_communs_puis_de_l_accord(regles):
+    """Relecture du 11/09/2026 : l'accord DÉPARTAGE, il ne classe pas.
+
+    Trier sur l'accord seul rangerait des parts calculées sur des bases
+    différentes — un classement des alliés (§2 règle 1). À nombre de textes
+    communs égal, le dénominateur est le même, et l'accord se compare."""
     bloc = corps(regles, "export function convergences(comparaison, sigleDuGroupe)")
     tri = re.search(r"\.sort\(\(a, b\) => (.*?)\);", bloc, flags=re.DOTALL)
-    assert tri and "b.communs - a.communs" in tri.group(1) and "meme_sens" not in tri.group(1), (
-        "trier par accord ferait un classement des alliés (AGENTS.md §2 règle 1)"
-    )
+    assert tri, "le tri des convergences a disparu"
+    cles = [c.strip() for c in tri.group(1).split("||")]
+    assert cles[0] == "b.communs - a.communs", "le nombre de textes communs range d'abord"
+    assert cles[1] == "memeSens(b) - memeSens(a)", "l'accord départage, et seulement ensuite"
+    assert "localeCompare" in cles[2], "puis le sigle, jamais l'ordre d'insertion"
 
 
 def test_une_abstention_n_est_jamais_comptee_comme_un_vote_contraire(regles):
