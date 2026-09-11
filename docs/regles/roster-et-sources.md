@@ -65,6 +65,16 @@ les charger, ni à les faire grossir. -->
   which the freeze is an illusion. §5b publishes the count of `derivee` entries: a
   counter, not a threshold.
   → `docs/decisions/entree-derivee-correspondance-715.md`
+- **A roster member is collected under the actor its roster names — never re-guessed by
+  name (#850).** The AMO30 group organ designates the member's `PA######`; the roster
+  entry carries it **in clear** (`acteur_ref`), and collection hands it straight to
+  `build_profile`. Re-resolving from the slug meant falling back on name matching, which
+  fails on punctuation the slug lost (`claire-o-petit`, `emeline-k-bidi`) and rightly
+  refuses homonyms (`beatrice-descamps`): 6 members were « introuvables » while the
+  roster named them. The **table still wins a disagreement by refusing it**: a roster
+  actor that contradicts a committed entry collects nothing and names both. A declared
+  candidate carries no roster actor — it resolves through the table (#757).
+  → `docs/decisions/acteur-du-roster-850.md`
 - **The AN group roster comes from AMO30, and `AN_ROSTER_ACTIF` is a kill switch (#527)** —
   lowered → `RosterAnInactif`, never an empty roster. `ERREURS_ROSTER` unites both sources'
   failures so an absent archive stays a named « roster indisponible » (`exit 2`, committed

@@ -120,7 +120,10 @@ def _collecte_stubbee(monkeypatch, identite, *, mandats_organes=None):
     qui fabriquent les mandats sont remplacées."""
     monkeypatch.setattr(
         candidate_profile, "fetch_identite_officielle_par_slug",
-        lambda slug: (identite, "PA1"),
+        # #850 : `build_profile` transmet l'acteur connu du roster. La doublure
+        # suit la signature réelle, sans quoi elle lève à chaque appel et le
+        # test ne mesure plus que son propre `TypeError`.
+        lambda slug, acteur_ref=None: (identite, "PA1"),
     )
     monkeypatch.setattr(
         candidate_profile, "_extract_mandats_officiels",

@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 286 décisions
+gouverne sans avoir à fouiller les 287 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -287,11 +287,12 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 
 ## `src/candidate_profile.py`
 
-84 décision(s) le gouvernent ; le module en cite 13.
+85 décision(s) le gouvernent ; le module en cite 13.
 
 | Décision | Nomme |
 | --- | --- |
 | [Trois absences publiées comme des faits (#556, #558, #560) (2026-08-29)](decisions/absences-publiees-comme-faits-556-558-560.md) | `AN_SCRUTINS_LEGISLATURES`, `NOM_INDEX_IDENTITE`, `NOM_INDEX_ORGANES`, `WARNING_PREFIX_INTERVENTIONS_SYCERON_AUCUNE`, `WARNING_PREFIX_INTERVENTIONS_SYCERON_INDISPONIBLES`, `WARNING_PREFIX_VOTES_INTROUVABLES`, `_TYPE_ORGANE_NON_MAPPES`, `_champ_identite_an`, `_format_lieu_naissance`, `_format_nom_complet`, `_texte_an` |
+| [Un membre de roster est collecté sous l'acteur que son roster nomme, jamais re-deviné par son nom (#850)](decisions/acteur-du-roster-850.md) | `ActeurContreditParLaTable`, `build_profile`, `fetch_identite_officielle_par_slug` |
 | [La cascade des textes portés entre dans l'UI, et la section s'aligne sur la maquette (#328), 06/09/2026](decisions/alignement-section-propose-ui-328.md) | `_STADE_RANKS` |
 | [Amendements : la clé du store est l'`uid`, jamais le `numero` (préalable à #431) (2026-08-18)](decisions/amendements-cle-uid.md) | `_aggregate_amendements_index`, `_load_frozen_amendement_index`, `_read_cached_amendements_acteur` |
 | [Un amendement cosigné n'est pas N amendements : deux grandeurs, deux noms (#643) (2026-08-31)](decisions/amendements-distincts-et-signatures-643.md) | `_periodes_mandats_assemblee` |
@@ -492,10 +493,11 @@ Le mentionnent sans le gouverner : [`collecte-interventions-reduite-au-theme-657
 
 ## `src/generate_all_profiles.py`
 
-25 décision(s) le gouvernent ; le module en cite 3.
+26 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
+| [Un membre de roster est collecté sous l'acteur que son roster nomme, jamais re-deviné par son nom (#850)](decisions/acteur-du-roster-850.md) | `process_candidat` |
 | [Un bloc structuré sans fond n'écrase plus un bloc collecté (#484) (2026-08-30)](decisions/bloc-sans-fond-484.md) | `build_minimal_profile` |
 | [La boucle du périmètre a cassé quatre fois au même endroit (#771, #775, #781)](decisions/boucle-candidats-quatre-corrections-781.md) | `_normaliser_en_pivot` |
 | [Une source injoignable ne consomme plus le timeout d'un job, et son silence cesse de se lire comme un constat (#514) (2026-08-21)](decisions/budget-collecte-source-injoignable-514.md) | `_manifest_append`, `build_profile_any_chambre`, `process_candidat`, `valider_budgets` |
@@ -572,7 +574,7 @@ Le mentionnent sans le gouverner : [`amendements-agreges-dans-la-periode-821`](d
 | [Le roster des groupes AN est dérivé d'AMO30, derrière un drapeau baissé (#526, lot 1 de l'épic « une seule source AN ») (2026-08-26)](decisions/roster-an-derive-amo30-526.md) | `build_roster_candidats_detaille`, `membres_sans_slug` |
 | [Un membre de roster sans correspondance relue reçoit un slug, et la collision reste un refus (#708) (2026-09-02)](decisions/slug-fabrique-membre-de-roster-708.md) | `build_roster_candidats_detaille`, `membres_sans_slug`, `membres_slug_fabrique` |
 
-Le mentionnent sans le gouverner : [`collecte-interventions-reduite-au-theme-657`](decisions/collecte-interventions-reduite-au-theme-657.md), [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`liste-candidats-declares-753`](decisions/liste-candidats-declares-753.md), [`merge-and-pivot-budget-permissions-413`](decisions/merge-and-pivot-budget-permissions-413.md), [`plafond-roster-et-commit-518`](decisions/plafond-roster-et-commit-518.md), [`provenance-pivot`](decisions/provenance-pivot.md), [`revue-workflows-ci-342`](decisions/revue-workflows-ci-342.md), [`roster-unique-par-run-518`](decisions/roster-unique-par-run-518.md), [`telechargement-an-trois-modes-defaillance`](decisions/telechargement-an-trois-modes-defaillance.md), [`web-v3-ui`](decisions/web-v3-ui.md).
+Le mentionnent sans le gouverner : [`acteur-du-roster-850`](decisions/acteur-du-roster-850.md), [`collecte-interventions-reduite-au-theme-657`](decisions/collecte-interventions-reduite-au-theme-657.md), [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`liste-candidats-declares-753`](decisions/liste-candidats-declares-753.md), [`merge-and-pivot-budget-permissions-413`](decisions/merge-and-pivot-budget-permissions-413.md), [`plafond-roster-et-commit-518`](decisions/plafond-roster-et-commit-518.md), [`provenance-pivot`](decisions/provenance-pivot.md), [`revue-workflows-ci-342`](decisions/revue-workflows-ci-342.md), [`roster-unique-par-run-518`](decisions/roster-unique-par-run-518.md), [`telechargement-an-trois-modes-defaillance`](decisions/telechargement-an-trois-modes-defaillance.md), [`web-v3-ui`](decisions/web-v3-ui.md).
 
 ## `src/gha.py`
 
@@ -674,10 +676,11 @@ Le mentionnent sans le gouverner : [`civilite-et-pcs-insee-659`](decisions/civil
 
 ## `src/group_roster.py`
 
-9 décision(s) le gouvernent ; le module en cite 3.
+10 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
+| [Un membre de roster est collecté sous l'acteur que son roster nomme, jamais re-deviné par son nom (#850)](decisions/acteur-du-roster-850.md) | `filter_roster_by_sigle` |
 | [La bascule : le roster des groupes AN vient d'AMO30 (#527, lot 1b de l'épic « une seule source AN ») (2026-08-26)](decisions/bascule-roster-an-amo30-527.md) | `ERREURS_ROSTER`, `fetch_full_roster` |
 | [Suspendre l'extraction des deux groupes Sénat, sans les retirer de la config (#516) (2026-08-24)](decisions/extraction-groupe-suspendue-516.md) | `fetch_full_roster` |
 | [Un champ traverse la chaîne, ou il n'existe pas (#809)](decisions/periodes-jetees-par-le-filtre-809.md) | `filter_roster_by_sigle` |
