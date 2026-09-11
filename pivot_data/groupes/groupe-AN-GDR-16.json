@@ -205,7 +205,7 @@
   ],
   "date_reference": {
     "date": "2024-06-09",
-    "origine": "cloture_legislature"
+    "origine": "derniere_appartenance_close"
   },
   "effectif": {
     "a_la_date_de_reference": 21,
@@ -62933,122 +62933,122 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267306",
-      "synchro_le": "2026-09-10T18:02:31+0000"
+      "synchro_le": "2026-09-10T23:58:52+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335612",
-      "synchro_le": "2026-09-10T18:08:53+0000"
+      "synchro_le": "2026-09-11T00:04:39+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605745",
-      "synchro_le": "2026-09-10T18:09:22+0000"
+      "synchro_le": "2026-09-11T00:08:57+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718926",
-      "synchro_le": "2026-09-10T18:09:53+0000"
+      "synchro_le": "2026-09-11T00:06:17+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720692",
-      "synchro_le": "2026-09-10T18:10:45+0000"
+      "synchro_le": "2026-09-11T00:08:30+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720838",
-      "synchro_le": "2026-09-10T18:01:40+0000"
+      "synchro_le": "2026-09-10T23:58:59+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720992",
-      "synchro_le": "2026-09-10T18:09:45+0000"
+      "synchro_le": "2026-09-11T00:06:09+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721118",
-      "synchro_le": "2026-09-10T18:02:48+0000"
+      "synchro_le": "2026-09-10T23:57:59+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721270",
-      "synchro_le": "2026-09-10T18:02:38+0000"
+      "synchro_le": "2026-09-10T23:59:01+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721896",
-      "synchro_le": "2026-09-10T18:02:31+0000"
+      "synchro_le": "2026-09-10T23:58:52+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722110",
-      "synchro_le": "2026-09-10T18:08:54+0000"
+      "synchro_le": "2026-09-11T00:04:39+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722202",
-      "synchro_le": "2026-09-10T18:09:23+0000"
+      "synchro_le": "2026-09-11T00:08:58+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA774962",
-      "synchro_le": "2026-09-10T18:09:53+0000"
+      "synchro_le": "2026-09-11T00:06:18+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793174",
-      "synchro_le": "2026-09-10T18:10:46+0000"
+      "synchro_le": "2026-09-11T00:08:30+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794650",
-      "synchro_le": "2026-09-10T18:01:40+0000"
+      "synchro_le": "2026-09-10T23:59:01+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795184",
-      "synchro_le": "2026-09-10T18:02:48+0000"
+      "synchro_le": "2026-09-10T23:57:59+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795192",
-      "synchro_le": "2026-09-10T18:02:38+0000"
+      "synchro_le": "2026-09-10T23:59:01+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795240",
-      "synchro_le": "2026-09-10T18:02:31+0000"
+      "synchro_le": "2026-09-10T23:58:53+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795820",
-      "synchro_le": "2026-09-10T18:08:54+0000"
+      "synchro_le": "2026-09-11T00:04:40+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795868",
-      "synchro_le": "2026-09-10T18:09:23+0000"
+      "synchro_le": "2026-09-11T00:08:58+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795876",
-      "synchro_le": "2026-09-10T18:09:54+0000"
+      "synchro_le": "2026-09-11T00:06:18+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA796010",
-      "synchro_le": "2026-09-10T18:01:40+0000"
+      "synchro_le": "2026-09-10T23:59:01+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA796106",
-      "synchro_le": "2026-09-10T18:02:48+0000"
+      "synchro_le": "2026-09-10T23:58:00+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-10T19:26:31+0000",
+    "genere_le": "2026-09-11T00:34:41+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr",
     "profils_sources": [
       "andre-chassaigne",
@@ -63077,7 +63077,7 @@
     ],
     "seuil_quorum": 0.5,
     "warnings": [
-      "date_reference : tous les comptes de cette fiche se rapportent au 2024-06-09, clôture de la législature — `effectif.a_la_date_de_reference` (21 sur les 23 entrées de `membres[]`), `mandats_agreges[].nb_membres_a_la_date_de_reference` et `membres[].present_a_la_date_de_reference`. Une fiche de législature close est un objet historique : aucun de ses compteurs ne dit « aujourd'hui » (#653).",
+      "date_reference : tous les comptes de cette fiche se rapportent au 2024-06-09, jour de la dernière appartenance close — `effectif.a_la_date_de_reference` (21 sur les 23 entrées de `membres[]`), `mandats_agreges[].nb_membres_a_la_date_de_reference` et `membres[].present_a_la_date_de_reference`. Cette date est celle où le dernier membre a quitté le groupe, qui n'est pas toujours la clôture de la législature — `NG-15` s'arrête au 11/09/2018, la XVe au 21/06/2022 (#808). Une fiche dont toutes les appartenances sont closes est un objet historique : aucun de ses compteurs ne dit « aujourd'hui » (#653).",
       "effectif_sur_la_periode : entre 2022-06-29 et 2024-06-09, le groupe a compté au minimum 20 membres (2023-06-10) et au maximum 21 (2022-06-29) — première date à laquelle chaque borne est atteinte. L'effectif est réévalué à chaque entrée et à chaque lendemain de sortie, jamais hors de cette fenêtre. `membres[]` ne porte qu'un intervalle par membre (périodes recollées, #526) : un départ suivi d'un retour n'y apparaît pas, et aucune de ces deux bornes ne le voit (#702).",
       "tags_thematiques_agreges : 30047 intervention(s) tenue(s) sous une autre législature que la 16e n'ont pas nourri l'empreinte thématique — elles appartiennent à la carrière de leurs auteurs, pas à l'activité de ce groupe (#825, même règle que les votes depuis #403 et que les amendements depuis #821).",
       "amendements_agreges : 162597 signature(s) portant sur des amendements déposés sous une autre législature que la 16e ont été écartées — ils appartiennent à la carrière de leurs auteurs, pas à l'activité de ce groupe (#821, même règle que les votes depuis #403).",
