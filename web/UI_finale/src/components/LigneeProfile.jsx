@@ -489,13 +489,19 @@ function SurQuoiIlsParlent({ lignee }) {
  *
  * Le gabarit « amendements par matière » de la fiche candidat (relecture du
  * 11/09/2026) : la commission saisie au fond, le ratio par texte au milieu, les
- * textes distincts au bout. Un switch EXCLUSIF entre les deux types de déposant
- * d'un groupe : ils ne s'additionnent jamais, chacun a son propre total
- * (`AGENTS.md` §6). Au clic, les textes, du plus récemment amendé au plus
- * ancien, avec le sort du texte quand la source le publie. */
+ * textes distincts au bout. Au clic, les textes, du plus récemment amendé au
+ * plus ancien, avec le sort du texte quand la source le publie.
+ *
+ * LES DEUX TYPES DE DÉPOSANT SE SUPERPOSENT, ILS NE S'ADDITIONNENT JAMAIS
+ * (relecture du 11/09/2026 : « pouvoir superposer »). Deux filtres activables
+ * ensemble ; avec les deux, chaque commission porte DEUX lignes sur une même
+ * échelle — pleine pour les députés, hachurée pour les rapporteurs —, chacune
+ * avec son nombre, son ratio et ses textes. Aucun total commun n'apparaît, ni
+ * par commission ni en tête : deux natures ne partagent jamais un dénominateur
+ * (`AGENTS.md` §6, règle de forme 4). */
 const TYPES_DEPOSANT = {
-  depute: 'Comme députés',
-  commission_rapporteur: 'Comme rapporteurs de commission',
+  depute: { filtre: 'Comme députés', court: 'députés' },
+  commission_rapporteur: { filtre: 'Comme rapporteurs de commission', court: 'rapporteurs' },
 };
 const STATUTS_TEXTE = {
   promulgue: 'promulgué',
@@ -506,9 +512,32 @@ const STATUTS_TEXTE = {
   adopte_49_3: 'adopté sans vote — 49.3',
 };
 const TEXTES_MONTRES = 12;
+const NON_ETABLIE = null;
 
-function TextesAmendes({ detail }) {
+/* Les textes d'une commission, réunis par dossier sur les types actifs : un
+ * texte amendé par les deux garde ses deux comptes, côte à côte. */
+function textesDeLaCommission(blocs, commission) {
+  const parDossier = new Map();
+  for (const [type, bloc] of blocs) {
+    const ligne = commission === NON_ETABLIE
+      ? bloc.nonEtablie
+      : bloc.lignes.find((l) => l.commission === commission);
+    for (const d of ligne?.detail || []) {
+      const t = parDossier.get(d.dossier) ?? { ...d, parType: {} };
+      if (d.dernier && (!t.dernier || d.dernier > t.dernier)) t.dernier = d.dernier;
+      t.parType[type] = { amendements: d.amendements, adoptes: d.adoptes };
+      parDossier.set(d.dossier, t);
+    }
+  }
+  return [...parDossier.values()]
+    .sort((x, y) => String(y.dernier ?? '').localeCompare(String(x.dernier ?? '')) || x.dossier.localeCompare(y.dossier));
+}
+
+function TextesAmendes({ detail, types }) {
   const [montres, setMontres] = useState(TEXTES_MONTRES);
+  const compte = (c) => (
+    <><b>{formatNumber(c.amendements)}</b> amdt · <b>{formatNumber(c.adoptes)}</b> adopté{c.adoptes > 1 ? 's' : ''}</>
+  );
   return (
     <div className="lp-deroule">
       {detail.slice(0, montres).map((d) => (
@@ -525,7 +554,14 @@ function TextesAmendes({ detail }) {
             )}
           </span>
           <span className="lp-deroule-n lp-num">
-            <b>{formatNumber(d.amendements)}</b> amdt · <b>{formatNumber(d.adoptes)}</b> adopté{d.adoptes > 1 ? 's' : ''}
+            {types.length === 1
+              ? (d.parType[types[0]] ? compte(d.parType[types[0]]) : null)
+              : types.filter((t) => d.parType[t]).map((t, i) => (
+                <span className="lp-deroule-type" key={t}>
+                  {i > 0 && ' · '}
+                  <i className={`lp-type lp-type--${t}`} /> {TYPES_DEPOSANT[t].court} {compte(d.parType[t])}
+                </span>
+              ))}
           </span>
         </div>
       ))}
@@ -540,19 +576,80 @@ function TextesAmendes({ detail }) {
 
 function CeQuIlsOntPropose({ lignee }) {
   const [m, index, setIndex] = useMaillon(lignee);
-  const types = Object.keys(TYPES_DEPOSANT).filter((t) => m.amendements.parType[t]);
-  const [choix, setChoix] = useState('depute');
-  const [ouverte, setOuverte] = useState(null);
-  const type = types.includes(choix) ? choix : types[0];
-  const bloc = type ? m.amendements.parType[type] : null;
-  const lignes = bloc ? bloc.lignes.filter((l) => l.amendements > 0) : [];
-  const nd = bloc?.nonEtablie ?? null;
-  const maxA = Math.max(1, ...lignes.map((l) => l.amendements), nd?.amendements ?? 0);
-  const maxD = Math.max(1, ...lignes.map((l) => (l.textes ? l.amendements / l.textes : 0)));
+  const disponibles = Object.keys(TYPES_DEPOSANT).filter((t) => m.amendements.parType[t]);
+  const [choisis, setChoisis] = useState(['depute']);
+  const [ouverte, setOuverte] = useState(undefined);
+  const actifs = disponibles.filter((t) => choisis.includes(t));
+  const types = actifs.length ? actifs : disponibles.slice(0, 1);
+  const blocs = types.map((t) => [t, m.amendements.parType[t]]);
+  const basculer = (t) => {
+    // Un filtre au moins reste actif : une vue vide se lirait comme « aucun amendement ».
+    const suivants = types.includes(t) ? types.filter((x) => x !== t) : [...types, t];
+    if (suivants.length) { setChoisis(suivants); setOuverte(undefined); }
+  };
+
+  /* Les commissions de tous les types actifs, rangées par volume du premier
+   * type actif — l'ordre de la fiche candidat —, puis du suivant. */
+  const commissions = [];
+  for (const [, bloc] of blocs) for (const l of bloc.lignes) if (l.amendements > 0 && !commissions.includes(l.commission)) commissions.push(l.commission);
+  const valeur = (t, c) => m.amendements.parType[t].lignes.find((l) => l.commission === c) ?? null;
+  commissions.sort((x, y) => {
+    for (const t of types) {
+      const d = (valeur(t, y)?.amendements ?? 0) - (valeur(t, x)?.amendements ?? 0);
+      if (d) return d;
+    }
+    return x.localeCompare(y, 'fr');
+  });
+  const avecNonEtablie = blocs.some(([, b]) => b.nonEtablie?.amendements > 0);
+  const toutesLignes = blocs.flatMap(([, b]) => [...b.lignes, ...(b.nonEtablie ? [b.nonEtablie] : [])]);
+  const maxA = Math.max(1, ...toutesLignes.map((l) => l.amendements || 0));
+  const maxD = Math.max(1, ...blocs.flatMap(([, b]) => b.lignes.map((l) => (l.textes ? l.amendements / l.textes : 0))));
+
   const limites = [];
   if (m.amendements.distincts) limites.push(`${formatNumber(m.amendements.distincts)} amendements distincts en tout`);
   if (m.amendements.sansType) limites.push(`dont ${formatNumber(m.amendements.sansType)} sans type de déposant publié`);
-  if (lignes.length) limites.push('textes rangés du plus récemment amendé au plus ancien');
+  if (commissions.length) limites.push('textes rangés du plus récemment amendé au plus ancien');
+
+  const rangee = (commission, r) => {
+    const neutre = commission === NON_ETABLIE;
+    const teinte = neutre ? GRIS_SANS_MATIERE : PALETTE_MATIERE[r % PALETTE_MATIERE.length];
+    const ouvert = ouverte === commission;
+    return (
+      <div className={types.length > 1 ? 'lp-mr-paire' : undefined} key={neutre ? '∅' : commission}>
+        {types.map((t, i) => {
+          const l = neutre ? m.amendements.parType[t].nonEtablie : valeur(t, commission);
+          const n = l?.amendements ?? 0;
+          const densite = !neutre && l?.textes ? n / l.textes : null;
+          const fond = t === 'depute'
+            ? teinte
+            : `repeating-linear-gradient(135deg, ${teinte} 0 3px, transparent 3px 6px)`;
+          return (
+            <button
+              aria-expanded={ouvert}
+              className={`lp-mr lp-mr--cliquable${neutre ? ' lp-mr--nd' : ''}`}
+              key={t}
+              onClick={() => setOuverte(ouvert ? undefined : commission)}
+              type="button"
+            >
+              <span className="lp-mr-lib" title={neutre ? MATIERE_NON_ETABLIE : commission}>
+                {i === 0 ? (neutre ? MATIERE_NON_ETABLIE : commission) : ''}
+              </span>
+              <span className="lp-mr-rail">
+                {n > 0 && <i style={{ background: fond, boxShadow: t === 'depute' ? undefined : `inset 0 0 0 1px ${teinte}`, width: `${((100 * n) / maxA).toFixed(1)}%` }} />}
+              </span>
+              <span className="lp-mr-n">{n ? formatNumber(n) : '—'}</span>
+              <span className="lp-mr-n">{densite == null ? '—' : formatNumber(Math.round(densite))}</span>
+              <span className="lp-mr-rail">
+                {densite != null && <i style={{ background: fond, opacity: 0.5, width: `${((100 * densite) / maxD).toFixed(1)}%` }} />}
+              </span>
+              <span className="lp-mr-n lp-mr-n--textes">{l?.textes ? formatNumber(l.textes) : '—'}</span>
+            </button>
+          );
+        })}
+        {ouvert && <TextesAmendes detail={textesDeLaCommission(blocs, commission)} types={types} />}
+      </div>
+    );
+  };
 
   return (
     <Section
@@ -565,7 +662,7 @@ function CeQuIlsOntPropose({ lignee }) {
       <Navigation
         index={index}
         lignee={lignee}
-        onIndex={(i) => { setIndex(i); setOuverte(null); }}
+        onIndex={(i) => { setIndex(i); setOuverte(undefined); }}
         poids={(p) => p.amendements.distincts || 0}
         unite="amendements"
         uniteSingulier="amendement"
@@ -576,19 +673,20 @@ function CeQuIlsOntPropose({ lignee }) {
       />
       <div className="lp-carte">
         <TeteDePeriode maillon={m} />
-        {!bloc ? <Vide maillon={m} /> : (
+        {!blocs.length ? <Vide maillon={m} /> : (
           <>
-            {types.length > 1 && (
-              <div aria-label="Type de déposant" className="lp-onglets" role="group">
-                {types.map((t) => (
+            {disponibles.length > 1 && (
+              <div aria-label="Types de déposant affichés" className="lp-filtres" role="group">
+                {disponibles.map((t) => (
                   <button
-                    aria-pressed={type === t}
-                    className="lp-onglet"
+                    aria-pressed={types.includes(t)}
+                    className="lp-filtre"
                     key={t}
-                    onClick={() => { setChoix(t); setOuverte(null); }}
+                    onClick={() => basculer(t)}
                     type="button"
                   >
-                    {TYPES_DEPOSANT[t]}
+                    <i className={`lp-type lp-type--${t}`} />
+                    {TYPES_DEPOSANT[t].filtre}
                   </button>
                 ))}
               </div>
@@ -596,8 +694,13 @@ function CeQuIlsOntPropose({ lignee }) {
             <div className="lp-mat-tete">
               <span className="lp-mat-titre">Par commission saisie au fond</span>
               <span className="lp-mat-totaux lp-num">
-                <b>{formatNumber(bloc.amendements)}</b> amendements · <b>{formatNumber(bloc.dossiers)}</b> dossiers ·{' '}
-                <b>{formatNumber(bloc.adoptes)}</b> adoptés
+                {blocs.map(([t, bloc]) => (
+                  <span key={t}>
+                    {types.length > 1 && <><i className={`lp-type lp-type--${t}`} /> {TYPES_DEPOSANT[t].court} : </>}
+                    <b>{formatNumber(bloc.amendements)}</b> amendements · <b>{formatNumber(bloc.dossiers)}</b> dossiers ·{' '}
+                    <b>{formatNumber(bloc.adoptes)}</b> adoptés
+                  </span>
+                ))}
               </span>
             </div>
             <div className="lp-mat">
@@ -609,49 +712,8 @@ function CeQuIlsOntPropose({ lignee }) {
                 <span />
                 <span className="lp-mr-n">textes distincts</span>
               </div>
-              {lignes.map((l, r) => {
-                const densite = l.textes ? l.amendements / l.textes : null;
-                const teinte = PALETTE_MATIERE[r % PALETTE_MATIERE.length];
-                const ouvert = ouverte === l.commission;
-                return (
-                  <div key={l.commission}>
-                    <button
-                      aria-expanded={ouvert}
-                      className="lp-mr lp-mr--cliquable"
-                      onClick={() => setOuverte(ouvert ? null : l.commission)}
-                      type="button"
-                    >
-                      <span className="lp-mr-lib" title={l.commission}>{l.commission}</span>
-                      <span className="lp-mr-rail"><i style={{ background: teinte, width: `${((100 * l.amendements) / maxA).toFixed(1)}%` }} /></span>
-                      <span className="lp-mr-n">{formatNumber(l.amendements)}</span>
-                      <span className="lp-mr-n">{densite == null ? '—' : formatNumber(Math.round(densite))}</span>
-                      <span className="lp-mr-rail">
-                        {densite != null && <i style={{ background: teinte, opacity: 0.5, width: `${((100 * densite) / maxD).toFixed(1)}%` }} />}
-                      </span>
-                      <span className="lp-mr-n lp-mr-n--textes">{formatNumber(l.textes)}</span>
-                    </button>
-                    {ouvert && <TextesAmendes detail={l.detail} />}
-                  </div>
-                );
-              })}
-              {nd && nd.amendements > 0 && (
-                <div>
-                  <button
-                    aria-expanded={ouverte === MATIERE_NON_ETABLIE}
-                    className="lp-mr lp-mr--cliquable lp-mr--nd"
-                    onClick={() => setOuverte(ouverte === MATIERE_NON_ETABLIE ? null : MATIERE_NON_ETABLIE)}
-                    type="button"
-                  >
-                    <span className="lp-mr-lib">{MATIERE_NON_ETABLIE}</span>
-                    <span className="lp-mr-rail"><i style={{ background: GRIS_SANS_MATIERE, width: `${((100 * nd.amendements) / maxA).toFixed(1)}%` }} /></span>
-                    <span className="lp-mr-n">{formatNumber(nd.amendements)}</span>
-                    <span className="lp-mr-n">—</span>
-                    <span />
-                    <span className="lp-mr-n lp-mr-n--textes">{nd.textes ? formatNumber(nd.textes) : '—'}</span>
-                  </button>
-                  {ouverte === MATIERE_NON_ETABLIE && nd.detail.length > 0 && <TextesAmendes detail={nd.detail} />}
-                </div>
-              )}
+              {commissions.map((c, r) => rangee(c, r))}
+              {avecNonEtablie && rangee(NON_ETABLIE, commissions.length)}
             </div>
           </>
         )}

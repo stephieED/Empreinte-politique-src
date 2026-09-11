@@ -82,7 +82,7 @@ traité dans une version. Les arbitrages qui engagent :
 | « Qui sont-ils » | un point par personne et par groupe, trois états, survol qui allume le chemin | forme B sur trois comparées ; cinq agrégats avaient été écartés la veille |
 | La liste des personnes | une colonne par groupe de la lignée, dans l'ordre des points ; le survol d'un nom allume son chemin | une personne passée par trois groupes figure dans trois colonnes : c'est le chemin qui se lit |
 | Motifs de posture | majoritaire aplat, opposition diagonales, minoritaire mauve clair uni, non déclarée points serrés | les motifs d'origine se ressemblaient trop ; choisi sur quatre jeux |
-| « Ce qu'ils ont proposé » | le gabarit « amendements par matière » de la fiche candidat, switch exclusif député / rapporteur, textes au clic | même lecture à chaque niveau ; deux types, deux totaux |
+| « Ce qu'ils ont proposé » | le gabarit « amendements par matière » de la fiche candidat, textes au clic ; député et rapporteur en deux filtres **superposables** — deux lignes par commission sur une même échelle, deux totaux en tête, jamais une somme | même lecture à chaque niveau ; deux natures, deux totaux (règle de forme 4) |
 | Le lien de source | porté par l'intitulé, plus de badge « Source » | le badge répété sous chaque ligne |
 | Scrutins listés | la dernière lecture de chaque texte en tête (#711), le reste replié | « un texte, une position » |
 | « Avec qui ils votent » | comptes ET listes sur la seule dernière lecture | SOC XVIIe face au RN : 627 scrutins → 50 textes |

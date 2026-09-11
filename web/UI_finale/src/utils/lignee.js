@@ -126,9 +126,10 @@ export function personnesParMaillon(lignee) {
  *
  * « Ce qu'ils ont proposé » reprend le gabarit de la fiche candidat
  * (annotation de la propriétaire, 11/09/2026) : une barre par commission, le
- * ratio par texte au milieu, les textes distincts au bout, et un switch
- * EXCLUSIF entre les deux types de déposant d'un groupe — ils ne s'additionnent
- * jamais (`AGENTS.md` §6), chacun compte contre son propre total.
+ * ratio par texte au milieu, les textes distincts au bout. Les deux types de
+ * déposant d'un groupe se SUPERPOSENT — deux lignes par commission — et ne
+ * s'additionnent jamais (`AGENTS.md` §6) : chacun compte contre son propre
+ * total, que cette règle rend séparément.
  *
  * LA POPULATION EST CELLE DE LA FICHE, et elle se VÉRIFIE. Un amendement compte
  * pour un maillon s'il figure dans l'`amendements[]` d'un de ses membres ET que

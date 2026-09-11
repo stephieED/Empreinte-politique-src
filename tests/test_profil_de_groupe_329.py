@@ -252,9 +252,13 @@ def test_les_types_de_deposant_restent_separes(regles_lignee, composant, amendem
         "les deux types qu'un groupe porte ; `gouvernement` n'en est pas un — sa ligne « 0 » "
         "ne disait rien au lecteur (règle de forme 1)"
     )
-    assert "aria-pressed={type === t}" in composant, (
-        "un switch EXCLUSIF : les deux types ne s'affichent jamais ensemble, donc ne "
-        "s'additionnent jamais (AGENTS.md §6)"
+    # Les deux types se SUPERPOSENT depuis la relecture du 11/09/2026 — deux
+    # lignes par commission, deux totaux en tête —, et ne s'additionnent jamais.
+    propose = corps(composant, "function CeQuIlsOntPropose(")
+    assert "blocs.map(([t, bloc])" in propose, "un total PAR TYPE en tête, jamais un total commun"
+    assert not re.search(r"\.amendements\s*\+|\+\s*\w+\.amendements|adoptes\s*\+", propose), (
+        "aucune somme entre les deux types : deux natures ne partagent jamais un "
+        "dénominateur (AGENTS.md §6, règle de forme 4)"
     )
     for source, nom in ((composant, COMPOSANT.name), (amendements, AMENDEMENTS.name),
                         (projection, PROJECTION.name), (regles_lignee, "lignee.js")):
