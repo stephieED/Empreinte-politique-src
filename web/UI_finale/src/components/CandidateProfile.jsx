@@ -35,9 +35,12 @@ import {
   INSTITUTION_GOUVERNEMENT,
   INSTITUTION_MISSION,
   INSTITUTION_PARLEMENT,
+  INSTITUTION_PE,
+  INSTITUTION_SENAT,
   LIBELLE_PISTE,
+  pisteDuRole,
+  sigleDeGroupePolitique,
   LIBELLE_STADE,
-  POSITION_NON_DECLAREE,
   libellePosition,
   motifPosition,
   positionSurAxe,
@@ -119,27 +122,119 @@ function Position({ position }) {
  */
 const ECART_MINIMAL_REPERES = 3.4;
 
+/* CE QUI S'ÉCRIT DANS UN SEGMENT, ET CE QUI N'Y TIENT PAS.
+ *
+ * La bande ne portait aucun texte : « un libellé dans un segment de 2 % ne tient
+ * pas ». C'est vrai du libellé complet, pas de tout libellé — un mandat de cinq
+ * ans occupe un tiers de la frise et peut porter son groupe. L'étiquette se
+ * DÉGRADE donc au lieu de disparaître : le plus long qui tient, puis le groupe
+ * seul, puis rien — et la liste datée dessous continue de tout nommer.
+ *
+ * Largeur estimée à 820 px : la colonne fait 1 020 px au plus large, moins la
+ * marge intérieure de la carte, et moins ce que le sommaire prend à gauche ;
+ * sous-estimer fait taire une étiquette qui aurait tenu, surestimer la fait
+ * déborder. On sous-estime. */
+const LARGEUR_BANDE_ESTIMEE = 820;
+const POSITION_COURTE = {
+  majorite: 'majoritaire',
+  opposition: 'opposition',
+  minoritaire: 'minoritaire',
+};
+
+/* LES CANDIDATES D'UNE ÉTIQUETTE, de la plus complète à la plus courte. La
+ * première qui tient est écrite ; si aucune ne tient, le segment reste nu et la
+ * liste datée dessous fait le travail. Rien n'est tronqué en milieu de mot :
+ * « Secrétariat d'État auprès du mini… » ne dit pas mieux que rien. */
+function candidatesEtiquette(role) {
+  if (role.institution === INSTITUTION_GOUVERNEMENT) {
+    // `detail` porte « Ministère de l'intérieur · gouvernement BARNIER » : le
+    // portefeuille d'abord — le gouvernement est déjà dans la liste datée —,
+    // puis sa tête avant « auprès de » ou « chargé de », puis la fonction.
+    const portefeuille = (role.detail || '').split(' · ')[0] || '';
+    // « Ministère » tout court ne dit rien — on garde la tête seulement quand
+    // elle porte encore un rang, comme « Secrétariat d'État ».
+    const tete = portefeuille.split(/ aupr[èe]s | charg[ée] /)[0].replace(/,$/, '');
+    const court = /^minist[èe]re$/i.test(tete) ? null : tete;
+    return [portefeuille, role.role, court].filter(Boolean);
+  }
+  if (role.institution === INSTITUTION_MISSION) return [role.role];
+
+  // Un siège : le groupe et sa qualification. Le groupe se replie sur son sigle
+  // quand son intitulé est long — « Communiste, Républicain, Citoyen et des
+  // Sénateurs du Parti de Gauche » ne tient dans aucun segment.
+  const position = POSITION_COURTE[role.position] || null;
+  const groupe = role.detail || null;
+  const sigle = groupe ? sigleDeGroupePolitique(groupe) : null;
+  const formes = [groupe, sigle && sigle !== groupe ? sigle : null].filter(Boolean);
+  const candidates = [];
+  for (const forme of formes) {
+    if (position) candidates.push(`${forme} · ${position}`);
+    candidates.push(forme);
+  }
+  if (position) candidates.push(position);
+  // Dernier recours : le mandat lui-même. Il fait doublon avec la légende, mais
+  // un segment large et muet en dit moins — c'est le cas des sièges européens,
+  // dont le corpus ne porte aucun groupe politique.
+  candidates.push(role.role);
+  return candidates.filter(Boolean);
+}
+
+function etiquetteSegment(role, largeur) {
+  const place = (largeur / 100) * LARGEUR_BANDE_ESTIMEE;
+  for (const texte of candidatesEtiquette(role)) {
+    if (texte.length * 6.2 + 16 <= place) return texte;
+  }
+  return null;
+}
+
+/* LES ANNÉES SOUS LA BANDE. Deux bornes ne situent rien au milieu : un segment
+ * qui commence au tiers de la frise ne se date qu'en comptant. Le pas est choisi
+ * pour rendre entre quatre et huit repères, quelle que soit la carrière — deux
+ * ans pour Glucksmann, dix pour une carrière de quarante ans. */
+function anneesDeLAxe(bornes) {
+  const debut = Number(annee(bornes.debut));
+  const fin = Number(annee(bornes.fin));
+  if (!debut || !fin || fin <= debut) return [];
+  const pas = [1, 2, 5, 10, 20].find((p) => (fin - debut) / p <= 7) ?? 25;
+  const annees = [];
+  for (let a = Math.ceil(debut / pas) * pas; a <= fin; a += pas) annees.push(a);
+  if (annees[0] !== debut) annees.unshift(debut);
+  if (annees[annees.length - 1] !== fin) annees.push(fin);
+  return annees;
+}
+
 function classeInstitution(role) {
   if (role.institution === INSTITUTION_MISSION) return 'cp-fs--mission';
   if (role.institution === INSTITUTION_GOUVERNEMENT) {
-    return role.chef ? 'cp-fs--chef' : 'cp-fs--gouvernement cp-fs--motif-rayures';
+    return role.chef ? 'cp-fs--chef' : 'cp-fs--gouvernement';
   }
-  return `cp-fs--parlement cp-fs--motif-${motifPosition(role.position)}`;
+  // LA FRISE DIT L'INSTITUTION, ET RIEN D'AUTRE. Elle portait aussi la
+  // qualification du groupe — majoritaire, opposition, minoritaire, non
+  // déclarée — par quatre motifs. Deux encodages sur la même bande, dont un que
+  // la légende devait expliquer : la qualification reste écrite en toutes
+  // lettres dans la liste des rôles, à côté du mandat qu'elle qualifie, et
+  // c'est là qu'elle se lit sans décodeur.
+  return `cp-fs--${pisteDuRole(role)}`;
 }
 
+/* La légende ne montre QUE ce que la frise porte, et la frise ne porte plus que
+ * l'institution : les quatre motifs de qualification de groupe sont retirés avec
+ * elle. Chaque entrée dit à quelle piste elle appartient, et seules les pistes
+ * présentes sur la fiche sont rendues — elle listait sept entrées partout, dont
+ * quatre motifs de groupe sur des profils qui n'ont jamais siégé à l'Assemblée. */
 const LEGENDE_FRISE = [
-  { classe: 'cp-fs--parlement cp-fs--motif-plein', label: 'Parlementaire · groupe majoritaire' },
-  { classe: 'cp-fs--parlement cp-fs--motif-diagonales', label: "Parlementaire · groupe d'opposition" },
-  { classe: 'cp-fs--parlement cp-fs--motif-points', label: 'Parlementaire · groupe minoritaire' },
-  { classe: 'cp-fs--parlement cp-fs--motif-fines-rayures', label: POSITION_NON_DECLAREE.label },
-  { classe: 'cp-fs--gouvernement cp-fs--motif-rayures', label: 'Membre du gouvernement' },
-  { classe: 'cp-fs--chef', label: 'Chef du gouvernement' },
-  { classe: 'cp-fs--mission', label: 'Parlementaire en mission auprès d’un ministère' },
+  { piste: INSTITUTION_PARLEMENT, classe: 'cp-fs--parlement', label: 'Député(e)' },
+  { piste: INSTITUTION_SENAT, classe: 'cp-fs--senat', label: 'Sénateur(rice)' },
+  { piste: INSTITUTION_PE, classe: 'cp-fs--pe', label: 'Député(e) européen(ne)' },
+  { piste: INSTITUTION_GOUVERNEMENT, classe: 'cp-fs--gouvernement', label: 'Membre du gouvernement' },
+  { piste: INSTITUTION_GOUVERNEMENT, classe: 'cp-fs--chef', label: 'Chef du gouvernement' },
+  { piste: INSTITUTION_MISSION, classe: 'cp-fs--mission', label: 'Parlementaire en mission auprès d’un ministère' },
 ];
 
 function Frise({ parcours }) {
   const { roles, nbLignes, bornes } = parcours;
   if (!roles.length || !bornes) return null;
+  const pistesPresentes = new Set(roles.map(pisteDuRole));
 
   const hauteurLigne = 100 / nbLignes;
 
@@ -170,7 +265,7 @@ function Frise({ parcours }) {
         ))}
       </div>
 
-      <div className="cp-bande">
+      <div className="cp-bande" style={{ height: Math.max(46, nbLignes * 24) }}>
         {roles.map((r) => {
           const gauche = positionSurAxe(r.debut, bornes);
           const largeur = Math.max(0.6, positionSurAxe(r.fin, bornes) - gauche);
@@ -185,36 +280,30 @@ function Frise({ parcours }) {
                 height: `${hauteurLigne.toFixed(2)}%`,
               }}
               title={`${r.role} — ${periode(r.debut, r.fin, r.actif)}`}
-            />
+            >
+              {etiquetteSegment(r, largeur)}
+            </span>
           );
         })}
       </div>
 
       <div className="cp-axe">
-        <span>{annee(bornes.debut)}</span>
-        <span>{annee(bornes.fin)}</span>
+        {anneesDeLAxe(bornes).map((a) => (
+          <span key={a} style={{ left: `${positionSurAxe(`${a}-01-01`, bornes).toFixed(2)}%` }}>
+            {a}
+          </span>
+        ))}
       </div>
 
       <div className="cp-legende">
-        <p className="cp-legende-titre">Légende</p>
         <div className="cp-legende-grille">
-          {LEGENDE_FRISE.map((l) => (
+          {LEGENDE_FRISE.filter((l) => pistesPresentes.has(l.piste)).map((l) => (
             <span className="cp-legende-item" key={l.label}>
               <span className={`cp-legende-pave ${l.classe}`} />
               {l.label}
             </span>
           ))}
         </div>
-        {/* La note ne garde que ce qui est SOURCÉ. Le reste — désaturation, absence
-            de progression, lisibilité en niveaux de gris, scission de la bande —
-            expliquait comment lire la frise, et c'est exactement le texte
-            explicatif qu'on coupe partout ailleurs (#326, règle 2). Ce qui reste
-            n'est pas de l'explication : c'est la seule phrase de toute la fiche
-            qui dit que les trois postures viennent de l'Assemblée et pas de nous
-            (§2 règle 2). 766 caractères, puis 188. */}
-          <p className="cp-legende-note">
-            Majorité, minorité et opposition <b>selon l’AN</b>.
-          </p>
       </div>
 
       {/* Le détail daté se replie : c'est du DÉTAIL, et il n'a pas à s'imposer
@@ -232,7 +321,11 @@ function Frise({ parcours }) {
             <span className="cp-role-dates">{periode(r.debut, r.fin, r.actif)}</span>
             <span className="cp-role-intitule">
               <b>{r.role}</b>
-              {r.institution === INSTITUTION_PARLEMENT && <Position position={r.position} />}
+              {/* La qualification du groupe est publiée PAR L'ASSEMBLÉE : la
+                  porter sur un mandat européen ou sénatorial ferait dire à
+                  l'Assemblée qu'elle n'a rien déclaré sur un siège dont elle ne
+                  parle pas (§2 règle 2). */}
+              {pisteDuRole(r) === INSTITUTION_PARLEMENT && <Position position={r.position} />}
               {r.detail && <span className="cp-role-detail"> · {r.detail}</span>}
             </span>
           </li>
@@ -1222,9 +1315,39 @@ function CelluleChiffre({ cellule: c, piste }) {
   );
 }
 
+/* La largeur vient de la CLASSE, jamais d'un style en ligne : une valeur en
+ * ligne ne se surcharge qu'avec `!important`, que la media query du petit écran
+ * devrait alors reprendre. Quatre largeurs, autant que d'institutions. */
+const MOT_COLONNES = { 1: 'une', 2: 'deux', 3: 'trois', 4: 'quatre' };
+
+/* LE SÉNAT EST REPLIÉ D'ENTRÉE, SAUF S'IL EST SEUL — et c'est un choix de
+ * lecture, pas une suppression : sa puce reste allumée au-dessus du tableau et
+ * dit ce qui est là. Sa colonne ne porterait, sur les deux fiches concernées,
+ * que des cellules vides : la collecte du Sénat est hors périmètre (#528), donc
+ * ni vote, ni amendement, ni intervention. La replier met en avant ce que la
+ * fiche sait dire ; la retirer effacerait un siège réel (§2 règle 5).
+ *
+ * Seule exception, celle qui empêche une fiche vide : si le Sénat est la seule
+ * colonne, il s'ouvre. Un tableau sans colonne ne se replie pas, il disparaît. */
+function repliParDefaut(colonnes) {
+  if (colonnes.length <= 1) return new Set();
+  return new Set(colonnes.filter((c) => c === INSTITUTION_SENAT));
+}
+
 function GrandsChiffres({ chiffres, parcours }) {
+  const { colonnes = [], lignes = [] } = chiffres || {};
+  const [replies, setReplies] = useState(() => repliParDefaut(colonnes));
   if (!chiffres || chiffres.cas === CAS_RIEN_A_MONTRER) return null;
-  const { colonnes, lignes } = chiffres;
+  const ouvertes = colonnes.filter((c) => !replies.has(c));
+  const basculer = (c) => setReplies((avant) => {
+    const apres = new Set(avant);
+    // JAMAIS ZÉRO COLONNE : replier la dernière ne laisserait que des intitulés
+    // de rang, c'est-à-dire le gabarit et aucune personne.
+    if (!apres.has(c) && ouvertes.length === 1) return avant;
+    if (apres.has(c)) apres.delete(c);
+    else apres.add(c);
+    return apres;
+  });
   return (
     <section className="cp-gc">
       {/* « En bref » prend la bande, le filet et le h2 d'un titre de section.
@@ -1265,8 +1388,37 @@ function GrandsChiffres({ chiffres, parcours }) {
               ligne : sous 720 px le tableau défile latéralement, et une valeur en
               ligne ne se surcharge qu'avec `!important` — que le prochain
               ajustement oublierait. */}
-          <div className={`cp-gc-duo ${colonnes.length > 1 ? 'cp-gc-duo--deux' : ''}`}>
-            {colonnes.map((c) => (
+          {/* LE NOM DU RANG UNE FOIS, À GAUCHE — et non répété au-dessus de
+              chaque colonne. Avec deux institutions il se lisait deux fois ;
+              avec les quatre qu'une carrière peut traverser, « TEXTES PORTÉS »
+              s'écrivait quatre fois sur la même ligne. Le tableau met le rang
+              en tête de ligne et laisse les colonnes aux chiffres, qui sont ce
+              qu'on compare. */}
+          {/* LES PUCES DISENT CE QUE LE TABLEAU NE MONTRE PAS. Une colonne
+              repliée sort de la grille — le tableau se resserre sur ce qui
+              reste —, mais sa puce demeure, éteinte : le lecteur voit qu'une
+              institution existe et qu'il peut la rouvrir. Sans elles, replier
+              serait effacer. */}
+          {colonnes.length > 1 && (
+            <div className="cp-gc-puces" role="group" aria-label="Institutions affichées">
+              {colonnes.map((c) => (
+                <button
+                  type="button"
+                  key={`p-${c}`}
+                  className={`cp-gc-puce cp-gc-puce--${c}`}
+                  aria-pressed={!replies.has(c)}
+                  onClick={() => basculer(c)}
+                >
+                  <i aria-hidden="true" />
+                  {LIBELLE_PISTE[c]}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className={`cp-gc-duo cp-gc-duo--${MOT_COLONNES[ouvertes.length] || 'quatre'}`}>
+            <div className="cp-gc-coin" />
+            {ouvertes.map((c) => (
               <div className={`cp-gc-tete-col cp-gc-tete-col--${c}`} key={`t-${c}`}>
                 <span className="cp-gc-bandeau" />
                 <span className="cp-gc-col-nom">
@@ -1275,14 +1427,15 @@ function GrandsChiffres({ chiffres, parcours }) {
                 </span>
               </div>
             ))}
-            {lignes.map((l) => (
+            {/* La règle « un rang sans aucun chiffre ne s'affiche pas » vaut sur
+                les colonnes OUVERTES : replier le Sénat ne doit pas laisser un
+                intitulé seul face à rien. */}
+            {lignes
+              .filter((l) => ouvertes.some((c) => l.cellules[c] && !l.cellules[c].absent))
+              .map((l) => (
               <Fragment key={l.cle}>
-                {colonnes.map((c) => (
-                  <p className="cp-gc-rang" key={`r-${l.cle}-${c}`}>
-                    {l.titre}
-                  </p>
-                ))}
-                {colonnes.map((c) => (
+                <p className="cp-gc-rang">{l.titre}</p>
+                {ouvertes.map((c) => (
                   <CelluleChiffre cellule={l.cellules[c]} key={`c-${l.cle}-${c}`} piste={c} />
                 ))}
               </Fragment>
@@ -1290,6 +1443,20 @@ function GrandsChiffres({ chiffres, parcours }) {
           </div>
         </details>
       </div>
+
+      {/* LE PIED EST HORS DE LA CARTE, comme celui de toutes les sections :
+          `Section` rend sa prop `pied` après `cp-section-corps`, jamais dedans.
+          « En bref » n'est pas un `Section` — il compose sa bande et son titre à
+          la main —, donc il compose aussi son pied, avec la même classe et au
+          même endroit relatif.
+
+          Il remplace la note « Majorité, minorité et opposition selon l'AN », la
+          seule phrase qui rattachait les trois postures à l'Assemblée plutôt
+          qu'à nous (§2 règle 2) : la frise ne les porte plus, mais la liste des
+          rôles les écrit toujours. */}
+      <p className="cp-section-pied">
+        <Link to="/methodologie#fonctions">Majorité, minorité et opposition, selon l’Assemblée →</Link>
+      </p>
     </section>
   );
 }

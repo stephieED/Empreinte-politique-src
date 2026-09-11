@@ -25,15 +25,58 @@
  * qu'on lit, et ils sont désormais lus par la frise, par les colonnes
  * appariées et par les blocs de « Les fonctions exercées ».
  */
+/* LES QUATRE INSTITUTIONS, ET POURQUOI TROIS SEULEMENT ONT UNE TEINTE.
+ *
+ * Une seule des quatre a une couleur officielle réutilisable : l'Union
+ * européenne : le Reflex Blue de son emblème, porté par `--pe`. Le bleu France
+ * du DSFR est réservé par la loi aux services `.gouv.fr` ; le rouge du Sénat
+ * est celui du vote « contre ».
+ *
+ * Une fois ce bleu pris, le cercle des teintes ne loge plus trois institutions
+ * SANS PARENTÉ : retirées les familles qui portent déjà un sens — vert « pour »,
+ * rouge « contre », jaune d'emphase — il ne reste que deux arcs, le chaud et le
+ * magenta. Zéro combinaison sur les 32 teintes compatibles mesurées. Deux
+ * teintes voisines ne sont pas « distinctes » parce que leur ΔE passe : elles se
+ * lisent comme une famille, donc comme une hiérarchie entre deux institutions de
+ * même rang.
+ *
+ * Le Sénat sort donc du système de couleurs et prend l'encre des absences — sur
+ * les deux fiches concernées il n'a ni vote, ni amendement, ni intervention, la
+ * collecte étant hors périmètre (#528), et sa colonne est repliée d'entrée.
+ * **Le jour où le Sénat est rebranché, il prend la sarcelle `#169E9E`** :
+ * arbitrage rendu le 11/09/2026, teinte réservée d'avance pour qu'elle ne soit
+ * pas prise par autre chose.
+ *
+ * Mesuré au validateur de la compétence `dataviz` (OKLab) : ΔE 10,7 sous
+ * protanopie, 21,0 en vision normale, 72° d'écart minimum entre les trois. Le
+ * seul contrôle en échec porte sur le bleu de l'Union lui-même, plus sombre que
+ * la bande de clarté — c'est la couleur officielle, elle ne se négocie pas.
+ * → docs/decisions/teintes-des-institutions-328.md
+ */
 .cp-main {
-  --parl: #3f5166;
-  --parl-wash: #e9eef6;
-  --parl-line: #c6d4e8;
-  --parl-pale: #dce5f2;
-  --gouv: #8a6b4c;
-  --gouv-wash: #f6f0e4;
-  --gouv-line: #e3d2ab;
-  --gouv-pale: #efe4cc;
+  --parl: #803060;
+  --parl-wash: #f2eaef;
+  --parl-line: #dfcbd7;
+  --parl-pale: #ece0e7;
+  /* Assombri pour porter du texte : la frise écrit dans ses segments, et le
+     blanc sur l'ocre d'avant rendait 4,41:1 — sous le seuil AA. À 6,60:1 il
+     passe, et les cinq contrôles de palette tiennent (ΔE 10,7 / 15,3). */
+  --gouv: #85510d;
+  --gouv-wash: #f3eee7;
+  --gouv-line: #e0d4c2;
+  --gouv-pale: #ede5db;
+  --pe: #003399;
+  --pe-wash: #e6ebf5;
+  --pe-line: #bfcce6;
+  --pe-pale: #d9e0f0;
+  /* L'ENCRE DES ABSENCES, déclarée une seule fois et lue par ses deux
+     consommateurs : les cellules que la collecte ne remplit pas, et le Sénat,
+     qui n'a pas de teinte propre. */
+  --neutre: #9a958d;
+  --senat: var(--neutre);
+  --senat-wash: #f5f4f4;
+  --senat-line: #e6e4e2;
+  --senat-pale: #f0efee;
   /* La barre de sortie d'une porte de la cascade (#328). Hors rampe d'encre :
      elle ne marque aucune étape ATTEINTE, elle constate qu'aucun acte au-delà
      n'est enregistré à la date du corpus. Un gris, donc, et pas un cran. */
@@ -115,7 +158,6 @@
  * part ici, ni filet ni décor.
  */
 .cp-gc {
-  --neutre: #9a958d;
   --neutre-wash: #edebe7;
   --rail: #efede9;
   --gc-ombre: rgba(20, 21, 26, 0.13);
@@ -242,15 +284,81 @@
 
 /* ── Les colonnes appariées ───────────────────────────────────────────────── */
 
+/* LE TABLEAU : une colonne de libellés à gauche, une colonne par institution.
+   Le rang était répété au-dessus de chaque colonne — deux fois avec deux
+   institutions, quatre fois avec les quatre qu'une carrière peut traverser. */
 .cp-gc-duo {
   display: grid;
-  grid-template-columns: 1fr;
-  column-gap: 44px;
+  --gc-libelle: minmax(88px, 128px);
+  grid-template-columns: var(--gc-libelle) 1fr;
+  column-gap: 32px;
   margin-top: 4px;
 }
 
 .cp-gc-duo--deux {
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: var(--gc-libelle) repeat(2, 1fr);
+}
+
+.cp-gc-duo--trois {
+  grid-template-columns: var(--gc-libelle) repeat(3, 1fr);
+}
+
+.cp-gc-duo--quatre {
+  grid-template-columns: var(--gc-libelle) repeat(4, 1fr);
+}
+
+/* LES PUCES D'INSTITUTION — le vocabulaire des barres de sélection de la fiche :
+   un pilulier, la teinte de l'institution allumée, l'encre sourde éteinte. Elles
+   ne filtrent pas une donnée, elles rangent une colonne : une institution
+   repliée reste nommée, et se rouvre d'un clic. */
+.cp-gc-puces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 2px;
+}
+
+.cp-gc-puce {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font: 700 11.5px 'Manrope', system-ui, sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  border: 1px solid var(--tt, var(--border));
+  background: var(--tw, transparent);
+  color: var(--tt, var(--ink));
+}
+
+.cp-gc-puce i {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--tt, var(--border));
+}
+
+.cp-gc-puce[aria-pressed='false'] {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--muted);
+}
+
+.cp-gc-puce[aria-pressed='false'] i {
+  background: var(--border);
+}
+
+.cp-gc-puce--parlement { --tt: var(--parl); --tw: var(--parl-wash); }
+.cp-gc-puce--senat { --tt: var(--senat); --tw: var(--senat-wash); }
+.cp-gc-puce--pe { --tt: var(--pe); --tw: var(--pe-wash); }
+.cp-gc-puce--gouvernement { --tt: var(--gouv); --tw: var(--gouv-wash); }
+
+/* Le coin haut-gauche du tableau ne porte rien : au-dessus des libellés de rang,
+   un titre dirait « rang », ce que la colonne montre déjà. */
+.cp-gc-coin {
+  border: 0;
 }
 
 .cp-gc-tete-col {
@@ -265,6 +373,8 @@
 }
 
 .cp-gc-tete-col--parlement .cp-gc-bandeau { background: var(--parl); }
+.cp-gc-tete-col--senat .cp-gc-bandeau { background: var(--senat); }
+.cp-gc-tete-col--pe .cp-gc-bandeau { background: var(--pe); }
 .cp-gc-tete-col--gouvernement .cp-gc-bandeau { background: var(--gouv); }
 
 .cp-gc-col-nom {
@@ -287,22 +397,33 @@
 
 .cp-gc-tete-col--parlement .cp-gc-col-nom { color: var(--parl); background: var(--parl-wash); }
 .cp-gc-tete-col--parlement .cp-gc-col-nom i { background: var(--parl); }
+.cp-gc-tete-col--senat .cp-gc-col-nom { color: var(--senat); background: var(--senat-wash); }
+.cp-gc-tete-col--senat .cp-gc-col-nom i { background: var(--senat); }
+.cp-gc-tete-col--pe .cp-gc-col-nom { color: var(--pe); background: var(--pe-wash); }
+.cp-gc-tete-col--pe .cp-gc-col-nom i { background: var(--pe); }
 .cp-gc-tete-col--gouvernement .cp-gc-col-nom { color: var(--gouv); background: var(--gouv-wash); }
 .cp-gc-tete-col--gouvernement .cp-gc-col-nom i { background: var(--gouv); }
 
+/* LE FILET COURT SUR TOUTE LA LIGNE : il est porté par le libellé ET par
+   chaque cellule, sinon il s'arrête au bout de la première colonne. */
 .cp-gc-rang {
   border-top: 1px solid var(--border);
-  font-size: 10.5px;
+  /* LE NOM DU RANG SE LIT, il ne s'excuse pas. En gris sourd et en 10,5 px il
+     passait derrière les chiffres, alors qu'il est la seule chose qui dise de
+     quoi ils sont le compte — et depuis qu'il n'est plus écrit qu'une fois,
+     à gauche, il porte toute la ligne. Encre pleine, un cran plus grand. */
+  font-size: 11.5px;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--ink);
   margin: 0;
-  padding: 16px 0 2px;
+  padding: 18px 0 2px;
 }
 
 .cp-gc-cell {
-  padding: 10px 0 18px;
+  border-top: 1px solid var(--border);
+  padding: 16px 0 18px;
 
   /* La famille de teintes de la colonne. Déclarée ICI, sur la cellule, et non
      déduite du voisinage dans la grille — voir le bloc des stades plus bas. */
@@ -311,6 +432,22 @@
   --t3: var(--parl-line);
   --t4: var(--parl);
   --t5: var(--parl);
+}
+
+.cp-gc-cell--senat {
+  --t1: var(--senat-wash);
+  --t2: var(--senat-pale);
+  --t3: var(--senat-line);
+  --t4: var(--senat);
+  --t5: var(--senat);
+}
+
+.cp-gc-cell--pe {
+  --t1: var(--pe-wash);
+  --t2: var(--pe-pale);
+  --t3: var(--pe-line);
+  --t4: var(--pe);
+  --t5: var(--pe);
 }
 
 .cp-gc-cell--gouvernement {
@@ -338,15 +475,20 @@
 }
 
 .cp-gc-q {
-  font-size: 13.5px;
+  font-size: 12.5px;
   font-weight: 600;
-  margin: 3px 0 0;
+  color: var(--muted);
+  margin: 4px 0 0;
 }
 
 .cp-gc-d {
-  font-size: 12.5px;
+  font-size: 12px;
   color: var(--muted);
-  margin: 5px 0 0;
+  margin: 6px 0 0;
+  /* Ce qui SE DIT sans se crier : la part écartée par le seuil de publication,
+     les textes portés à un autre titre. Bornée en largeur — une phrase qui
+     traverse une colonne de tableau se relit deux fois. */
+  max-width: 44ch;
 }
 
 /* Un tiret est un FAIT sur le métier — « un ministre ne dépose pas
@@ -455,8 +597,9 @@
  * 504 px pour ~347 px utiles, donc il en manque toujours un tiers.
  */
 @media (max-width: 720px) {
-  .cp-gc-duo--deux {
-    grid-template-columns: repeat(2, minmax(230px, 1fr));
+  .cp-gc-duo--deux,
+  .cp-gc-duo--trois,
+  .cp-gc-duo--quatre {
     overflow-x: auto;
     padding-bottom: 8px;
     overscroll-behavior-x: contain;
@@ -475,7 +618,22 @@
       linear-gradient(to left, var(--gc-ombre), transparent) right / 22px 100% no-repeat scroll;
   }
 
-  .cp-gc-duo--deux > * {
+  .cp-gc-duo--deux { grid-template-columns: var(--gc-libelle) repeat(2, minmax(210px, 1fr)); }
+  .cp-gc-duo--trois { grid-template-columns: var(--gc-libelle) repeat(3, minmax(210px, 1fr)); }
+  .cp-gc-duo--quatre { grid-template-columns: var(--gc-libelle) repeat(4, minmax(210px, 1fr)); }
+
+  /* La colonne des libellés reste visible pendant le défilement : sans elle,
+     un chiffre isolé ne dit plus de quoi il est le compte. */
+  .cp-gc-rang {
+    position: sticky;
+    left: 0;
+    background: var(--card);
+    z-index: 1;
+  }
+
+  .cp-gc-duo--deux > *,
+  .cp-gc-duo--trois > *,
+  .cp-gc-duo--quatre > * {
     scroll-snap-align: start;
   }
 
@@ -649,29 +807,56 @@
   background: var(--border-strong);
 }
 
+/* La hauteur vient du NOMBRE DE LIGNES, en ligne : une bande de 46 px répartie
+   sur quatre pistes donne 11 px par segment, où aucun texte ne tient. */
 .cp-bande {
   position: relative;
-  height: 46px;
   background: var(--border);
   border-radius: 6px;
   overflow: hidden;
 }
 
 /*
- * Un segment de bande. La TEINTE porte l'institution, le MOTIF porte la
- * position. Le motif est un `::after` en `inset: 0` — c'est sans risque ici
- * parce que la bande ne porte AUCUN texte : un libellé peint par-dessous
- * deviendrait illisible, et c'est précisément le défaut corrigé sur la maquette.
+ * Un segment de bande. La TEINTE porte l'institution, et le segment ÉCRIT ce
+ * qu'il est quand il en a la place — groupe et position pour un siège, le
+ * portefeuille pour un ministère. L'étiquette se dégrade plutôt que de déborder
+ * (`etiquetteSegment`), et la liste datée dessous nomme tout, toujours.
+ *
+ * L'encre suit la teinte : blanc sur les trois foncées, encre sur le neutre et
+ * sur le jaune du chef de gouvernement. Mesuré — blanc sur `--gouv` rendait
+ * 4,41:1 avant que la teinte soit assombrie, il rend 6,60:1.
  */
 .cp-fs {
   position: absolute;
+  display: flex;
+  align-items: center;
   border-radius: 3px;
   min-width: 5px;
   overflow: hidden;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  color: #fff;
+}
+
+.cp-fs--senat,
+.cp-fs--chef,
+.cp-fs--mission {
+  color: var(--ink);
 }
 
 .cp-fs--parlement {
   background: var(--parl);
+}
+
+.cp-fs--senat {
+  background: var(--senat);
+}
+
+.cp-fs--pe {
+  background: var(--pe);
 }
 
 .cp-fs--gouvernement {
@@ -687,38 +872,12 @@
   border: 1.5px dashed var(--gouv);
 }
 
-.cp-fs--motif-diagonales::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(45deg, transparent 0 5px, rgba(247, 246, 244, 0.3) 5px 10px);
-}
-
-.cp-fs--motif-points::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(rgba(247, 246, 244, 0.3) 1.6px, transparent 1.7px);
-  background-size: 8px 8px;
-}
-
-.cp-fs--motif-fines-rayures::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(90deg, transparent 0 6px, rgba(247, 246, 244, 0.3) 6px 8px);
-}
-
-.cp-fs--motif-rayures::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(90deg, transparent 0 7px, rgba(247, 246, 244, 0.28) 7px 9px);
-}
-
+/* Les années sont POSÉES sur l'axe, pas réparties : une graduation doit tomber
+   sous ce qu'elle date. Les deux extrêmes se rabattent vers l'intérieur pour ne
+   pas déborder de la carte. */
 .cp-axe {
-  display: flex;
-  justify-content: space-between;
+  position: relative;
+  height: 14px;
   margin-top: 7px;
   font-size: 10px;
   font-weight: 700;
@@ -726,25 +885,32 @@
   color: var(--muted);
 }
 
-.cp-legende {
-  margin-top: 18px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
+.cp-axe span {
+  position: absolute;
+  transform: translateX(-50%);
+  font-variant-numeric: tabular-nums;
 }
 
-.cp-legende-titre {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--muted);
+.cp-axe span:first-child {
+  transform: none;
+}
+
+.cp-axe span:last-child {
+  transform: translateX(-100%);
+}
+
+/* NI TITRE, NI FILET. « Légende » nommait ce que la forme dit déjà — des pavés
+   de couleur suivis d'un intitulé ne se lisent pas autrement —, et le filet
+   séparait la légende de la frise qu'elle sert : deux choses qui vont ensemble
+   n'ont pas à être coupées. */
+.cp-legende {
+  margin-top: 14px;
 }
 
 .cp-legende-grille {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
   gap: 9px 18px;
-  margin-top: 11px;
 }
 
 .cp-legende-item {
@@ -763,19 +929,6 @@
   border-radius: 3px;
   flex: 0 0 auto;
   overflow: hidden;
-}
-
-.cp-legende-note {
-  margin-top: 14px;
-  font-size: 12.5px;
-  color: #6e6a78;
-  line-height: 1.55;
-  max-width: 82ch;
-}
-
-.cp-legende-note b {
-  color: var(--ink);
-  font-weight: 700;
 }
 
 .cp-roles {

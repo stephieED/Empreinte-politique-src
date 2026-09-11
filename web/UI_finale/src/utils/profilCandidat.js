@@ -224,9 +224,9 @@ export function siegesElectifs(mandats) {
 }
 
 const CHAMBRE_ROLE = {
-  AN: 'Député·e',
-  Senat: 'Sénateur·rice',
-  PE: 'Député·e européen·ne',
+  AN: 'Député(e)',
+  Senat: 'Sénateur(rice)',
+  PE: 'Député(e) européen(ne)',
   mairie: 'Maire',
 };
 
@@ -267,6 +267,50 @@ export const INSTITUTION_PARLEMENT = 'parlement';
 export const INSTITUTION_GOUVERNEMENT = 'gouvernement';
 export const INSTITUTION_MISSION = 'mission';
 
+/* LE SIÈGE PORTE SA CHAMBRE, ET LA CHAMBRE FAIT LA PISTE (#328).
+ *
+ * `institution` dit le BANC — on siège, on gouverne, on est en mission —, et
+ * quinze endroits du code en dépendent : la comparaison au groupe, les périodes
+ * politiques, les limites de couverture. Le scinder en trois aurait demandé de
+ * relire ces quinze-là un par un. La chambre voyage donc à côté, et seule
+ * l'affichage la lit.
+ *
+ * Ce que ça ferme, mesuré le 10/09/2026 sur les 30 fiches publiées : un mandat
+ * européen était rangé dans la piste `parlement`, donc peint de la teinte de
+ * l'Assemblée sur la frise et compté dans une colonne intitulée « À
+ * l'Assemblée ». Sur `raphael-glucksmann`, qui n'a jamais siégé à l'Assemblée,
+ * cette colonne portait ses 4 mandats en commission européens ; sur
+ * `bruno-retailleau`, sénateur, ses 35 textes. Un intitulé faux n'est pas une
+ * approximation (§2 règle 2).
+ */
+export const INSTITUTION_SENAT = 'senat';
+export const INSTITUTION_PE = 'pe';
+
+const PISTE_PAR_CHAMBRE = {
+  AN: INSTITUTION_PARLEMENT,
+  Senat: INSTITUTION_SENAT,
+  PE: INSTITUTION_PE,
+};
+
+/** La piste d'un rôle : son banc, et pour un siège la chambre où il s'exerce.
+ *  Une chambre inconnue — `mairie`, ou `null` sur un mandat d'avant #492 —
+ *  retombe sur `parlement` : c'est ce que la fiche faisait déjà, et inventer
+ *  une piste pour une valeur non estampillée serait pire que de la ranger. */
+export function pisteDuRole(role) {
+  if (!role || role.institution !== INSTITUTION_PARLEMENT) return role?.institution ?? null;
+  return PISTE_PAR_CHAMBRE[role.chambre] || INSTITUTION_PARLEMENT;
+}
+
+/** L'ordre des colonnes ne se lit pas comme un classement : c'est celui de la
+ *  frise, qui range par date de début. Il est fixe pour que deux fiches se
+ *  comparent. */
+export const ORDRE_COLONNES = [
+  INSTITUTION_PARLEMENT,
+  INSTITUTION_SENAT,
+  INSTITUTION_PE,
+  INSTITUTION_GOUVERNEMENT,
+];
+
 const INTITULE_CHEF = /^premier ministre$/;
 
 export function rolesDuParcours(mandats) {
@@ -292,6 +336,9 @@ export function rolesDuParcours(mandats) {
     const groupe = retenue?.sigle ?? sigleDeGroupePolitique(siege.label);
     roles.push({
       institution: INSTITUTION_PARLEMENT,
+      // La chambre voyage avec le siège : elle fait la piste et la teinte, sans
+      // toucher au banc que quinze consommateurs lisent (`pisteDuRole`).
+      chambre: siege.chambre ?? null,
       role: CHAMBRE_ROLE[siege.chambre] || 'Mandat parlementaire',
       detail: groupe && groupe !== siege.label ? groupe : null,
       debut: siege.debut,
@@ -1147,6 +1194,10 @@ export function textesPortes(textes, commissionDuDossier = () => null) {
         dateMax: t.date_max ?? null,
         projetDeLoi: estProjetDeLoi(t),
         institution: institutionDuTexte(t),
+        // La CHAMBRE d'où vient le texte, à côté du banc qui le signe : une
+        // proposition de résolution européenne n'est pas une proposition
+        // déposée à l'Assemblée, et 405 des 423 textes portés publiés le sont.
+        europeen: t.institution === 'parlement_europeen',
         sourceUrl: t.source_url ?? null,
       }))
       .sort((a, b) => String(b.dateMax || '').localeCompare(String(a.dateMax || ''))),
@@ -2080,9 +2131,13 @@ export const CAS_RIEN_A_MONTRER = 'rien_a_montrer';
  * la frise du parcours ne porte pas. Le reste — `ORDRE_PISTES`,
  * `ETIQUETTE_PISTE`, `pistesDuParcours` — était une seconde frise, et la
  * première la rendait inutile (#672 : jamais deux définitions du même objet).
+ * `ORDRE_COLONNES`, ajouté par #328, ne la ressuscite pas : il range les
+ * colonnes, il ne fabrique aucune piste — la frise reste seule à le faire.
  */
 export const LIBELLE_PISTE = {
   [INSTITUTION_PARLEMENT]: "À l'Assemblée",
+  [INSTITUTION_SENAT]: 'Au Sénat',
+  [INSTITUTION_PE]: 'Au Parlement européen',
   [INSTITUTION_GOUVERNEMENT]: 'Au gouvernement',
   [INSTITUTION_MISSION]: 'Parlementaire en mission',
 };
@@ -2145,16 +2200,28 @@ export function grandsChiffres({
   interventions = [],
   appartenances = [],
 }) {
-  const aParlement = roles.some((r) => r.institution === INSTITUTION_PARLEMENT);
+  const sieges = roles.filter((r) => r.institution === INSTITUTION_PARLEMENT);
+  const pistesDeSiege = ORDRE_COLONNES.filter(
+    (piste) => piste !== INSTITUTION_GOUVERNEMENT && sieges.some((r) => pisteDuRole(r) === piste),
+  );
+  const aParlement = pistesDeSiege.length > 0;
   const aGouvernement = roles.some((r) => r.institution === INSTITUTION_GOUVERNEMENT);
+
+  /* LA PISTE FRANÇAISE D'UN PROFIL — celle où atterrit une matière que la
+   * source rattache au référentiel de l'Assemblée sans dire de quel siège elle
+   * vient. Un sénateur qui dépose une proposition de loi la voit enregistrée
+   * par l'Assemblée qui l'examine : la ranger « à l'Assemblée » ferait de
+   * Retailleau un député. Elle va donc à son seul siège français, le Sénat. */
+  const pisteFrancaise = pistesDeSiege.includes(INSTITUTION_PARLEMENT)
+    ? INSTITUTION_PARLEMENT
+    : (pistesDeSiege.includes(INSTITUTION_SENAT) ? INSTITUTION_SENAT : INSTITUTION_PARLEMENT);
 
   let cas = CAS_RIEN_A_MONTRER;
   if (aParlement && aGouvernement) cas = CAS_DEUX_ROLES;
   else if (aParlement) cas = CAS_PARLEMENT_SEUL;
   else if (aGouvernement) cas = CAS_GOUVERNEMENT_SEUL;
 
-  const colonnes = [];
-  if (aParlement) colonnes.push(COLONNE_PARLEMENT);
+  const colonnes = [...pistesDeSiege];
   if (aGouvernement) colonnes.push(COLONNE_GOUVERNEMENT);
 
   if (cas === CAS_RIEN_A_MONTRER) {
@@ -2172,10 +2239,17 @@ export function grandsChiffres({
   const auBanc = (date) =>
     Boolean(date) && appartenances.some((a) => a.debut <= date && date <= (a.fin || '9999-12-31'));
 
-  const cotes = {
-    [COLONNE_PARLEMENT]: interventions.filter((i) => !auBanc(i.date)),
-    [COLONNE_GOUVERNEMENT]: interventions.filter((i) => auBanc(i.date)),
+  /* Une prise de parole européenne ne se partage pas entre les bancs français :
+   * elle a lieu dans un autre hémicycle. Elle est donc lue sur sa source, avant
+   * la règle de date — sans quoi les 1 803 interventions européennes de
+   * Mélenchon se répartiraient entre « À l'Assemblée » et « Au gouvernement ». */
+  const estEuropeenne = (i) => (i?.source?.institution) === 'parlement_europeen';
+  const coteDe = (i) => {
+    if (estEuropeenne(i)) return INSTITUTION_PE;
+    return auBanc(i.date) ? COLONNE_GOUVERNEMENT : pisteFrancaise;
   };
+  const cotes = Object.fromEntries(ORDRE_COLONNES.map((p) => [p, []]));
+  for (const i of interventions) cotes[coteDe(i)].push(i);
 
   const lignes = [];
 
@@ -2186,7 +2260,9 @@ export function grandsChiffres({
   //    Les rôles sont nommés un par un plutôt que repliés sur l'institution :
   //    être RAPPORTEUR d'une proposition n'est pas en être l'auteur, et « 3
   //    propositions de loi » pour 2 propositions et 1 rapport serait faux.
-  const publies = textes?.publies ?? [];
+  const tousPublies = textes?.publies ?? [];
+  const europeens = tousPublies.filter((t) => t.europeen);
+  const publies = tousPublies.filter((t) => !t.europeen);
   const ROLES_PROPOSITION = ['auteur_proposition_de_loi', 'auteur_proposition_de_resolution'];
   const propositions = publies.filter((t) => ROLES_PROPOSITION.includes(t.roleCle));
   const projets = publies.filter((t) => t.roleCle === 'initiateur_projet_de_loi');
@@ -2215,7 +2291,8 @@ export function grandsChiffres({
     cle: 'textes',
     titre: 'Textes portés',
     cellules: {
-      [COLONNE_PARLEMENT]: celluleTextes(propositions, 'propositions de loi', detailTextes),
+      [pisteFrancaise]: celluleTextes(propositions, 'propositions de loi', detailTextes),
+      [INSTITUTION_PE]: celluleTextes(europeens, 'textes portés', null),
       [COLONNE_GOUVERNEMENT]: celluleTextes(projets, 'projets de loi', null),
     },
   });
@@ -2252,7 +2329,7 @@ export function grandsChiffres({
     cle: 'amendements',
     titre: 'Amendements',
     cellules: {
-      [COLONNE_PARLEMENT]: celluleAmendements,
+      [pisteFrancaise]: celluleAmendements,
       [COLONNE_GOUVERNEMENT]: celluleAbsente('un ministre ne dépose pas d’amendement'),
     },
   });
@@ -2260,23 +2337,35 @@ export function grandsChiffres({
   // 3. Mandats en commission. Le NOMBRE DE MANDATS et le nombre de commissions
   //    DISTINCTES ne disent pas la même chose : 67 mandats sur 14 commissions,
   //    c'est une réélection, pas une dispersion.
+  // La commission se range sur `categorie_source`, l'estampille de la collecte :
+  // `europarl` pour les commissions et intergroupes du Parlement européen, `an`
+  // pour le référentiel de l'Assemblée. C'est une donnée, pas une déduction sur
+  // l'intitulé (§2 règle 2) — les 4 commissions de Glucksmann sont européennes.
   const commissions = mandats.filter((m) => m.categorie === 'commission' && m.label);
-  const parCommission = new Map();
-  for (const m of commissions) parCommission.set(m.label, (parCommission.get(m.label) || 0) + 1);
-  const classees = [...parCommission.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'fr'));
+  const celluleCommissions = (lot) => {
+    if (!lot.length) return null;
+    const parCommission = new Map();
+    for (const m of lot) parCommission.set(m.label, (parCommission.get(m.label) || 0) + 1);
+    const classees = [...parCommission.entries()].sort(
+      (a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'fr'),
+    );
+    return cellule({
+      nombre: classees[0][1],
+      objet: 'mandats sur',
+      sur: lot.length,
+      objetSur: `à la ${classees[0][0]}`,
+      quantifieur: {
+        nombre: parCommission.size,
+        texte: pluriel(parCommission.size, 'commission distincte', 'commissions distinctes'),
+      },
+    });
+  };
   lignes.push({
     cle: 'commissions',
     titre: 'Mandats en commission',
     cellules: {
-      [COLONNE_PARLEMENT]: classees.length
-        ? cellule({
-            nombre: classees[0][1],
-            objet: 'mandats sur',
-            sur: commissions.length,
-            objetSur: `à la ${classees[0][0]}`,
-            quantifieur: { nombre: parCommission.size, texte: pluriel(parCommission.size, 'commission distincte', 'commissions distinctes') },
-          })
-        : null,
+      [pisteFrancaise]: celluleCommissions(commissions.filter((m) => m.categorie_source !== 'europarl')),
+      [INSTITUTION_PE]: celluleCommissions(commissions.filter((m) => m.categorie_source === 'europarl')),
       [COLONNE_GOUVERNEMENT]: celluleAbsente('un ministre ne siège pas en commission'),
     },
   });
@@ -2301,7 +2390,7 @@ export function grandsChiffres({
     cle: 'questions',
     titre: 'Questions au gouvernement',
     cellules: {
-      [COLONNE_PARLEMENT]: celluleQuestions(COLONNE_PARLEMENT, 'posées'),
+      [pisteFrancaise]: celluleQuestions(pisteFrancaise, 'posées'),
       [COLONNE_GOUVERNEMENT]: celluleQuestions(COLONNE_GOUVERNEMENT, 'prises de parole depuis le banc'),
     },
   });
@@ -2331,10 +2420,7 @@ export function grandsChiffres({
   lignes.push({
     cle: 'interventions',
     titre: 'Interventions',
-    cellules: {
-      [COLONNE_PARLEMENT]: celluleInterventions(COLONNE_PARLEMENT),
-      [COLONNE_GOUVERNEMENT]: celluleInterventions(COLONNE_GOUVERNEMENT),
-    },
+    cellules: Object.fromEntries(colonnes.map((c) => [c, celluleInterventions(c)])),
   });
 
   // Une ligne dont AUCUNE colonne ne porte de chiffre ne s'affiche pas : cinq
@@ -2470,10 +2556,15 @@ export function limitesDeclarees({ profil, roles, sieges }) {
    * qualification n'est pas déclarée sur 1 des mandats parlementaires » d'un
    * profil qui n'en a qu'un ne décrit aucune lacune de corpus — c'est la
    * situation ordinaire, et l'écrire ajoute une ligne qui ne dit rien. */
-  const sansPosition = roles.filter(
-    (r) => r.institution === INSTITUTION_PARLEMENT && !r.position,
-  );
-  const parlementaires = roles.filter((r) => r.institution === INSTITUTION_PARLEMENT);
+  /* La phrase nomme l'ASSEMBLÉE : elle ne peut donc compter que des mandats de
+   * députée ou de député. Un mandat européen ou sénatorial n'a pas de
+   * qualification de groupe non déclarée « par l'Assemblée » — l'Assemblée n'en
+   * dit rien, et n'a pas à en dire. Mesuré le 10/09/2026 : sur Mélenchon, la
+   * limite comptait 5 mandats parlementaires — un à l'Assemblée, un au Sénat,
+   * deux au Parlement européen et un non estampillé (§2 règle 2). */
+  const aLAssemblee = roles.filter((r) => pisteDuRole(r) === INSTITUTION_PARLEMENT);
+  const sansPosition = aLAssemblee.filter((r) => !r.position);
+  const parlementaires = aLAssemblee;
   if (sansPosition.length > 1 || (sansPosition.length === 1 && parlementaires.length > 1)) {
     limites.push({
       cle: 'position-non-declaree',

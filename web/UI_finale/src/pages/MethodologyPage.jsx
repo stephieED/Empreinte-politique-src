@@ -36,6 +36,13 @@ const SECTIONS = [
           Le rôle n'est précisé que lorsqu'il n'est pas celui de membre. Écrire « membre » partout
           ferait lire une distinction là où la source n'en pose aucune.
         </p>
+        <p>
+          À côté d'un mandat de député ou de députée, la fiche indique si le groupe était{' '}
+          <strong>majoritaire, minoritaire ou d'opposition</strong>. Ces trois qualifications sont
+          publiées par l'Assemblée nationale elle-même, législature par législature : elles ne sont
+          ni calculées ni interprétées ici. Quand l'Assemblée n'en déclare aucune, la fiche le dit
+          plutôt que de choisir.
+        </p>
       </>
     ),
   },

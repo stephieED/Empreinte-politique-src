@@ -280,11 +280,20 @@ def test_la_teinte_d_un_banc_est_declaree_une_seule_fois(feuille):
     seule fois, sur `.cp-main`, et tous leurs lecteurs les lisent (#328). Le
     test vérifie donc l'unicité, plus la coïncidence."""
     fiche = _corps(feuille, ".cp-main {", "\n}")
-    assert "--parl: #3f5166" in fiche and "--gouv: #8a6b4c" in fiche, (
-        "les deux teintes sont déclarées sur la fiche"
-    )
-    assert feuille.count("#3f5166") == 1 and feuille.count("#8a6b4c") == 1, (
-        "et une seule fois : une seconde occurrence est une copie qui divergera"
+    # Quatre institutions, trois teintes et une encre d'absence — le Sénat n'a
+    # pas de teinte propre, et la sarcelle #169E9E lui est réservée pour le jour
+    # où sa collecte sera rebranchée (docs/decisions/teintes-des-institutions-328.md).
+    teintes = {"--parl": "#803060", "--gouv": "#85510d", "--pe": "#003399", "--neutre": "#9a958d"}
+    for jeton, valeur in teintes.items():
+        assert f"{jeton}: {valeur}" in fiche, f"`{jeton}` est déclaré sur la fiche"
+        assert feuille.count(valeur) == 1, (
+            f"`{valeur}` une seule fois : une seconde occurrence est une copie qui divergera"
+        )
+    # Le Sénat ne porte pas une quatrième teinte : il POINTE sur l'encre des
+    # absences. Une valeur recopiée là ferait diverger les deux le jour où l'une
+    # bouge, et laisserait croire qu'il a une couleur à lui.
+    assert "--senat: var(--neutre)" in fiche, (
+        "le Sénat lit l'encre des absences, il n'a pas de teinte propre"
     )
     for regle, jeton in [
         (".cp-fs--parlement {", "var(--parl)"),
@@ -344,12 +353,21 @@ def test_sous_le_seuil_le_tableau_defile_au_lieu_de_s_empiler(feuille):
     """Empilé, chaque titre de rang se lisait DEUX FOIS de suite — 10 titres pour
     5 rangs — et les deux en-têtes de rôle restaient en haut, séparés de leurs
     cellules par tout le tableau : plus aucune cellule ne disait à quel rôle elle
-    appartenait. En défilement, l'en-tête ne quitte jamais sa colonne."""
+    appartenait. En défilement, l'en-tête ne quitte jamais sa colonne.
+
+    Le gabarit a changé avec #328 : le rang est écrit UNE fois, dans une colonne
+    de libellés en tête de ligne, et les institutions peuvent être quatre. Chaque
+    largeur reprend donc `var(--gc-libelle)` avant ses colonnes, et la colonne
+    des libellés reste collée à gauche pendant le défilement — un chiffre isolé
+    ne dit plus de quoi il est le compte."""
     bloc = _media_etroit(feuille)
-    assert "grid-template-columns: repeat(2, minmax(230px, 1fr))" in bloc, (
-        "les deux colonnes restent côte à côte, avec une largeur plancher"
-    )
+    for n, mot in ((2, "deux"), (3, "trois"), (4, "quatre")):
+        attendu = f"grid-template-columns: var(--gc-libelle) repeat({n}, minmax(210px, 1fr))"
+        assert attendu in bloc, (
+            f"les {mot} colonnes restent côte à côte, avec une largeur plancher"
+        )
     assert "overflow-x: auto" in bloc
+    assert "position: sticky" in bloc, "la colonne des libellés ne quitte pas l'écran"
     assert "grid-template-columns: 1fr;" not in bloc, (
         "l'empilement est précisément ce que ce seuil ne fait PAS"
     )
@@ -358,12 +376,38 @@ def test_sous_le_seuil_le_tableau_defile_au_lieu_de_s_empiler(feuille):
 def test_l_appariement_survit_a_l_ecran_etroit(regles, composant):
     """Tout le bloc repose sur « des objets de même nature se font face ». Des
     onglets par rôle ont été écartés pour cela : ils ne montrent jamais les deux
-    ensemble. Une seule grille, donc, quel que soit l'écran."""
+    ensemble. Une seule grille, donc, quel que soit l'écran.
+
+    #328 ouvre le repli d'une colonne par le lecteur, ce que ce test interdisait
+    en bannissant `useState`. Ce n'est pas le retour des onglets, et trois
+    propriétés le garantissent — elles sont ce que ce test vérifie désormais :
+
+    - toutes les colonnes sont OUVERTES au départ, sauf le Sénat nommément, qui
+      ne porterait que des cellules vides (#528) ;
+    - on ne peut jamais tout replier : la dernière colonne ouverte ne se replie
+      pas, sans quoi il ne resterait que le gabarit ;
+    - une colonne repliée reste NOMMÉE par sa puce, allumée ou éteinte : replier
+      n'efface pas, et le lecteur défait son geste.
+
+    Un onglet ne remplit aucune des trois : il choisit à la place du lecteur, et
+    il ne montre jamais les deux ensemble.
+    → docs/decisions/colonnes-repliables-en-bref-328.md
+    """
     bloc = _corps(composant, "function GrandsChiffres(", "export default function")
-    for interdit in ("onglet", "Tab", "role === ", "useState"):
+    for interdit in ("onglet", "Tab", "role === "):
         assert interdit not in bloc, (
             f"`{interdit}` : le choix d'un rôle à l'écran romprait l'appariement"
         )
+    assert "function repliParDefaut(colonnes)" in composant, (
+        "l'état d'ouverture est nommé et justifié, pas improvisé dans le rendu"
+    )
+    assert "INSTITUTION_SENAT" in _corps(composant, "function repliParDefaut(", "\n}"), (
+        "le Sénat est la SEULE colonne repliée d'entrée, et elle est nommée"
+    )
+    assert "ouvertes.length === 1" in bloc, "la dernière colonne ouverte ne se replie pas"
+    assert 'aria-pressed={!replies.has(c)}' in bloc, (
+        "une colonne repliée reste nommée par sa puce, et le geste se défait"
+    )
 
 
 def test_l_ombre_de_defilement_ne_ment_pas(feuille):
@@ -455,21 +499,27 @@ def test_le_detail_date_du_parcours_se_replie(composant):
     )
 
 
-def test_la_note_de_legende_ne_garde_que_sa_phrase_de_source(composant):
-    """766 caractères, puis 188. Ce qui part expliquait comment LIRE la frise —
-    désaturation, absence de progression, niveaux de gris — et c'est le texte
-    explicatif qu'on coupe partout (#326, règle 2). Ce qui reste est la seule
-    phrase de la fiche disant que les trois postures viennent de l'Assemblée et
-    pas de nous (§2 règle 2)."""
-    bloc = _corps(composant, 'className="cp-legende-note"', "</p>")
-    # « Majorité, minorité et opposition sont les trois valeurs que l'Assemblée
-    # nationale publie elle-même… » (188 caractères) est devenu « Majorité,
-    # minorité et opposition selon l'AN. » Ce que le test garde est le FAIT —
-    # ces trois valeurs viennent de l'Assemblée, pas de nous (§2 règle 2) —, pas
-    # la formulation qui le portait.
-    assert "selon l’AN" in bloc, "la phrase de source survit"
-    for parti in ("désaturées", "niveaux de gris", "aucune progression", "rangement"):
-        assert parti not in bloc, f"« {parti} » expliquait comment lire, pas d'où ça vient"
+def test_la_legende_ne_porte_plus_de_note(composant):
+    """La note disait « Majorité, minorité et opposition selon l'AN » — la seule
+    phrase de la fiche qui rattachait les trois postures à l'Assemblée plutôt
+    qu'à nous (§2 règle 2). Elle est partie avec ce qu'elle nommait : la frise ne
+    porte plus la qualification du groupe, seulement l'institution.
+
+    Ce que ce test garde, c'est le FAIT qu'elle portait, pas sa formulation. La
+    qualification reste écrite en toutes lettres dans la liste des rôles, et son
+    attribution à l'Assemblée est dite deux fois ailleurs : par la limite de
+    couverture (« n'est pas déclarée par l'Assemblée sur N de ses M mandats ») et
+    par la méthodologie. Si ces deux-là disparaissaient, la fiche publierait une
+    qualification sans dire d'où elle vient."""
+    assert 'className="cp-legende-note"' not in composant, (
+        "la note est retirée avec les motifs de groupe qu'elle expliquait"
+    )
+    assert "selon l’AN" not in composant
+
+    regles = MODULE_REGLES.read_text(encoding="utf-8")
+    assert "n'est pas déclarée " in regles and "l'Assemblée" in regles, (
+        "l'attribution des trois postures à l'Assemblée survit dans la limite de couverture"
+    )
 
 
 # ── Les teintes des stades : une déclaration, deux lectures ──────────────────
