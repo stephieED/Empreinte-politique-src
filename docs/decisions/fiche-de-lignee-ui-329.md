@@ -87,6 +87,7 @@ traité dans une version. Les arbitrages qui engagent :
 | « Avec qui ils votent » | comptes ET listes sur la seule dernière lecture | SOC XVIIe face au RN : 627 scrutins → 50 textes |
 | Barre de partage | trois parts, cliquables, qui filtrent la liste | « d'une seule voix » par date ; les parts partagées par voix minoritaires, jamais affichées |
 | Groupes voisins | liés à leur lignée | un lien de sigle survit au renouvellement |
+| Liste datée de « En bref » | du plus récent au plus ancien, chaque ligne gardant le numéro de son repère | le groupe d'aujourd'hui se lit d'abord ; la frise, elle, court dans l'ordre du temps |
 
 **Deux propositions de la réponse automatique de l'artifact ont été
 corrigées** avant d'être appliquées : une couleur par groupe (un marquage

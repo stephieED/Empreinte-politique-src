@@ -322,8 +322,11 @@ function Frise({ lignee, aujourdhui }) {
           </span>
         )}
       </div>
-      <ol className="lp-maillons">
-        {maillons.map((m, i) => (
+      {/* Du plus récent au plus ancien, de haut en bas (relecture du 11/09/2026) :
+          le groupe d'aujourd'hui se lit d'abord. Chaque ligne garde le numéro de
+          son repère sur la frise, qui court, elle, dans l'ordre du temps. */}
+      <ol className="lp-maillons" reversed>
+        {maillons.map((m, i) => [m, i]).reverse().map(([m, i]) => (
           <li className="lp-maillon" key={m.id}>
             <span className="lp-maillon-repere">{i + 1}</span>
             <span className="lp-maillon-dates">{periodeDuMaillon(m)}</span>
