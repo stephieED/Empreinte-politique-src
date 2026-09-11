@@ -497,10 +497,11 @@ def test_la_17e_est_servie_par_amo30(actif):
         assert all(m["legislature"] == "17" for m in membres)
         mesures[entree["groupe_sigle"]] = rapport["effectif_mesure"]
     # #815 — SEPT groupes depuis que `GDR-17` et `ECOS-17` ferment leurs
-    # lignées. Les cinq d'origine gardent leur effectif au membre près : c'est
-    # ce qui distingue un élargissement d'une régression.
+    # lignées, DIX depuis que MoDem, Horizons et LIOT ont la leur (11/09/2026).
+    # Les sept d'avant gardent leur effectif au membre près : c'est ce qui
+    # distingue un élargissement d'une régression.
     assert mesures == {"EPR": 123, "SOC": 70, "RN": 131, "LFI": 73, "DR": 64,
-                       "GDR": 18, "ECOS": 38}
+                       "GDR": 18, "ECOS": 38, "DEM": 42, "HOR": 44, "LIOT": 26}
 
 
 def test_le_perimetre_de_la_17e_est_ecrit_groupe_par_groupe():
@@ -511,8 +512,9 @@ def test_le_perimetre_de_la_17e_est_ecrit_groupe_par_groupe():
     que le lot 1b doit assumer, et elle est committée plutôt que redécouverte.
     """
     entrees = _entrees_table("17")
-    # #815 : sept depuis que `GDR-17` et `ECOS-17` ferment leurs lignées.
-    assert len(entrees) == 7
+    # #815 : sept depuis que `GDR-17` et `ECOS-17` ferment leurs lignées, dix
+    # depuis `DEM-17`, `HOR-17` et `LIOT-17`.
+    assert len(entrees) == 10
     total, deja = 0, 0
     for entree in entrees:
         assert entree["effectif_publie"] is None, "aucune fiche 17e n'est publiée"
@@ -524,7 +526,9 @@ def test_le_perimetre_de_la_17e_est_ecrit_groupe_par_groupe():
     # +56 membres (GDR 18, ECOS 38), dont 39 ont déjà un profil : le lot #815
     # en collecte 17 de plus sur la 17e. Le couple est écrit plutôt que
     # recalculé — c'est ce qui fait qu'élargir se décide au lieu de se subir.
-    assert (total, deja) == (517, 344)
+    # Puis +112 (DEM 42, HOR 44, LIOT 26), dont 25 ont déjà une entrée dans la
+    # table : 87 de plus sur la 17e (11/09/2026).
+    assert (total, deja) == (629, 369)
 
 
 # --------------------------------------------------------------------------

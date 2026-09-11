@@ -87,11 +87,15 @@ def test_aucun_groupe_de_la_17e_ne_porte_de_position(index):
 
 
 def test_deux_groupes_minoritaires_sont_declares_sur_la_16e(index):
-    """`DEM` et `HOR`, et aucun des deux n'a de fiche publiée.
+    """`DEM` et `HOR`, et les deux ont désormais leur fiche.
 
-    Troisième obstacle de l'issue : la troisième posture existe dans le
-    référentiel et pas dans le corpus. Elle se publie comme catégorie vide —
-    la replier sur « majorité » ou « opposition » serait un acte éditorial.
+    Troisième obstacle de l'issue : la troisième posture existait dans le
+    référentiel et pas dans le corpus, et se publiait comme catégorie vide — la
+    replier sur « majorité » ou « opposition » aurait été un acte éditorial.
+    Depuis que #815 déclare les lignées MoDem et Horizons (11/09/2026), elle a
+    ses deux groupes sur la XVIe. Ce test disait « aucun » ; il dit maintenant
+    « les deux », et c'est la même vérification : ce que le référentiel qualifie
+    minoritaire, la table le recopie sans le replier.
     """
     minoritaires = sorted(
         o["sigle"]
@@ -100,8 +104,14 @@ def test_deux_groupes_minoritaires_sont_declares_sur_la_16e(index):
     )
     assert minoritaires == ["DEM", "HOR"]
 
-    publies = {e["groupe_sigle"] for e in groupes_config.charger_correspondance_sigles(CONFIG)}
-    assert not (set(minoritaires) & publies)
+    publies = {
+        e["groupe_sigle"]: e["position_politique_an"]["position"]
+        for e in groupes_config.charger_correspondance_sigles(CONFIG)
+        if e["legislature"] == "16"
+    }
+    assert {s: publies.get(s) for s in minoritaires} == {
+        "DEM": "minoritaire", "HOR": "minoritaire",
+    }
 
 
 def test_un_index_v1_du_cache_ci_nest_jamais_resservi(tmp_path):
