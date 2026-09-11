@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 283 décisions
+gouverne sans avoir à fouiller les 284 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -50,9 +50,11 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 | `src/candidate_profile_ue.py` | 1 |
 | `src/europarl_documents.py` | 1 |
 | `src/fetch_candidats_declares.py` | 1 |
+| `src/generate_lignee_profiles.py` | 1 |
 | `src/identifiants_wikidata.py` | 1 |
 | `src/json_io.py` | 1 |
 | `src/licences.py` | 1 |
+| `src/lignee_profile.py` | 1 |
 | `src/scrutins_dossiers_an.py` | 1 |
 | `src/scrutins_legislature.py` | 1 |
 | `src/textes_vises_figes.py` | 1 |
@@ -533,7 +535,7 @@ Le mentionnent sans le gouverner : [`amendements-legislatures-figees`](decisions
 | [Le `label` d'un mandat `MINISTERE` ne dit pas si c'est un maroquin (#474) (2026-08-20)](decisions/parlementaire-en-mission-nest-pas-ministre.md) | `COLLECTE_INCOMPLETE` |
 | [Le plafond de lecture du roster, et le commit qui ne paie plus pour une source lente (#518, second incident) (2026-08-24)](decisions/plafond-roster-et-commit-518.md) | `EXIT_COLLECTE_INCOMPLETE` |
 
-Le mentionnent sans le gouverner : [`audit-599-projection-blocs-lus-628`](decisions/audit-599-projection-blocs-lus-628.md), [`gouvernement-ci-integration`](decisions/gouvernement-ci-integration.md), [`gouvernement-profile-rattachement`](decisions/gouvernement-profile-rattachement.md), [`lectures-pipeline-par-projection-635`](decisions/lectures-pipeline-par-projection-635.md).
+Le mentionnent sans le gouverner : [`audit-599-projection-blocs-lus-628`](decisions/audit-599-projection-blocs-lus-628.md), [`generation-fiches-lignees-836`](decisions/generation-fiches-lignees-836.md), [`gouvernement-ci-integration`](decisions/gouvernement-ci-integration.md), [`gouvernement-profile-rattachement`](decisions/gouvernement-profile-rattachement.md), [`lectures-pipeline-par-projection-635`](decisions/lectures-pipeline-par-projection-635.md).
 
 ## `src/generate_group_profiles.py`
 
@@ -544,7 +546,15 @@ Le mentionnent sans le gouverner : [`audit-599-projection-blocs-lus-628`](decisi
 | [Cloisonnement de la branche roster, et le code 2 « suspension totale » (#524) (2026-08-26)](decisions/cloisonnement-branche-roster-524.md) | `EXIT_ROSTER_INDISPONIBLE` |
 | [Le plafond de lecture du roster, et le commit qui ne paie plus pour une source lente (#518, second incident) (2026-08-24)](decisions/plafond-roster-et-commit-518.md) | `ResultatGeneration` |
 
-Le mentionnent sans le gouverner : [`amendements-agreges-dans-la-periode-821`](decisions/amendements-agreges-dans-la-periode-821.md), [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`extraction-groupe-suspendue-516`](decisions/extraction-groupe-suspendue-516.md), [`fiches-groupe-17e-legislature-700`](decisions/fiches-groupe-17e-legislature-700.md), [`gouvernement-profile-rattachement`](decisions/gouvernement-profile-rattachement.md), [`identifiants-groupes-et-successions-multiples-815`](decisions/identifiants-groupes-et-successions-multiples-815.md), [`integrite-referentielle-pivot`](decisions/integrite-referentielle-pivot.md), [`position-politique-groupes-686`](decisions/position-politique-groupes-686.md), [`roster-an-derive-amo30-526`](decisions/roster-an-derive-amo30-526.md), [`senat-periode-debut`](decisions/senat-periode-debut.md).
+Le mentionnent sans le gouverner : [`amendements-agreges-dans-la-periode-821`](decisions/amendements-agreges-dans-la-periode-821.md), [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`extraction-groupe-suspendue-516`](decisions/extraction-groupe-suspendue-516.md), [`fiches-groupe-17e-legislature-700`](decisions/fiches-groupe-17e-legislature-700.md), [`generation-fiches-lignees-836`](decisions/generation-fiches-lignees-836.md), [`gouvernement-profile-rattachement`](decisions/gouvernement-profile-rattachement.md), [`identifiants-groupes-et-successions-multiples-815`](decisions/identifiants-groupes-et-successions-multiples-815.md), [`integrite-referentielle-pivot`](decisions/integrite-referentielle-pivot.md), [`position-politique-groupes-686`](decisions/position-politique-groupes-686.md), [`roster-an-derive-amo30-526`](decisions/roster-an-derive-amo30-526.md), [`senat-periode-debut`](decisions/senat-periode-debut.md).
+
+## `src/generate_lignee_profiles.py`
+
+1 décision(s) le gouvernent ; le module en cite 0.
+
+| Décision | Nomme |
+| --- | --- |
+| [Les dix lignées sont écrites, et une mesure corrige le motif du recalcul (#836)](decisions/generation-fiches-lignees-836.md) | `verifier_partition` |
 
 ## `src/generate_roster_candidats.py`
 
@@ -625,7 +635,7 @@ Le mentionnent sans le gouverner : [`audit-pipeline-gouvernement`](decisions/aud
 
 ## `src/group_profile.py`
 
-28 décision(s) le gouvernent ; le module en cite 4.
+29 décision(s) le gouvernent ; le module en cite 4.
 
 | Décision | Nomme |
 | --- | --- |
@@ -639,6 +649,7 @@ Le mentionnent sans le gouverner : [`audit-pipeline-gouvernement`](decisions/aud
 | [Le passé sénatorial est un fait de carrière, pas une donnée d'activité : bicaméral pour les candidats seulement (#488) (2026-08-20)](decisions/deux-chambres-interrogees.md) | `_is_eligible_at`, `_member_eligibility_intervals` |
 | [L'effectif d'un groupe dans le temps : `min_historique` et `max_historique` portent leur date (#702) — 01/09/2026](decisions/effectif-du-groupe-dans-le-temps-702.md) | `_appartenance_couvre`, `build_groupe_profile` |
 | [Extension de la stabilité des horodatages aux profils groupe/gouvernement/parti (#343, complet) (2026-08-17)](decisions/freshness-timestamps-groupes-gouvernements-partis.md) | `generate_groupe_profile_from_roster` |
+| [Les dix lignées sont écrites, et une mesure corrige le motif du recalcul (#836)](decisions/generation-fiches-lignees-836.md) | `_aggregate_amendements` |
 | [Juxtaposer deux positions sourcées n'est pas mesurer un écart (#328) — 01/09/2026](decisions/juxtaposition-position-groupe-328.md) | `compute_ecarts_cohesion_internes` |
 | [Trois lectures du corpus passent à la projection, et chacune a son plafond dans un test (#635, 2026-08-30)](decisions/lectures-pipeline-par-projection-635.md) | `BLOCS_LUS_MEMBRE`, `_aggregate_amendements`, `_aggregate_mandats`, `_is_pivot_v1`, `aggregate_tags_thematiques`, `build_groupe_profile`, `compute_ecarts_cohesion_internes`, `contribution_amendements`, `generate_groupe_profile_from_roster`, `load_profil_from_file` |
 | [Un mandat électif perdu ne manque pas seulement sur la fiche : il sort le membre du dénominateur de son groupe (#465) (2026-08-20)](decisions/mandat-electif-perdu-fausse-le-denominateur.md) | `_aggregate_amendements`, `_member_eligibility_intervals` |
@@ -717,6 +728,14 @@ Le mentionnent sans le gouverner : [`profils-json-compact`](decisions/profils-js
 | [Le versant AN passe en Licence Ouverte, et `meta.licence_donnees` devient un champ dérivé (#530, lot 6 de l'épic « une seule source AN ») (2026-08-27)](decisions/licence-lot-6-530.md) | `appliquer_licence_donnees` |
 
 Le mentionnent sans le gouverner : [`contact-et-comptes-publics-328`](decisions/contact-et-comptes-publics-328.md), [`licences`](decisions/licences.md), [`pages-statiques-methodologie-mentions-legales`](decisions/pages-statiques-methodologie-mentions-legales.md), [`regles-par-domaine-737`](decisions/regles-par-domaine-737.md).
+
+## `src/lignee_profile.py`
+
+1 décision(s) le gouvernent ; le module en cite 0.
+
+| Décision | Nomme |
+| --- | --- |
+| [Les dix lignées sont écrites, et une mesure corrige le motif du recalcul (#836)](decisions/generation-fiches-lignees-836.md) | `recalculer_agregats` |
 
 ## `src/mep_profile.py`
 
@@ -1065,7 +1084,7 @@ Le mentionnent sans le gouverner : [`dossier-des-amendements-639`](decisions/dos
 
 ## `src/tranches_amendements_figees.py`
 
-6 décision(s) le gouvernent ; le module en cite 1.
+7 décision(s) le gouvernent ; le module en cite 1.
 
 | Décision | Nomme |
 | --- | --- |
@@ -1073,6 +1092,7 @@ Le mentionnent sans le gouverner : [`dossier-des-amendements-639`](decisions/dos
 | [Un agrégat de fiche ne compte que la période de la fiche (#821)](decisions/amendements-agreges-dans-la-periode-821.md) | `signatures` |
 | [Un amendement cosigné n'est pas N amendements : deux grandeurs, deux noms (#643) (2026-08-31)](decisions/amendements-distincts-et-signatures-643.md) | `signatures` |
 | [« Collecté = publié » compte une tranche dérivée dans l'archive (#691, lot 3a)](decisions/audit-compte-les-tranches-derivees-691.md) | `reconstruire_tranche`, `signatures` |
+| [Les dix lignées sont écrites, et une mesure corrige le motif du recalcul (#836)](decisions/generation-fiches-lignees-836.md) | `signatures` |
 | [L'écriture marque les tranches closes, et le `nombre` vient de l'archive (#691, lot 3b)](decisions/marquage-tranches-derivees-691.md) | `reconstruire_tranche`, `signatures` |
 | [Reconstruire une tranche d'amendements depuis l'archive figée (#691, lot 1)](decisions/reconstruction-tranches-depuis-archive-691.md) | `_normaliser_nil`, `mapping_pivot`, `reconstruire_tranche` |
 

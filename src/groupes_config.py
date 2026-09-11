@@ -639,3 +639,136 @@ def succession_publiee(
             "verifie_le": entree["verifie_le"],
         })
     return blocs
+
+
+# ── Les lignées de groupe, déclarées (#836) ──────────────────────────────────
+#: Clé portant, dans `raw_data/groupes_reels.json`, la liste des LIGNÉES : la
+#: suite des fiches qu'un même groupe a portées au fil des législatures.
+#:
+#: **L'identifiant est déclaré, jamais dérivé** (#836). Les deux dérivations
+#: possibles bougent : par la racine, le jour où un maillon antérieur est
+#: ajouté — et c'est prévu, MoDem, Horizons, LIOT et UDR restent à déclarer
+#: (#815) ; par le maillon le plus récent, à chaque législature. Un identifiant
+#: qu'une collecte déplace casse les liens du site.
+#:
+#: Ce que la déclaration ne fait PAS : redire la chaîne. L'ordre et
+#: l'appartenance se lisent sur `succede_a`, écrit une seule fois, et
+#: `_valider_partition_lignees` refuse que les deux se contredisent — c'est
+#: #815 qui a payé deux écritures du même fait dans un fichier relu à la main.
+CLE_LIGNEES = "lignees"
+
+#: Clé portant, dans une entrée de `groupes[]`, la lignée à laquelle la fiche
+#: appartient. **Exigée sur chaque entrée** : une fiche sans lignée ne serait
+#: publiée par aucun bouton de l'interface, qui n'en porte qu'un par lignée
+#: (décision de la propriétaire, 10/09/2026).
+CLE_LIGNEE_ID = "lignee_id"
+
+_CLES_LIGNEE_EXIGEES: tuple[str, ...] = (
+    "lignee_id", "lignee_nom", "chambre", "fichier", "verifie_le",
+)
+
+
+class LigneeConfigInvalide(ValueError):
+    """La déclaration des lignées est absente ou viole un invariant."""
+
+
+def charger_lignees(chemin: Optional[Path] = None) -> list[dict[str, Any]]:
+    """Charge et valide `lignees[]`, et l'appariement de chaque groupe à la sienne.
+
+    Cinq refus, tous à seuil 0 :
+
+    - une entrée à qui il manque l'une des cinq clés exigées ;
+    - deux lignées de même `lignee_id` — l'identifiant est la clé du site ;
+    - un groupe sans `lignee_id`, ou dont la lignée n'est pas déclarée ;
+    - un groupe dont la `chambre` diffère de celle de sa lignée ;
+    - une lignée déclarée qu'aucun groupe ne nomme — une fiche vide serait
+      produite, et une lignée sans maillon ne décrit rien (`schema_lignee`).
+
+    Raises:
+        LigneeConfigInvalide: le premier invariant rompu, nommé.
+    """
+    chemin = Path(chemin) if chemin is not None else CHEMIN_CONFIG_GROUPES
+    try:
+        document = json.loads(chemin.read_text(encoding="utf-8"))
+    except OSError as exc:
+        raise LigneeConfigInvalide(
+            f"Configuration des groupes illisible ({chemin}) : {exc}"
+        ) from exc
+    except ValueError as exc:
+        raise LigneeConfigInvalide(f"{chemin} : JSON invalide — {exc}") from exc
+
+    entrees = document.get(CLE_LIGNEES)
+    if not isinstance(entrees, list) or not entrees:
+        raise LigneeConfigInvalide(
+            f"{chemin} : '{CLE_LIGNEES}' absent ou vide. L'interface ne publie "
+            "qu'une fiche par lignée, et cette liste est la seule à dire "
+            "lesquelles (#836)."
+        )
+
+    par_id: dict[str, dict[str, Any]] = {}
+    for entree in entrees:
+        if not isinstance(entree, dict):
+            raise LigneeConfigInvalide(f"{chemin} : entrée de '{CLE_LIGNEES}' non-objet.")
+        manquantes = [cle for cle in _CLES_LIGNEE_EXIGEES if not entree.get(cle)]
+        if manquantes:
+            raise LigneeConfigInvalide(
+                f"{chemin} : lignée {entree.get('lignee_id') or '(sans identifiant)'} — "
+                f"clé(s) exigée(s) absente(s) : {manquantes}."
+            )
+        lignee_id = str(entree["lignee_id"])
+        if lignee_id in par_id:
+            raise LigneeConfigInvalide(
+                f"{chemin} : '{lignee_id}' est déclaré deux fois. L'identifiant "
+                "de lignée est la clé d'une page du site."
+            )
+        par_id[lignee_id] = entree
+
+    nommees: set[str] = set()
+    for groupe in document.get("groupes") or []:
+        libelle = groupe.get("groupe_id") or "(sans groupe_id)"
+        lignee_id = groupe.get(CLE_LIGNEE_ID)
+        if not lignee_id:
+            raise LigneeConfigInvalide(
+                f"{chemin} : {libelle} ne déclare pas de '{CLE_LIGNEE_ID}'. "
+                "Une fiche hors lignée n'est publiée par aucun bouton (#836)."
+            )
+        lignee = par_id.get(str(lignee_id))
+        if lignee is None:
+            raise LigneeConfigInvalide(
+                f"{chemin} : {libelle} nomme la lignée {lignee_id!r}, qui n'est "
+                f"déclarée dans aucune entrée de '{CLE_LIGNEES}'."
+            )
+        if groupe.get("chambre") and groupe["chambre"] != lignee["chambre"]:
+            raise LigneeConfigInvalide(
+                f"{chemin} : {libelle} est en chambre {groupe['chambre']!r} et sa "
+                f"lignée {lignee_id!r} en chambre {lignee['chambre']!r}."
+            )
+        nommees.add(str(lignee_id))
+
+    orphelines = sorted(set(par_id) - nommees)
+    if orphelines:
+        raise LigneeConfigInvalide(
+            f"{chemin} : {orphelines} ne sont nommées par aucun groupe. Une "
+            "lignée sans maillon ne décrit rien (schema_lignee)."
+        )
+    return list(entrees)
+
+
+def lignee_publiee(
+    groupe_id: str, chemin: Optional[Path] = None
+) -> dict[str, Any]:
+    """La lignée déclarée d'une fiche de groupe. Lève plutôt que de rendre `None`.
+
+    Raises:
+        LigneeConfigInvalide: le groupe n'est pas dans la configuration, ou sa
+            lignée n'y est pas déclarée.
+    """
+    chemin = Path(chemin) if chemin is not None else CHEMIN_CONFIG_GROUPES
+    lignees = {str(l["lignee_id"]): l for l in charger_lignees(chemin)}
+    document = json.loads(chemin.read_text(encoding="utf-8"))
+    for groupe in document.get("groupes") or []:
+        if groupe.get("groupe_id") == groupe_id:
+            return lignees[str(groupe[CLE_LIGNEE_ID])]
+    raise LigneeConfigInvalide(
+        f"{chemin} : aucune entrée 'groupes[]' ne porte le `groupe_id` {groupe_id!r}."
+    )

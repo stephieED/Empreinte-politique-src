@@ -132,6 +132,12 @@ SITES_PYTHON: dict[tuple[str, str], str] = {
     # raison qu'une fiche de groupe : c'est la chambre de l'organe, jamais le
     # scalaire d'un profil que #494 retire.
     ("schema_lignee.py", "make_empty_profil_lignee"): GROUPE,
+    # La chambre y est aussi ce qui apparie un groupe à sa lignée : une
+    # fiche `Senat:LR` et une lignée `AN:LIGNEE:LR` ne se rencontrent
+    # jamais, et c'est le contrôle qui le dit plutôt qu'un préfixe qu'on
+    # espère bien écrit.
+    ("groupes_config.py", "charger_lignees"): GROUPE,
+    ("generate_lignee_profiles.py", "generer_une_lignee"): GROUPE,
     ("group_profile.py", "_mandats_electifs"): MANDAT,
     ("group_profile.py", "generate_groupe_profile_from_roster"): GROUPE,
     ("group_profile.py", "main"): GROUPE,

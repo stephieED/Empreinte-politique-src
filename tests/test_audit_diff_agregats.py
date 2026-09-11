@@ -470,13 +470,18 @@ def test_le_rapport_global_enonce_son_hors_perimetre():
     assert "intégrité référentielle" in md
 
 
-def test_les_cinq_couches_et_les_deux_index_sont_couverts():
+def test_les_six_couches_et_les_deux_index_sont_couverts():
     """Garde-fou du périmètre lui-même : c'est son rétrécissement silencieux
-    qui a coûté #470."""
+    qui a coûté #470.
+
+    `lignees` y est entrée avec #836. Un répertoire de `pivot_data/` publié
+    mais absent de ce périmètre est un répertoire dont la disparition ne
+    bloque rien — et l'interface ne publie QUE ces fiches-là.
+    """
     from audit_diff_profils import COLLECTIONS_AGREGATS
 
     noms = {COLLECTION_PROFILS.nom} | {c.nom for c in COLLECTIONS_AGREGATS}
-    assert noms == {"profiles", "groupes", "partis", "gouvernements",
+    assert noms == {"profiles", "groupes", "lignees", "partis", "gouvernements",
                     "index scrutins", "index amendements"}
     assert "cohesion_votes" in COLLECTION_GROUPES.listes_stables
     assert "parti" in COLLECTION_PROFILS.scalaires

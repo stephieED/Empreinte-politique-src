@@ -178,6 +178,7 @@ def _lancer_gate(monkeypatch, tmp_path, argv_extra):
 
     monkeypatch.setattr(gate, "_report_incomplete_reads", lambda *a, **k: ("", "", 0))
     monkeypatch.setattr(gate, "_report_groupes", lambda *a, **k: ([], [], "", ""))
+    monkeypatch.setattr(gate, "_report_lignees", lambda *a, **k: ([], [], "", ""))
     monkeypatch.setattr(gate, "_report_gouvernements", lambda *a, **k: ([], [], "", ""))
     monkeypatch.setattr(gate, "_report_correspondance_acteurs", lambda *a, **k: ([], "", ""))
     monkeypatch.setattr(gate, "_report_amendements_figes_format", lambda *a, **k: ([], "", ""))

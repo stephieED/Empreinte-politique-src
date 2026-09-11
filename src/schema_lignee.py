@@ -127,8 +127,15 @@ def validate_profil_lignee(profil: Any) -> list[str]:
     aval ne rattraperait.
 
     - une lignée sans maillon ne décrit rien ;
-    - l'union des membres ne peut pas dépasser la somme des maillons, ni être
-      plus petite que le plus grand d'entre eux.
+    - `effectif.cumul_historique` est le cardinal de l'union des membres, jamais
+      une somme : les deux sont publiés côte à côte, et le compteur est ce que
+      l'interface affiche quand la liste, elle, ne tient pas à l'écran.
+
+    La rédaction d'origine annonçait un encadrement de l'union par les
+    maillons — « ni plus que leur somme, ni moins que le plus grand ». Il n'a
+    jamais été écrit, et il ne pouvait pas l'être : `maillons[]` ne porte aucun
+    effectif. Un contrat qui décrit un contrôle absent est plus coûteux qu'un
+    contrat court (#726).
     """
     errors: list[str] = []
     if not isinstance(profil, dict):
@@ -158,4 +165,14 @@ def validate_profil_lignee(profil: Any) -> list[str]:
             "'maillons' est vide : une lignée sans maillon ne décrit rien. "
             "Une fiche de groupe isolée en est une à un seul maillon."
         )
+
+    membres = profil.get("membres")
+    cumul = (profil.get("effectif") or {}).get("cumul_historique")
+    if isinstance(membres, list) and isinstance(cumul, int):
+        if cumul != len(membres):
+            errors.append(
+                f"'effectif.cumul_historique' vaut {cumul} pour {len(membres)} "
+                "membre(s) publiés : le compteur est le CARDINAL de l'union, "
+                "jamais une somme de maillons (#836)."
+            )
     return errors

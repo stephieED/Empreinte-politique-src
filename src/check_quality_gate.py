@@ -1781,6 +1781,100 @@ def _report_position_politique(
 # Section 5 — Gouvernements
 # ---------------------------------------------------------------------------
 
+try:  # pragma: no cover - dépend de la présence du module à l'exécution
+    from schema_lignee import validate_profil_lignee as _validate_lignee
+    _SCHEMA_LIGNEE_AVAILABLE = True
+except ImportError:  # pragma: no cover
+    _SCHEMA_LIGNEE_AVAILABLE = False
+
+    def _validate_lignee(_profil):  # type: ignore[misc]
+        return []
+
+
+def _report_lignees(
+    groupes_config_path: Path,
+    lignees_dir: Path,
+) -> tuple[list[str], list[str], str, str]:
+    """§4c — Les fiches de LIGNÉE déclarées sont-elles publiées, et valides (#836).
+
+    Ce bloc existe parce que l'interface ne publie **qu'une fiche par lignée**
+    (décision de la propriétaire, 10/09/2026) : une fiche de lignée absente
+    n'est pas un agrégat en moins, c'est une **page du site en moins**, alors
+    que ses maillons, eux, sont tous là et tous verts.
+
+    Le step qui les produit est `continue-on-error` — un défaut de lignée ne
+    doit pas coûter au run le commit des profils, qui sont corrects (#427,
+    #518). C'est précisément ce qui rend ce contrôle nécessaire : sans lui,
+    une fiche périmée resterait committée sans que rien ne bloque, et le
+    contrôle de perte ne verrait rien puisque le fichier, lui, n'a pas disparu.
+
+    hard_errors — bloquent le commit :
+      - fiche déclarée dans `lignees[]` et absente du disque ;
+      - JSON invalide ;
+      - schéma invalide (`validate_profil_lignee`).
+
+    soft_warnings — n'empêchent pas le commit :
+      - `meta.warnings` non vide : des membres sans profil publié, ou des
+        entrées d'amendement qu'aucune source ne renseigne.
+    """
+    raw_cfg = _load_json(groupes_config_path)
+    if raw_cfg is None:
+        msg = f"Impossible de lire la config des groupes : {groupes_config_path}"
+        return (
+            [msg], [],
+            f"\n┌─ 4c/4  Lignées de groupe ──────────────────────────────────────────\n│  ✗ {msg}\n└{'─'*67}",
+            f"### 4c · Lignées de groupe\n\n❌ {msg}\n",
+        )
+
+    declarees: list[dict] = raw_cfg.get("lignees") or []
+    hard_errors: list[str] = []
+    soft_warnings: list[str] = []
+    lignes: list[str] = []
+
+    for declaration in declarees:
+        lignee_id = declaration.get("lignee_id", "?")
+        fichier = declaration.get("fichier")
+        if not fichier:
+            hard_errors.append(f"{lignee_id}: champ 'fichier' absent de lignees[]")
+            lignes.append(f"{lignee_id} — config incomplète")
+            continue
+        chemin = lignees_dir / fichier
+        if not chemin.exists():
+            hard_errors.append(f"{lignee_id}: fichier manquant ({chemin})")
+            lignes.append(f"{lignee_id} — fichier manquant")
+            continue
+        data = _load_json(chemin)
+        if data is None:
+            hard_errors.append(f"{lignee_id}: JSON invalide ({fichier})")
+            lignes.append(f"{lignee_id} — JSON invalide")
+            continue
+        erreurs = _validate_lignee(data) if _SCHEMA_LIGNEE_AVAILABLE else []
+        if erreurs:
+            detail = "; ".join(erreurs[:3]) + ("…" if len(erreurs) > 3 else "")
+            hard_errors.append(f"{lignee_id}: schéma invalide — {detail}")
+            lignes.append(f"{lignee_id} — schéma invalide ({len(erreurs)} erreur(s))")
+            continue
+
+        maillons = data.get("maillons") or []
+        membres = data.get("membres") or []
+        warnings_lignee = ((data.get("meta") or {}).get("warnings")) or []
+        if warnings_lignee:
+            soft_warnings.append(f"{lignee_id}: {len(warnings_lignee)} avertissement(s) — {warnings_lignee[0]}")
+        etat = "⚠" if warnings_lignee else "✓"
+        lignes.append(
+            f"{etat} {lignee_id} — {len(maillons)} maillon(s), {len(membres)} membre(s)"
+        )
+
+    titre = f"{len(declarees) - len(hard_errors)}/{len(declarees)} fiche(s) de lignée valide(s)"
+    console = "\n".join(
+        [f"\n┌─ 4c/4  Lignées de groupe — {titre} ", *(f"│  {l}" for l in lignes), f"└{'─'*67}"]
+    )
+    md = "\n".join(
+        [f"### 4c · Lignées de groupe", "", f"**{titre}**", "", *(f"- {l}" for l in lignes), ""]
+    )
+    return hard_errors, soft_warnings, console, md
+
+
 def _report_gouvernements(
     gouvernements_config_path: Path,
     gouvernements_dir: Path,
@@ -2485,6 +2579,7 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--profiles-dir", type=Path, default=Path("pivot_data/profiles"))
     parser.add_argument("--groupes-dir", type=Path, default=Path("pivot_data/groupes"))
+    parser.add_argument("--lignees-dir", type=Path, default=Path("pivot_data/lignees"))
     parser.add_argument("--partis-dir", type=Path, default=Path("pivot_data/partis"))
     parser.add_argument("--raw-dir", type=Path, default=Path("raw_data/profiles"))
     parser.add_argument(
@@ -2705,6 +2800,12 @@ def main() -> int:
     )
     pos_exit = 1 if pos_hard else 0
 
+    # ── Section 4c : Lignées de groupe (#836) ─────────────────────────────
+    lig_hard, lig_soft, lig_console, lig_md = _report_lignees(
+        args.groupes_config, args.lignees_dir,
+    )
+    lig_exit = 1 if lig_hard else 0
+
     # ── Section 5 : Gouvernements ───────────────────────────────────────────
     gouv_hard, gouv_soft, gouv_console, gouv_md = _report_gouvernements(
         args.gouvernements_config, args.gouvernements_dir,
@@ -2770,7 +2871,7 @@ def main() -> int:
     # #378 (docs/decisions/amendements-zero-pas-de-hard-fail.md). Le
     # signal global de 3c est en revanche affiché en tête de rapport ci-dessous.
     exit_code = 1 if (
-        ir_exit == 1 or grp_exit == 1 or pos_exit == 1 or gouv_exit == 1
+        ir_exit == 1 or grp_exit == 1 or pos_exit == 1 or lig_exit == 1 or gouv_exit == 1
         or amdfmt_exit == 1 or corr_exit == 1 or blob_exit == 1
     ) else 0
 
@@ -2794,6 +2895,7 @@ def main() -> int:
     print(amdfmt_console)
     print(grp_console)
     print(pos_console)
+    print(lig_console)
     print(gouv_console)
     print(corr_console)
     print(txt_console)
@@ -2829,6 +2931,7 @@ def main() -> int:
         amdfmt_md,
         grp_md,
         pos_md,
+        lig_md,
         gouv_md,
         corr_md,
         txt_md,

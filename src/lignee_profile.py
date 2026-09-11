@@ -10,15 +10,23 @@ socialiste (`NG:15 → SOC:15 → SOC:16 → SOC:17`), corpus du 11/09/2026 :
 | Champ | Somme des maillons | Union réelle | Régime |
 | --- | ---: | ---: | --- |
 | `membres` | 170 | **96** | union sur `membre_id` |
-| `cohesion_votes` | 20 524 | — | union sur `scrutin_id` |
-| `amendements_agreges` | 88 709 | — | **recalcul depuis les profils** |
-| `tags_thematiques_agreges` | — | — | **recalcul depuis les profils** |
+| `cohesion_votes` | 20 524 | **16 420** | union sur `scrutin_id` |
+| `amendements_agreges` | 88 709 | **60 897** | **recalcul depuis les profils** |
+| `tags_thematiques_agreges` | — | 1 947 étiquettes | **recalcul depuis les profils** |
 
 Un membre présent sous trois maillons y est compté trois fois. Les deux
 derniers champs ne se dédoublonnent **pas** au niveau des fiches : un
 amendement cosigné par deux membres compte une fois dans chaque maillon, et
 rien dans les fiches ne permet de savoir que c'est le même. Il faut repasser par
 `profiles[].amendements`, ce que fait `group_profile`.
+
+**La lignée socialiste est la seule des dix où ces unions retirent quoi que ce
+soit**, et pour une raison qui se nomme : elle est la seule à porter deux
+maillons d'une MÊME législature (`NG:15` et `SOC:15`). Partout ailleurs, somme
+et union coïncident au vote et à l'amendement près — les scrutins et les
+`amendement_id` d'une législature ne sont pas ceux d'une autre, et #821 a fait
+que chaque maillon ne compte plus que sa période. Le recalcul n'est donc pas un
+correctif, c'est ce qui **vérifie** à chaque run que la propriété tient.
 
 ## Ce qui ne s'agrège PAS, et qui est recopié
 
@@ -259,78 +267,96 @@ def composer_lignee(
 # ---------------------------------------------------------------------------
 
 def recalculer_agregats(
-    profils_par_maillon: list[tuple[Optional[str], list[dict[str, Any]]]],
+    profils_projetes: Iterable[tuple[Optional[str], dict[str, Any]]],
     amendements_index: Any = None,
 ) -> dict[str, Any]:
     """`tags_thematiques_agreges` et `amendements_agreges` d'une lignée.
 
-    ## Pourquoi on ne peut pas sommer les maillons
+    ## Ce que l'appelant doit avoir fait, et pourquoi la fonction ne le fait pas
 
-    Un amendement cosigné par deux membres compte **une fois dans chaque
-    maillon** où ils siègent, et rien dans les fiches ne dit que c'est le même :
-    la somme des maillons de la lignée socialiste donne 88 709 amendements, un
-    chiffre qui ne veut rien dire. Il faut repasser par
-    `profiles[].amendements`, où l'`amendement_id` permet la déduplication
-    (#643).
+    Chaque profil est attendu **déjà projeté** par
+    `group_profile.load_profil_from_file`, chargé avec la législature de SON
+    maillon et avec **un cumul d'amendements partagé par toute la lignée**. Ce
+    n'est pas une commodité d'appel : garder les documents entiers coûtait 0,9
+    à 1,1 Gio pour la seule fiche de LFI (#635), et une lignée en compte
+    jusqu'à **660** couples (membre, législature) — la macroniste. Charger
+    d'abord, agréger ensuite, c'est l'OOM de #377 reconstitué un étage plus
+    haut. Mesuré sur les 10 lignées du corpus du 11/09/2026 : **104 s et
+    1 453 Mio de RSS maximum**, index compris, en chargeant un profil à la fois.
 
-    ## Pourquoi on ne peut pas non plus ignorer les législatures
+    Le cumul partagé est aussi ce qui rend le compte **en amendements
+    distincts** et non en signatures (#643) : un amendement cosigné par deux
+    membres de la lignée en est **un**.
 
-    Chaque maillon est apparié à **sa** législature, et le filtre de #821/#825
-    s'applique maillon par maillon. Agréger la lignée « sans filtre » ferait
-    revenir le défaut que ces deux lots viennent de corriger : `LR-16`
-    publiait 159 274 amendements dont 20 % seulement déposés sous la XVIe.
+    ## Pourquoi une lignée ne peut pas sommer ses maillons
 
-    Un membre présent sous trois maillons est donc lu trois fois — une par
-    législature — et ses amendements dédupliqués par le cumul **partagé**, qui
-    est ce qui rend le compte en amendements distincts et non en signatures.
+    Deux maillons d'une même législature ne sont pas disjoints — `NG:15` et
+    `SOC:15` —, et un membre présent sous les deux verrait ses amendements
+    comptés deux fois. Mesuré sur la lignée socialiste : la somme des quatre
+    maillons donne **88 709** amendements pour **60 897** distincts (× 1,46).
 
-    ## `amendements_index` n'est pas optionnel en pratique
+    **Sur les neuf autres lignées, somme et recalcul coïncident exactement** —
+    et c'est un acquis de #821, pas une propriété de la lignée : depuis que
+    chaque maillon ne compte que sa période, deux maillons de législatures
+    différentes portent des `amendement_id` disjoints par construction. Le
+    recalcul reste ce qui le **prouve** à chaque run, et la seule voie correcte
+    le jour où deux maillons partagent une législature — ce qui est déjà le cas
+    d'un sur dix.
 
-    Une entrée d'`amendements[]` ne porte qu'un `amendement_id` depuis #431 :
-    son `sort` et son `type_deposant` vivent dans l'index partagé. Sans index,
-    `contribution_amendements` ne résout rien et le compte sort à **0** —
-    vérifié, 0 au lieu de 88 709 signatures sur la lignée socialiste. L'appelant
-    doit donc charger l'index, comme `group_profile` le fait pour une fiche de
-    groupe ; ne pas le passer est un mode de test, pas un mode de production.
+    Args:
+        profils_projetes: couples `(législature du maillon, profil projeté)`.
+            Un profil lu sous deux maillons apparaît deux fois, une par
+            législature ; sous deux maillons de la MÊME législature, une seule.
+        amendements_index: index partagé (#431), passé à `_aggregate_amendements`
+            pour les profils qui porteraient encore leurs entrées.
+
+    Returns:
+        Les deux agrégats, plus `nb_amendements_non_resolus` — les entrées
+        qu'aucune source ne renseigne, exclues des décomptes et à remonter en
+        `meta.warnings` : une exclusion muette transforme un dénominateur en
+        donnée fausse (§2 règle 7).
     """
     from group_profile import (  # noqa: PLC0415 — import tardif : group_profile est lourd
-        CumulAmendementsDistincts,
         _aggregate_amendements,
         aggregate_tags_thematiques,
     )
 
-    cumul = CumulAmendementsDistincts()
+    profils: list[dict[str, Any]] = []
     tags_par_membre: dict[str, set[str]] = {}
+    porteurs: set[str] = set()
 
-    for legislature, profils in profils_par_maillon:
-        # Un tag porté par le même membre sous deux maillons ne compte qu'une
-        # fois : c'est la PERSONNE qui porte l'étiquette, pas la fiche. D'où le
-        # relevé par membre, et `nb_membres_porteurs` reconstruit sur l'union.
-        for profil in profils:
-            from group_profile import contribution_amendements  # noqa: PLC0415
-            contribution_amendements(
-                profil.get("amendements"), amendements_index, cumul, legislature
-            )
-            for tag in aggregate_tags_thematiques([profil], legislature=legislature).tags:
-                tags_par_membre.setdefault(tag["tag"], set()).add(profil.get("id"))
+    for legislature, profil in profils_projetes:
+        profils.append(profil)
+        porteurs.add(profil.get("id"))
+        # Un tag porté par la même personne sous deux maillons ne compte
+        # qu'une fois : c'est la PERSONNE qui porte l'étiquette, pas la fiche.
+        # D'où le relevé par membre, et `nb_membres_porteurs` reconstruit sur
+        # l'union.
+        for tag in aggregate_tags_thematiques([profil], legislature=legislature).tags:
+            tags_par_membre.setdefault(tag["tag"], set()).add(profil.get("id"))
 
-    n_membres = len({p.get("id") for _, ps in profils_par_maillon for p in ps})
+    # `_aggregate_amendements` somme les signatures de chaque contribution et
+    # n'absorbe qu'UNE fois le cumul partagé : les distincts ne sont donc pas
+    # recomptés par maillon. C'est la même fonction que la fiche de groupe, et
+    # c'est voulu — un second calcul publierait les mêmes chiffres sous
+    # d'autres noms, et `nb_sans_identifiant` en a failli en porter deux.
+    total, non_resolus = _aggregate_amendements(profils, amendements_index)
+
+    n_membres = len(porteurs)
     tags = sorted(
         (
             {
                 "tag": tag,
-                "nb_membres_porteurs": len(porteurs),
-                "poids_relatif": round(len(porteurs) / n_membres, 4) if n_membres else 0.0,
+                "nb_membres_porteurs": len(membres),
+                "poids_relatif": round(len(membres) / n_membres, 4) if n_membres else 0.0,
             }
-            for tag, porteurs in tags_par_membre.items()
-            if porteurs
+            for tag, membres in tags_par_membre.items()
+            if membres
         ),
         key=lambda e: (-e["nb_membres_porteurs"], e["tag"]),
     )
-    total, par_type = cumul.compter()
-    total["par_type_deposant"] = par_type
-    total["nb_amendements_sans_identifiant"] = cumul.nb_sans_identifiant
     return {
         "tags_thematiques_agreges": tags,
         "amendements_agreges": total,
+        "nb_amendements_non_resolus": non_resolus,
     }

@@ -133,6 +133,25 @@ publiées restent intactes), `1` une génération a réellement échoué.
 `--merge-existing` conserve les membres déjà connus qu'un fetch incomplet
 n'aurait pas rendus.
 
+### Les fiches de lignée de groupe
+
+Une fiche par **lignée** — la suite des fiches qu'un même groupe a portées au
+fil des législatures. C'est ce que l'interface publie ; les fiches par
+législature en sont les maillons. À lancer **après** `generate_group_profiles.py`,
+dont il lit les sorties :
+
+```bash
+python3 src/generate_lignee_profiles.py --validate
+```
+
+Produit : `pivot_data/lignees/lignee-<chambre>-<sigle>.json`, une par entrée de
+`lignees[]` dans `raw_data/groupes_reels.json`. Ne touche pas au réseau. Sort
+`1` si la configuration est fausse (aucune fiche écrite) ou si une lignée a
+échoué ; `0` sinon. Compter **~2 min** et **~1,5 Gio** de mémoire pour les dix.
+
+Un maillon déclaré dont la fiche de groupe n'est pas sur le disque fait échouer
+**sa** lignée, jamais les autres — et l'écrire amputée est refusé.
+
 Un seul groupe, à la main :
 
 ```bash
