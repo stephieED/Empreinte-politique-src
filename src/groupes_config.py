@@ -241,6 +241,15 @@ CLE_POSITION_POLITIQUE = "position_politique_an"
 #: inconnue ». Présente, elle doit résoudre : voir `_valider_succession`.
 CLE_SUCCESSION = "succede_a"
 
+#: Clé portant, dans une entrée de cette table, les organes successifs du
+#: groupe DANS sa législature, avec leur libellé et leurs bornes (#815) — ce
+#: que la fiche publie en `historique_noms`. Mesurée sur AMO30 et committée,
+#: comme la position politique (#686) : l'étape groupe du run ne lit aucune
+#: archive. **Optionnelle** ; présente, elle doit coïncider organe pour organe
+#: avec `organes_an`, sans quoi deux écritures du même fait divergeraient en
+#: silence — le défaut que #815 a payé sur les deux listes du fichier.
+CLE_HISTORIQUE_ORGANES = "historique_organes_an"
+
 
 class CorrespondanceSiglesInvalide(ValueError):
     """La table sigle publié → sigle(s) AN est absente ou viole un invariant."""
@@ -411,6 +420,37 @@ def _valider_successions(
                 )
 
 
+def _valider_historique_organes(entree: dict[str, Any], libelle: str) -> None:
+    """`historique_organes_an`, s'il est présent, redit `organes_an` sans le contredire.
+
+    Raises:
+        CorrespondanceSiglesInvalide: forme invalide, ou organes dans un autre
+            ordre, en plus ou en moins que `organes_an`.
+    """
+    historique = entree.get(CLE_HISTORIQUE_ORGANES)
+    if historique is None:
+        return
+    if not isinstance(historique, list) or not historique:
+        raise CorrespondanceSiglesInvalide(
+            f"{libelle} : '{CLE_HISTORIQUE_ORGANES}' doit être une liste non vide."
+        )
+    for bloc in historique:
+        if not isinstance(bloc, dict) or not all(
+            bloc.get(cle) for cle in ("organe_an", "sigle_an", "nom", "debut")
+        ) or "fin" not in bloc:
+            raise CorrespondanceSiglesInvalide(
+                f"{libelle} : chaque entrée de '{CLE_HISTORIQUE_ORGANES}' porte "
+                f"organe_an, sigle_an, nom, debut et fin (null si ouvert) — reçu {bloc!r}."
+            )
+    if [b["organe_an"] for b in historique] != list(entree.get("organes_an") or []):
+        raise CorrespondanceSiglesInvalide(
+            f"{libelle} : '{CLE_HISTORIQUE_ORGANES}' nomme "
+            f"{[b['organe_an'] for b in historique]} quand 'organes_an' nomme "
+            f"{entree.get('organes_an')}. Les deux listes disent le même fait : "
+            "l'une a bougé sans l'autre (#815)."
+        )
+
+
 def charger_correspondance_sigles(
     chemin: Optional[Path] = None,
 ) -> list[dict[str, Any]]:
@@ -484,6 +524,7 @@ def charger_correspondance_sigles(
                 "correspondance non datée n'est pas relisible."
             )
         _valider_position_politique_an(entree, f"{sigle}-{legislature}")
+        _valider_historique_organes(entree, f"{sigle}-{legislature}")
         cle = (sigle, legislature)
         if cle in vues:
             raise CorrespondanceSiglesInvalide(
@@ -591,9 +632,11 @@ def succession_publiee(
     **Une liste depuis #815**, parce qu'un groupe peut succéder à plusieurs.
     La forme unique décrivait bien la succession simple (`LR-16` → `DR-17`) et
     ne savait écrire ni une **fusion** — deux groupes qui n'en font qu'un —, ni
-    une **scission**, où le sortant continue d'exister : `AD` quitte `DR` le
-    11/09/2024 pendant que `DR` poursuit, et aucun des deux ne succède à
-    l'autre au sens d'un remplacement.
+    une **scission**, où le sortant continue d'exister et où aucun des deux ne
+    succède à l'autre au sens d'un remplacement. #815 croyait en tenir un cas,
+    « `AD` quitte `DR` le 11/09/2024 » ; la mesure l'a infirmé le 11/09/2026 —
+    0 des 16 membres d'`AD` n'a siégé dans `DR`, les deux groupes naissent le
+    même jour —, et le corpus n'en porte aucun à ce jour.
 
     `None` quand l'entrée ne déclare pas de prédécesseur — les 5 groupes de la
     XVIe, dont la XVe n'est pas couverte par ce dépôt. C'est un périmètre, pas
@@ -640,6 +683,38 @@ def succession_publiee(
         })
     return blocs
 
+
+def historique_noms_publie(
+    groupe_sigle: str,
+    legislature: Optional[str],
+    chemin: Optional[Path] = None,
+) -> Optional[list[dict[str, Any]]]:
+    """`historique_noms` à publier sur une fiche de groupe (#815), ou `None`.
+
+    Une entrée par organe du groupe dans sa législature, dans l'ordre
+    d'ouverture : `sigle` (le `libelleAbrev` de l'Assemblée), `nom`, `debut`,
+    `fin` et `organe_an` — l'identifiant qui rend chaque ligne vérifiable
+    (§2 règle 2). Recopié de la table committée, jamais recalculé.
+
+    `None` quand l'entrée ne porte pas la clé : l'historique n'a pas été
+    mesuré, ce qui n'est pas « aucun renommage » (§2 règle 5).
+    """
+    if not legislature:
+        return None
+    entree = entree_correspondance(groupe_sigle, legislature, chemin)
+    historique = entree.get(CLE_HISTORIQUE_ORGANES)
+    if not historique:
+        return None
+    return [
+        {
+            "sigle": bloc["sigle_an"],
+            "nom": bloc["nom"],
+            "debut": bloc["debut"],
+            "fin": bloc["fin"],
+            "organe_an": bloc["organe_an"],
+        }
+        for bloc in historique
+    ]
 
 # ── Les lignées de groupe, déclarées (#836) ──────────────────────────────────
 #: Clé portant, dans `raw_data/groupes_reels.json`, la liste des LIGNÉES : la

@@ -53,12 +53,24 @@ Format d'un profil de groupe v1 :
         "actif": true
     },
 
-    "historique_noms": [                # renommages du groupe entre législatures
+    "historique_noms": [                # les ORGANES successifs du groupe DANS sa législature
+                                        # (une fiche par groupe et par législature, #700) :
+                                        # `SOC` puis `SOC-A` sur la XVIe. Mesurés sur AMO30,
+                                        # committés dans correspondance_sigles_an et recopiés
+                                        # (#815). Liste vide = non mesuré (Sénat, gelé).
         {
-            "sigle": "SOC",
+            "sigle": "SOC",             # organe.libelleAbrev
+            "nom": "Socialistes et apparentés (membre de l’intergroupe NUPES)",
+            "debut": "2022-06-28",      # bornes de l'ORGANE, pas des appartenances
+            "fin": "2023-10-18",
+            "organe_an": "PO800496"     # ce qui rend la ligne vérifiable (§2 règle 2)
+        },
+        {
+            "sigle": "SOC-A",
             "nom": "Socialistes et apparentés",
-            "debut": "2022-06-22",
-            "fin": null
+            "debut": "2023-10-19",
+            "fin": "2024-06-09",
+            "organe_an": "PO830170"
         }
     ],
 
@@ -188,8 +200,9 @@ Format d'un profil de groupe v1 :
                                         # plusieurs. La forme unique décrivait la succession
                                         # simple (LR-16 → DR-17) et ne savait écrire ni une
                                         # FUSION — deux groupes qui n'en font qu'un —, ni une
-                                        # SCISSION, où le sortant continue d'exister : `AD`
-                                        # quitte `DR` le 11/09/2024 pendant que `DR` poursuit.
+                                        # SCISSION, où le sortant continue d'exister — aucun
+                                        # cas dans le corpus : « AD quitte DR » a été infirmé
+                                        # par la mesure du 11/09/2026 (#815).
                                         # Le groupe de la législature précédente dont celui-ci
                                         # prend la suite. L'Assemblée ouvre et ferme des organes,
                                         # elle ne les chaîne pas : cette continuité est une

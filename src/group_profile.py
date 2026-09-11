@@ -39,7 +39,8 @@ Cas limites gérés :
     éligibles. Les mandats multiples (sur plusieurs législatures) sont tous
     examinés.
   - Groupe dissous/renommé : le groupe_id et groupe_nom sont des paramètres
-    explicites ; le champ historique_noms est laissé à renseigner manuellement.
+    explicites ; `historique_noms` recopie les organes successifs du groupe
+    dans sa législature, mesurés sur AMO30 et committés (#815).
   - Scrutin sans quorum : quorum_atteint = False, cohésion toujours calculée.
   - tags_thematiques vides sur les profils individuels : fallback automatique
     sur les mots-clés des interventions (loggé dans meta.warnings).
@@ -131,7 +132,11 @@ from schema_groupe import (
     make_empty_amendements_stats,
     validate_profil_groupe,
 )
-from groupes_config import position_politique_publiee, succession_publiee
+from groupes_config import (
+    historique_noms_publie,
+    position_politique_publiee,
+    succession_publiee,
+)
 from merge_profile import load_existing_document, preserve_stable_freshness_timestamps
 from normalize_profil import normalize_profil
 from amendements_index import (
@@ -2061,6 +2066,7 @@ def build_groupe_profile(
     appartenances: Optional[dict[str, dict[str, Any]]] = None,
     position_politique: Optional[dict[str, Any]] = None,
     succede_a: Optional[list[dict[str, Any]]] = None,
+    historique_noms: Optional[list[dict[str, Any]]] = None,
 ) -> dict[str, Any]:
     """Construit un profil de groupe à partir d'une liste de profils individuels pivot v1.
 
@@ -2387,6 +2393,11 @@ def build_groupe_profile(
     # ne pas succéder à un groupe couvert par ce dépôt est un périmètre, pas
     # une donnée manquante.
     profil_groupe["succede_a"] = succede_a
+    # Les organes successifs du groupe dans sa législature (#815), recopiés de
+    # la table committée. `None` — l'historique n'a pas été mesuré — garde la
+    # liste vide que le schéma exige : l'absence de mesure n'y devient pas un
+    # historique inventé.
+    profil_groupe["historique_noms"] = list(historique_noms) if historique_noms else []
     profil_groupe["date_reference"] = date_reference
     profil_groupe["effectif"] = effectif
     profil_groupe["cohesion_votes"] = cohesion_votes
@@ -2579,6 +2590,7 @@ def generate_groupe_profile_from_roster(
     amendements_index: Optional[AmendementsIndex] = None,
     position_politique: Optional[dict[str, Any]] = None,
     succede_a: Optional[list[dict[str, Any]]] = None,
+    historique_noms: Optional[list[dict[str, Any]]] = None,
 ) -> dict[str, Any]:
     """Construit (et écrit si `out_path` fourni) un profil de groupe à partir d'un
     roster déjà récupéré (voir `fetch_group_roster`, ou `fetch_full_roster` +
@@ -2701,6 +2713,7 @@ def generate_groupe_profile_from_roster(
         appartenances=appartenances,
         position_politique=position_politique,
         succede_a=succede_a,
+        historique_noms=historique_noms,
     )
 
     profil_groupe["meta"]["couverture_roster"] = couverture_roster
@@ -2790,11 +2803,13 @@ def main(argv: Optional[list[str]] = None) -> int:
         # fiche à la main la ferait discrètement régresser sur ce champ.
         position_politique = None
         succede_a = None
+        historique_noms = None
         if args.chambre == "AN":
             position_politique = position_politique_publiee(
                 args.groupe_sigle, args.legislature
             )
             succede_a = succession_publiee(args.groupe_sigle, args.legislature)
+            historique_noms = historique_noms_publie(args.groupe_sigle, args.legislature)
 
         out_path = Path(args.out) if args.out else None
         profil_groupe = generate_groupe_profile_from_roster(
@@ -2814,6 +2829,7 @@ def main(argv: Optional[list[str]] = None) -> int:
             rapport_interne_path=Path(args.rapport_interne) if args.rapport_interne else None,
             position_politique=position_politique,
             succede_a=succede_a,
+            historique_noms=historique_noms,
         )
         if not out_path:
             print(json.dumps(profil_groupe, ensure_ascii=False, indent=2))

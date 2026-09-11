@@ -1,6 +1,6 @@
 {
   "schema_version": "correspondance-acteurs-an-v2",
-  "genere_le": "2026-09-11T08:49:59+0000",
+  "genere_le": "2026-09-11T12:52:29+0000",
   "source_referentiel": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
   "correspondances": {
     "abdelkader-lahmar": {
@@ -2175,6 +2175,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA842211",
       "verifie_le": "2026-09-02",
+      "origine": "derivee"
+    },
+    "beatrice-descamps": {
+      "identifiants": {
+        "an": "PA720696",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Béatrice Descamps",
+        "date_naissance": "1961-04-24"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720696",
+      "verifie_le": "2026-09-11",
       "origine": "derivee"
     },
     "beatrice-piron": {
@@ -5018,6 +5038,26 @@
       "verifie_le": "2026-09-02",
       "origine": "derivee"
     },
+    "claire-o-petit": {
+      "identifiants": {
+        "an": "PA719364",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Claire O'Petit",
+        "date_naissance": "1949-10-15"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719364",
+      "verifie_le": "2026-09-11",
+      "origine": "derivee"
+    },
     "claire-pitollat": {
       "identifiants": {
         "an": "PA718910",
@@ -6717,6 +6757,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721896",
       "verifie_le": "2026-09-08",
+      "origine": "derivee"
+    },
+    "emeline-k-bidi": {
+      "identifiants": {
+        "an": "PA795998",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/k-bidi-emeline-24323"
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Émeline K/Bidi",
+        "date_naissance": "1987-05-13"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795998",
+      "verifie_le": "2026-09-11",
       "origine": "derivee"
     },
     "emeline-rey-rinchet": {
@@ -11172,6 +11232,26 @@
       "verifie_le": "2026-09-08",
       "origine": "derivee"
     },
+    "jean-louis-masson": {
+      "identifiants": {
+        "an": "PA346218",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Jean-Louis Masson",
+        "date_naissance": "1954-02-05"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA346218",
+      "verifie_le": "2026-09-11",
+      "origine": "derivee"
+    },
     "jean-louis-roumegas": {
       "identifiants": {
         "an": "PA606545",
@@ -14203,6 +14283,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794386",
       "verifie_le": "2026-08-26"
+    },
+    "m-jid-el-guerrab": {
+      "identifiants": {
+        "an": "PA720996",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "M'jid El Guerrab",
+        "date_naissance": "1983-04-25"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720996",
+      "verifie_le": "2026-09-11",
+      "origine": "derivee"
     },
     "manon-bouquin": {
       "identifiants": {
@@ -18648,6 +18748,26 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793852",
       "verifie_le": "2026-08-26"
+    },
+    "pierre-morel-a-l-huissier": {
+      "identifiants": {
+        "an": "PA266788",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": null,
+        "nom": null,
+        "nom_complet": "Pierre Morel-À-L'Huissier",
+        "date_naissance": "1958-12-21"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA266788",
+      "verifie_le": "2026-09-11",
+      "origine": "derivee"
     },
     "pierre-person": {
       "identifiants": {

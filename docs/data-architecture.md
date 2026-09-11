@@ -561,6 +561,14 @@ Un roster indisponible fait sortir le script en **2**, pas en 1 : aucune fiche
 n'a été touchée, donc le run peut committer le reste ; un vrai plantage de
 génération reste en 1 et fait échouer le step.
 
+`historique_noms` porte les **organes successifs du groupe dans sa législature**
+— `SOC` puis `SOC-A` sur la XVIe, `MODEM` puis `DEM` sur la XVe, `AD`, `UDR` puis
+`UDDPLR` sur la XVIIe —, chacun avec son `sigle`, son `nom`, ses bornes d'organe et
+son `organe_an` (#815). Recopié de `historique_organes_an` dans
+`correspondance_sigles_an`, mesuré sur AMO30 et committé comme la position
+politique (#686) : l'étape ne lit aucune archive. Une fiche non mesurée — les deux
+Sénat, gelées — garde une liste vide.
+
 `group_profile.py` **n'interroge pas le réseau** : il agrège des pivots locaux —
 membres et périodes, cohésion de vote par scrutin, tags thématiques agrégés,
 mandats agrégés (catégoriel : `commission`, `commission_enquete`,
