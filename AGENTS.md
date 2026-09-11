@@ -144,6 +144,8 @@ Full rationale: `web/old/v3/methodologie.html` — do not duplicate prose here.
 | Parltrack (JSON dumps) | Yes | ODbL v1.0 | **Share-alike** if republished as downloadable dataset |
 | European Parliament (data.europarl.europa.eu, www.europarl.europa.eu) | Yes | EP Legal Notice (reuse policy, attribution-based) | Attribution only |
 | NosDeputes.fr / NosSenateurs.fr | **No** since #528/#529 — but published fields still derive from it | ODbL v1.0 | **Share-alike** if published as downloadable dataset |
+| Sycomore (www2.assemblee-nationale.fr/sycomore) | **No — cited**: one row per deputy mandate older than AMO30's 19/06/2002 bound, hand-checked, in `raw_data/mandats_anterieurs.json` (#860) | © Assemblée nationale, all rights reserved | **Facts only** (office, dates) with a link to the page; nothing reproduced |
+| Journal officiel (Légifrance) | **No — cited**: one decree per government office older than the corpus, same table (#860) | Licence Ouverte 2.0 (Etalab) | Attribution only |
 | French Wikipedia | Yes — the declared-candidate list only (#753) | CC BY-SA 4.0 | **Facts only** (names, party labels) into `raw_data/candidats.json`, never verbatim prose. It reaches no `sources[]`, so it moves no `meta.licence_donnees` |
 | Wikidata | **Yes since #757 — one property, `P4123`** (the AN actor id), to resolve a declared candidate's actor. **Not** for discovering candidates: `P3602` returns 1 person for the 2027 election against 30 declared (#753) | CC0 1.0 | No restriction |
 

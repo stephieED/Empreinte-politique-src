@@ -63,6 +63,37 @@ export const sourcesConfig = [
     perimetre: ['PE'],
     couverturePeriode: null,
   },
+  // CITÉES, PAS COLLECTÉES (#860). Les mandats nationaux antérieurs à ce que
+  // publie l'open data de l'Assemblée sont relus à la main, un par un, et
+  // portés par les fiches avec leur lien (`mandats_anterieurs`). Aucun
+  // collecteur n'interroge ces deux sites.
+  {
+    id: 'sycomore',
+    nom: 'Sycomore (Assemblée nationale)',
+    type: 'Fiches consultées, relues à la main',
+    contenuCouvert:
+      "Mandats de député antérieurs au 19 juin 2002, que l'open data de l'Assemblée ne rattache pas : fonction et dates, citées mandat par mandat avec un lien vers la fiche du député.",
+    cadenceMiseAJour:
+      "Aucune collecte : table relue une fois (raw_data/mandats_anterieurs.json), complétée quand un candidat se déclare.",
+    licence: 'Tous droits réservés (Assemblée nationale) — faits cités',
+    implication:
+      "Seuls des faits — une fonction, deux dates — sont repris, chacun avec son lien ; aucun contenu du site n'est reproduit.",
+    perimetre: ['AN'],
+    couverturePeriode: null,
+  },
+  {
+    id: 'journal-officiel',
+    nom: 'Journal officiel (Légifrance)',
+    type: 'Décrets consultés, relus à la main',
+    contenuCouvert:
+      "Fonctions gouvernementales antérieures à celles que publie l'open data de l'Assemblée : décrets relatifs à la composition du Gouvernement, cités fonction par fonction.",
+    cadenceMiseAJour:
+      "Aucune collecte : table relue une fois (raw_data/mandats_anterieurs.json), complétée quand un candidat se déclare.",
+    licence: 'Licence Ouverte 2.0 (Etalab)',
+    implication: 'Réutilisation libre sous réserve de mention de la source (attribution uniquement).',
+    perimetre: ['Gouvernement'],
+    couverturePeriode: null,
+  },
   {
     id: 'wikipedia-fr',
     nom: 'French Wikipedia',

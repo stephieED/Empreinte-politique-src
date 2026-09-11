@@ -39,6 +39,9 @@ LECTURE = UI / "utils" / "lecture.js"
 REGLES = UI / "utils" / "profilCandidat.js"
 CASCADE = UI / "utils" / "cascadeTextes.js"
 COMPOSANT = UI / "components" / "CandidateProfile.jsx"
+#: La cascade et sa liste sont sorties de la fiche candidat pour être partagées
+#: avec la fiche de lignée (#329) : la liste se lit là où elle vit.
+FIGURE = UI / "components" / "CascadeTextes.jsx"
 ADAPTATEUR = UI / "data" / "pivotAdapter.js"
 SCHEMA = RACINE / "src" / "schema_pivot.py"
 
@@ -67,7 +70,9 @@ def lecture() -> str:
 
 @pytest.fixture(scope="module")
 def composant() -> str:
-    return sans_commentaires(COMPOSANT.read_text(encoding="utf-8"))
+    return sans_commentaires(
+        COMPOSANT.read_text(encoding="utf-8") + "\n" + FIGURE.read_text(encoding="utf-8")
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -120,7 +125,7 @@ def test_aucun_sort_n_est_derive_d_un_stade():
     Le stade encode une progression, le sort une issue. Une table qui traduirait
     l'un dans l'autre est exactement ce que §2 règles 2 et 5 interdisent.
     """
-    for chemin in (REGLES, CASCADE, COMPOSANT):
+    for chemin in (REGLES, CASCADE, COMPOSANT, FIGURE):
         source = sans_commentaires(chemin.read_text(encoding="utf-8"))
         for stade in ("discute_seance", "examine_commission", "adopte", "promulgue"):
             motif = rf"{stade}\s*:\s*'(?:rejete|retire|navette_en_cours|adopte_49_3)"
@@ -131,7 +136,7 @@ def test_aucun_sort_n_est_derive_d_un_stade():
 
 def test_le_sort_s_affiche_a_cote_du_stade_pas_a_sa_place(composant):
     """Les deux pastilles coexistent dans la même ligne de liste."""
-    bloc = re.search(r"function ListeCascade\((.*?)\n\}\n", composant, re.DOTALL)
+    bloc = re.search(r"export function ListeCascade\((.*?)\n\}\n", composant, re.DOTALL)
     assert bloc, "`ListeCascade` n'est plus déclarée"
     corps = bloc.group(1)
     assert "cp-ter-pastille" in corps, "la pastille de STADE a disparu de la liste"
@@ -140,7 +145,7 @@ def test_le_sort_s_affiche_a_cote_du_stade_pas_a_sa_place(composant):
 
 def test_un_sort_absent_affiche_son_motif_jamais_un_sort_par_defaut(composant):
     """§2 règle 5 : une absence est un fait, elle ne se comble pas."""
-    bloc = re.search(r"function ListeCascade\((.*?)\n\}\n", composant, re.DOTALL)
+    bloc = re.search(r"export function ListeCascade\((.*?)\n\}\n", composant, re.DOTALL)
     corps = bloc.group(1)
     assert "MOTIF_SORT" in corps and "sortMotif" in corps, (
         "un sort nul doit afficher son motif"

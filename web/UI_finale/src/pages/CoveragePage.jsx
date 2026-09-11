@@ -61,11 +61,9 @@ export default function CoveragePage() {
 
               <section className="static-card cv-card" id="frise">
                 <h2>Ce que le dépôt porte, et depuis quand</h2>
-                <p className="cv-sous">
-                  Une teinte par population — candidats, gouvernements, groupes. Le{' '}
-                  <b>jaune</b> marque ce qui n'est pas collecté, la <b>hachure</b> les périodes où
-                  rien n'est publié. Chaque ligne se déplie sur ses champs.
-                </p>
+                {/* La légende de la frise dit ce que chaque encre veut dire : ce
+                    paragraphe le répétait (règle de forme 3). */}
+                <p className="cv-sous">Chaque ligne se déplie sur ses champs.</p>
                 <FriseCouverture couverture={data} />
                 <p className="cv-note">
                   Les blancs entre deux segments sont des mois sans rien : le plus souvent des

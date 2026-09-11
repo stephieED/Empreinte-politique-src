@@ -66,11 +66,14 @@ src/
 │   ├── GroupsBar             # Liste horizontale des groupes (toggle de filtre)
 │   ├── ScrollRow             # Conteneur générique à défilement horizontal drag-able
 │   ├── CandidateProfile      # Fiche candidat (KPIs, onglets Votes / Textes / Données)
-│   ├── GroupProfile          # Fiche groupe (effectif, cohésion, amendements)
+│   ├── LigneeProfile         # Fiche d'une lignée de groupe (#329) — une page par lignée
+│   ├── CascadeTextes         # Cascade des textes portés, partagée par les deux fiches
+│   ├── FriseCouverture       # Frise de /couverture, par institution
+│   ├── landing/              # Sections de l'accueil ; CouvertureAccueil = une borne par institution
 │   └── NotFoundProfile       # Fallback 404
 ├── pages/                    # Pages routées (chargement async → composant)
 │   ├── CandidateProfilePage  # Résout l'id URL → CandidateProfile
-│   └── GroupProfilePage      # Résout l'id URL → GroupProfile
+│   └── GroupProfilePage      # Résout l'id de lignée → LigneeProfile ; une fiche de législature redirige
 ├── context/
 │   └── GroupFilterContext    # État global : groupe sélectionné (filtre candidats)
 ├── data/
@@ -93,16 +96,16 @@ src/
 manifest.json + *.pivot.json + groupe-*.json   (public/data/)
         │
         ▼
-data/index.js         — fetch + cache manifest, expose getCandidateProfile() / getGroupProfile()
+data/index.js         — fetch + cache manifest, expose getCandidateProfile() / getLigneeProfile()
         │
         ▼
-data/pivotAdapter.js  — buildCandidateView() / buildGroupView()
+data/pivotAdapter.js  — buildCandidateView() / buildGovernmentView() — la fiche de lignée lit sa projection de build
         │             (calcul KPIs, tri votes, filtres textes, classification thématique)
         ▼
 useAsyncData()        — { data, loading, error }
         │
         ▼
-CandidateProfile / GroupProfile   — affichage
+CandidateProfile / LigneeProfile   — affichage
 ```
 
 La couche `pivotAdapter.js` est le seul endroit où la logique métier de présentation réside (ex. : calcul d'ancienneté, classification hémicycle majorité/opposition, filtre des textes par stade procédural).
@@ -115,7 +118,7 @@ La couche `pivotAdapter.js` est le seul endroit où la logique métier de prése
 |---|---|---|
 | `/` | → redirect | Redirige vers le premier candidat du manifest |
 | `/candidats/:candidateId` | `CandidateProfilePage` | Fiche candidat |
-| `/groupes/:groupId` | `GroupProfilePage` | Fiche groupe |
+| `/groupes/:groupId` | `GroupProfilePage` | Fiche d'une lignée de groupe ; un id de fiche par législature redirige vers sa lignée |
 | `/groupes` | → redirect | Redirige vers le premier groupe |
 
 ---

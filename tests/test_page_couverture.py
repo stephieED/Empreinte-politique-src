@@ -117,10 +117,14 @@ def test_les_origines_se_superposent_dans_un_seul_rail(frise: str) -> None:
     )
     assert "couches.map" in frise
     feuille = FRISE_CSS.read_text(encoding="utf-8")
-    assert "mix-blend-mode: multiply" in feuille, (
-        "sans mélange, la couche du dessus masque celle du dessous et la "
-        "superposition ne se voit plus"
+    # Une seule encre depuis le 11/09/2026 (frise-couverture-donnees-collectees-328) :
+    # la fiche d'origine n'est plus une teinte, donc plus de mélange à voir.
+    assert "--pop-" not in feuille and "fc-couche--" not in frise, (
+        "les faits portés sont une seule catégorie, « Données collectées »"
     )
+    for inst in ("AN", "gouvernement", "PE"):
+        assert f".fc-groupe--{inst} {{ --fc-inst:" in feuille, f"la teinte de l'institution {inst} manque"
+    assert "Données collectées" in frise
     assert "position: absolute" in feuille and "inset: 0" in feuille
 
 
@@ -168,11 +172,90 @@ def test_les_trois_marqueurs_sont_des_champs_publies(generateur: str) -> None:
 
 
 def test_le_senat_et_le_parlement_europeen_sortent_de_la_piste_assemblee(generateur: str) -> None:
-    """Leur mandat est publié, leur activité n'est pas collectée (#528) : les
-    ranger sous « Assemblée nationale » dirait une activité que nous n'avons
-    pas."""
+    """Ni l'un ni l'autre n'est de l'activité à l'Assemblée : les ranger sous
+    « Assemblée nationale » dirait une activité qui n'y a pas eu lieu."""
     assert "const HORS_ASSEMBLEE = new Set(['Senat', 'PE'])" in generateur
     assert "estMandatAssemblee" in generateur
+
+
+def _corpus_minimal(tmp_path: Path) -> Path:
+    """Une fiche de candidat qui porte un vote de chaque institution, et les
+    deux `couverture` que la collecte écrit : la borne de l'Assemblée, et la
+    `portee` européenne, qui va de la première à la dernière donnée."""
+    import json
+
+    profils = tmp_path / "pivot_data" / "profiles"
+    profils.mkdir(parents=True)
+    (tmp_path / "pivot_data" / "scrutins.json").write_text(json.dumps({"scrutins": [
+        {"id": "an:16:1", "date": "2023-02-01", "source_url": "https://www.assemblee-nationale.fr/s1"},
+    ]}), encoding="utf-8")
+    fiche = {
+        "id": "x", "nom": "X", "meta": {"provenance": "candidat_declare", "genere_le": "2026-09-11"},
+        "mandats": [
+            {"categorie": "mandat_electif", "chambre": "AN", "debut": "2022-06-22", "categorie_source": "an"},
+            {"categorie": "commission", "debut": "2010-01-01", "categorie_source": "europarl"},
+        ],
+        "votes": [
+            {"scrutin_id": "an:16:1", "position": "pour"},
+            {"scrutin_id": None, "position": "contre", "scrutin_non_resolu": {
+                "institution": "parlement_europeen", "date": "2005-03-10",
+                "reference_dossier": "2004/0001(COD)", "source_url": "https://www.europarl.europa.eu/v"}},
+        ],
+        "interventions": [
+            {"date": "2006-01-01", "sujet": "S", "source": {"institution": "parlement_europeen"}},
+        ],
+        "couverture": {"votes": [
+            {"etat": "couvert", "portee": {"debut": "2012-06-20"}},
+            {"etat": "couvert", "source": "parlement_europeen", "portee": {"debut": "2004-09-15", "fin": "2017-05-17"}},
+        ]},
+    }
+    (profils / "x.pivot.json").write_text(json.dumps(fiche), encoding="utf-8")
+    return tmp_path
+
+
+def test_le_parlement_europeen_a_ses_listes_et_ne_deplace_pas_la_borne_de_l_assemblee(tmp_path: Path) -> None:
+    """Mesuré le 11/09/2026 sur les 30 fiches de candidats publiées : 160 mandats, 383 textes et 5 329 interventions
+    européens comptés sous l'Assemblée, 11 013 votes et 7 303 amendements nulle
+    part, et la `portee` européenne d'une fiche prise pour la borne des votes de
+    l'Assemblée — 2004 au lieu de 2012. Rien de tout cela ne lève d'erreur."""
+    import json
+    import shutil
+    import subprocess
+
+    if shutil.which("node") is None:
+        pytest.skip("node absent")
+    racine = _corpus_minimal(tmp_path)
+    script = f"""
+      const m = await import({json.dumps(GENERATEUR.as_uri())});
+      const c = m.construireCouverture({{ repoRoot: {json.dumps(str(racine))} }});
+      const total = (inst, cle) => c.hierarchie.find((i) => i.cle === inst)
+        .pistes.find((p) => p.cle === cle).couches.reduce((s, x) => s + x.total, 0);
+      process.stdout.write(JSON.stringify({{
+        borne: c.bornes.votes,
+        votesAN: total('AN', 'votes'), votesPE: total('PE', 'votes'),
+        mandatsAN: total('AN', 'mandats'), mandatsPE: total('PE', 'mandats'),
+        parolesAN: total('AN', 'interventions'), parolesPE: total('PE', 'interventions'),
+        bornesPE: Object.fromEntries(c.hierarchie.find((i) => i.cle === 'PE').pistes.map((p) => [p.cle, p.borne])),
+        finPE: c.hierarchie.find((i) => i.cle === 'PE').pistes.find((p) => p.cle === 'votes').finSource,
+      }}));
+    """
+    res = subprocess.run(["node", "--input-type=module", "-e", script],
+                         capture_output=True, text=True, check=False)
+    assert res.returncode == 0, res.stderr
+    assert json.loads(res.stdout) == {
+        "borne": "2012-06-20",
+        "votesAN": 1, "votesPE": 1,
+        "mandatsAN": 1, "mandatsPE": 1,
+        "parolesAN": 0, "parolesPE": 1,
+        "bornesPE": {"mandats": None, "votes": "2004-09-15", "amendements": "2008-02-01",
+                     "textes_portes": None, "interventions": None},
+        "finPE": "2017-05-17",
+    }
+
+
+def test_le_parlement_europeen_n_est_plus_une_ligne_non_collectee(frise: str) -> None:
+    assert "cle: 'PE'" not in frise, "le Parlement européen a ses listes : il vit dans la hiérarchie"
+    assert "cle: 'Senat'" in frise, "le Sénat garde sa ligne — mandat publié, activité hors périmètre"
 
 
 # ── Règle 4 : deux absences, deux colonnes ──────────────────────────────────
@@ -213,3 +296,75 @@ def test_les_deux_mentions_de_fiche_renvoient_a_la_methodologie() -> None:
         assert "Ce que cette figure ne sait pas" in source, (
             "le chiffre reste sous la figure ; c'est le pourquoi qui déménage"
         )
+
+
+# ── L'accueil : une borne par institution, et les fiches hors couverture ─────
+
+
+def test_l_accueil_dit_depuis_quand_et_nomme_sans_rien_ecrire_a_la_main(tmp_path: Path) -> None:
+    """Relecture du 11/09/2026 : une borne par institution, et les fiches dont
+    une partie de la carrière est hors couverture. Tout est calculé au build ;
+    une liste recopiée n'accueillerait pas le prochain candidat déclaré."""
+    import json
+    import shutil
+    import subprocess
+
+    if shutil.which("node") is None:
+        pytest.skip("node absent")
+    racine = _corpus_minimal(tmp_path)
+    profils = racine / "pivot_data" / "profiles"
+    (profils / "s.pivot.json").write_text(json.dumps({
+        "id": "s", "nom": "Sénatrice Exemple", "meta": {"provenance": "candidat_declare"},
+        "mandats": [{"categorie": "mandat_electif", "chambre": "Senat", "debut": "2004-09-26"}],
+    }), encoding="utf-8")
+    (profils / "z.pivot.json").write_text(json.dumps({
+        "id": "z", "nom": "Zoé Sansmandat", "meta": {"provenance": "candidat_declare"}, "mandats": [],
+    }), encoding="utf-8")
+    # Relue avec un mandat antérieur ; relue sans ; non relue (`null`) : seule
+    # la première est nommée — absent n'est pas « aucun ».
+    for slug, anterieurs in (("r", [{"institution": "assemblee_nationale", "debut": "1988-06-13"}]),
+                             ("v", []), ("n", None)):
+        (profils / f"{slug}.pivot.json").write_text(json.dumps({
+            "id": slug, "nom": f"Nom {slug.upper()}", "meta": {"provenance": "candidat_declare"},
+            "mandats": [{"categorie": "mandat_electif", "chambre": "AN", "debut": "2002-06-19"}],
+            "mandats_anterieurs": anterieurs,
+        }), encoding="utf-8")
+    script = f"""
+      const m = await import({json.dumps(GENERATEUR.as_uri())});
+      const c = m.construireCouverture({{ repoRoot: {json.dumps(str(racine))} }});
+      const i = Object.fromEntries(c.accueil.institutions.map((x) => [x.cle, x]));
+      process.stdout.write(JSON.stringify({{
+        an: i.AN.hachureJusqua, pe: i.PE.hachureJusqua, peDebut: i.PE.debut,
+        gouvBorne: c.hierarchie.find((x) => x.cle === 'gouvernement').pistes.find((p) => p.cle === 'mandats').borne,
+        anterieurs: c.accueil.horsCouverture.anterieurs.map((p) => p.id),
+        senat: c.accueil.horsCouverture.senat.map((p) => p.id),
+        sansMandat: c.accueil.horsCouverture.sansMandat.map((p) => p.id),
+      }}));
+    """
+    res = subprocess.run(["node", "--input-type=module", "-e", script],
+                         capture_output=True, text=True, check=False)
+    assert res.returncode == 0, res.stderr
+    assert json.loads(res.stdout) == {
+        # L'Assemblée déclare une borne sur chacune de ses listes ; le fixture
+        # n'en déclare que pour les votes, donc aucune hachure d'institution.
+        "an": None,
+        # Les mandats européens n'ont pas de borne : la hachure ne s'affirme pas ;
+        # le début est la borne des votes, antérieure à la première donnée.
+        "pe": None, "peDebut": "2004-09-15",
+        # #859 : la borne de l'AMO30 n'est plus prêtée aux fonctions gouvernementales.
+        "gouvBorne": None,
+        "anterieurs": ["r"], "senat": ["s"], "sansMandat": ["z"],
+    }
+
+
+def test_l_accueil_lit_la_projection_et_ne_montre_plus_de_fait_fictif() -> None:
+    bloc = _sans_commentaires((SRC / "components" / "landing" / "CouvertureAccueil.jsx").read_text(encoding="utf-8"))
+    assert "loadCouverture" in bloc and "data.accueil" in bloc
+    assert not re.search(r"'[A-ZÉ][a-zé]+ [A-ZÉ][a-zé]+'", bloc), "aucun nom de candidat écrit dans le composant"
+    sources = (SRC / "components" / "landing" / "SourcesFreshness.jsx").read_text(encoding="utf-8")
+    assert sources.index("<CouvertureAccueil />") < sources.index("sourcesConfig.map"), (
+        "la borne de chaque institution ouvre le bloc des sources"
+    )
+    accueil = (SRC / "pages" / "LandingPage.jsx").read_text(encoding="utf-8")
+    assert "<FactDemo" not in accueil and not (SRC / "components" / "landing" / "FactDemo.jsx").exists()
+    assert "parcours politiques" in (SRC / "components" / "landing" / "Hero.jsx").read_text(encoding="utf-8")

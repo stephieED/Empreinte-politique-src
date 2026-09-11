@@ -175,7 +175,17 @@ SITES_UI: dict[tuple[str, str], str] = {
     # `chambre` d'un profil pivot que #493 met en retrait : une comparaison ne
     # traverse ni chambre ni législature, et la clé le dit.
     ("scripts/comparaison-groupes.mjs", "groupe"): GROUPE,
-    ("src/data/pivotAdapter.js", "groupe"): GROUPE,
+    # #329 : `buildGroupView` est parti avec la fiche par législature ; la page
+    # de groupe lit désormais une PROJECTION de lignée, écrite au build.
+    # `amendements-lignees.mjs` n'y retient que les maillons de l'Assemblée —
+    # l'index des amendements ne couvre pas le Sénat (#528).
+    ("scripts/amendements-lignees.mjs", "groupe"): GROUPE,
+    # La chambre d'une LIGNÉE (`schema_lignee.py`), recopiée au manifeste, à la
+    # projection, et lue par la page pour écrire « Assemblée nationale » ou
+    # « Sénat » dans son sourcil.
+    ("scripts/sync-data.mjs", "lignee"): GROUPE,
+    ("scripts/vue-lignee.mjs", "lignee"): GROUPE,
+    ("src/components/LigneeProfile.jsx", "lignee"): GROUPE,
     ("src/components/GovernmentProfile.jsx", "texte"): GROUPE,
     # #328 : la fiche candidat lit la chambre SUR LE MANDAT, jamais sur le
     # profil. `siegesElectifs` regroupe les enregistrements en sièges et
@@ -201,11 +211,10 @@ SITES_UI: dict[tuple[str, str], str] = {
     # SCHÉMA DE GROUPE, portée par le manifeste, jamais le scalaire d'un profil
     # pivot : une pastille de groupe ne connaît aucun profil.
     ("src/components/GroupsBar.jsx", "group"): GROUPE,
-    # Le regroupement par lignée choisit l'intitulé de la fiche la plus récente
-    # et compose son sous-titre ; la chambre y distingue « Assemblée nationale ·
-    # Législatures 16, 17 » de « Sénat », qui n'a pas de législature. Remplace
-    # l'accès `g` de `getGroupsList`, qui rendait une entrée par FICHE.
-    ("src/data/index.js", "tete"): GROUPE,
+    # #329 : une entrée par LIGNÉE DÉCLARÉE, lue au manifeste — le chaînage de
+    # `succede_a` refait ici (l'accès `tete`) est parti. La chambre sert à
+    # griser les deux lignées du Sénat dans la barre.
+    ("src/data/index.js", "l"): GROUPE,
 }
 
 # Le dernier consommateur du champ profil de l'interface — `chambreLabel(

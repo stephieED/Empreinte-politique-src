@@ -168,6 +168,26 @@ const SECTIONS = [
           ), sans obligation d'attribution ni de partage à l'identique.
         </p>
 
+        <h3>Sycomore et Journal officiel</h3>
+        <p>
+          Les mandats nationaux exercés <strong>avant ce que publie l'open data de l'Assemblée
+          nationale</strong> — des mandats de député antérieurs au 19 juin 2002, des fonctions
+          gouvernementales antérieures — ne sont pas collectés : ils sont relus à la main, un par un,
+          et cités avec un lien vers leur source primaire. Pour les député·es, la base Sycomore de
+          l'Assemblée nationale (www2.assemblee-nationale.fr/sycomore), dont le contenu est publié
+          sous « © Tous droits réservés » : seuls des faits — une fonction, deux dates — en sont
+          repris, et aucun contenu n'en est reproduit. Pour les membres du Gouvernement, les décrets
+          du Journal officiel publiés sur Légifrance, sous <strong>Licence Ouverte 2.0</strong>{' '}
+          (Etalab) :{' '}
+          <a
+            href="https://www.legifrance.gouv.fr/contenu/pied-de-page/open-data-et-api"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            https://www.legifrance.gouv.fr/contenu/pied-de-page/open-data-et-api
+          </a>
+        </p>
+
         <h3>Implication pour la réutilisation de nos propres données</h3>
         <p>
           Les jeux de données JSON produits et publiés par ce site combinent des contenus sous plusieurs
@@ -176,7 +196,8 @@ const SECTIONS = [
           sont soumis à la clause de partage à l'identique de l'ODbL : toute republication d'un jeu de
           données dérivé téléchargeable incluant ces champs doit être mise à disposition sous une licence à
           clauses équivalentes. Les champs issus de l'Open Data de l'Assemblée nationale (Licence Ouverte /
-          Etalab) et du Parlement européen n'imposent qu'une obligation d'attribution, sans partage à
+          Etalab), du Journal officiel (Licence Ouverte 2.0) et du Parlement européen n'imposent
+          qu'une obligation d'attribution, sans partage à
           l'identique. Les champs issus de Wikidata (CC0) ne sont soumis à aucune restriction.
         </p>
         <p>

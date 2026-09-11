@@ -72,7 +72,7 @@ const PIPELINE_STEPS = [
 export default function Hero() {
   return (
     <section className="landing-section landing-hero" aria-label="Présentation">
-      <h1>L'explorateur neutre et sourcé des parcours parlementaires pour la présidentielle 2027.</h1>
+      <h1>L'explorateur neutre et sourcé des parcours politiques pour la présidentielle 2027.</h1>
       <p>Des faits sourcés, sans note ni classement — à consulter par candidat, par groupe ou par gouvernement.</p>
 
       <div className="hero-pipeline">
@@ -98,7 +98,7 @@ export default function Hero() {
             Voir un profil candidat
           </Link>
           <Link className="landing-cta" to={`/groupes/${DEFAULT_GROUP_ID}`}>
-            Voir un profil de groupe
+            Voir un profil de groupe parlementaire
           </Link>
           <Link className="landing-cta" to={`/gouvernements/${DEFAULT_GOVERNMENT_ID}`}>
             Voir un profil de gouvernement

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import sourcesConfig from '../../data/sources.config';
-import { DEFAULT_CANDIDATE_ID } from '../../data';
+import CouvertureAccueil from './CouvertureAccueil';
 import './landing.css';
 
 // Contenu éditorial : toutes les infos de licence/cadence viennent de
@@ -15,6 +15,10 @@ export default function SourcesFreshness() {
   return (
     <section className="landing-section" aria-label="Sources et fraîcheur des données">
       <h2>Sources &amp; fraîcheur des données</h2>
+      {/* EN PREMIER : depuis quand chaque institution est lue. Un candidat dont
+          la carrière précède les sources ne doit pas passer pour un candidat
+          sans passé (relecture du 11/09/2026). */}
+      <CouvertureAccueil />
       <div className="sources-grid">
         {sourcesConfig.map((source) => (
           <details className="source-card" key={source.id}>
@@ -58,9 +62,9 @@ export default function SourcesFreshness() {
           </details>
         ))}
       </div>
-      <p className="sources-freshness-cta">
-        <Link to={`/candidats/${DEFAULT_CANDIDATE_ID}`}>Voir la fraîcheur en détail →</Link>
-      </p>
+      {/* « Voir la fraîcheur en détail » est retiré (relecture du 11/09/2026) :
+          il menait à une fiche de candidat prise par défaut, où la fraîcheur
+          n'est pas détaillée. */}
       {/* La couverture est une propriété du CORPUS, pas d'une fiche : depuis
           quand chaque source publie, ce qu'elle ne publie pas, et sur quelles
           fiches une liste manque. Elle a sa page — la répéter sur chacune des

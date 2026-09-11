@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 293 décisions
+gouverne sans avoir à fouiller les 297 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -216,7 +216,7 @@ Le mentionnent sans le gouverner : [`fenetre-historique-donnees`](decisions/fene
 | --- | --- |
 | [`meta.warnings[]` déclare son destinataire, dans un jumeau typé et aligné (#642) (2026-08-31)](decisions/destinataire-avertissements-642.md) | `AVERTISSEMENTS_HERITES`, `Avertissement`, `DESTINATAIRES_AVERTISSEMENT`, `PREFIXES_HERITES`, `avertissement`, `deriver_avertissements` |
 
-Le mentionnent sans le gouverner : [`amendements-zero-pas-de-hard-fail`](decisions/amendements-zero-pas-de-hard-fail.md), [`bloc-sans-fond-484`](decisions/bloc-sans-fond-484.md), [`constats-parltrack-perimes-683`](decisions/constats-parltrack-perimes-683.md), [`controle-perte-nomme-les-echanges-823`](decisions/controle-perte-nomme-les-echanges-823.md), [`couverture-dossiers-hors-couverture-vs-zero`](decisions/couverture-dossiers-hors-couverture-vs-zero.md), [`liste-candidats-declares-753`](decisions/liste-candidats-declares-753.md), [`profil-de-groupe-lecture-329`](decisions/profil-de-groupe-lecture-329.md), [`retrait-senat-528`](decisions/retrait-senat-528.md), [`union-warnings-extinction-600`](decisions/union-warnings-extinction-600.md), [`verification-bout-en-bout-legislatures-figees`](decisions/verification-bout-en-bout-legislatures-figees.md).
+Le mentionnent sans le gouverner : [`amendements-zero-pas-de-hard-fail`](decisions/amendements-zero-pas-de-hard-fail.md), [`bloc-sans-fond-484`](decisions/bloc-sans-fond-484.md), [`constats-parltrack-perimes-683`](decisions/constats-parltrack-perimes-683.md), [`controle-perte-nomme-les-echanges-823`](decisions/controle-perte-nomme-les-echanges-823.md), [`couverture-dossiers-hors-couverture-vs-zero`](decisions/couverture-dossiers-hors-couverture-vs-zero.md), [`fiche-de-lignee-ui-329`](decisions/fiche-de-lignee-ui-329.md), [`liste-candidats-declares-753`](decisions/liste-candidats-declares-753.md), [`profil-de-groupe-lecture-329`](decisions/profil-de-groupe-lecture-329.md), [`retrait-senat-528`](decisions/retrait-senat-528.md), [`union-warnings-extinction-600`](decisions/union-warnings-extinction-600.md), [`verification-bout-en-bout-legislatures-figees`](decisions/verification-bout-en-bout-legislatures-figees.md).
 
 ## `src/budget_collecte.py`
 
@@ -440,7 +440,7 @@ Le mentionnent sans le gouverner : [`absences-publiees-comme-faits-556-558-560`]
 
 ## `src/couverture_profil.py`
 
-7 décision(s) le gouvernent ; le module en cite 3.
+8 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
@@ -450,6 +450,7 @@ Le mentionnent sans le gouverner : [`absences-publiees-comme-faits-556-558-560`]
 | [Une exception n'est pas une preuve, et un défaut de notre code n'est pas une panne de l'Assemblée nationale (#562) (2026-08-28)](decisions/defaut-collecte-vs-panne-562.md) | `MOTIFS_PANNE`, `_preuve_defaut_collecte` |
 | [`meta.warnings[]` déclare son destinataire, dans un jumeau typé et aligné (#642) (2026-08-31)](decisions/destinataire-avertissements-642.md) | `MOTIFS_DEFAUT_COLLECTE`, `MOTIFS_JAMAIS_PANNE`, `MOTIFS_PANNE` |
 | [Les dossiers du roster passent sous une case, le motif qui les écartait est tombé (#817)](decisions/dossiers-legislatifs-sous-le-formulaire-817.md) | `DECISIONS_ROSTER` |
+| [Le Parlement européen prend sa place sur `/couverture`, et cesse de déplacer les bornes de l'Assemblée — 11/09/2026 (#328)](decisions/parlement-europeen-sur-la-couverture-328.md) | `bornes_europeennes` |
 | [L'européen entre dans les listes que la fiche a déjà (#683, lot 2)](decisions/stockage-europeen-dans-les-listes-existantes-683.md) | `bornes_europeennes` |
 
 Le mentionnent sans le gouverner : [`couverture-remplacee-par-liste-602`](decisions/couverture-remplacee-par-liste-602.md), [`fiches-groupe-17e-legislature-700`](decisions/fiches-groupe-17e-legislature-700.md), [`lecture-dumps-parltrack-683`](decisions/lecture-dumps-parltrack-683.md), [`pied-de-site-et-section-6-328`](decisions/pied-de-site-et-section-6-328.md), [`preuve-de-borne-dite-une-fois-328`](decisions/preuve-de-borne-dite-une-fois-328.md).
@@ -674,7 +675,7 @@ Le mentionnent sans le gouverner : [`audit-pipeline-gouvernement`](decisions/aud
 | [Taxonomie des mandats : exploitation des `typeOrgane` AN non mappés (#382, option « mixte ») (2026-08-17)](decisions/taxonomie-mandats-typeorgane-an.md) | `MANDATS_AGREGES_CATEGORIES` |
 | [Votes : agrégation des législatures 14 à 17, index dédupliqué, 14/15/16 figées (#403) (2026-08-18)](decisions/votes-multi-legislature.md) | `_compute_cohesion_votes` |
 
-Le mentionnent sans le gouverner : [`civilite-et-pcs-insee-659`](decisions/civilite-et-pcs-insee-659.md), [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`divergences-avec-le-groupe-328`](decisions/divergences-avec-le-groupe-328.md), [`id-pivot-sans-prefixe`](decisions/id-pivot-sans-prefixe.md), [`identifiants-groupes-et-successions-multiples-815`](decisions/identifiants-groupes-et-successions-multiples-815.md), [`identite-profils-539`](decisions/identite-profils-539.md), [`mandats-electifs-liste-complete-640`](decisions/mandats-electifs-liste-complete-640.md), [`ne-jamais-committer-un-build-perime`](decisions/ne-jamais-committer-un-build-perime.md), [`pivot-freshness-timestamps-stables`](decisions/pivot-freshness-timestamps-stables.md), [`populations-profils-portees-par-les-outils-630`](decisions/populations-profils-portees-par-les-outils-630.md), [`profil-de-groupe-lecture-329`](decisions/profil-de-groupe-lecture-329.md), [`provenance-par-champ-603`](decisions/provenance-par-champ-603.md), [`syceron-acteur-ref-nu-510`](decisions/syceron-acteur-ref-nu-510.md), [`syceron-archives-verifiees-parseur-510`](decisions/syceron-archives-verifiees-parseur-510.md).
+Le mentionnent sans le gouverner : [`civilite-et-pcs-insee-659`](decisions/civilite-et-pcs-insee-659.md), [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`divergences-avec-le-groupe-328`](decisions/divergences-avec-le-groupe-328.md), [`fiche-de-lignee-ui-329`](decisions/fiche-de-lignee-ui-329.md), [`id-pivot-sans-prefixe`](decisions/id-pivot-sans-prefixe.md), [`identifiants-groupes-et-successions-multiples-815`](decisions/identifiants-groupes-et-successions-multiples-815.md), [`identite-profils-539`](decisions/identite-profils-539.md), [`mandats-electifs-liste-complete-640`](decisions/mandats-electifs-liste-complete-640.md), [`ne-jamais-committer-un-build-perime`](decisions/ne-jamais-committer-un-build-perime.md), [`pivot-freshness-timestamps-stables`](decisions/pivot-freshness-timestamps-stables.md), [`populations-profils-portees-par-les-outils-630`](decisions/populations-profils-portees-par-les-outils-630.md), [`profil-de-groupe-lecture-329`](decisions/profil-de-groupe-lecture-329.md), [`provenance-par-champ-603`](decisions/provenance-par-champ-603.md), [`syceron-acteur-ref-nu-510`](decisions/syceron-acteur-ref-nu-510.md), [`syceron-archives-verifiees-parseur-510`](decisions/syceron-archives-verifiees-parseur-510.md).
 
 ## `src/group_roster.py`
 
@@ -750,6 +751,8 @@ Le mentionnent sans le gouverner : [`contact-et-comptes-publics-328`](decisions/
 | Décision | Nomme |
 | --- | --- |
 | [Les mandats antérieurs à la couverture de l'Assemblée entrent par une table relue (#860)](decisions/mandats-anterieurs-couverture-860.md) | `appliquer_mandats_anterieurs`, `charger_table` |
+
+Le mentionnent sans le gouverner : [`accueil-borne-par-institution-328`](decisions/accueil-borne-par-institution-328.md).
 
 ## `src/mep_profile.py`
 

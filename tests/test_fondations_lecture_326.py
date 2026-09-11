@@ -38,7 +38,9 @@ COMPOSANTS_LECTURE = UI / "components" / "Lecture.jsx"
 #: signalait, et que ce lot ferme.
 COMPOSANTS_HISTORIQUES = (
     UI / "components" / "CandidateProfile.jsx",
-    UI / "components" / "GroupProfile.jsx",
+    # `GroupProfile.jsx` a laissé la place à la fiche de lignée (#329) : la
+    # garde suit la page de groupe, pas le nom de fichier.
+    UI / "components" / "LigneeProfile.jsx",
 )
 
 #: Les couleurs des positions EXPRIMÉES, telles que le DESIGN_SYSTEM les fixe.

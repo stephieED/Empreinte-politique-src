@@ -44,7 +44,7 @@ import {
   isWholeTextVote,
   normalizeLabel,
   ratio,
-} from './lecture';
+} from './lecture.js';
 
 /* ── Règle : aucun compteur ne veut dire « aujourd'hui » ─────────────────────
  *
@@ -530,6 +530,54 @@ export function partageDuGroupe(groupe) {
   };
 }
 
+/*
+ * Les scrutins mesurables, rangés dans les trois parts de la barre de partage,
+ * pour filtrer la liste au clic sur un segment (annotation du 11/09/2026) :
+ *
+ *  - `une_seule_voix` — toutes les positions exprimées vont dans le même sens ;
+ *  - `abstention`     — partagés entre une position et l'abstention ;
+ *  - `pour_et_contre` — des voix pour ET des voix contre.
+ *
+ * Même décision que `partageDuGroupe`, et elle seule : les trois longueurs
+ * retombent sur `uneSeuleVoix`, `partages − pourEtContre` et `pourEtContre`.
+ *
+ * L'ORDRE. Les deux parts partagées suivent le critère de `partageDuGroupe` —
+ * les plus partagés d'abord, par nombre de voix minoritaires, puis les plus
+ * récents —, et ce nombre ne sort pas : il range, il ne s'affiche jamais (§2
+ * règle 7). « D'une seule voix » n'a rien à ranger par volume — tous y valent
+ * zéro —, et c'est la date qui range (règle de forme 6, #326).
+ *
+ * `dateDe(scrutinId)` est fournie par l'appelant, qui détient l'index des
+ * scrutins. Chaque entrée : `[scrutinId, pour, contre, abstention]`. Une
+ * quatrième liste, `partages`, réunit les deux parts partagées au même ordre.
+ */
+export function scrutinsParPartage(groupe, dateDe = () => '') {
+  const listes = { une_seule_voix: [], abstention: [], pour_et_contre: [] };
+  for (const e of groupe?.cohesion_votes || []) {
+    if (e?.quorum_atteint !== true) continue;
+    const v = POSITIONS_EXPRIMEES.map((cle) => (Number.isFinite(e[cle]) ? e[cle] : 0));
+    const exprimees = v.filter((x) => x > 0);
+    const entree = [e.scrutin_id ?? null, ...v];
+    if (exprimees.length <= 1) {
+      listes.une_seule_voix.push({ entree, minoritaires: 0 });
+      continue;
+    }
+    const total = exprimees.reduce((a, b) => a + b, 0);
+    const minoritaires = total - Math.max(...exprimees);
+    const cle = v[0] > 0 && v[1] > 0 ? 'pour_et_contre' : 'abstention';
+    listes[cle].push({ entree, minoritaires });
+  }
+  const recent = (a, b) => String(dateDe(b.entree[0]) ?? '').localeCompare(String(dateDe(a.entree[0]) ?? ''));
+  const plusPartages = (a, b) => b.minoritaires - a.minoritaires || recent(a, b);
+  listes.une_seule_voix.sort(recent);
+  listes.abstention.sort(plusPartages);
+  listes.pour_et_contre.sort(plusPartages);
+  // `partages` : les deux parts réunies, la vue par défaut — « les plus
+  // partagés », au même ordre.
+  listes.partages = [...listes.abstention, ...listes.pour_et_contre].sort(plusPartages);
+  return Object.fromEntries(Object.entries(listes).map(([cle, l]) => [cle, l.map((x) => x.entree)]));
+}
+
 /* ── Règle : un texte se reconnaît à l'intitulé, et la page le dit ───────────
  *
  * Regrouper les scrutins par LOI demanderait une clé de dossier. Elle n'existe
@@ -689,9 +737,13 @@ export function grandesLois(scrutins, comparaison, sigleDuGroupe, limite = NB_GR
  *
  * La comparaison ne porte que sur les scrutins où LES DEUX groupes atteignent
  * leur quorum : les dénominateurs diffèrent donc d'une ligne à l'autre, et
- * chacun est publié à côté de son numérateur (§2 règle 7). L'ordre est celui du
- * nombre de scrutins comparables, jamais celui de l'accord — trier par accord
- * ferait un classement des alliés (§2 règle 1).
+ * chacun est publié à côté de son numérateur (§2 règle 7). L'ordre est d'abord
+ * celui du nombre de scrutins comparables : trier sur l'accord SEUL rangerait
+ * des parts calculées sur des bases différentes, et ferait un classement des
+ * alliés (§2 règle 1). À base égale, et seulement là, l'accord départage
+ * (relecture de la propriétaire, 11/09/2026) : deux groupes qui partagent le
+ * même nombre de textes se comparent sur le même dénominateur, et le nombre de
+ * votes dans le même sens dit alors la même chose que sa part.
  *
  * Trois natures, et la troisième est ce qui empêche la lecture fausse :
  *
@@ -765,7 +817,39 @@ export function convergences(comparaison, sigleDuGroupe) {
         denominateurLabel: 'scrutins où les deux groupes atteignent leur quorum',
       };
     })
-    .sort((a, b) => b.communs - a.communs || a.sigle.localeCompare(b.sigle, 'fr'));
+    .sort((a, b) => b.communs - a.communs
+      || memeSens(b) - memeSens(a)
+      || a.sigle.localeCompare(b.sigle, 'fr'));
+}
+
+const memeSens = (ligne) => ligne.natures.find((n) => n.cle === 'meme_sens')?.valeur ?? 0;
+
+/*
+ * Les scrutins derrière chaque segment de `convergences`, pour les dérouler au
+ * clic (annotation de la propriétaire, 11/09/2026). Même univers, même nature,
+ * écrite par `natureDeConvergence` et nulle part ailleurs : le compte d'un
+ * segment et la longueur de sa liste sont le même nombre par construction.
+ *
+ * Rend `Map` sigle → `{ meme_sens, nuance, oppose, autres }`, chaque liste de
+ * `[scrutinId, positionDuGroupe, positionDeLAutre]`. L'ordre est laissé à
+ * l'appelant, qui connaît les dates.
+ */
+export function scrutinsParNature(comparaison, sigleDuGroupe) {
+  const groupes = ordonnerGroupesPourComparaison(comparaison, sigleDuGroupe);
+  const moi = groupes.find((g) => g.estLeGroupe);
+  const resultat = new Map();
+  if (!moi) return resultat;
+  for (const autre of groupes) {
+    if (autre.estLeGroupe) continue;
+    const listes = { meme_sens: [], nuance: [], oppose: [], autres: [] };
+    for (const [scrutinId, position] of Object.entries(moi.positions || {})) {
+      const sienne = autre.positions?.[scrutinId] ?? null;
+      const nature = natureDeConvergence(position, sienne);
+      if (nature) listes[nature].push([scrutinId, position, sienne]);
+    }
+    resultat.set(autre.sigle, listes);
+  }
+  return resultat;
 }
 
 /* ── Règle : la comparaison est réunie par posture, jamais alignée ───────────
@@ -943,8 +1027,12 @@ export const ETATS_COUVERTURE_ROSTER = {
     // de ne plus interroger la source, pas d'une période que la source ne
     // publierait pas. Les deux causes n'affirment pas la même chose (#326).
     causeListeVide: 'non_collecte',
+    // La phrase renvoyait à la section « Vérification » de la fiche par
+    // législature, qui a disparu avec la fiche de lignée (#329). La `preuve`
+    // reste dans la donnée : c'est un paragraphe technique (runs, issues), et
+    // un paragraphe n'a pas sa place sur la fiche (règle de forme 2).
     motifListeVide:
-      "Cette fiche est hors du périmètre éditorial du produit : sa collecte est suspendue, et ses listes ne sont plus alimentées. Ce vide est une décision, pas un résultat. La preuve publiée par la fiche — ses références et sa condition de reprise — est reproduite en toutes lettres sous « Vérification ».",
+      "Cette fiche est hors du périmètre éditorial du produit : sa collecte est suspendue, et ses listes ne sont plus alimentées. Ce vide est une décision, pas un résultat.",
   },
 };
 

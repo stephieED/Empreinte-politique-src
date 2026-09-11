@@ -1,12 +1,14 @@
 import {
   buildCandidateView,
-  buildGroupView,
   buildGovernmentView,
   legislatureDeAmendementId,
 } from './pivotAdapter';
 
 export const DEFAULT_CANDIDATE_ID = 'jean-luc-melenchon';
-export const DEFAULT_GROUP_ID = 'AN-SOC-16';
+/* Une LIGNÉE, plus une fiche de législature (#329, #836) : l'adresse d'un
+ * groupe vient de son `lignee_id` déclaré, et ne bouge pas quand il change de
+ * sigle ou de législature. */
+export const DEFAULT_GROUP_ID = 'AN-SOC';
 export const DEFAULT_GOVERNMENT_ID = 'LECORNU_II';
 
 let manifestPromise = null;
@@ -179,7 +181,11 @@ export async function getCandidatesList() {
   return manifest.candidates.map((c) => ({
     id: c.slug,
     nom: c.nom,
-    groupId: c.groupId ?? null,
+    /* Les fiches de groupe dont la personne est membre, appariées par
+     * `sync-data`. Le filtre de la barre des candidats les lit : il était
+     * servi par le manifeste et perdu ici, si bien que sélectionner un groupe
+     * ne retenait AUCUN candidat (constaté en câblant les lignées, #329). */
+    groupIds: c.groupIds || [],
     parti: c.parti,
     // Calculé par `scripts/sync-data.mjs` : « AN » dans `chambres`, ou au moins
     // un mandat de catégorie `fonction_gouvernementale` (#328). L'ordre de la
@@ -191,40 +197,23 @@ export async function getCandidatesList() {
 
 export async function getGroupsList() {
   const manifest = await loadManifest();
-  /* UNE ENTRÉE PAR LIGNÉE, PAS PAR FICHE.
+  /* UNE ENTRÉE PAR LIGNÉE DÉCLARÉE (#836), dans l'ordre alphabétique de son nom.
    *
-   * Le corpus publie une fiche par groupe ET par législature : la barre
-   * affichait trois boutons « Socialistes et apparentés » que rien ne
-   * distinguait, deux « Rassemblement National », et deux « Les Républicains »
-   * dont l'un est le groupe du Sénat. `ligneeTete`, calculé par `sync-data` à
-   * partir de `succede_a`, réunit les fiches d'un même groupe ; le bouton porte
-   * le nom de la plus récente et y mène.
+   * Les lignées viennent du backend (`pivot_data/lignees/`, `lignee_id`
+   * déclaré), plus d'un chaînage de `succede_a` refait ici : deux définitions
+   * du même objet divergent au premier cas qu'une seule prévoit — une scission.
    *
-   * `fiches` accompagne l'entrée parce que le FILTRE en dépend : sélectionner
-   * « Socialistes » doit retenir les candidats membres de N'IMPORTE LAQUELLE des
-   * fiches de la lignée. Ne garder que la tête aurait vidé le filtre en silence.
-   */
-  const parLignee = new Map();
-  for (const g of manifest.groupes) {
-    const cle = g.ligneeTete || g.id;
-    if (!parLignee.has(cle)) parLignee.set(cle, []);
-    parLignee.get(cle).push(g);
-  }
-  const rang = (g) => Number(g.legislature) || 0;
-  return [...parLignee.entries()].map(([cle, fiches]) => {
-    const tete = fiches.find((g) => g.id === cle) || fiches[fiches.length - 1];
-    const ordre = [...fiches].sort((a, b) => rang(a) - rang(b));
-    const legislatures = ordre.map((g) => g.legislature).filter(Boolean);
-    return {
-      id: tete.id,
-      title: tete.nom,
-      chambre: tete.chambre,
-      fiches: ordre.map((g) => g.id),
-      kicker: tete.chambre === 'AN'
-        ? `Assemblée nationale · Législature${legislatures.length > 1 ? 's' : ''} ${legislatures.join(', ')}`
-        : 'Sénat',
-    };
-  }).sort((a, b) => a.title.localeCompare(b.title, 'fr', { sensitivity: 'base' }));
+   * `fiches` accompagne l'entrée parce que le FILTRE des candidats en dépend :
+   * sélectionner « Socialistes » retient les membres de n'importe lequel des
+   * quatre maillons. */
+  return (manifest.lignees || [])
+    .map((l) => ({
+      id: l.id,
+      title: l.nom,
+      chambre: l.chambre,
+      fiches: l.fiches || [],
+    }))
+    .sort((a, b) => a.title.localeCompare(b.title, 'fr', { sensitivity: 'base' }));
 }
 
 /**
@@ -247,6 +236,34 @@ function loadFichesGroupe(manifest, entry) {
       return fiche ? fetchJson(`/data/groupes/${fiche.fichier}`).catch(() => null) : null;
     }),
   );
+}
+
+/* La page de groupe vers laquelle le libellé affiché peut mener — ou `null`.
+ *
+ * Deux conditions, et les deux sont nécessaires :
+ *   1. la personne est membre de cette fiche — `groupIds`, apparié par
+ *      `sync-data` sur `membre_id`, jamais sur un nom (#639) ;
+ *   2. cette fiche porte le nom qu'on AFFICHE. Sans cette seconde condition, le
+ *      lien mènerait ailleurs que là où le texte le dit — c'était le cas de
+ *      Delphine Batho et François Ruffin tant que la fiche ECOS XVIIe n'était
+ *      pas publiée.
+ *
+ * La fiche la plus récente est seule candidate : c'est celle que le libellé
+ * courant peut nommer. Le lien mène à sa LIGNÉE, la page de groupe depuis #329 —
+ * la fiche par législature n'a plus de page. Mesuré le 11/09/2026 : 12 des 30
+ * fiches de candidats publiées portent un lien ; les 18 autres nomment un
+ * parti, un groupe du Parlement européen ou « Non inscrit ».
+ */
+function ficheDuGroupeAffiche(manifest, entry, pivot) {
+  const libelle = (pivot?.groupe || '').trim();
+  if (!libelle) return null;
+  const fiches = (entry.groupIds || [])
+    .map((gid) => (manifest.groupes || []).find((g) => g.id === gid))
+    .filter(Boolean)
+    .sort((a, b) => (Number(a.legislature) || 0) - (Number(b.legislature) || 0));
+  const recente = fiches[fiches.length - 1];
+  if (!recente || (recente.nom || '').trim() !== libelle) return null;
+  return { id: recente.lignee ?? recente.id, nom: recente.nom, legislature: recente.legislature };
 }
 
 export async function getCandidateProfile(id) {
@@ -277,63 +294,32 @@ export async function getCandidateProfile(id) {
     // demande la chronologie entière. Les dates vivent déjà dans le manifeste,
     // aucune fiche supplémentaire n'est téléchargée.
     manifest.gouvernements || [],
+    ficheDuGroupeAffiche(manifest, entry, pivot),
   );
 }
 
 /**
- * Projection de comparaison entre les groupes d'une même législature (#329).
- *
- * Les sections « comment ils votent » et « comment ils se situent » comparent le
- * groupe à ceux de la MÊME législature : mêmes scrutins, même période, mêmes
- * dénominateurs. Elles n'ont pas besoin des fiches voisines — 15,1 Mo pour les 5
- * fiches AN de la XVIe —, seulement de leur sigle, de leur effectif, de leurs
- * amendements agrégés, de leur position politique déclarée et des positions
- * majoritaires des scrutins où LEUR quorum est atteint : 51 Ko, écrits au build
- * par `scripts/comparaison-groupes.mjs`.
- *
- * Mémoïsé, et non bloquant : un échec de chargement rend `null`, et les trois
- * sections concernées DISENT que la comparaison manque. Elles n'affichent pas
- * des tableaux vides, qui se liraient comme des zéros mesurés (§2 règle 5).
+ * La fiche d'une lignée : sa PROJECTION de build (`scripts/vue-lignee.mjs`),
+ * jamais la fiche de `pivot_data/lignees/` ni ses maillons — 134 Ko pour la
+ * lignée socialiste, contre 5,3 Mo de fiche de lignée et 11 Mo de maillons.
+ * Tout ce que la page affiche y est déjà calculé, par les règles de
+ * `utils/groupe.js` et `utils/lignee.js` que ce navigateur importe aussi.
  */
-const comparaisonsPromises = new Map();
-
-function loadComparaison(fichier) {
-  if (!fichier) return Promise.resolve(null);
-  if (!comparaisonsPromises.has(fichier)) {
-    comparaisonsPromises.set(
-      fichier,
-      fetch(`/data/groupes/${fichier}`)
-        .then((r) => (r.ok ? r.json() : null))
-        .catch(() => null),
-    );
-  }
-  return comparaisonsPromises.get(fichier);
+export async function getLigneeProfile(id) {
+  const manifest = await loadManifest();
+  const entry = (manifest.lignees || []).find((l) => l.id === id);
+  if (!entry) return null;
+  return fetchJson(`/data/lignees/${entry.fichier}`);
 }
 
-export async function getGroupProfile(id) {
+/**
+ * La lignée d'une fiche de groupe — pour les adresses d'avant #329
+ * (`/groupes/AN-SOC-17`), qui mènent désormais à la lignée entière. `null`
+ * quand l'identifiant n'est pas une fiche de groupe connue.
+ */
+export async function ligneeDeLaFiche(idDeFiche) {
   const manifest = await loadManifest();
-  const entry = manifest.groupes.find((g) => g.id === id);
-  if (!entry) return null;
-  const [groupe, scrutins, comparaison] = await Promise.all([
-    fetchJson(`/data/groupes/${entry.fichier}`),
-    loadScrutins(),
-    loadComparaison(entry.comparaison),
-  ]);
-  if (!groupe) return null;
-  /* La lignée vient du manifeste, où `sync-data` l'a chaînée sur `succede_a` :
-   * la fiche, elle, ne connaît que son prédécesseur — jamais ses successeurs. */
-  const lignee = (entry.lignee || [entry.id])
-    .map((fid) => manifest.groupes.find((g) => g.id === fid))
-    .filter(Boolean)
-    .sort((a, b) => (Number(a.legislature) || 0) - (Number(b.legislature) || 0))
-    .map((g) => ({
-      id: g.id,
-      sigle: g.sigle,
-      nom: g.nom,
-      legislature: g.legislature,
-      courante: g.id === entry.id,
-    }));
-  return buildGroupView(groupe, scrutins, comparaison, lignee);
+  return (manifest.groupes || []).find((g) => g.id === idDeFiche)?.lignee ?? null;
 }
 
 export async function getGovernmentsList() {

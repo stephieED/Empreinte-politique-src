@@ -8,6 +8,9 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { cleLegislature, construireComparaisons } from './comparaison-groupes.mjs';
 import { construireCouverture } from './couverture-corpus.mjs';
+import { construireVueLignee, idDePage } from './vue-lignee.mjs';
+import { repartitionsDesMaillons } from './amendements-lignees.mjs';
+import { selectDerniereLectureVotes } from '../src/utils/lecture.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(here, '..');
@@ -17,6 +20,7 @@ const outDir = path.join(projectRoot, 'public', 'data');
 const pivotProfilesDir = path.join(repoRoot, 'pivot_data', 'profiles');
 const pivotGroupesDir = path.join(repoRoot, 'pivot_data', 'groupes');
 const pivotGouvernementsDir = path.join(repoRoot, 'pivot_data', 'gouvernements');
+const pivotLigneesDir = path.join(repoRoot, 'pivot_data', 'lignees');
 const candidatsPath = path.join(repoRoot, 'raw_data', 'candidats.json');
 const scrutinsPath = path.join(repoRoot, 'pivot_data', 'scrutins.json');
 const amendementsDir = path.join(repoRoot, 'pivot_data', 'amendements');
@@ -24,6 +28,7 @@ const amendementsDir = path.join(repoRoot, 'pivot_data', 'amendements');
 mkdirSync(path.join(outDir, 'profiles'), { recursive: true });
 mkdirSync(path.join(outDir, 'groupes'), { recursive: true });
 mkdirSync(path.join(outDir, 'gouvernements'), { recursive: true });
+mkdirSync(path.join(outDir, 'lignees'), { recursive: true });
 
 // --- scrutins.json (index partagé, #432) ---
 // Depuis la normalisation des votes, un profil ne porte plus que le mapping
@@ -226,10 +231,6 @@ for (const file of groupeFiles) {
     chambre: groupe.chambre,
     legislature: groupe.legislature,
     rosterTotal: groupe.meta?.couverture_roster?.roster_total ?? null,
-    // #329 : la fiche compare les groupes de la MÊME législature. Le manifeste
-    // porte la clé pour que l'UI sache quel fichier de comparaison charger,
-    // sans télécharger une seule fiche voisine (les 5 fiches AN pèsent 15,1 Mo).
-    comparaison: `comparaison-${cleLegislature(groupe)}.json`,
   });
   // Rattache chaque candidat au groupe réel dont il est membre (membre_id ->
   // slug), pour permettre le filtrage "Candidats" par "Groupes" côté UI sans
@@ -244,80 +245,154 @@ for (const file of groupeFiles) {
   }
 }
 
-/* --- LES LIGNÉES : UN BOUTON PAR GROUPE, PAS PAR FICHE ---------------------
+/* --- LES LIGNÉES : UN BOUTON PAR LIGNÉE DÉCLARÉE --------------------------
  *
- * Le corpus publie une fiche par groupe ET par législature (#700). Ce n'est pas
- * le découpage du lecteur : la barre affichait TROIS boutons « Socialistes et
- * apparentés » que rien ne distinguait à l'écran, deux « Rassemblement
- * National », et deux « Les Républicains » dont l'un est le groupe du Sénat.
+ * Le corpus publie une fiche par groupe ET par législature (#700) ; la
+ * propriétaire a tranché le 10/09/2026 que l'interface publie une fiche par
+ * LIGNÉE. Ces lignées, le backend les DÉCLARE (`lignee_id`, #836) et les écrit
+ * dans `pivot_data/lignees/` : ce script les lit, il ne les recalcule plus.
  *
- * Les fiches se chaînent par `succede_a` — un fait DÉCLARÉ, établi par relecture
- * humaine et daté, jamais une ressemblance de sigle (#639). Chaque chaîne reçoit
- * un bouton, qui porte le nom de sa fiche la plus récente et y mène ; les autres
- * restent accessibles depuis la fiche elle-même.
+ * Il les recalculait, en chaînant `succede_a`. Deux définitions du même objet,
+ * dont l'une ignorait le travail du backend : elles coïncidaient le 11/09/2026
+ * (13 lignées de part et d'autre, maillon pour maillon), mais seulement parce
+ * qu'aucune scission n'était encore déclarée — `UDR` quittant `DR`, #815, est
+ * exactement le cas où une chaîne et une partition déclarée divergent.
  *
- * DEUX FORMES DE `succede_a` SONT ACCEPTÉES, ET LES DEUX SONT NÉCESSAIRES.
- * #815 en a fait une LISTE — une fusion a deux prédécesseurs, une scission n'est
- * pas un remplacement. Le schéma et la config portent la forme nouvelle sur
- * `main` ; les fiches PUBLIÉES, elles, portent encore un bloc unique : vérifié
- * le 10/09/2026 sur les vingt fiches servies, 7 blocs et 13 `null`, aucune
- * liste. Elles ne basculeront qu'à la fin du run en cours.
- *
- * Ne lire que la liste casserait donc la barre aujourd'hui, et ne lire que le
- * bloc la casserait demain — dans les deux cas sans qu'aucune étape n'échoue :
- * les chaînages disparaîtraient en silence et la barre reviendrait à un bouton
- * par fiche. Les deux formes restent lues tant que les deux existent.
+ * Les fiches de lignée ne sont PAS copiées : 5 Ko à 7,7 Mo chacune, dont la page
+ * lit une fraction. `vue-lignee.mjs` en écrit la projection, une par lignée.
  */
-const predecesseursDe = (groupe) => {
-  const sa = groupe.succede_a;
-  if (!sa) return [];
-  return (Array.isArray(sa) ? sa : [sa]).map((b) => b?.groupe_id).filter(Boolean);
-};
-
-const parGroupeId = new Map(fichesPourComparaison.map(({ id, groupe }) => [groupe.groupe_id, id]));
-const suivantDe = new Map();
-for (const { id, groupe } of fichesPourComparaison) {
-  for (const cible of predecesseursDe(groupe)) {
-    const idPrecedent = parGroupeId.get(cible);
-    if (idPrecedent) suivantDe.set(idPrecedent, id);
-  }
+const lignesFiles = existsSync(pivotLigneesDir)
+  ? readdirSync(pivotLigneesDir).filter((f) => f.endsWith('.json')).sort()
+  : [];
+if (lignesFiles.length === 0) {
+  console.warn(`sync-data : ${pivotLigneesDir} vide ou absent — aucune page de groupe ne sera servie (#836).`);
 }
-const aUnSuccesseur = new Set(suivantDe.keys());
-const estUnSuccesseur = new Set(suivantDe.values());
-
-const ligneeDe = new Map();
-for (const { id } of fichesPourComparaison) {
-  if (estUnSuccesseur.has(id)) continue;      // on part des têtes de chaîne
-  const chaine = [];
-  let courant = id;
-  while (courant && !chaine.includes(courant)) {
-    chaine.push(courant);
-    courant = suivantDe.get(courant);
-  }
-  for (const maillon of chaine) ligneeDe.set(maillon, chaine);
+const idDeFicheParFichier = new Map(manifestGroupes.map((g) => [g.fichier, g.id]));
+const ficheParFichier = new Map(fichesPourComparaison.map(({ id, groupe }) => [`groupe-${id}.json`, groupe]));
+const manifestLignees = [];
+const ligneeDeFiche = new Map();
+for (const file of lignesFiles) {
+  const lignee = JSON.parse(readFileSync(path.join(pivotLigneesDir, file), 'utf-8'));
+  const id = idDePage(file);
+  const fiches = (lignee.maillons || []).map((m) => idDeFicheParFichier.get(m.fichier)).filter(Boolean);
+  for (const f of fiches) ligneeDeFiche.set(f, id);
+  manifestLignees.push({
+    id,
+    fichier: `${id}.json`,
+    ligneeId: lignee.lignee_id,
+    nom: lignee.lignee_nom,
+    chambre: lignee.chambre,
+    // Les fiches de groupe de la lignée, du plus ancien au plus récent : le
+    // FILTRE des candidats en dépend — sélectionner « Socialistes » retient les
+    // membres de n'importe lequel des quatre maillons.
+    fiches,
+  });
 }
-for (const g of manifestGroupes) {
-  const chaine = ligneeDe.get(g.id) || [g.id];
-  g.lignee = chaine;
-  // Le DERNIER maillon porte le bouton : c'est le nom sous lequel le groupe
-  // existe aujourd'hui, et la fiche la plus fournie.
-  g.ligneeTete = chaine[chaine.length - 1];
+for (const g of manifestGroupes) g.lignee = ligneeDeFiche.get(g.id) ?? null;
+// Une fiche de groupe qu'aucune lignée ne déclare n'aurait plus de page. Le
+// portail le refuse déjà (§4c, #836) ; si elle passait quand même, elle se
+// NOMME ici plutôt que de disparaître de l'interface en silence (#510).
+const orphelines = manifestGroupes.filter((g) => !g.lignee).map((g) => g.id);
+if (orphelines.length) {
+  console.warn(`sync-data : ${orphelines.length} fiche(s) de groupe dans aucune lignée déclarée — sans page : ${orphelines.join(', ')}.`);
 }
 console.log(
-  `sync-data : ${manifestGroupes.length} fiches de groupe → `
-  + `${new Set(manifestGroupes.map((g) => g.ligneeTete)).size} lignées.`,
+  `sync-data : ${manifestGroupes.length} fiches de groupe → ${manifestLignees.length} lignées déclarées.`,
 );
 
 // --- comparaisons par législature (#329) ---
 // Une projection par (chambre, législature) : sigle, effectif, amendements
 // agrégés, position politique déclarée, et les positions majoritaires des seuls
-// scrutins où le quorum est atteint. C'est ce qui permet à la fiche de comparer
-// sans faire télécharger les fiches voisines — 150 Ko au lieu de 15,1 Mo.
-for (const [cle, comparaison] of construireComparaisons(fichesPourComparaison)) {
-  writeFileSync(
-    path.join(outDir, 'groupes', `comparaison-${cle}.json`),
-    JSON.stringify(comparaison),
-  );
+// scrutins où le quorum est atteint. Elle n'est plus SERVIE : la page de lignée
+// la lit ici, au build, pour « Avec qui ils votent », et aucune page ne la
+// télécharge plus — l'écrire dans public/data serait du poids mort.
+const comparaisons = construireComparaisons(fichesPourComparaison);
+
+/* La date la plus récente parmi des fichiers et des répertoires : la clé des
+ * deux caches de ce script, `couverture.json` et les vues de lignée. */
+const plusRecent = (...chemins) => chemins.reduce((max, c) => {
+  if (!existsSync(c)) return max;
+  const st = statSync(c);
+  if (st.isDirectory()) {
+    return readdirSync(c).reduce((m, f) => Math.max(m, statSync(path.join(c, f)).mtimeMs), max);
+  }
+  return Math.max(max, st.mtimeMs);
+}, 0);
+
+// --- vues de lignée (#329) ---
+// Une projection par lignée : ce que la page lit, calculé par les MÊMES
+// fonctions que le navigateur (`src/utils/groupe.js`, `src/utils/lignee.js`).
+// ~1 Mo pour les 13 lignées du 11/09/2026, contre 50 Mo de fiches de lignée.
+//
+// LE CACHE EST SUR LES DATES, comme `couverture.json` : la répartition des
+// amendements par commission relit les profils des membres et les quatre index
+// (une minute), et la refaire à chaque `npm run dev` serait insupportable.
+const entreesLignees = plusRecent(
+  pivotLigneesDir,
+  pivotGroupesDir,
+  pivotProfilesDir,
+  amendementsDir,
+  commissionsPath,
+  scrutinsPath,
+  scrutinsDossiersPath,
+  candidatsPath,
+  path.join(here, 'vue-lignee.mjs'),
+  path.join(here, 'amendements-lignees.mjs'),
+  path.join(here, 'comparaison-groupes.mjs'),
+  path.join(projectRoot, 'src', 'utils', 'lignee.js'),
+  path.join(projectRoot, 'src', 'utils', 'groupe.js'),
+  path.join(projectRoot, 'src', 'utils', 'lecture.js'),
+);
+const vuesAJour = manifestLignees.length > 0 && manifestLignees.every((l) => {
+  const f = path.join(outDir, 'lignees', l.fichier);
+  return existsSync(f) && statSync(f).mtimeMs >= entreesLignees;
+});
+if (vuesAJour) {
+  console.log('sync-data : vues de lignée à jour, reconstruction sautée.');
+} else {
+  const debut = Date.now();
+  const repartitions = repartitionsDesMaillons({
+    fiches: ficheParFichier,
+    profilesDir: pivotProfilesDir,
+    amendementsDir,
+    commissionsPath,
+    scrutinsDossiersPath,
+  });
+  // Un écart au total publié se NOMME : la répartition de ce type n'est pas
+  // servie, et la page le dira plutôt que d'afficher des barres fausses.
+  for (const [fichier, r] of repartitions) {
+    for (const e of r.ecarts) {
+      console.warn(`sync-data : ${fichier} — ${e.type} recompté ${e.recompte}, publié ${e.attendu} : répartition par commission non servie.`);
+    }
+  }
+  const scrutinsListe = existsSync(scrutinsPath)
+    ? Object.values(JSON.parse(readFileSync(scrutinsPath, 'utf-8')).scrutins || {})
+    : [];
+  const candidatsPublies = new Set(manifestCandidates.map((c) => c.slug));
+  // La dernière lecture de chaque texte, choisie par la date sur le corpus
+  // ENTIER (#711) : une fois pour les treize lignées.
+  const dernieresLectures = new Set(selectDerniereLectureVotes(scrutinsListe).map((s) => s.id));
+  const aujourdhui = new Date().toISOString().slice(0, 10);
+  for (const entree of manifestLignees) {
+    const lignee = JSON.parse(readFileSync(path.join(pivotLigneesDir, `lignee-${entree.id}.json`), 'utf-8'));
+    const vue = construireVueLignee({
+      fichier: `lignee-${entree.id}.json`,
+      lignee,
+      fiches: ficheParFichier,
+      idsDeFiche: idDeFicheParFichier,
+      scrutins: scrutinsListe,
+      comparaisons,
+      cleDe: cleLegislature,
+      candidats: candidatsPublies,
+      repartitions,
+      ligneeDeFiche,
+      nomsDesLignees: new Map(manifestLignees.map((l) => [l.id, l.nom])),
+      dernieresLectures,
+      aujourdhui,
+    });
+    writeFileSync(path.join(outDir, 'lignees', entree.fichier), JSON.stringify(vue));
+  }
+  console.log(`sync-data : ${manifestLignees.length} vues de lignée écrites en ${((Date.now() - debut) / 1000).toFixed(1)} s.`);
 }
 
 // --- profils de gouvernement réels ---
@@ -358,14 +433,6 @@ manifestGouvernements.sort((a, b) => (b.debut || '').localeCompare(a.debut || ''
  * donc la date du fichier produit à la plus récente des entrées.
  */
 const couverturePath = path.join(outDir, 'couverture.json');
-const plusRecent = (...chemins) => chemins.reduce((max, c) => {
-  if (!existsSync(c)) return max;
-  const st = statSync(c);
-  if (st.isDirectory()) {
-    return readdirSync(c).reduce((m, f) => Math.max(m, statSync(path.join(c, f)).mtimeMs), max);
-  }
-  return Math.max(max, st.mtimeMs);
-}, 0);
 const entreesCouverture = plusRecent(
   pivotProfilesDir,
   pivotGroupesDir,
@@ -390,7 +457,7 @@ if (!existsSync(couverturePath) || statSync(couverturePath).mtimeMs < entreesCou
 writeFileSync(
   path.join(outDir, 'manifest.json'),
   JSON.stringify(
-    { candidates: manifestCandidates, groupes: manifestGroupes, gouvernements: manifestGouvernements },
+    { candidates: manifestCandidates, groupes: manifestGroupes, lignees: manifestLignees, gouvernements: manifestGouvernements },
     null,
     2,
   ),

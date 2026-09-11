@@ -148,7 +148,11 @@ def test_la_limite_projets_de_loi_a_disparu(profil: str, fiche: str) -> None:
     rien du fait qu'elle prétend garder.
     """
     assert "'projets-de-loi'" not in profil, "la limite survit dans les limites déclarées"
-    assert "t.projetDeLoi" in fiche, (
+    # La liste ouverte au clic vit dans `CascadeTextes.jsx` depuis #329 : la
+    # fiche de lignée dessine la même figure.
+    liste = _sans_commentaires((SRC / "components" / "CascadeTextes.jsx").read_text(encoding="utf-8"))
+    assert "from './CascadeTextes'" in fiche
+    assert "t.projetDeLoi" in liste, (
         "la distinction projet / proposition a été supprimée au lieu de la seule "
         "affirmation fausse : la liste ne la rend plus"
     )

@@ -9,11 +9,12 @@ import './FriseCouverture.css';
  * image ce que nous lisons et ce que nous ne lisons pas. Sous chaque
  * institution, ses listes ; sous chaque liste, ses champs.
  *
- * LA FICHE D'ORIGINE n'est pas un niveau, c'est une TEINTE : candidats,
- * gouvernements, groupes. Trois fiches peuvent porter le même fait sur la même
- * période — elles vivent alors dans le MÊME rail, superposées, et le mélange se
- * voit. En faire un niveau de hiérarchie dédoublerait la frise pour ne rien
- * dire de plus.
+ * LA FICHE D'ORIGINE n'est ni un niveau ni une teinte : candidats,
+ * gouvernements, groupes vivent dans le MÊME rail, une seule catégorie —
+ * « données collectées » (11/09/2026). La teinte est celle de l'INSTITUTION,
+ * la même que sur les fiches (`teintes-des-institutions-328`) : Assemblée
+ * prune, Gouvernement ocre, Parlement européen bleu de l'Union. Le survol d'un
+ * segment nomme encore la fiche d'où il vient.
  */
 
 const AXE_DEBUT = 2000;
@@ -30,7 +31,6 @@ const GRADUATIONS = [2005, 2010, 2015, 2020, 2025];
  * hachure pâle de ce qu'on ne peut pas lire. */
 const SANS_ACTIVITE = [
   { cle: 'Senat', titre: 'Sénat', quoi: 'Le mandat est publié, l’activité n’est pas collectée.' },
-  { cle: 'PE', titre: 'Parlement européen', quoi: 'Le mandat est publié, l’activité n’est pas collectée.' },
   { cle: 'local', titre: 'Mandats locaux', quoi: 'Aucune source identifiée : ni le mandat, ni l’activité.' },
 ];
 
@@ -67,7 +67,11 @@ export default function FriseCouverture({ couverture }) {
    * la première donnée réellement portée. Une hachure ne passe jamais par-dessus
    * un fait. */
   const avantBorne = (piste) => {
-    const b = bornes[piste.cle];
+    // Une piste qui déclare `borne: null` n'a pas de borne de source connue
+    // (le Parlement européen) : rien n'est hachuré, plutôt qu'une hachure posée
+    // sur sa première donnée, qui ne dirait rien.
+    if ('borne' in piste && !piste.borne) return null;
+    const b = piste.borne ?? bornes[piste.cle];
     const mini = piste.couches.reduce(
       (m, c) => c.periodes.reduce((n, x) => (!n || x[0] < n ? x[0] : n), m),
       null,
@@ -119,13 +123,30 @@ export default function FriseCouverture({ couverture }) {
       );
     });
 
+  /* APRÈS LA DERNIÈRE PARUTION À LA SOURCE. Le Parlement européen déclare, liste
+   * par liste, la date au-delà de laquelle sa source ne publie plus rien dans
+   * ce corpus (`couverture_profil.bornes_europeennes`, #683) : ce qui suit n'est
+   * pas absent, il n'est pas encore paru chez elle. C'est un fait sur la
+   * source — la hachure pâle, pas le jaune. */
+  const apresSource = (piste) => {
+    if (!piste.finSource || piste.finSource >= collecteLe) return null;
+    return (
+      <span
+        className="fc-horssource"
+        style={{ left: `${posDate(piste.finSource)}%`, right: 0 }}
+        title={`rien de paru à la source après le ${jour(piste.finSource)}`}
+      />
+    );
+  };
+
   const rail = (piste, couches, avecQueue) => (
     <div className="fc-rail">
       {avantBorne(piste)}
+      {apresSource(piste)}
       {couches.map((c) => (
         <div
           key={c.origine || c.titre}
-          className={`fc-couche fc-couche--${c.pop}`}
+          className="fc-couche"
           title={c.origine || c.titre}
         >
           {avecQueue ? apresChamp(c.periodes, finDe(piste, c.origine)) : null}
@@ -163,7 +184,7 @@ export default function FriseCouverture({ couverture }) {
           </div>
 
           {hierarchie.map((inst) => (
-            <div className="fc-groupe" key={inst.cle}>
+            <div className={`fc-groupe fc-groupe--${inst.cle}`} key={inst.cle}>
               <div className="fc-groupe-titre">{inst.titre}</div>
               {inst.pistes.map((piste) => {
                 const cle = `${inst.cle}-${piste.cle}`;
@@ -246,9 +267,7 @@ export default function FriseCouverture({ couverture }) {
       </div>
 
       <p className="fc-legende">
-        <span><i className="fc-cle fc-cle--cand" />Fiches de candidats</span>
-        <span><i className="fc-cle fc-cle--gouv" />Fiches de gouvernement</span>
-        <span><i className="fc-cle fc-cle--grp" />Fiches de groupe</span>
+        <span><i className="fc-cle fc-cle--collecte" />Données collectées</span>
         <span><i className="fc-cle fc-cle--nonc" />Données non collectées</span>
         <span><i className="fc-cle fc-cle--hors" />Données non publiées</span>
       </p>
