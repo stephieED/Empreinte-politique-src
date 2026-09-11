@@ -18,6 +18,12 @@
       "nom": "Jean-Luc Mélenchon",
       "debut_dans_groupe": "2017-06-27",
       "fin_dans_groupe": "2022-06-21",
+      "periodes": [
+        {
+          "debut": "2017-06-27",
+          "fin": "2022-06-21"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -25,6 +31,12 @@
       "nom": "Clémentine Autain",
       "debut_dans_groupe": "2017-06-27",
       "fin_dans_groupe": "2022-06-21",
+      "periodes": [
+        {
+          "debut": "2017-06-27",
+          "fin": "2022-06-21"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -32,6 +44,12 @@
       "nom": "Bénédicte Taurine",
       "debut_dans_groupe": "2017-06-27",
       "fin_dans_groupe": "2022-06-21",
+      "periodes": [
+        {
+          "debut": "2017-06-27",
+          "fin": "2022-06-21"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -39,6 +57,12 @@
       "nom": "Michel Larive",
       "debut_dans_groupe": "2017-06-27",
       "fin_dans_groupe": "2022-06-21",
+      "periodes": [
+        {
+          "debut": "2017-06-27",
+          "fin": "2022-06-21"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -46,6 +70,12 @@
       "nom": "Loïc Prud'homme",
       "debut_dans_groupe": "2017-06-27",
       "fin_dans_groupe": "2022-06-21",
+      "periodes": [
+        {
+          "debut": "2017-06-27",
+          "fin": "2022-06-21"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -53,6 +83,12 @@
       "nom": "Muriel Ressiguier",
       "debut_dans_groupe": "2017-06-27",
       "fin_dans_groupe": "2022-06-21",
+      "periodes": [
+        {
+          "debut": "2017-06-27",
+          "fin": "2022-06-21"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -60,6 +96,12 @@
       "nom": "Caroline Fiat",
       "debut_dans_groupe": "2017-06-27",
       "fin_dans_groupe": "2022-06-21",
+      "periodes": [
+        {
+          "debut": "2017-06-27",
+          "fin": "2022-06-21"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -67,6 +109,12 @@
       "nom": "Adrien Quatennens",
       "debut_dans_groupe": "2017-06-27",
       "fin_dans_groupe": "2022-06-21",
+      "periodes": [
+        {
+          "debut": "2017-06-27",
+          "fin": "2022-06-21"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -74,6 +122,12 @@
       "nom": "Ugo Bernalicis",
       "debut_dans_groupe": "2017-06-27",
       "fin_dans_groupe": "2022-06-21",
+      "periodes": [
+        {
+          "debut": "2017-06-27",
+          "fin": "2022-06-21"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -81,6 +135,12 @@
       "nom": "Bastien Lachaud",
       "debut_dans_groupe": "2017-06-27",
       "fin_dans_groupe": "2022-06-21",
+      "periodes": [
+        {
+          "debut": "2017-06-27",
+          "fin": "2022-06-21"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -88,6 +148,12 @@
       "nom": "Mathilde Panot",
       "debut_dans_groupe": "2017-06-27",
       "fin_dans_groupe": "2022-06-21",
+      "periodes": [
+        {
+          "debut": "2017-06-27",
+          "fin": "2022-06-21"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -95,6 +161,12 @@
       "nom": "Jean-Hugues Ratenon",
       "debut_dans_groupe": "2017-06-27",
       "fin_dans_groupe": "2022-06-21",
+      "periodes": [
+        {
+          "debut": "2017-06-27",
+          "fin": "2022-06-21"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -102,6 +174,12 @@
       "nom": "Éric Coquerel",
       "debut_dans_groupe": "2017-06-27",
       "fin_dans_groupe": "2022-06-21",
+      "periodes": [
+        {
+          "debut": "2017-06-27",
+          "fin": "2022-06-21"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -109,6 +187,12 @@
       "nom": "Alexis Corbière",
       "debut_dans_groupe": "2017-06-27",
       "fin_dans_groupe": "2022-06-21",
+      "periodes": [
+        {
+          "debut": "2017-06-27",
+          "fin": "2022-06-21"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -116,6 +200,12 @@
       "nom": "Sabine Rubin",
       "debut_dans_groupe": "2017-06-27",
       "fin_dans_groupe": "2022-06-21",
+      "periodes": [
+        {
+          "debut": "2017-06-27",
+          "fin": "2022-06-21"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -123,6 +213,12 @@
       "nom": "Danièle Obono",
       "debut_dans_groupe": "2017-06-27",
       "fin_dans_groupe": "2022-06-21",
+      "periodes": [
+        {
+          "debut": "2017-06-27",
+          "fin": "2022-06-21"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -130,6 +226,12 @@
       "nom": "François Ruffin",
       "debut_dans_groupe": "2017-06-27",
       "fin_dans_groupe": "2022-06-21",
+      "periodes": [
+        {
+          "debut": "2017-06-27",
+          "fin": "2022-06-21"
+        }
+      ],
       "present_a_la_date_de_reference": true
     }
   ],
@@ -69879,7 +69981,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA588884",
-      "synchro_le": "2026-09-11T00:05:57+0000"
+      "synchro_le": "2026-09-11T08:15:21+0000"
     },
     {
       "type": "nosdeputes",
@@ -69889,12 +69991,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718860",
-      "synchro_le": "2026-09-10T23:58:20+0000"
+      "synchro_le": "2026-09-11T08:11:59+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718868",
-      "synchro_le": "2026-09-10T23:58:53+0000"
+      "synchro_le": "2026-09-11T08:12:22+0000"
     },
     {
       "type": "nosdeputes",
@@ -69904,12 +70006,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719578",
-      "synchro_le": "2026-09-10T23:57:34+0000"
+      "synchro_le": "2026-09-11T08:12:18+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719676",
-      "synchro_le": "2026-09-11T00:04:40+0000"
+      "synchro_le": "2026-09-11T08:15:31+0000"
     },
     {
       "type": "nosdeputes",
@@ -69919,7 +70021,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720286",
-      "synchro_le": "2026-09-10T23:58:26+0000"
+      "synchro_le": "2026-09-11T08:12:04+0000"
     },
     {
       "type": "nosdeputes",
@@ -69929,7 +70031,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720422",
-      "synchro_le": "2026-09-10T23:58:31+0000"
+      "synchro_le": "2026-09-11T08:12:00+0000"
     },
     {
       "type": "nosdeputes",
@@ -69939,7 +70041,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720430",
-      "synchro_le": "2026-09-11T00:04:17+0000"
+      "synchro_le": "2026-09-11T08:15:07+0000"
     },
     {
       "type": "nosdeputes",
@@ -69949,7 +70051,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720846",
-      "synchro_le": "2026-09-11T00:08:37+0000"
+      "synchro_le": "2026-09-11T08:15:00+0000"
     },
     {
       "type": "nosdeputes",
@@ -69959,7 +70061,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720892",
-      "synchro_le": "2026-09-11T00:05:58+0000"
+      "synchro_le": "2026-09-11T08:15:21+0000"
     },
     {
       "type": "nosdeputes",
@@ -69969,7 +70071,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721062",
-      "synchro_le": "2026-09-11T00:08:00+0000"
+      "synchro_le": "2026-09-11T08:19:02+0000"
     },
     {
       "type": "nosdeputes",
@@ -69979,7 +70081,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721202",
-      "synchro_le": "2026-09-10T23:58:21+0000"
+      "synchro_le": "2026-09-11T08:12:00+0000"
     },
     {
       "type": "nosdeputes",
@@ -69989,12 +70091,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721210",
-      "synchro_le": "2026-09-10T23:57:35+0000"
+      "synchro_le": "2026-09-11T08:12:19+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721226",
-      "synchro_le": "2026-09-11T00:09:00+0000"
+      "synchro_le": "2026-09-11T08:15:22+0000"
     },
     {
       "type": "nosdeputes",
@@ -70004,7 +70106,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721960",
-      "synchro_le": "2026-09-10T23:58:26+0000"
+      "synchro_le": "2026-09-11T08:12:04+0000"
     },
     {
       "type": "nosdeputes",
@@ -70014,12 +70116,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722142",
-      "synchro_le": "2026-09-10T23:58:31+0000"
+      "synchro_le": "2026-09-11T08:12:01+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-11T00:34:45+0000",
+    "genere_le": "2026-09-11T08:47:08+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO) + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu) + ODbL v1.0 (ParlTrack — https://parltrack.org/dumps)",
     "profils_sources": [
       "jean-luc-melenchon",

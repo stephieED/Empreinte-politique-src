@@ -69,6 +69,15 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "frederic-valletoux",
+      "nom": "Frédéric Valletoux",
+      "portefeuille": "Ministère auprès de la ministre du travail, de la santé et des solidarités, chargé de la santé et de la prévention",
+      "debut": "2024-02-09",
+      "fin": "2024-09-05",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "gabriel-attal",
       "nom": "Gabriel Attal",
       "portefeuille": "Premier ministre",
@@ -105,6 +114,24 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "jean-noel-barrot",
+      "nom": "Jean-Noël Barrot",
+      "portefeuille": "Ministère auprès du ministre de l’Europe et des affaires étrangères, chargé de l’Europe",
+      "debut": "2024-02-09",
+      "fin": "2024-09-05",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "marc-fesneau",
+      "nom": "Marc Fesneau",
+      "portefeuille": "Ministère de l’agriculture et de la souveraineté alimentaire",
+      "debut": "2024-01-12",
+      "fin": "2024-09-05",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "marie-guevenoux",
       "nom": "Marie Guévenoux",
       "portefeuille": "Ministère auprès du ministre de l’intérieur et des outre-mer, chargé des outre-mer",
@@ -118,6 +145,15 @@
       "nom": "Marie Lebec",
       "portefeuille": "Ministère auprès du Premier ministre, chargé des relations avec le Parlement",
       "debut": "2024-01-12",
+      "fin": "2024-09-05",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "marina-ferrari",
+      "nom": "Marina Ferrari",
+      "portefeuille": "Secrétariat d’État auprès du ministre de l’économie, des finances et de la souveraineté industrielle et numérique, chargé du numérique",
+      "debut": "2024-02-09",
       "fin": "2024-09-05",
       "actif": false,
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
@@ -162,6 +198,15 @@
       "membre_id": "sabrina-agresti-roubache",
       "nom": "Sabrina Roubache",
       "portefeuille": "Secrétariat d’État auprès du ministre de l’intérieur et des outre-mer et du ministre de la transition écologique et de la cohésion des territoires, chargé de la ville, et auprès du ministre de l’intérieur et des outre-mer, chargé de la citoyenneté",
+      "debut": "2024-02-09",
+      "fin": "2024-09-05",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "sarah-el-hairy",
+      "nom": "Sarah El Haïry",
+      "portefeuille": "Ministère auprès de la ministre du travail, de la santé et des solidarités, de la ministre de l'éducation nationale et de la jeunesse et du garde des sceaux, ministre de la justice, chargé de l'enfance, de la jeunesse et des familles",
       "debut": "2024-02-09",
       "fin": "2024-09-05",
       "actif": false,
@@ -533,7 +578,7 @@
         },
         {
           "acteur_ref": "PA795350",
-          "membre_id": null
+          "membre_id": "frederic-valletoux"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accompagnement_malades_fin_vie",
@@ -559,7 +604,7 @@
         },
         {
           "acteur_ref": "PA719938",
-          "membre_id": null
+          "membre_id": "marc-fesneau"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/souverainete_agricole_renouvellement_generations",
@@ -826,7 +871,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA759832",
-      "synchro_le": "2026-09-09T17:09:02+0000"
+      "synchro_le": "2026-09-11T08:12:13+0000"
     },
     {
       "type": "nosdeputes",
@@ -836,7 +881,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722046",
-      "synchro_le": "2026-09-09T17:08:32+0000"
+      "synchro_le": "2026-09-11T08:11:43+0000"
     },
     {
       "type": "assemblee_nationale",
@@ -851,7 +896,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793788",
-      "synchro_le": "2026-09-09T17:08:32+0000"
+      "synchro_le": "2026-09-11T08:11:43+0000"
     },
     {
       "type": "nosdeputes",
@@ -861,7 +906,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719186",
-      "synchro_le": "2026-09-09T17:08:02+0000"
+      "synchro_le": "2026-09-11T08:11:44+0000"
     },
     {
       "type": "nosdeputes",
@@ -871,7 +916,17 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335758",
-      "synchro_le": "2026-09-09T17:15:53+0000"
+      "synchro_le": "2026-09-11T08:18:31+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795350",
+      "synchro_le": "2026-09-11T08:15:42+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://data.assemblee-nationale.fr/",
+      "synchro_le": "2026-09-11T08:15:42+0000"
     },
     {
       "type": "nosdeputes",
@@ -881,7 +936,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722190",
-      "synchro_le": "2026-09-09T17:09:29+0000"
+      "synchro_le": "2026-09-11T08:11:56+0000"
     },
     {
       "type": "nosdeputes",
@@ -891,7 +946,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607846",
-      "synchro_le": "2026-09-09T17:07:58+0000"
+      "synchro_le": "2026-09-11T08:11:40+0000"
     },
     {
       "type": "nosdeputes",
@@ -901,7 +956,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719372",
-      "synchro_le": "2026-09-09T17:15:06+0000"
+      "synchro_le": "2026-09-11T08:14:46+0000"
     },
     {
       "type": "nosdeputes",
@@ -911,7 +966,17 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719218",
-      "synchro_le": "2026-09-09T17:08:30+0000"
+      "synchro_le": "2026-09-11T08:11:41+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721836",
+      "synchro_le": "2026-09-11T08:16:00+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719938",
+      "synchro_le": "2026-09-11T08:19:55+0000"
     },
     {
       "type": "nosdeputes",
@@ -921,7 +986,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721880",
-      "synchro_le": "2026-09-09T17:15:08+0000"
+      "synchro_le": "2026-09-11T08:14:47+0000"
     },
     {
       "type": "nosdeputes",
@@ -931,7 +996,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721852",
-      "synchro_le": "2026-09-09T17:14:53+0000"
+      "synchro_le": "2026-09-11T08:14:50+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795120",
+      "synchro_le": "2026-09-11T08:16:00+0000"
     },
     {
       "type": "nosdeputes",
@@ -941,7 +1011,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721764",
-      "synchro_le": "2026-09-09T17:08:08+0000"
+      "synchro_le": "2026-09-11T08:11:55+0000"
     },
     {
       "type": "nosdeputes",
@@ -951,7 +1021,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719668",
-      "synchro_le": "2026-09-09T17:08:07+0000"
+      "synchro_le": "2026-09-11T08:11:53+0000"
     },
     {
       "type": "nosdeputes",
@@ -961,7 +1031,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795920",
-      "synchro_le": "2026-09-09T17:14:54+0000"
+      "synchro_le": "2026-09-11T08:14:52+0000"
     },
     {
       "type": "nosdeputes",
@@ -971,7 +1041,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721134",
-      "synchro_le": "2026-09-09T17:16:10+0000"
+      "synchro_le": "2026-09-11T08:18:50+0000"
     },
     {
       "type": "nosdeputes",
@@ -981,7 +1051,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793278",
-      "synchro_le": "2026-09-09T17:14:54+0000"
+      "synchro_le": "2026-09-11T08:14:51+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720002",
+      "synchro_le": "2026-09-11T08:12:48+0000"
     },
     {
       "type": "nosdeputes",
@@ -991,17 +1066,17 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721498",
-      "synchro_le": "2026-09-09T17:08:08+0000"
+      "synchro_le": "2026-09-11T08:11:55+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA842137",
-      "synchro_le": "2026-09-09T09:15:37+0000"
+      "synchro_le": "2026-09-11T08:12:17+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/197508",
-      "synchro_le": "2026-09-09T09:15:43+0000"
+      "synchro_le": "2026-09-11T08:12:26+0000"
     },
     {
       "type": "nosdeputes",
@@ -1011,12 +1086,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793940",
-      "synchro_le": "2026-09-09T17:14:54+0000"
+      "synchro_le": "2026-09-11T08:14:51+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-09T17:43:50+0000",
+    "genere_le": "2026-09-11T08:49:55+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO) + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
     "warnings": []
   }

@@ -18,6 +18,12 @@
       "nom": "Delphine Batho",
       "debut_dans_groupe": "2020-05-20",
       "fin_dans_groupe": "2020-10-16",
+      "periodes": [
+        {
+          "debut": "2020-05-20",
+          "fin": "2020-10-16"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -25,6 +31,12 @@
       "nom": "Delphine Bagarry",
       "debut_dans_groupe": "2020-05-20",
       "fin_dans_groupe": "2020-10-16",
+      "periodes": [
+        {
+          "debut": "2020-05-20",
+          "fin": "2020-10-16"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -32,6 +44,12 @@
       "nom": "Frédérique Tuffnell",
       "debut_dans_groupe": "2020-05-20",
       "fin_dans_groupe": "2020-10-16",
+      "periodes": [
+        {
+          "debut": "2020-05-20",
+          "fin": "2020-10-16"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -39,6 +57,12 @@
       "nom": "Yolaine de Courson",
       "debut_dans_groupe": "2020-05-20",
       "fin_dans_groupe": "2020-10-16",
+      "periodes": [
+        {
+          "debut": "2020-05-20",
+          "fin": "2020-10-16"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -46,6 +70,12 @@
       "nom": "Annie Chapelier",
       "debut_dans_groupe": "2020-05-20",
       "fin_dans_groupe": "2020-10-16",
+      "periodes": [
+        {
+          "debut": "2020-05-20",
+          "fin": "2020-10-16"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -53,6 +83,12 @@
       "nom": "Sébastien Nadot",
       "debut_dans_groupe": "2020-05-20",
       "fin_dans_groupe": "2020-10-16",
+      "periodes": [
+        {
+          "debut": "2020-05-20",
+          "fin": "2020-10-16"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -60,6 +96,12 @@
       "nom": "Sabine Thillaye",
       "debut_dans_groupe": "2020-05-20",
       "fin_dans_groupe": "2020-09-15",
+      "periodes": [
+        {
+          "debut": "2020-05-20",
+          "fin": "2020-09-15"
+        }
+      ],
       "present_a_la_date_de_reference": false
     },
     {
@@ -67,6 +109,12 @@
       "nom": "Matthieu Orphelin",
       "debut_dans_groupe": "2020-05-20",
       "fin_dans_groupe": "2020-10-16",
+      "periodes": [
+        {
+          "debut": "2020-05-20",
+          "fin": "2020-10-16"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -74,6 +122,12 @@
       "nom": "Émilie Cariou",
       "debut_dans_groupe": "2020-05-20",
       "fin_dans_groupe": "2020-10-16",
+      "periodes": [
+        {
+          "debut": "2020-05-20",
+          "fin": "2020-10-16"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -81,6 +135,12 @@
       "nom": "Jennifer De Temmerman",
       "debut_dans_groupe": "2020-05-20",
       "fin_dans_groupe": "2020-10-16",
+      "periodes": [
+        {
+          "debut": "2020-05-20",
+          "fin": "2020-10-16"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -88,6 +148,12 @@
       "nom": "Aurélien Taché",
       "debut_dans_groupe": "2020-05-20",
       "fin_dans_groupe": "2020-10-16",
+      "periodes": [
+        {
+          "debut": "2020-05-20",
+          "fin": "2020-10-16"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -95,6 +161,12 @@
       "nom": "Paula Forteza",
       "debut_dans_groupe": "2020-05-20",
       "fin_dans_groupe": "2020-10-16",
+      "periodes": [
+        {
+          "debut": "2020-05-20",
+          "fin": "2020-10-16"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -102,6 +174,12 @@
       "nom": "Albane Gaillot",
       "debut_dans_groupe": "2020-05-20",
       "fin_dans_groupe": "2020-10-16",
+      "periodes": [
+        {
+          "debut": "2020-05-20",
+          "fin": "2020-10-16"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -109,6 +187,12 @@
       "nom": "Guillaume Chiche",
       "debut_dans_groupe": "2020-05-20",
       "fin_dans_groupe": "2020-10-16",
+      "periodes": [
+        {
+          "debut": "2020-05-20",
+          "fin": "2020-10-16"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -116,6 +200,12 @@
       "nom": "Cédric Villani",
       "debut_dans_groupe": "2020-05-20",
       "fin_dans_groupe": "2020-10-16",
+      "periodes": [
+        {
+          "debut": "2020-05-20",
+          "fin": "2020-10-16"
+        }
+      ],
       "present_a_la_date_de_reference": true
     },
     {
@@ -123,6 +213,12 @@
       "nom": "Martine Wonner",
       "debut_dans_groupe": "2020-05-20",
       "fin_dans_groupe": "2020-09-23",
+      "periodes": [
+        {
+          "debut": "2020-05-20",
+          "fin": "2020-09-23"
+        }
+      ],
       "present_a_la_date_de_reference": false
     },
     {
@@ -130,6 +226,12 @@
       "nom": "Hubert Julien-Laferrière",
       "debut_dans_groupe": "2020-05-20",
       "fin_dans_groupe": "2020-10-16",
+      "periodes": [
+        {
+          "debut": "2020-05-20",
+          "fin": "2020-10-16"
+        }
+      ],
       "present_a_la_date_de_reference": true
     }
   ],
@@ -64687,92 +64789,92 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335999",
-      "synchro_le": "2026-09-11T00:08:56+0000"
+      "synchro_le": "2026-09-11T08:15:20+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718744",
-      "synchro_le": "2026-09-10T23:59:21+0000"
+      "synchro_le": "2026-09-11T08:12:58+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719092",
-      "synchro_le": "2026-09-10T23:58:54+0000"
+      "synchro_le": "2026-09-11T08:12:22+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719194",
-      "synchro_le": "2026-09-11T00:04:41+0000"
+      "synchro_le": "2026-09-11T08:15:32+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719448",
-      "synchro_le": "2026-09-11T00:09:00+0000"
+      "synchro_le": "2026-09-11T08:15:25+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719464",
-      "synchro_le": "2026-09-11T00:06:20+0000"
+      "synchro_le": "2026-09-11T08:15:40+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719822",
-      "synchro_le": "2026-09-11T00:08:32+0000"
+      "synchro_le": "2026-09-11T08:19:33+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720278",
-      "synchro_le": "2026-09-10T23:59:02+0000"
+      "synchro_le": "2026-09-11T08:12:40+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720298",
-      "synchro_le": "2026-09-10T23:58:00+0000"
+      "synchro_le": "2026-09-11T08:12:40+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720538",
-      "synchro_le": "2026-09-10T23:59:21+0000"
+      "synchro_le": "2026-09-11T08:12:59+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720952",
-      "synchro_le": "2026-09-11T00:08:54+0000"
+      "synchro_le": "2026-09-11T08:15:18+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721142",
-      "synchro_le": "2026-09-10T23:58:54+0000"
+      "synchro_le": "2026-09-11T08:12:23+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721246",
-      "synchro_le": "2026-09-11T00:04:41+0000"
+      "synchro_le": "2026-09-11T08:15:32+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722126",
-      "synchro_le": "2026-09-11T00:09:00+0000"
+      "synchro_le": "2026-09-11T08:15:25+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722260",
-      "synchro_le": "2026-09-11T00:06:21+0000"
+      "synchro_le": "2026-09-11T08:15:40+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722268",
-      "synchro_le": "2026-09-11T00:08:32+0000"
+      "synchro_le": "2026-09-11T08:19:33+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722344",
-      "synchro_le": "2026-09-11T00:08:29+0000"
+      "synchro_le": "2026-09-11T08:19:30+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-11T00:34:53+0000",
+    "genere_le": "2026-09-11T08:47:17+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr",
     "profils_sources": [
       "delphine-batho",
