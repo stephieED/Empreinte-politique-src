@@ -860,25 +860,18 @@
   color: var(--muted);
 }
 
+/* NI TITRE, NI FILET. « Légende » nommait ce que la forme dit déjà — des pavés
+   de couleur suivis d'un intitulé ne se lisent pas autrement —, et le filet
+   séparait la légende de la frise qu'elle sert : deux choses qui vont ensemble
+   n'ont pas à être coupées. */
 .cp-legende {
-  margin-top: 18px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
-}
-
-.cp-legende-titre {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--muted);
+  margin-top: 14px;
 }
 
 .cp-legende-grille {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
   gap: 9px 18px;
-  margin-top: 11px;
 }
 
 .cp-legende-item {

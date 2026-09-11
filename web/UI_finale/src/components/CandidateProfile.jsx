@@ -209,7 +209,6 @@ function Frise({ parcours }) {
       </div>
 
       <div className="cp-legende">
-        <p className="cp-legende-titre">Légende</p>
         <div className="cp-legende-grille">
           {LEGENDE_FRISE.filter((l) => pistesPresentes.has(l.piste)).map((l) => (
             <span className="cp-legende-item" key={l.label}>
