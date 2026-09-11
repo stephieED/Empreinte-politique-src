@@ -78,8 +78,19 @@ def symboles_de_tete(chemin):
     """
     try:
         arbre = ast.parse(chemin.read_text(encoding="utf-8"))
-    except (SyntaxError, OSError):
+    except OSError:
         return set()
+    except SyntaxError as exc:
+        # Un module qu'on ne sait pas lire était IGNORÉ, et la table sortait
+        # amputée de tout ce qu'il nomme — sans erreur. C'est ce qui arrivait
+        # sous Python 3.11, où `src/an_roster.py` (une f-string à antislash,
+        # légale depuis 3.12) ne se lit pas : la table générée différait de
+        # celle de la CI, et rien ne le disait (11/09/2026).
+        raise SystemExit(
+            f"{chemin} ne se lit pas sous Python "
+            f"{sys.version_info[0]}.{sys.version_info[1]} : {exc}. "
+            "Une table qui l'ignorerait serait fausse sans le dire."
+        ) from exc
     noms = set()
     for noeud in arbre.body:
         if isinstance(noeud, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
@@ -275,7 +286,22 @@ def rendre(analyse):
     return "\n".join(lignes).rstrip("\n") + "\n"
 
 
+#: La version du dépôt : celle de la CI (`setup-python`, `tests.yml` et
+#: `generate-data.yml`). `src/` en emploie la syntaxe.
+VERSION_MINIMALE = (3, 12)
+
+
 def main(argv=None):
+    if tuple(sys.version_info[:2]) < VERSION_MINIMALE:
+        print(
+            f"Python {sys.version_info[0]}.{sys.version_info[1]} : ce script "
+            f"exige {VERSION_MINIMALE[0]}.{VERSION_MINIMALE[1]}, la version du dépôt. "
+            "Sous une version plus ancienne, des modules de src/ ne se lisent pas "
+            "et la table sortirait différente de celle de la CI. Lancer "
+            "`python3.12 scripts/generer_decisions_par_module.py`, ou le Python du venv.",
+            file=sys.stderr,
+        )
+        return 2
     parseur = argparse.ArgumentParser(description=__doc__.split("\n")[1])
     parseur.add_argument(
         "--verifier", action="store_true",
