@@ -887,6 +887,22 @@ KNOWN_POSITIONS: frozenset[str] = frozenset({
 #: `europarl` : la catégorie vient du Parlement européen.
 KNOWN_CATEGORIE_SOURCES: frozenset[str] = frozenset({"an", "europarl"})
 
+#: #863 — la **nature de l'organe telle que la source la classe**, quand elle la
+#: classe. `categorie` répond à « comment le pivot le range » ; ce champ répond à
+#: « ce que la source en dit », et c'est ce qui permet de reconnaître un groupe
+#: politique européen **sans lire son intitulé**. Clé facultative, comme
+#: `categorie_source` : son absence dit que la source n'a pas classé
+#: l'appartenance — c'est le cas des entrées `AUTRE` du portail européen.
+KNOWN_TYPES_ORGANE_SOURCE: frozenset[str] = frozenset({
+    "groupe_politique_europeen",
+    "parti_national_au_parlement_europeen",
+    "commission_parlementaire_europeenne",
+    "delegation_parlementaire_europeenne",
+    "groupe_de_travail_europeen",
+    "organe_dirigeant_europeen",
+    "mandat_parlementaire_europeen",
+})
+
 KNOWN_CATEGORIES: frozenset[str] = frozenset({
     "mandat_electif", "commission", "groupe_amitie", "groupe_politique",
     "extra_parlementaire", "fonction_gouvernementale", "autre",
@@ -2082,6 +2098,20 @@ def validate_profil(
                         f"{source_categorie!r}. Valeurs connues : "
                         f"{sorted(KNOWN_CATEGORIE_SOURCES)} — ou la clé absente, "
                         "qui dit que personne n'a établi la catégorie."
+                    )
+
+            # #863 : même forme, même raison — la clé est facultative, son
+            # absence dit que la source n'a pas classé l'appartenance, et une
+            # valeur hors nomenclature ferait passer une classification inventée
+            # pour celle de la source.
+            if "type_organe_source" in m:
+                type_organe = m.get("type_organe_source")
+                if type_organe not in KNOWN_TYPES_ORGANE_SOURCE:
+                    errors.append(
+                        f"mandats[{i}].type_organe_source non reconnu : "
+                        f"{type_organe!r}. Valeurs connues : "
+                        f"{sorted(KNOWN_TYPES_ORGANE_SOURCE)} — ou la clé absente, "
+                        "qui dit que la source n'a pas classé l'organe."
                     )
 
     # Depuis #432, `votes[]` est un MAPPING : `type_scrutin`, `type_vote`,
