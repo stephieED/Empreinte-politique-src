@@ -106,6 +106,16 @@ les charger, ni à les faire grossir. -->
   (#525). `purge_mandats_dupliques.py` and `reprise_mandats_gouvernementaux.py` both take
   `--profiles-dir`.
   → `docs/decisions/purge-doublons-herites-729.md`
+- **A removal recomposes the DERIVED fields in the same breath, or the committed corpus
+  publishes a derivation of entries it no longer holds (#839).** §4 says a derived field is
+  recomputed after every step that moves it; a removal moves two at once —
+  `tags_thematiques`, which derives entirely from `interventions[]` (#710), and
+  `meta.licence_donnees`, recomposed from `sources[]` **and** intervention URLs (#530).
+  Waiting for the next run leaves the layer `web/` reads incoherent for an hour or a day:
+  `marine-le-pen` would publish 470 tags drawn from 246 entries that had left. Recomposed
+  in the purge, she publishes **152** — exactly what her blank collection had returned that
+  morning, which is what verified the cleanup by a second path.
+  → `docs/decisions/nettoyage-sediment-839.md`
 - **A field added to the schema never reaches an already-collected entry on its own —
   and the fix is a named backfill, never a looser merge (#492, #639, #641, #696, #710,
   #718).** On a list, "old entry wins" and the key does not contain the new field, so the
