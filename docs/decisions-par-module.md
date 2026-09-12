@@ -204,11 +204,11 @@ Le mentionnent sans le gouverner : [`audit-des-rattachements`](decisions/audit-d
 
 ## `src/audit_residus_source_retiree.py`
 
-Le mentionnent sans le gouverner : [`residus-source-retiree-839`](decisions/residus-source-retiree-839.md).
+Le mentionnent sans le gouverner : [`nettoyage-sediment-839`](decisions/nettoyage-sediment-839.md), [`residus-source-retiree-839`](decisions/residus-source-retiree-839.md).
 
 ## `src/audit_sediment.py`
 
-Le mentionnent sans le gouverner : [`audit-sediment-inventaire-839`](decisions/audit-sediment-inventaire-839.md).
+Le mentionnent sans le gouverner : [`audit-sediment-inventaire-839`](decisions/audit-sediment-inventaire-839.md), [`nettoyage-sediment-839`](decisions/nettoyage-sediment-839.md).
 
 ## `src/audit_volumetrie_profils.py`
 
