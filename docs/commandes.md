@@ -303,6 +303,23 @@ au-delà duquel une fiche dont toutes les sources sont anciennes est signalée,
 et `--output-dir DOSSIER` écrit les deux fichiers sous un nom horodaté au lieu
 de les nommer un par un.
 
+### Le sédiment : ce que le corpus garde d'une source retirée
+
+```bash
+python3 src/audit_sediment.py
+python3 src/audit_sediment.py --par-profil --json sediment.json
+```
+
+Produit : un tableau par couche — `raw_data/profiles` **et** `pivot_data/profiles`,
+les deux, parce qu'un retrait appliqué au seul brut ne descend jamais au pivot
+(#729) — et par famille : interventions à identifiant entier, mandats sans
+`categorie_source`, mandats actifs sans aucune date, `sources[]` sous licence
+Regards Citoyens, avertissements hérités, preuves de couverture citant la source
+retirée. `--profiles-dir` restreint à une couche, et se répète.
+
+**Ne retire rien, ne juge rien** : c'est le compteur de référence, à relancer
+après chaque run. Une famille revenue à zéro qui remonte est une régression.
+
 ### Les profils pivot
 
 ```bash

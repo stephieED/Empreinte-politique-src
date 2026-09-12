@@ -124,8 +124,13 @@ ORDRE_LICENCES: tuple[str, ...] = (
 SEPARATEUR = " + "
 
 #: Fragments d'URL qui trahissent un champ dérivé de Regards Citoyens même
-#: quand `sources[]` ne le dit plus.
-_MOTIFS_URL_REGARDS_CITOYENS = ("nosdeputes.fr", "nossenateurs.fr")
+#: quand `sources[]` ne le dit plus. **Public depuis #839** : l'audit du
+#: sédiment les relit, et les recopier ailleurs ferait de ce module un
+#: référentiel parmi d'autres (`tests/test_retrait_nosdeputes_529.py` n'admet
+#: la mention que dans les emplacements qu'il nomme).
+MOTIFS_URL_REGARDS_CITOYENS = ("nosdeputes.fr", "nossenateurs.fr")
+
+_MOTIFS_URL_REGARDS_CITOYENS = MOTIFS_URL_REGARDS_CITOYENS
 
 
 def _porte_une_intervention_regards_citoyens(profil: dict[str, Any]) -> bool:
