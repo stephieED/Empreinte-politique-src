@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 299 décisions
+gouverne sans avoir à fouiller les 301 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -42,18 +42,18 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 | `src/audit_pipeline.py` | 3 |
 | `src/budget_collecte.py` | 3 |
 | `src/parltrack_dumps.py` | 3 |
+| `src/purge_mandats_dupliques.py` | 3 |
 | `src/audit_gouvernement_dataset.py` | 2 |
+| `src/avertissements.py` | 2 |
 | `src/fetch_candidats_declares.py` | 2 |
 | `src/gouvernement_profile.py` | 2 |
-| `src/purge_mandats_dupliques.py` | 2 |
-| `src/avertissements.py` | 1 |
+| `src/licences.py` | 2 |
 | `src/build_amendements_index.py` | 1 |
 | `src/candidate_profile_ue.py` | 1 |
 | `src/europarl_documents.py` | 1 |
 | `src/generate_lignee_profiles.py` | 1 |
 | `src/identifiants_wikidata.py` | 1 |
 | `src/json_io.py` | 1 |
-| `src/licences.py` | 1 |
 | `src/lignee_profile.py` | 1 |
 | `src/mandats_anterieurs.py` | 1 |
 | `src/scrutins_dossiers_an.py` | 1 |
@@ -160,6 +160,10 @@ Le mentionnent sans le gouverner : [`audit-des-rattachements`](decisions/audit-d
 
 Le mentionnent sans le gouverner : [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`point-de-sauvegarde-dans-les-profils-518`](decisions/point-de-sauvegarde-dans-les-profils-518.md), [`resolution-legislature-deux-mecanismes-432`](decisions/resolution-legislature-deux-mecanismes-432.md).
 
+## `src/audit_mandats_reproductibles.py`
+
+Le mentionnent sans le gouverner : [`reproductibilite-mandats-sans-estampille-839`](decisions/reproductibilite-mandats-sans-estampille-839.md).
+
 ## `src/audit_pipeline.py`
 
 3 décision(s) le gouvernent ; le module en cite 0.
@@ -197,6 +201,10 @@ Le mentionnent sans le gouverner : [`audit-599-projection-blocs-lus-628`](decisi
 
 Le mentionnent sans le gouverner : [`audit-des-rattachements`](decisions/audit-des-rattachements.md).
 
+## `src/audit_sediment.py`
+
+Le mentionnent sans le gouverner : [`audit-sediment-inventaire-839`](decisions/audit-sediment-inventaire-839.md).
+
 ## `src/audit_volumetrie_profils.py`
 
 2 décision(s) le gouvernent ; le module en cite 2.
@@ -210,10 +218,11 @@ Le mentionnent sans le gouverner : [`fenetre-historique-donnees`](decisions/fene
 
 ## `src/avertissements.py`
 
-1 décision(s) le gouvernent ; le module en cite 0.
+2 décision(s) le gouvernent ; le module en cite 0.
 
 | Décision | Nomme |
 | --- | --- |
+| [Le sédiment se compte avant de se juger : sept familles, deux couches, aucun retrait (#839, lot A) (2026-09-12)](decisions/audit-sediment-inventaire-839.md) | `AVERTISSEMENTS_HERITES` |
 | [`meta.warnings[]` déclare son destinataire, dans un jumeau typé et aligné (#642) (2026-08-31)](decisions/destinataire-avertissements-642.md) | `AVERTISSEMENTS_HERITES`, `Avertissement`, `DESTINATAIRES_AVERTISSEMENT`, `PREFIXES_HERITES`, `avertissement`, `deriver_avertissements` |
 
 Le mentionnent sans le gouverner : [`amendements-zero-pas-de-hard-fail`](decisions/amendements-zero-pas-de-hard-fail.md), [`bloc-sans-fond-484`](decisions/bloc-sans-fond-484.md), [`constats-parltrack-perimes-683`](decisions/constats-parltrack-perimes-683.md), [`controle-perte-nomme-les-echanges-823`](decisions/controle-perte-nomme-les-echanges-823.md), [`couverture-dossiers-hors-couverture-vs-zero`](decisions/couverture-dossiers-hors-couverture-vs-zero.md), [`fiche-de-lignee-ui-329`](decisions/fiche-de-lignee-ui-329.md), [`liste-candidats-declares-753`](decisions/liste-candidats-declares-753.md), [`profil-de-groupe-lecture-329`](decisions/profil-de-groupe-lecture-329.md), [`retrait-senat-528`](decisions/retrait-senat-528.md), [`union-warnings-extinction-600`](decisions/union-warnings-extinction-600.md), [`verification-bout-en-bout-legislatures-figees`](decisions/verification-bout-en-bout-legislatures-figees.md).
@@ -728,10 +737,11 @@ Le mentionnent sans le gouverner : [`profils-json-compact`](decisions/profils-js
 
 ## `src/licences.py`
 
-1 décision(s) le gouvernent ; le module en cite 0.
+2 décision(s) le gouvernent ; le module en cite 0.
 
 | Décision | Nomme |
 | --- | --- |
+| [Le sédiment se compte avant de se juger : sept familles, deux couches, aucun retrait (#839, lot A) (2026-09-12)](decisions/audit-sediment-inventaire-839.md) | `LICENCE_PAR_TYPE_SOURCE` |
 | [Le versant AN passe en Licence Ouverte, et `meta.licence_donnees` devient un champ dérivé (#530, lot 6 de l'épic « une seule source AN ») (2026-08-27)](decisions/licence-lot-6-530.md) | `appliquer_licence_donnees` |
 
 Le mentionnent sans le gouverner : [`contact-et-comptes-publics-328`](decisions/contact-et-comptes-publics-328.md), [`licences`](decisions/licences.md), [`pages-statiques-methodologie-mentions-legales`](decisions/pages-statiques-methodologie-mentions-legales.md), [`regles-par-domaine-737`](decisions/regles-par-domaine-737.md).
@@ -908,10 +918,11 @@ Le mentionnent sans le gouverner : [`freshness-timestamps-groupes-gouvernements-
 
 ## `src/population_profils.py`
 
-1 décision(s) le gouvernent ; le module en cite 2.
+2 décision(s) le gouvernent ; le module en cite 2.
 
 | Décision | Nomme |
 | --- | --- |
+| [Le sédiment se compte avant de se juger : sept familles, deux couches, aucun retrait (#839, lot A) (2026-09-12)](decisions/audit-sediment-inventaire-839.md) | `provenance_du_profil` |
 | [Les deux populations de `pivot_data/profiles/` sont portées par les outils, pas par une consigne (#630, 2026-08-30)](decisions/populations-profils-portees-par-les-outils-630.md) | `Ventilation`, `ventiler_chemins` |
 
 Le mentionnent sans le gouverner : [`agents-sans-comptes-volatils`](decisions/agents-sans-comptes-volatils.md).
@@ -938,12 +949,13 @@ Le mentionnent sans le gouverner : [`sediment-nosdeputes-839`](decisions/sedimen
 
 ## `src/purge_mandats_dupliques.py`
 
-2 décision(s) le gouvernent ; le module en cite 0.
+3 décision(s) le gouvernent ; le module en cite 0.
 
 | Décision | Nomme |
 | --- | --- |
 | [185 doublons hérités retirés : l'outil existait, il n'avait jamais été relancé (#729) (2026-09-04)](decisions/purge-doublons-herites-729.md) | `_normalize_label` |
 | [Purge des mandats hérités dupliqués : appariement prudent (#387) (2026-08-17)](decisions/purge-mandats-dupliques-prudence.md) | `_PREFIXES_NATURE` |
+| [280 des 406 mandats sans estampille sont portés par un référentiel vivant, et aucun n'est introuvable (#839, lot B) (2026-09-12)](decisions/reproductibilite-mandats-sans-estampille-839.md) | `_normalize_label` |
 
 Le mentionnent sans le gouverner : [`categorie-source-des-mandats-718`](decisions/categorie-source-des-mandats-718.md), [`collecte-vs-publie-545`](decisions/collecte-vs-publie-545.md), [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`point-de-sauvegarde-dans-les-profils-518`](decisions/point-de-sauvegarde-dans-les-profils-518.md).
 
