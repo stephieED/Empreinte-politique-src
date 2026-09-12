@@ -82,6 +82,18 @@ les charger, ni à les faire grossir. -->
   reduced**: additive merge keeps the *older* entry, so a reduced entry would freeze his
   full form forever.
   → `docs/decisions/collecte-interventions-reduite-au-theme-657.md`
+- **An INTEGER `intervention_id` is NosDéputés-era sediment, and nothing else (#839).**
+  Syceron renders `syceron_…`, official questions `question_…`, the European Parliament
+  `europarl_…`: no live source renders an integer. #529 changed the source and therefore
+  the merge key, and the additive merge kept both — so **492 of the 511 integer entries
+  are the same speech published twice**, on 5 declared candidates. Removal is
+  `src/purge_interventions_nosdeputes.py`, prudent as #387 (an entry goes only when its
+  Syceron twin is present in the same profile, same day, text contained or equal) and run
+  **on both layers**, a raw-only removal never reaching the pivot (#729). The 19 without a
+  twin stay published. Corollary for the witness protocol: **a blank collection runs in
+  two passes**, the second with `--enrich-parltrack` — without it the whole European side
+  is missing and the diff accuses the code of losing it.
+  → `docs/decisions/sediment-nosdeputes-839.md`
 - **What is not measured says so** — per-candidate cost and RSS of the sharded index are
   bounded by construction, not by measurement, and the #429 and #500 balances are
   un-remeasured. Naming them is the rule: §2.5 applies to our own work too.
