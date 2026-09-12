@@ -85,13 +85,47 @@ de son empreinte thématique venait des mots-clés de l'ancienne source
 - **Le marqueur `sources[]`**, sur 475 profils : décision éditoriale à effet
   juridique (§7), mesurée par le lot C et laissée à la propriétaire.
 
-## 5. Ce que le prochain run devra déclarer
+## 5. Ce que le prochain run devra déclarer, à l'entrée près
 
 `interventions`, `mandats` et `tags_thematiques` sont des listes stables : le
 contrôle de perte **bloquera**. Les baisses sont voulues et nommées d'avance —
-6 constats, profil par profil, que `src/audit_diff_profils.py --ref <sha avant>`
-rend à l'entrée près. Elles se déclarent par `allow_declared_losses` après
-comparaison au rapport, jamais en abaissant un seuil.
+**11 constats**, mesurés le 12/09/2026 par
+`python3 src/audit_diff_profils.py --ref <sha avant nettoyage> --seulement-profils` :
+
+| Fichier | Champ | Avant | Après |
+| --- | --- | ---: | ---: |
+| `bruno-retailleau.pivot.json` | `interventions` | 486 | 481 |
+| `bruno-retailleau.pivot.json` | `tags_thematiques` | 53 | 51 |
+| `edouard-philippe.pivot.json` | `interventions` | 2 376 | 2 326 |
+| `edouard-philippe.pivot.json` | `tags_thematiques` | 154 | 4 |
+| `gabriel-attal.pivot.json` | `interventions` | 3 963 | 3 953 |
+| `gabriel-attal.pivot.json` | `tags_thematiques` | 221 | 204 |
+| `jean-luc-melenchon.pivot.json` | `mandats` | 86 | 81 |
+| `jerome-guedj.pivot.json` | `interventions` | 2 702 | 2 502 |
+| `jerome-guedj.pivot.json` | `tags_thematiques` | 382 | 204 |
+| `marine-le-pen.pivot.json` | `interventions` | 3 203 | 2 957 |
+| `marine-le-pen.pivot.json` | `tags_thematiques` | 470 | 152 |
+
+Somme des interventions retirées : **511**. Mandats : **5**.
+
+Le run ajoutera ses propres baisses, sur les **fiches de lignée** : les tags
+agrégés sont recalculés depuis les membres, et **508 étiquettes** perdent leur
+seul porteur (`AN-RN` 311, `AN-SOC` 178, `AN-REN` 17, `Senat-LR` 2). Ce sont des
+mots isolés hérités — « souffrance », « nucléaire », « budget » — qui
+s'affichaient à côté de vrais intitulés de texte.
+
+**La déclaration se fait par `allow_declared_losses=true` au lancement**, après
+comparaison du rapport du run à ce tableau, jamais en abaissant un seuil. Un
+écart, même d'une entrée, doit arrêter le run plutôt que d'être déclaré.
+
+Après le run, deux vérifications closent le lot :
+
+1. `python3 src/audit_sediment.py` — les deux familles d'interventions à **0**,
+   `mandats[] actifs et sans aucune date` à **8**, les autres inchangées ;
+2. `python3 src/audit_residus_source_retiree.py` — plus aucun profil dont la
+   clause ODbL est retenue par une **donnée**.
+
+La couverture des tags qui restent est un sujet à elle seule, ouvert en #876.
 
 ## 6. L'alternative écartée
 
