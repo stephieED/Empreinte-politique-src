@@ -49,11 +49,6 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "ailleurs",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "amélioration du niveau des élèves",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
@@ -124,11 +119,6 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "budget",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "calcul de la pension civile en polynésie française",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
@@ -149,17 +139,7 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "certain",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "choose europe for science",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "chèque",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -185,11 +165,6 @@
     },
     {
       "tag": "création d’un institut océan de l’université des nations unies en france",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "dette",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -274,11 +249,6 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "déficit",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "déficit public",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
@@ -334,17 +304,7 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "fin",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "fin de vie",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "finance",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -355,11 +315,6 @@
     },
     {
       "tag": "finances publiques et relations avec l’union européenne",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "fiscale",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -440,11 +395,6 @@
     },
     {
       "tag": "instauration de groupes de niveaux",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "intérêt",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -554,11 +504,6 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "milliard",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "mobilisation des agriculteurs",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
@@ -610,11 +555,6 @@
     },
     {
       "tag": "permettre aux salariés de certains établissements et services de travailler le 1er mai",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "pib",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -819,16 +759,6 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "publique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "rapport",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "rapport pisa 2023",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
@@ -880,11 +810,6 @@
     },
     {
       "tag": "retour de la france au capital de la banque de développement des caraïbes",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "règlement",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -1024,11 +949,6 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "séance",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "sécurité dans les écoles",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
@@ -1040,11 +960,6 @@
     },
     {
       "tag": "taxation des superprofits",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "taxe",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -1128,12 +1043,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722190",
-      "synchro_le": "2026-09-10T12:46:50+0000"
+      "synchro_le": "2026-09-12T15:44:40+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-10T13:16:21+0000",
+    "genere_le": "2026-09-12T16:13:46+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "nb_candidats_declares": 1,
     "nb_candidats_avec_pivot": 1,

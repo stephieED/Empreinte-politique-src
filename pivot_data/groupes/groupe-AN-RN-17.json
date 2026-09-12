@@ -11,7 +11,15 @@
     "fin": null,
     "actif": true
   },
-  "historique_noms": [],
+  "historique_noms": [
+    {
+      "sigle": "RN",
+      "nom": "Rassemblement National",
+      "debut": "2024-07-18",
+      "fin": null,
+      "organe_an": "PO845401"
+    }
+  ],
   "membres": [
     {
       "membre_id": "herve-de-lepinau",
@@ -1746,7 +1754,7 @@
     }
   ],
   "date_reference": {
-    "date": "2026-09-11",
+    "date": "2026-09-12",
     "origine": "generation"
   },
   "effectif": {
@@ -129069,11 +129077,6 @@
       "poids_relatif": 0.0305
     },
     {
-      "tag": "immigration",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0305
-    },
-    {
       "tag": "industrie et écologie",
       "nb_membres_porteurs": 4,
       "poids_relatif": 0.0305
@@ -129150,11 +129153,6 @@
     },
     {
       "tag": "perte de souveraineté industrielle et atteinte aux industries stratégiques",
-      "nb_membres_porteurs": 4,
-      "poids_relatif": 0.0305
-    },
-    {
-      "tag": "plf",
       "nb_membres_porteurs": 4,
       "poids_relatif": 0.0305
     },
@@ -129534,6 +129532,11 @@
       "poids_relatif": 0.0229
     },
     {
+      "tag": "immigration",
+      "nb_membres_porteurs": 3,
+      "poids_relatif": 0.0229
+    },
+    {
       "tag": "instauration d’un nombre minimum de soignants par patient hospitalisé",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0229
@@ -129655,6 +129658,11 @@
     },
     {
       "tag": "plan marseille en grand",
+      "nb_membres_porteurs": 3,
+      "poids_relatif": 0.0229
+    },
+    {
+      "tag": "plf",
       "nb_membres_porteurs": 3,
       "poids_relatif": 0.0229
     },
@@ -130969,11 +130977,6 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "abattement",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "acceptabilité de la transition écologique",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
@@ -131025,11 +131028,6 @@
     },
     {
       "tag": "accord portant délimitation de la frontière entre la république française (saint-martin) et le royaume des pays-bas (sint maarten)",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "accueil",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -131109,21 +131107,6 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "africain",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "africaine",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "afrique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "agence nationale des titres sécurisés",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
@@ -131144,27 +131127,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "agriculture",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "aide médicale de l’état à mayotte",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "ailleurs",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "air",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "allocation",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -131180,11 +131143,6 @@
     },
     {
       "tag": "alméa formations",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "amendement",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -131219,16 +131177,6 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "anticipées",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "appareil",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "application de l’article 47-1 de la constitution",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
@@ -131239,52 +131187,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "arenh",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "ariane",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "armée",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "article",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "ase",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "asile",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "assassinat de mehdi kessaci",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "assistant",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "assistante",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "assurance",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -131309,32 +131212,12 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "audiovisuel",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "augmentation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "augmenter",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "autoconservation d’ovocytes",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
     {
       "tag": "autorisation de travailler le 1er mai",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "autorité",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -131374,16 +131257,6 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "avocat",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "avortement",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "aéroport de merville-lestrem",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
@@ -131399,17 +131272,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "banque",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "bar-tabac de thoury-férottes",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "bassine",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -131424,17 +131287,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "branche",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "brigade anticriminalité à mont-saint-martin",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "budget",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -131449,22 +131302,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "bâtiment",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "bénéfice",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "cabanisation illégale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "campagne",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -131474,17 +131312,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "capital",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "carte scolaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "casino",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -131499,27 +131327,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "cdd",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "cdd multi-remplacement",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "cdi",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "censure",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "centre",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -131564,11 +131372,6 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "certain",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "certification des logiciels de caisse",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
@@ -131594,37 +131397,12 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "chèque",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "chômeur",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "cinéma",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "cinémas indépendants",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
     {
-      "tag": "circulaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "circulaire relative à la naturalisation des étrangers",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "civile",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -131639,27 +131417,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "cmg",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "collection",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "collectivités",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "collège de lorrez-le-bocage",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "combattant",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -131699,22 +131457,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "concertation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "concurrence",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "condamnation de l’état d’israël",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "condition",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -131749,32 +131492,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "connecté",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "consommateur",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "constitution",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "constitution du bureau d’âge",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "constitutionnel",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "constitutionnelle",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -131794,16 +131512,6 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "continent",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "continuité",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "contournement de martigues et port-de-bouc",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
@@ -131814,22 +131522,12 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "contrat",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "contrats aidés",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
     {
       "tag": "contrats d’apprentissage",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "contribution",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -131864,27 +131562,12 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "cotisation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "cotisations",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "cotisations de pension civile de l’agence pour l’enseignement français à l’étranger",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
     {
       "tag": "couloir aérien au-dessus du bassin de romilly-sur-seine",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "crime",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -131919,17 +131602,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "critère",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "croix de la valeur des sapeurs-pompiers volontaires et professionnels",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "crèche",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -131949,17 +131622,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "crédit",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "crédits des ministères régaliens",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "csg",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -131975,26 +131638,6 @@
     },
     {
       "tag": "cybersécurité",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "d'impôt",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "dans",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "demi-part",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "dette",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -132019,22 +131662,12 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "directive",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "directive européenne sur l’intelligence artificielle",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
     {
       "tag": "directive sur la taxation de l’énergie",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "directives",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -132049,42 +131682,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "dispositif",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "dispositif asalée",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "dissuasion",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "distance",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "distributeur",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "dit",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "donation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "dossier",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -132095,21 +131693,6 @@
     },
     {
       "tag": "double évasion à la maison d’arrêt de dijon",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "drapeau",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "drapeaux",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "droit",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -132134,11 +131717,6 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "déconjugalisation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "découverts bancaires",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
@@ -132154,22 +131732,12 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "déficit",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "défilé du 1er mai",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
     {
       "tag": "dégradation d’infrastructures électriques",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "délégué",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -132189,32 +131757,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "démocratie",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "dépôt",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "dépôt du rapport annuel de la cour des comptes",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "dérive",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "dérives",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "détention",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -132225,11 +131768,6 @@
     },
     {
       "tag": "développement économique des stations de montagne",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "edf",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -132249,32 +131787,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "ehpad",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "emploi des seniors",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "employeur",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "endettement",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "enfance",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "enfant",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -132285,16 +131798,6 @@
     },
     {
       "tag": "enquête sur la mort de souheil el khalfaoui",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "enseignant",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "enseignement",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -132324,47 +131827,12 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "espace",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "et",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "europe",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "européen",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "euthanasie",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "examen de la proposition de loi pour luttercontre les mariages simulés et arrangés",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
     {
       "tag": "exemption des multinationales américaines de l’impôt minimal mondial",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "exonération",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "exploitant",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -132384,11 +131852,6 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "extrême",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "exécution des mandats de la cour pénale internationale",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
@@ -132400,26 +131863,6 @@
     },
     {
       "tag": "faciliter la transformation des bureaux et autres bâtiments en logements",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "facture",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "familiale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "famille",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "famine",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -132469,11 +131912,6 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "ferroviaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "festival international de la bande dessinée d’angoulême",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
@@ -132485,11 +131923,6 @@
     },
     {
       "tag": "fibre excellence",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "filière",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -132524,16 +131957,6 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "finance",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "financement",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "financement de l’assainissement non collectif",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
@@ -132545,16 +131968,6 @@
     },
     {
       "tag": "financement des lycées agricoles privés",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "financier",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "fiscale",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -132574,17 +131987,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "fonctionnement",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "fonderie de bretagne",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "fonds",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -132599,32 +132002,12 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "fortune",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "foyer",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "frais d’inscription des étudiants extracommunautaires",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
     {
-      "tag": "français",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "français détenus à l’étranger",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "française",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -132644,11 +132027,6 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "fronton",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "fuites de données informatiques",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
@@ -132664,32 +132042,12 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "garantie",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "garde",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "gare de triage de villeneuve-saint-georges",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
     {
-      "tag": "gaz",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "gel de la part collective du pass culture",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "gendarmerie",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -132700,11 +132058,6 @@
     },
     {
       "tag": "gestion de la commande publique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "gouvernement",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -132749,11 +132102,6 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "guadeloupe",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "guerre au proche-orient",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
@@ -132764,22 +132112,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "génocide",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "géolocalisation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "géothermie en alsace",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "handicap",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -132799,22 +132132,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "histoire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "holodomor",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "hongrie",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "humain",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -132830,11 +132148,6 @@
     },
     {
       "tag": "hébergement d’urgence",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "hémicycle",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -132859,11 +132172,6 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "ifi",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "immigration illégale en outre-mer",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
@@ -132879,21 +132187,6 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "important",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "imposable",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "imposer",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "impôts des millionnaires",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
@@ -132905,11 +132198,6 @@
     },
     {
       "tag": "incendie survenu à nice",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "inclusive",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -132949,11 +132237,6 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "inflation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "influence française à bruxelles",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
@@ -132965,11 +132248,6 @@
     },
     {
       "tag": "instauration d’un enseignement obligatoire d’éducation à l’alimentation à l’école",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "institution",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -132994,27 +132272,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "internationale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "intégration",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "investissement",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "irresponsabilité budgétaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "isf",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -133024,52 +132282,12 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "ivg",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "jeu vidéo fursan al-aqsa",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
     {
-      "tag": "jeune",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "jeux",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "jeux de l’océan indien",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "judiciaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "juge",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "justice",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "la",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "langue",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -133110,11 +132328,6 @@
     },
     {
       "tag": "libération des prisonniers arméniens détenus par l’azerbaïdjan",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "ligne",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -133169,32 +132382,12 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "liminaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "liquidation de brandt",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
     {
-      "tag": "locale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "locales",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "location à une association d’un site de la ccas dans la creuse",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "logement",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -133220,11 +132413,6 @@
     },
     {
       "tag": "loi sur la fin de vie",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "lpm",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -133314,26 +132502,6 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "macron",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "magistrat",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "maire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "mairie",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "maison départementale des personnes handicapées des hauts-de-seine",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
@@ -133374,27 +132542,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "maprimerénov",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "marché",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "marge",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "marnières en normandie",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "maternelle",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -133409,27 +132557,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "mayotte",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "menaces contre des fonctionnaires du ministère de l’environnement",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "mer",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "mercosur",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "mesures",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -133449,57 +132577,12 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "migrant",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "migratoire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "militaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "milliard",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "mineur",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "ministre",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "mise en place d’un registre national des cancers",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
     {
-      "tag": "mode",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "modèle",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "modèle social français",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "montant",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -133514,37 +132597,12 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "moratoire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "mort",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "mort d’el hacen diarra",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
     {
       "tag": "mortalité périnatale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "motion",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "motions",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "mourir",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -133579,42 +132637,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "médecin",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "méditerranée",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "mégabassine",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "méthode de gouvernement",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "nappe",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "nation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "national",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "nationalisation",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -133649,32 +132672,12 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "nucléaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "nupes",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "négociation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "négociations commerciales",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
     {
       "tag": "nématode du pin dans les landes",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "obligations",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -133704,47 +132707,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "olympique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "olympiques",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "ong",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "opposition",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "ordonnance",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "ordre public à marseille",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "orientation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "outre-mer",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "ouverture",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -133764,17 +132727,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "palliatif",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "para-escrime",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "paralympiques",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -133789,52 +132742,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "parcoursup",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "parent",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "parentale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "parité au sein du bureau des établissements publics de coopération intercommunale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "partage",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "partenaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "partenaires",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "partenariat",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "parti",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "participation",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -133849,17 +132757,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "patrimoine",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "pays-fort sancerrois",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "pension",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -133874,42 +132772,12 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "personne",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "personnes sans abri à rennes",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
     {
-      "tag": "peuple",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "pib",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "pilotage et cohérence de la politique nationale du sport",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "place",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "plainte",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "plan",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -133924,11 +132792,6 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "plateforme",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "plateforme des achats de l’état",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
@@ -133939,27 +132802,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "plfr",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "plfss",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "plfss et politique de l’emploi",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "policier",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "politique",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -134004,22 +132847,12 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "pollution",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "pollution aux pfas",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
     {
       "tag": "pollution des sols",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "port",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -134034,27 +132867,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "pourquoi",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "pouvoir",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "première",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "presse",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "prime",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -134079,22 +132892,12 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "problème",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "production pharmaceutique",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
     {
       "tag": "profession de psychomotricien",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "programmation",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -134130,11 +132933,6 @@
     },
     {
       "tag": "prolifération de la cochenille-tortue du pin",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "proportionnel",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -134184,37 +132982,12 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "préfecture",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "préservation des principes démocratiques, des libertés publiques et de l’état de droit en turquie",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
     {
-      "tag": "président",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "présidente",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "ptz",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "péages des ponts de tancarville et de normandie",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "pénale",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -134239,21 +133012,6 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "quartier",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "quelque",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "quota",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "quotas de pêche",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
@@ -134274,17 +133032,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "rassemblement",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "rassemblement vie et lumière à nevoy",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "ratp",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -134299,11 +133047,6 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "reconstruction",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "recours des collectivités territoriales au modèle de la société portuaire",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
@@ -134314,22 +133057,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "rectificative",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "recyclage des déchets du secteur du bâtiment",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "redevance",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "rejet",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -134364,11 +133092,6 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "renouvelable",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "report de l’âge de majoration des allocations familiales",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
@@ -134384,17 +133107,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "restitution",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "restitution d’un bien culturel à la république de côte d’ivoire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "retenue",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -134414,16 +133127,6 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "riche",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "route",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "route nationale 19",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
@@ -134434,37 +133137,12 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "routier",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "rsa",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "règle",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "réacteur",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "réaffirmer l’ambition climatique de la france au niveau européen",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
     {
       "tag": "réduire et encadrer les frais bancaires sur succession",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "réforme",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -134494,16 +133172,6 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "rémunération",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "rénovation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "rénovation des espaces publics dans le nord-pas-de-calais",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
@@ -134525,11 +133193,6 @@
     },
     {
       "tag": "répression de manifestations écologistes",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "république",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -134579,32 +133242,12 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "satellite",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "sauvegarde de l’industrie française",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
     {
       "tag": "schéma d’aménagement et de gestion des eaux de la vilaine",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "scolaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "scrutin",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "sectaires",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -134630,11 +133273,6 @@
     },
     {
       "tag": "site valeo de saint-quentin-fallavier",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "situation",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -134709,42 +133347,12 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "smic",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "sociale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "sociales",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "sociaux",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "société",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "société alm-meca",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
     {
       "tag": "société d’économie mixte de la chambière à bourg-en-bresse",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "soignant",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -134779,11 +133387,6 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "souffrance",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "soutien au tissu associatif des français de l’étranger",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
@@ -134814,26 +133417,6 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "spatial",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "spatiale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "spatiaux",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "spéciaux",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "statut de la nouvelle-calédonie",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
@@ -134844,22 +133427,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "stratégique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "structures d’accueil des personnes handicapées",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "succession",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "superprofits",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -134879,22 +133447,12 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "supérieur",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "suspension du service civique",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
     {
       "tag": "syndrome d’angelman",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "séance",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -134924,32 +133482,12 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "séjour",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "tarif",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "tarif de l’électricité",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
     {
-      "tag": "tarifs",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "tarifs postaux",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "taxe",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -134969,37 +133507,12 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "tenue",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "territoriale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "territoriales",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "thermique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "titres de séjour",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
     {
       "tag": "trafic de drogue",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "train",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -135069,32 +133582,12 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "ttf",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "tunnel du col de tende",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
     {
       "tag": "tva des autoentrepreneurs",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "ukraine",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "ultramarin",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "uniforme",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -135129,16 +133622,6 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "vaccination",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "verte",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "vie démocratique",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
@@ -135169,37 +133652,12 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "visite",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "vite",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "viticulture",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
     {
-      "tag": "voiture",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "votes intervenus lors des débats budgétaires",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "véhicule",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "zone",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -135224,17 +133682,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "économie",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "économie sociale et solidaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "écriture",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -135250,11 +133698,6 @@
     },
     {
       "tag": "éducation sexuelle",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "égalité",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -135279,11 +133722,6 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "électricité",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "élevage ovin",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
@@ -135299,17 +133737,7 @@
       "poids_relatif": 0.0076
     },
     {
-      "tag": "émeutes",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
       "tag": "éoliennes dans l’aisne",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 0.0076
-    },
-    {
-      "tag": "étranger",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.0076
     },
@@ -139027,11 +137455,11 @@
     {
       "categorie": "groupe_etudes",
       "label": "Groupe d'études à vocation internationale sur les relations avec le Saint Siège",
-      "nb_membres_a_la_date_de_reference": 31,
-      "nb_membres_cumul_historique": 34,
+      "nb_membres_a_la_date_de_reference": 32,
+      "nb_membres_cumul_historique": 35,
       "effectif_reference": 131,
       "par_fonction": {
-        "membre": 34
+        "membre": 35
       },
       "membres": [
         {
@@ -139039,6 +137467,14 @@
           "nom": "Hervé de Lépinau",
           "fonction": "Membre",
           "debut": "2025-01-23",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "nicolas-meizonnet",
+          "nom": "Nicolas Meizonnet",
+          "fonction": "Membre",
+          "debut": "2026-09-11",
           "fin": null,
           "actif": true
         },
@@ -156922,6 +155358,106 @@
       ]
     },
     {
+      "categorie": "groupe_amitie",
+      "label": "France-Afrique du Sud",
+      "nb_membres_a_la_date_de_reference": 6,
+      "nb_membres_cumul_historique": 11,
+      "effectif_reference": 131,
+      "par_fonction": {
+        "membre": 11
+      },
+      "membres": [
+        {
+          "membre_id": "nicolas-meizonnet",
+          "nom": "Nicolas Meizonnet",
+          "fonction": "Membre",
+          "debut": "2022-12-12",
+          "fin": "2024-06-09",
+          "actif": false
+        },
+        {
+          "membre_id": "sebastien-chenu",
+          "nom": "Sébastien Chenu",
+          "fonction": "Membre",
+          "debut": "2017-10-02",
+          "fin": "2022-06-21",
+          "actif": false
+        },
+        {
+          "membre_id": "jorys-bovet",
+          "nom": "Jorys Bovet",
+          "fonction": "Membre",
+          "debut": "2025-02-20",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "frederic-falcon",
+          "nom": "Frédéric Falcon",
+          "fonction": "Membre",
+          "debut": "2025-01-23",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "alexis-jolly",
+          "nom": "Alexis Jolly",
+          "fonction": "Membre",
+          "debut": "2022-12-07",
+          "fin": "2024-06-09",
+          "actif": false
+        },
+        {
+          "membre_id": "alexandre-sabatou",
+          "nom": "Alexandre Sabatou",
+          "fonction": "Membre",
+          "debut": "2025-07-01",
+          "fin": "2025-09-07",
+          "actif": false
+        },
+        {
+          "membre_id": "sophie-blanc",
+          "nom": "Sophie Blanc",
+          "fonction": "Membre",
+          "debut": "2025-01-25",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "yael-menache",
+          "nom": "Yaël Ménaché",
+          "fonction": "Membre",
+          "debut": "2026-09-11",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "marine-hamelet",
+          "nom": "Marine Hamelet",
+          "fonction": "Membre",
+          "debut": "2025-01-23",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "frank-giletti",
+          "nom": "Frank Giletti",
+          "fonction": "Membre",
+          "debut": "2022-12-22",
+          "fin": "2024-06-09",
+          "actif": false
+        },
+        {
+          "membre_id": "marc-de-fleurian",
+          "nom": "Marc de Fleurian",
+          "fonction": "Membre",
+          "debut": "2025-02-24",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
       "categorie": "delegation",
       "label": "Délégation française à l'Assemblée parlementaire de l'OTAN",
       "nb_membres_a_la_date_de_reference": 6,
@@ -158584,98 +157120,6 @@
     },
     {
       "categorie": "groupe_amitie",
-      "label": "France-Afrique du Sud",
-      "nb_membres_a_la_date_de_reference": 5,
-      "nb_membres_cumul_historique": 10,
-      "effectif_reference": 131,
-      "par_fonction": {
-        "membre": 10
-      },
-      "membres": [
-        {
-          "membre_id": "nicolas-meizonnet",
-          "nom": "Nicolas Meizonnet",
-          "fonction": "Membre",
-          "debut": "2022-12-12",
-          "fin": "2024-06-09",
-          "actif": false
-        },
-        {
-          "membre_id": "sebastien-chenu",
-          "nom": "Sébastien Chenu",
-          "fonction": "Membre",
-          "debut": "2017-10-02",
-          "fin": "2022-06-21",
-          "actif": false
-        },
-        {
-          "membre_id": "jorys-bovet",
-          "nom": "Jorys Bovet",
-          "fonction": "Membre",
-          "debut": "2025-02-20",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "frederic-falcon",
-          "nom": "Frédéric Falcon",
-          "fonction": "Membre",
-          "debut": "2025-01-23",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "alexis-jolly",
-          "nom": "Alexis Jolly",
-          "fonction": "Membre",
-          "debut": "2022-12-07",
-          "fin": "2024-06-09",
-          "actif": false
-        },
-        {
-          "membre_id": "alexandre-sabatou",
-          "nom": "Alexandre Sabatou",
-          "fonction": "Membre",
-          "debut": "2025-07-01",
-          "fin": "2025-09-07",
-          "actif": false
-        },
-        {
-          "membre_id": "sophie-blanc",
-          "nom": "Sophie Blanc",
-          "fonction": "Membre",
-          "debut": "2025-01-25",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "marine-hamelet",
-          "nom": "Marine Hamelet",
-          "fonction": "Membre",
-          "debut": "2025-01-23",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "frank-giletti",
-          "nom": "Frank Giletti",
-          "fonction": "Membre",
-          "debut": "2022-12-22",
-          "fin": "2024-06-09",
-          "actif": false
-        },
-        {
-          "membre_id": "marc-de-fleurian",
-          "nom": "Marc de Fleurian",
-          "fonction": "Membre",
-          "debut": "2025-02-24",
-          "fin": null,
-          "actif": true
-        }
-      ]
-    },
-    {
-      "categorie": "groupe_amitie",
       "label": "France-Estonie",
       "nb_membres_a_la_date_de_reference": 5,
       "nb_membres_cumul_historique": 10,
@@ -159548,6 +157992,82 @@
           "nom": "Anne Sicard",
           "fonction": "Membre",
           "debut": "2026-06-05",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "France-Nouvelle-Zélande",
+      "nb_membres_a_la_date_de_reference": 5,
+      "nb_membres_cumul_historique": 8,
+      "effectif_reference": 131,
+      "par_fonction": {
+        "membre": 8
+      },
+      "membres": [
+        {
+          "membre_id": "alexis-jolly",
+          "nom": "Alexis Jolly",
+          "fonction": "Membre",
+          "debut": "2022-12-07",
+          "fin": "2024-06-09",
+          "actif": false
+        },
+        {
+          "membre_id": "thomas-menage",
+          "nom": "Thomas Ménagé",
+          "fonction": "Membre",
+          "debut": "2022-12-12",
+          "fin": "2024-06-09",
+          "actif": false
+        },
+        {
+          "membre_id": "michael-taverne",
+          "nom": "Michaël Taverne",
+          "fonction": "Membre",
+          "debut": "2025-01-27",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "alexandre-sabatou",
+          "nom": "Alexandre Sabatou",
+          "fonction": "Membre",
+          "debut": "2025-07-01",
+          "fin": "2025-09-07",
+          "actif": false
+        },
+        {
+          "membre_id": "jean-philippe-tanguy",
+          "nom": "Jean-Philippe Tanguy",
+          "fonction": "Membre",
+          "debut": "2025-01-28",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "yael-menache",
+          "nom": "Yaël Ménaché",
+          "fonction": "Membre",
+          "debut": "2026-09-11",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "anthony-boulogne",
+          "nom": "Anthony Boulogne",
+          "fonction": "Membre",
+          "debut": "2025-01-23",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "catherine-rimbert",
+          "nom": "Catherine Rimbert",
+          "fonction": "Membre",
+          "debut": "2025-01-23",
           "fin": null,
           "actif": true
         }
@@ -161041,74 +159561,6 @@
           "debut": "2025-03-15",
           "fin": "2025-03-17",
           "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "groupe_amitie",
-      "label": "France-Nouvelle-Zélande",
-      "nb_membres_a_la_date_de_reference": 4,
-      "nb_membres_cumul_historique": 7,
-      "effectif_reference": 131,
-      "par_fonction": {
-        "membre": 7
-      },
-      "membres": [
-        {
-          "membre_id": "alexis-jolly",
-          "nom": "Alexis Jolly",
-          "fonction": "Membre",
-          "debut": "2022-12-07",
-          "fin": "2024-06-09",
-          "actif": false
-        },
-        {
-          "membre_id": "thomas-menage",
-          "nom": "Thomas Ménagé",
-          "fonction": "Membre",
-          "debut": "2022-12-12",
-          "fin": "2024-06-09",
-          "actif": false
-        },
-        {
-          "membre_id": "michael-taverne",
-          "nom": "Michaël Taverne",
-          "fonction": "Membre",
-          "debut": "2025-01-27",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "alexandre-sabatou",
-          "nom": "Alexandre Sabatou",
-          "fonction": "Membre",
-          "debut": "2025-07-01",
-          "fin": "2025-09-07",
-          "actif": false
-        },
-        {
-          "membre_id": "jean-philippe-tanguy",
-          "nom": "Jean-Philippe Tanguy",
-          "fonction": "Membre",
-          "debut": "2025-01-28",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "anthony-boulogne",
-          "nom": "Anthony Boulogne",
-          "fonction": "Membre",
-          "debut": "2025-01-23",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "catherine-rimbert",
-          "nom": "Catherine Rimbert",
-          "fonction": "Membre",
-          "debut": "2025-01-23",
-          "fin": null,
-          "actif": true
         }
       ]
     },
@@ -175592,7 +174044,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA642988",
-      "synchro_le": "2026-09-11T08:11:45+0000"
+      "synchro_le": "2026-09-12T15:44:07+0000"
     },
     {
       "type": "nosdeputes",
@@ -175602,7 +174054,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719436",
-      "synchro_le": "2026-09-11T08:15:01+0000"
+      "synchro_le": "2026-09-12T15:50:10+0000"
     },
     {
       "type": "nosdeputes",
@@ -175612,7 +174064,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720468",
-      "synchro_le": "2026-09-11T08:14:53+0000"
+      "synchro_le": "2026-09-12T15:50:32+0000"
     },
     {
       "type": "nosdeputes",
@@ -175622,17 +174074,17 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720614",
-      "synchro_le": "2026-09-11T00:05:25+0000"
+      "synchro_le": "2026-09-12T15:51:10+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/28210",
-      "synchro_le": "2026-09-11T00:05:43+0000"
+      "synchro_le": "2026-09-12T15:51:23+0000"
     },
     {
       "type": "parltrack",
       "url": "https://parltrack.org/dumps",
-      "synchro_le": "2026-09-11T00:19:21"
+      "synchro_le": "2026-09-12T15:59:24"
     },
     {
       "type": "nosdeputes",
@@ -175642,7 +174094,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720668",
-      "synchro_le": "2026-09-11T08:18:54+0000"
+      "synchro_le": "2026-09-12T15:50:49+0000"
     },
     {
       "type": "nosdeputes",
@@ -175652,7 +174104,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720822",
-      "synchro_le": "2026-09-11T08:11:49+0000"
+      "synchro_le": "2026-09-12T15:44:09+0000"
     },
     {
       "type": "nosdeputes",
@@ -175662,7 +174114,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721932",
-      "synchro_le": "2026-09-11T08:12:01+0000"
+      "synchro_le": "2026-09-12T15:44:45+0000"
     },
     {
       "type": "nosdeputes",
@@ -175672,7 +174124,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793102",
-      "synchro_le": "2026-09-11T08:11:58+0000"
+      "synchro_le": "2026-09-12T15:44:12+0000"
     },
     {
       "type": "nosdeputes",
@@ -175682,7 +174134,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793134",
-      "synchro_le": "2026-09-11T08:11:45+0000"
+      "synchro_le": "2026-09-12T15:44:08+0000"
     },
     {
       "type": "nosdeputes",
@@ -175692,7 +174144,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793146",
-      "synchro_le": "2026-09-11T08:15:01+0000"
+      "synchro_le": "2026-09-12T15:50:11+0000"
     },
     {
       "type": "nosdeputes",
@@ -175702,7 +174154,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793158",
-      "synchro_le": "2026-09-11T08:14:54+0000"
+      "synchro_le": "2026-09-12T15:50:33+0000"
     },
     {
       "type": "nosdeputes",
@@ -175712,7 +174164,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793166",
-      "synchro_le": "2026-09-11T08:15:08+0000"
+      "synchro_le": "2026-09-12T15:51:24+0000"
     },
     {
       "type": "nosdeputes",
@@ -175722,7 +174174,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793182",
-      "synchro_le": "2026-09-11T08:18:55+0000"
+      "synchro_le": "2026-09-12T15:50:49+0000"
     },
     {
       "type": "nosdeputes",
@@ -175732,7 +174184,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793218",
-      "synchro_le": "2026-09-11T08:11:49+0000"
+      "synchro_le": "2026-09-12T15:44:10+0000"
     },
     {
       "type": "nosdeputes",
@@ -175742,7 +174194,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793230",
-      "synchro_le": "2026-09-11T08:12:01+0000"
+      "synchro_le": "2026-09-12T15:44:45+0000"
     },
     {
       "type": "nosdeputes",
@@ -175752,7 +174204,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793238",
-      "synchro_le": "2026-09-11T08:11:58+0000"
+      "synchro_le": "2026-09-12T15:44:12+0000"
     },
     {
       "type": "nosdeputes",
@@ -175762,7 +174214,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793246",
-      "synchro_le": "2026-09-11T08:11:46+0000"
+      "synchro_le": "2026-09-12T15:44:08+0000"
     },
     {
       "type": "nosdeputes",
@@ -175772,7 +174224,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793254",
-      "synchro_le": "2026-09-11T08:15:02+0000"
+      "synchro_le": "2026-09-12T15:50:11+0000"
     },
     {
       "type": "nosdeputes",
@@ -175782,7 +174234,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793290",
-      "synchro_le": "2026-09-11T08:14:54+0000"
+      "synchro_le": "2026-09-12T15:50:33+0000"
     },
     {
       "type": "nosdeputes",
@@ -175792,7 +174244,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793298",
-      "synchro_le": "2026-09-11T08:15:08+0000"
+      "synchro_le": "2026-09-12T15:51:25+0000"
     },
     {
       "type": "nosdeputes",
@@ -175802,7 +174254,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793314",
-      "synchro_le": "2026-09-11T08:18:55+0000"
+      "synchro_le": "2026-09-12T15:50:50+0000"
     },
     {
       "type": "nosdeputes",
@@ -175812,12 +174264,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793330",
-      "synchro_le": "2026-09-11T08:11:50+0000"
+      "synchro_le": "2026-09-12T15:44:10+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793334",
-      "synchro_le": "2026-09-11T08:12:32+0000"
+      "synchro_le": "2026-09-12T15:45:46+0000"
     },
     {
       "type": "nosdeputes",
@@ -175827,12 +174279,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793354",
-      "synchro_le": "2026-09-11T08:12:02+0000"
+      "synchro_le": "2026-09-12T15:44:45+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/124765",
-      "synchro_le": "2026-09-11T08:12:13+0000"
+      "synchro_le": "2026-09-12T15:45:06+0000"
     },
     {
       "type": "nosdeputes",
@@ -175842,7 +174294,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793362",
-      "synchro_le": "2026-09-11T08:11:59+0000"
+      "synchro_le": "2026-09-12T15:44:13+0000"
     },
     {
       "type": "nosdeputes",
@@ -175852,7 +174304,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793374",
-      "synchro_le": "2026-09-11T08:11:46+0000"
+      "synchro_le": "2026-09-12T15:44:08+0000"
     },
     {
       "type": "nosdeputes",
@@ -175862,7 +174314,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793382",
-      "synchro_le": "2026-09-11T08:15:04+0000"
+      "synchro_le": "2026-09-12T15:50:13+0000"
     },
     {
       "type": "nosdeputes",
@@ -175872,7 +174324,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793432",
-      "synchro_le": "2026-09-11T08:14:55+0000"
+      "synchro_le": "2026-09-12T15:50:35+0000"
     },
     {
       "type": "nosdeputes",
@@ -175882,7 +174334,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793548",
-      "synchro_le": "2026-09-11T08:15:10+0000"
+      "synchro_le": "2026-09-12T15:51:27+0000"
     },
     {
       "type": "nosdeputes",
@@ -175892,7 +174344,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793592",
-      "synchro_le": "2026-09-11T08:18:56+0000"
+      "synchro_le": "2026-09-12T15:50:52+0000"
     },
     {
       "type": "nosdeputes",
@@ -175902,7 +174354,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793608",
-      "synchro_le": "2026-09-11T08:11:50+0000"
+      "synchro_le": "2026-09-12T15:44:10+0000"
     },
     {
       "type": "nosdeputes",
@@ -175912,7 +174364,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793616",
-      "synchro_le": "2026-09-11T08:12:13+0000"
+      "synchro_le": "2026-09-12T15:45:07+0000"
     },
     {
       "type": "nosdeputes",
@@ -175922,7 +174374,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793632",
-      "synchro_le": "2026-09-11T08:11:59+0000"
+      "synchro_le": "2026-09-12T15:44:13+0000"
     },
     {
       "type": "nosdeputes",
@@ -175932,7 +174384,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793656",
-      "synchro_le": "2026-09-11T08:11:47+0000"
+      "synchro_le": "2026-09-12T15:44:09+0000"
     },
     {
       "type": "nosdeputes",
@@ -175942,7 +174394,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793672",
-      "synchro_le": "2026-09-11T08:15:05+0000"
+      "synchro_le": "2026-09-12T15:50:13+0000"
     },
     {
       "type": "nosdeputes",
@@ -175952,7 +174404,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793696",
-      "synchro_le": "2026-09-11T08:14:57+0000"
+      "synchro_le": "2026-09-12T15:50:35+0000"
     },
     {
       "type": "nosdeputes",
@@ -175962,7 +174414,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793832",
-      "synchro_le": "2026-09-11T08:15:11+0000"
+      "synchro_le": "2026-09-12T15:51:27+0000"
     },
     {
       "type": "nosdeputes",
@@ -175972,7 +174424,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793844",
-      "synchro_le": "2026-09-11T08:18:58+0000"
+      "synchro_le": "2026-09-12T15:50:52+0000"
     },
     {
       "type": "nosdeputes",
@@ -175982,7 +174434,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793852",
-      "synchro_le": "2026-09-11T08:11:52+0000"
+      "synchro_le": "2026-09-12T15:44:13+0000"
     },
     {
       "type": "nosdeputes",
@@ -175992,7 +174444,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793892",
-      "synchro_le": "2026-09-11T08:12:14+0000"
+      "synchro_le": "2026-09-12T15:45:07+0000"
     },
     {
       "type": "nosdeputes",
@@ -176002,7 +174454,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793904",
-      "synchro_le": "2026-09-11T08:12:01+0000"
+      "synchro_le": "2026-09-12T15:44:15+0000"
     },
     {
       "type": "nosdeputes",
@@ -176012,7 +174464,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793928",
-      "synchro_le": "2026-09-11T08:11:47+0000"
+      "synchro_le": "2026-09-12T15:44:09+0000"
     },
     {
       "type": "nosdeputes",
@@ -176022,7 +174474,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794030",
-      "synchro_le": "2026-09-11T08:14:57+0000"
+      "synchro_le": "2026-09-12T15:50:36+0000"
     },
     {
       "type": "nosdeputes",
@@ -176032,7 +174484,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794198",
-      "synchro_le": "2026-09-11T08:15:11+0000"
+      "synchro_le": "2026-09-12T15:51:27+0000"
     },
     {
       "type": "nosdeputes",
@@ -176042,7 +174494,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794322",
-      "synchro_le": "2026-09-11T08:12:02+0000"
+      "synchro_le": "2026-09-12T15:44:15+0000"
     },
     {
       "type": "nosdeputes",
@@ -176052,12 +174504,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794354",
-      "synchro_le": "2026-09-11T08:11:48+0000"
+      "synchro_le": "2026-09-12T15:44:09+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/197597",
-      "synchro_le": "2026-09-11T08:11:58+0000"
+      "synchro_le": "2026-09-12T15:44:20+0000"
     },
     {
       "type": "nosdeputes",
@@ -176067,7 +174519,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794418",
-      "synchro_le": "2026-09-11T08:15:05+0000"
+      "synchro_le": "2026-09-12T15:50:14+0000"
     },
     {
       "type": "nosdeputes",
@@ -176077,7 +174529,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794434",
-      "synchro_le": "2026-09-11T08:14:57+0000"
+      "synchro_le": "2026-09-12T15:50:36+0000"
     },
     {
       "type": "nosdeputes",
@@ -176087,7 +174539,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794442",
-      "synchro_le": "2026-09-11T08:15:11+0000"
+      "synchro_le": "2026-09-12T15:51:28+0000"
     },
     {
       "type": "nosdeputes",
@@ -176097,7 +174549,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794502",
-      "synchro_le": "2026-09-11T08:18:59+0000"
+      "synchro_le": "2026-09-12T15:50:53+0000"
     },
     {
       "type": "nosdeputes",
@@ -176107,7 +174559,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794530",
-      "synchro_le": "2026-09-11T08:12:14+0000"
+      "synchro_le": "2026-09-12T15:45:08+0000"
     },
     {
       "type": "nosdeputes",
@@ -176117,7 +174569,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794562",
-      "synchro_le": "2026-09-11T08:11:59+0000"
+      "synchro_le": "2026-09-12T15:44:21+0000"
     },
     {
       "type": "nosdeputes",
@@ -176127,7 +174579,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794570",
-      "synchro_le": "2026-09-11T08:15:06+0000"
+      "synchro_le": "2026-09-12T15:50:14+0000"
     },
     {
       "type": "nosdeputes",
@@ -176137,7 +174589,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794582",
-      "synchro_le": "2026-09-11T08:14:58+0000"
+      "synchro_le": "2026-09-12T15:50:36+0000"
     },
     {
       "type": "nosdeputes",
@@ -176147,7 +174599,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794590",
-      "synchro_le": "2026-09-11T08:15:11+0000"
+      "synchro_le": "2026-09-12T15:51:28+0000"
     },
     {
       "type": "nosdeputes",
@@ -176157,7 +174609,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794598",
-      "synchro_le": "2026-09-11T08:18:59+0000"
+      "synchro_le": "2026-09-12T15:50:53+0000"
     },
     {
       "type": "nosdeputes",
@@ -176167,7 +174619,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794670",
-      "synchro_le": "2026-09-11T08:12:15+0000"
+      "synchro_le": "2026-09-12T15:45:08+0000"
     },
     {
       "type": "nosdeputes",
@@ -176177,7 +174629,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794678",
-      "synchro_le": "2026-09-11T08:12:02+0000"
+      "synchro_le": "2026-09-12T15:44:16+0000"
     },
     {
       "type": "nosdeputes",
@@ -176187,7 +174639,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794718",
-      "synchro_le": "2026-09-11T08:11:59+0000"
+      "synchro_le": "2026-09-12T15:44:22+0000"
     },
     {
       "type": "nosdeputes",
@@ -176197,7 +174649,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794734",
-      "synchro_le": "2026-09-11T08:15:06+0000"
+      "synchro_le": "2026-09-12T15:50:15+0000"
     },
     {
       "type": "nosdeputes",
@@ -176207,7 +174659,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794762",
-      "synchro_le": "2026-09-11T08:14:58+0000"
+      "synchro_le": "2026-09-12T15:50:36+0000"
     },
     {
       "type": "nosdeputes",
@@ -176217,7 +174669,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794770",
-      "synchro_le": "2026-09-11T08:15:12+0000"
+      "synchro_le": "2026-09-12T15:51:29+0000"
     },
     {
       "type": "nosdeputes",
@@ -176227,7 +174679,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794886",
-      "synchro_le": "2026-09-11T08:19:00+0000"
+      "synchro_le": "2026-09-12T15:50:54+0000"
     },
     {
       "type": "nosdeputes",
@@ -176237,7 +174689,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794894",
-      "synchro_le": "2026-09-11T08:11:58+0000"
+      "synchro_le": "2026-09-12T15:44:17+0000"
     },
     {
       "type": "nosdeputes",
@@ -176247,7 +174699,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794946",
-      "synchro_le": "2026-09-11T08:12:15+0000"
+      "synchro_le": "2026-09-12T15:45:08+0000"
     },
     {
       "type": "nosdeputes",
@@ -176257,7 +174709,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794954",
-      "synchro_le": "2026-09-11T08:12:03+0000"
+      "synchro_le": "2026-09-12T15:44:16+0000"
     },
     {
       "type": "nosdeputes",
@@ -176267,7 +174719,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795410",
-      "synchro_le": "2026-09-11T08:12:00+0000"
+      "synchro_le": "2026-09-12T15:44:22+0000"
     },
     {
       "type": "nosdeputes",
@@ -176277,7 +174729,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795552",
-      "synchro_le": "2026-09-11T08:14:59+0000"
+      "synchro_le": "2026-09-12T15:50:37+0000"
     },
     {
       "type": "nosdeputes",
@@ -176287,7 +174739,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795644",
-      "synchro_le": "2026-09-11T08:15:12+0000"
+      "synchro_le": "2026-09-12T15:51:29+0000"
     },
     {
       "type": "nosdeputes",
@@ -176297,7 +174749,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795778",
-      "synchro_le": "2026-09-11T08:19:00+0000"
+      "synchro_le": "2026-09-12T15:50:54+0000"
     },
     {
       "type": "nosdeputes",
@@ -176307,7 +174759,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795786",
-      "synchro_le": "2026-09-11T08:11:59+0000"
+      "synchro_le": "2026-09-12T15:44:18+0000"
     },
     {
       "type": "nosdeputes",
@@ -176317,7 +174769,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795900",
-      "synchro_le": "2026-09-11T08:12:03+0000"
+      "synchro_le": "2026-09-12T15:44:17+0000"
     },
     {
       "type": "nosdeputes",
@@ -176327,7 +174779,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795912",
-      "synchro_le": "2026-09-11T08:12:00+0000"
+      "synchro_le": "2026-09-12T15:44:22+0000"
     },
     {
       "type": "nosdeputes",
@@ -176337,7 +174789,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795966",
-      "synchro_le": "2026-09-11T08:15:07+0000"
+      "synchro_le": "2026-09-12T15:50:15+0000"
     },
     {
       "type": "nosdeputes",
@@ -176347,7 +174799,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795974",
-      "synchro_le": "2026-09-11T08:14:59+0000"
+      "synchro_le": "2026-09-12T15:50:37+0000"
     },
     {
       "type": "nosdeputes",
@@ -176357,12 +174809,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA796026",
-      "synchro_le": "2026-09-11T08:15:12+0000"
+      "synchro_le": "2026-09-12T15:51:30+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/197686",
-      "synchro_le": "2026-09-11T08:15:20+0000"
+      "synchro_le": "2026-09-12T15:51:36+0000"
     },
     {
       "type": "nosdeputes",
@@ -176372,7 +174824,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA796034",
-      "synchro_le": "2026-09-11T08:19:00+0000"
+      "synchro_le": "2026-09-12T15:50:54+0000"
     },
     {
       "type": "nosdeputes",
@@ -176382,7 +174834,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA796042",
-      "synchro_le": "2026-09-11T08:11:59+0000"
+      "synchro_le": "2026-09-12T15:44:18+0000"
     },
     {
       "type": "nosdeputes",
@@ -176392,7 +174844,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA796050",
-      "synchro_le": "2026-09-11T08:12:16+0000"
+      "synchro_le": "2026-09-12T15:45:10+0000"
     },
     {
       "type": "nosdeputes",
@@ -176402,277 +174854,277 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA796118",
-      "synchro_le": "2026-09-11T08:15:07+0000"
+      "synchro_le": "2026-09-12T15:50:16+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840067",
-      "synchro_le": "2026-09-11T08:12:32+0000"
+      "synchro_le": "2026-09-12T15:44:46+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840075",
-      "synchro_le": "2026-09-11T08:12:14+0000"
+      "synchro_le": "2026-09-12T15:44:36+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840107",
-      "synchro_le": "2026-09-11T08:15:21+0000"
+      "synchro_le": "2026-09-12T15:50:29+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840119",
-      "synchro_le": "2026-09-11T08:15:14+0000"
+      "synchro_le": "2026-09-12T15:50:52+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840135",
-      "synchro_le": "2026-09-11T08:15:33+0000"
+      "synchro_le": "2026-09-12T15:51:51+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840143",
-      "synchro_le": "2026-09-11T08:19:17+0000"
+      "synchro_le": "2026-09-12T15:51:10+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840159",
-      "synchro_le": "2026-09-11T08:12:32+0000"
+      "synchro_le": "2026-09-12T15:44:49+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840737",
-      "synchro_le": "2026-09-11T08:12:32+0000"
+      "synchro_le": "2026-09-12T15:45:46+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840745",
-      "synchro_le": "2026-09-11T08:12:32+0000"
+      "synchro_le": "2026-09-12T15:44:46+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840757",
-      "synchro_le": "2026-09-11T08:12:15+0000"
+      "synchro_le": "2026-09-12T15:44:37+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840781",
-      "synchro_le": "2026-09-11T08:15:21+0000"
+      "synchro_le": "2026-09-12T15:50:29+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840801",
-      "synchro_le": "2026-09-11T08:15:15+0000"
+      "synchro_le": "2026-09-12T15:50:52+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840837",
-      "synchro_le": "2026-09-11T08:15:33+0000"
+      "synchro_le": "2026-09-12T15:51:52+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840857",
-      "synchro_le": "2026-09-11T08:19:17+0000"
+      "synchro_le": "2026-09-12T15:51:11+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840869",
-      "synchro_le": "2026-09-11T08:12:32+0000"
+      "synchro_le": "2026-09-12T15:44:49+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840915",
-      "synchro_le": "2026-09-11T08:12:33+0000"
+      "synchro_le": "2026-09-12T15:45:47+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840967",
-      "synchro_le": "2026-09-11T08:12:32+0000"
+      "synchro_le": "2026-09-12T15:44:46+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841059",
-      "synchro_le": "2026-09-11T08:12:15+0000"
+      "synchro_le": "2026-09-12T15:44:37+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841075",
-      "synchro_le": "2026-09-11T08:15:21+0000"
+      "synchro_le": "2026-09-12T15:50:29+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/256894",
-      "synchro_le": "2026-09-11T08:15:25+0000"
+      "synchro_le": "2026-09-12T15:50:32+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841131",
-      "synchro_le": "2026-09-11T08:15:15+0000"
+      "synchro_le": "2026-09-12T15:50:52+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841139",
-      "synchro_le": "2026-09-11T08:15:33+0000"
+      "synchro_le": "2026-09-12T15:51:52+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841199",
-      "synchro_le": "2026-09-11T08:19:17+0000"
+      "synchro_le": "2026-09-12T15:51:11+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841439",
-      "synchro_le": "2026-09-11T08:12:33+0000"
+      "synchro_le": "2026-09-12T15:44:49+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841451",
-      "synchro_le": "2026-09-11T08:12:33+0000"
+      "synchro_le": "2026-09-12T15:45:47+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841479",
-      "synchro_le": "2026-09-11T08:12:32+0000"
+      "synchro_le": "2026-09-12T15:44:47+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841487",
-      "synchro_le": "2026-09-11T08:12:15+0000"
+      "synchro_le": "2026-09-12T15:44:37+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841495",
-      "synchro_le": "2026-09-11T08:15:25+0000"
+      "synchro_le": "2026-09-12T15:50:32+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841553",
-      "synchro_le": "2026-09-11T08:15:17+0000"
+      "synchro_le": "2026-09-12T15:50:52+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841563",
-      "synchro_le": "2026-09-11T08:15:34+0000"
+      "synchro_le": "2026-09-12T15:51:52+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841575",
-      "synchro_le": "2026-09-11T08:19:18+0000"
+      "synchro_le": "2026-09-12T15:51:11+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841587",
-      "synchro_le": "2026-09-11T08:12:33+0000"
+      "synchro_le": "2026-09-12T15:44:50+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841605",
-      "synchro_le": "2026-09-11T08:12:33+0000"
+      "synchro_le": "2026-09-12T15:45:47+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841613",
-      "synchro_le": "2026-09-11T08:12:33+0000"
+      "synchro_le": "2026-09-12T15:44:47+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841621",
-      "synchro_le": "2026-09-11T08:12:15+0000"
+      "synchro_le": "2026-09-12T15:44:38+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841645",
-      "synchro_le": "2026-09-11T08:15:25+0000"
+      "synchro_le": "2026-09-12T15:50:33+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841737",
-      "synchro_le": "2026-09-11T08:15:17+0000"
+      "synchro_le": "2026-09-12T15:50:52+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841749",
-      "synchro_le": "2026-09-11T08:15:34+0000"
+      "synchro_le": "2026-09-12T15:51:53+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841761",
-      "synchro_le": "2026-09-11T08:19:18+0000"
+      "synchro_le": "2026-09-12T15:51:13+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841777",
-      "synchro_le": "2026-09-11T08:12:33+0000"
+      "synchro_le": "2026-09-12T15:44:50+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841825",
-      "synchro_le": "2026-09-11T08:12:34+0000"
+      "synchro_le": "2026-09-12T15:45:48+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841837",
-      "synchro_le": "2026-09-11T08:12:33+0000"
+      "synchro_le": "2026-09-12T15:44:47+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841873",
-      "synchro_le": "2026-09-11T08:12:16+0000"
+      "synchro_le": "2026-09-12T15:44:38+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841955",
-      "synchro_le": "2026-09-11T08:15:26+0000"
+      "synchro_le": "2026-09-12T15:50:33+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841981",
-      "synchro_le": "2026-09-11T08:15:18+0000"
+      "synchro_le": "2026-09-12T15:50:53+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA842001",
-      "synchro_le": "2026-09-11T08:15:34+0000"
+      "synchro_le": "2026-09-12T15:51:53+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA842073",
-      "synchro_le": "2026-09-11T08:19:18+0000"
+      "synchro_le": "2026-09-12T15:51:14+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/256897",
-      "synchro_le": "2026-09-11T08:19:23+0000"
+      "synchro_le": "2026-09-12T15:51:19+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA842085",
-      "synchro_le": "2026-09-11T08:12:33+0000"
+      "synchro_le": "2026-09-12T15:44:50+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA842097",
-      "synchro_le": "2026-09-11T08:12:34+0000"
+      "synchro_le": "2026-09-12T15:45:48+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA842227",
-      "synchro_le": "2026-09-11T08:12:33+0000"
+      "synchro_le": "2026-09-12T15:44:48+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA842255",
-      "synchro_le": "2026-09-11T08:12:16+0000"
+      "synchro_le": "2026-09-12T15:44:38+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA842279",
-      "synchro_le": "2026-09-11T08:15:26+0000"
+      "synchro_le": "2026-09-12T15:50:33+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-11T08:46:44+0000",
+    "genere_le": "2026-09-12T16:14:40+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO) + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu) + ODbL v1.0 (ParlTrack — https://parltrack.org/dumps)",
     "profils_sources": [
       "herve-de-lepinau",
@@ -176809,11 +175261,11 @@
     ],
     "seuil_quorum": 0.5,
     "warnings": [
-      "date_reference : tous les comptes de cette fiche se rapportent au 2026-09-11, date de génération — au moins une appartenance au groupe est encore ouverte, la législature court. La valeur bougera au prochain run (#653).",
-      "effectif_sur_la_periode : entre 2024-07-19 et 2026-09-11, le groupe a compté au minimum 121 membres (2026-04-02) et au maximum 126 (2024-07-19) — première date à laquelle chaque borne est atteinte. L'effectif est réévalué à chaque entrée et à chaque lendemain de sortie, jamais hors de cette fenêtre. `membres[]` ne porte qu'un intervalle par membre (périodes recollées, #526) : un départ suivi d'un retour n'y apparaît pas, et aucune de ces deux bornes ne le voit (#702).",
+      "date_reference : tous les comptes de cette fiche se rapportent au 2026-09-12, date de génération — au moins une appartenance au groupe est encore ouverte, la législature court. La valeur bougera au prochain run (#653).",
+      "effectif_sur_la_periode : entre 2024-07-19 et 2026-09-12, le groupe a compté au minimum 121 membres (2026-04-02) et au maximum 126 (2024-07-19) — première date à laquelle chaque borne est atteinte. L'effectif est réévalué à chaque entrée et à chaque lendemain de sortie, jamais hors de cette fenêtre. `membres[]` ne porte qu'un intervalle par membre (périodes recollées, #526) : un départ suivi d'un retour n'y apparaît pas, et aucune de ces deux bornes ne le voit (#702).",
       "cohesion_votes : 2092 vote(s) sans scrutin_id écarté(s) — aucun rattachement de législature possible, donc aucun scrutin identifiable (#432). Le dénominateur publié ne les compte pas.",
       "tags_thematiques_agreges : 43128 intervention(s) tenue(s) sous une autre législature que la 17e n'ont pas nourri l'empreinte thématique — elles appartiennent à la carrière de leurs auteurs, pas à l'activité de ce groupe (#825, même règle que les votes depuis #403 et que les amendements depuis #821).",
-      "tags_thematiques_agreges : 1202 intervention(s) dont l'identifiant ne porte pas de législature sont CONSERVÉES — rien ne prouve qu'elles soient hors période, et les écarter ferait passer une ignorance pour un fait (§2 règle 5).",
+      "tags_thematiques_agreges : 956 intervention(s) dont l'identifiant ne porte pas de législature sont CONSERVÉES — rien ne prouve qu'elles soient hors période, et les écarter ferait passer une ignorance pour un fait (§2 règle 5).",
       "amendements_agreges : 699434 signature(s) portant sur des amendements déposés sous une autre législature que la 17e ont été écartées — ils appartiennent à la carrière de leurs auteurs, pas à l'activité de ce groupe (#821, même règle que les votes depuis #403).",
       "amendements_agreges : 342 signature(s) dont l'identifiant d'amendement ne porte pas de législature sont CONSERVÉES — rien ne prouve qu'elles soient hors période, et les écarter ferait passer une ignorance pour un fait (§2 règle 5).",
       "amendements_agreges : 342 amendement(s) sans `amendement_id`, donc non dédoublonnables entre membres — comptés une fois par signataire (#643). Aucune clé ne s'invente (AGENTS.md §2 règle 5) ; `nb_amendements` les compte tels quels.",

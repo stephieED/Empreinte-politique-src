@@ -11,7 +11,15 @@
     "fin": "2022-06-21",
     "actif": false
   },
-  "historique_noms": [],
+  "historique_noms": [
+    {
+      "sigle": "FI",
+      "nom": "La France insoumise",
+      "debut": "2017-06-27",
+      "fin": "2022-06-21",
+      "organe_an": "PO730958"
+    }
+  ],
   "membres": [
     {
       "membre_id": "jean-luc-melenchon",
@@ -65821,26 +65829,6 @@
     },
     {
       "categorie": "commission",
-      "label": "Amendements",
-      "nb_membres_a_la_date_de_reference": 0,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 17,
-      "par_fonction": {
-        "membre": 1
-      },
-      "membres": [
-        {
-          "membre_id": "jean-luc-melenchon",
-          "nom": "Jean-Luc Mélenchon",
-          "fonction": "membre",
-          "debut": null,
-          "fin": null,
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
       "label": "Commission d'enquête sur les causes de l'incapacité de la france à atteindre les objectifs des plans successifs de maîtrise des impacts des produits phytosanitaires sur la santé humaine et environnementale et notamment sur les conditions de l'exercice des missions des autorités publiques en charge de la sécurité sanitaire",
       "nb_membres_a_la_date_de_reference": 0,
       "nb_membres_cumul_historique": 1,
@@ -65921,26 +65909,6 @@
     },
     {
       "categorie": "commission",
-      "label": "Interventions",
-      "nb_membres_a_la_date_de_reference": 0,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 17,
-      "par_fonction": {
-        "membre": 1
-      },
-      "membres": [
-        {
-          "membre_id": "jean-luc-melenchon",
-          "nom": "Jean-Luc Mélenchon",
-          "fonction": "membre",
-          "debut": null,
-          "fin": null,
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
       "label": "La France Insoumise",
       "nb_membres_a_la_date_de_reference": 0,
       "nb_membres_cumul_historique": 1,
@@ -65981,26 +65949,6 @@
     },
     {
       "categorie": "commission",
-      "label": "Loi ou de résolution",
-      "nb_membres_a_la_date_de_reference": 0,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 17,
-      "par_fonction": {
-        "propositions": 1
-      },
-      "membres": [
-        {
-          "membre_id": "jean-luc-melenchon",
-          "nom": "Jean-Luc Mélenchon",
-          "fonction": "propositions",
-          "debut": null,
-          "fin": null,
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
       "label": "Mission d'information sur l'adaptation de la politique de l'eau au défi climatique",
       "nb_membres_a_la_date_de_reference": 0,
       "nb_membres_cumul_historique": 1,
@@ -66035,46 +65983,6 @@
           "fonction": "président de groupe",
           "debut": "2020-03-31",
           "fin": "2020-12-02",
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
-      "label": "Questions",
-      "nb_membres_a_la_date_de_reference": 0,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 17,
-      "par_fonction": {
-        "membre": 1
-      },
-      "membres": [
-        {
-          "membre_id": "jean-luc-melenchon",
-          "nom": "Jean-Luc Mélenchon",
-          "fonction": "membre",
-          "debut": null,
-          "fin": null,
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
-      "label": "Vidéos",
-      "nb_membres_a_la_date_de_reference": 0,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 17,
-      "par_fonction": {
-        "membre": 1
-      },
-      "membres": [
-        {
-          "membre_id": "jean-luc-melenchon",
-          "nom": "Jean-Luc Mélenchon",
-          "fonction": "membre",
-          "debut": null,
-          "fin": null,
           "actif": false
         }
       ]
@@ -69961,17 +69869,17 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2150",
-      "synchro_le": "2026-09-10T23:59:01+0000"
+      "synchro_le": "2026-09-12T15:44:53+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/96742",
-      "synchro_le": "2026-09-10T23:59:11+0000"
+      "synchro_le": "2026-09-12T15:45:04+0000"
     },
     {
       "type": "parltrack",
       "url": "https://parltrack.org/dumps",
-      "synchro_le": "2026-09-11T00:18:27"
+      "synchro_le": "2026-09-12T15:58:32"
     },
     {
       "type": "nosdeputes",
@@ -69981,7 +69889,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA588884",
-      "synchro_le": "2026-09-11T08:15:21+0000"
+      "synchro_le": "2026-09-12T15:51:36+0000"
     },
     {
       "type": "nosdeputes",
@@ -69991,12 +69899,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718860",
-      "synchro_le": "2026-09-11T08:11:59+0000"
+      "synchro_le": "2026-09-12T15:44:19+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718868",
-      "synchro_le": "2026-09-11T08:12:22+0000"
+      "synchro_le": "2026-09-12T15:44:44+0000"
     },
     {
       "type": "nosdeputes",
@@ -70006,12 +69914,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719578",
-      "synchro_le": "2026-09-11T08:12:18+0000"
+      "synchro_le": "2026-09-12T15:45:11+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719676",
-      "synchro_le": "2026-09-11T08:15:31+0000"
+      "synchro_le": "2026-09-12T15:50:38+0000"
     },
     {
       "type": "nosdeputes",
@@ -70021,7 +69929,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720286",
-      "synchro_le": "2026-09-11T08:12:04+0000"
+      "synchro_le": "2026-09-12T15:44:17+0000"
     },
     {
       "type": "nosdeputes",
@@ -70031,7 +69939,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720422",
-      "synchro_le": "2026-09-11T08:12:00+0000"
+      "synchro_le": "2026-09-12T15:44:23+0000"
     },
     {
       "type": "nosdeputes",
@@ -70041,7 +69949,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720430",
-      "synchro_le": "2026-09-11T08:15:07+0000"
+      "synchro_le": "2026-09-12T15:50:16+0000"
     },
     {
       "type": "nosdeputes",
@@ -70051,7 +69959,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720846",
-      "synchro_le": "2026-09-11T08:15:00+0000"
+      "synchro_le": "2026-09-12T15:50:38+0000"
     },
     {
       "type": "nosdeputes",
@@ -70061,7 +69969,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720892",
-      "synchro_le": "2026-09-11T08:15:21+0000"
+      "synchro_le": "2026-09-12T15:51:37+0000"
     },
     {
       "type": "nosdeputes",
@@ -70071,7 +69979,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721062",
-      "synchro_le": "2026-09-11T08:19:02+0000"
+      "synchro_le": "2026-09-12T15:50:56+0000"
     },
     {
       "type": "nosdeputes",
@@ -70081,7 +69989,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721202",
-      "synchro_le": "2026-09-11T08:12:00+0000"
+      "synchro_le": "2026-09-12T15:44:19+0000"
     },
     {
       "type": "nosdeputes",
@@ -70091,12 +69999,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721210",
-      "synchro_le": "2026-09-11T08:12:19+0000"
+      "synchro_le": "2026-09-12T15:45:12+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721226",
-      "synchro_le": "2026-09-11T08:15:22+0000"
+      "synchro_le": "2026-09-12T15:50:58+0000"
     },
     {
       "type": "nosdeputes",
@@ -70106,7 +70014,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721960",
-      "synchro_le": "2026-09-11T08:12:04+0000"
+      "synchro_le": "2026-09-12T15:44:18+0000"
     },
     {
       "type": "nosdeputes",
@@ -70116,12 +70024,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722142",
-      "synchro_le": "2026-09-11T08:12:01+0000"
+      "synchro_le": "2026-09-12T15:44:23+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-11T08:47:08+0000",
+    "genere_le": "2026-09-12T16:15:03+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO) + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu) + ODbL v1.0 (ParlTrack — https://parltrack.org/dumps)",
     "profils_sources": [
       "jean-luc-melenchon",

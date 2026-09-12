@@ -11,7 +11,15 @@
     "fin": "2020-10-16",
     "actif": false
   },
-  "historique_noms": [],
+  "historique_noms": [
+    {
+      "sigle": "EDS",
+      "nom": "Écologie Démocratie Solidarité",
+      "debut": "2020-05-20",
+      "fin": "2020-10-16",
+      "organe_an": "PO771789"
+    }
+  ],
   "membres": [
     {
       "membre_id": "delphine-batho",
@@ -64789,92 +64797,92 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335999",
-      "synchro_le": "2026-09-11T08:15:20+0000"
+      "synchro_le": "2026-09-12T15:50:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718744",
-      "synchro_le": "2026-09-11T08:12:58+0000"
+      "synchro_le": "2026-09-12T15:45:38+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719092",
-      "synchro_le": "2026-09-11T08:12:22+0000"
+      "synchro_le": "2026-09-12T15:44:44+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719194",
-      "synchro_le": "2026-09-11T08:15:32+0000"
+      "synchro_le": "2026-09-12T15:50:38+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719448",
-      "synchro_le": "2026-09-11T08:15:25+0000"
+      "synchro_le": "2026-09-12T15:50:58+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719464",
-      "synchro_le": "2026-09-11T08:15:40+0000"
+      "synchro_le": "2026-09-12T15:51:59+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719822",
-      "synchro_le": "2026-09-11T08:19:33+0000"
+      "synchro_le": "2026-09-12T15:51:28+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720278",
-      "synchro_le": "2026-09-11T08:12:40+0000"
+      "synchro_le": "2026-09-12T15:44:57+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720298",
-      "synchro_le": "2026-09-11T08:12:40+0000"
+      "synchro_le": "2026-09-12T15:45:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720538",
-      "synchro_le": "2026-09-11T08:12:59+0000"
+      "synchro_le": "2026-09-12T15:45:38+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720952",
-      "synchro_le": "2026-09-11T08:15:18+0000"
+      "synchro_le": "2026-09-12T15:50:53+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721142",
-      "synchro_le": "2026-09-11T08:12:23+0000"
+      "synchro_le": "2026-09-12T15:44:45+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721246",
-      "synchro_le": "2026-09-11T08:15:32+0000"
+      "synchro_le": "2026-09-12T15:50:38+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722126",
-      "synchro_le": "2026-09-11T08:15:25+0000"
+      "synchro_le": "2026-09-12T15:50:58+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722260",
-      "synchro_le": "2026-09-11T08:15:40+0000"
+      "synchro_le": "2026-09-12T15:51:59+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722268",
-      "synchro_le": "2026-09-11T08:19:33+0000"
+      "synchro_le": "2026-09-12T15:51:28+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722344",
-      "synchro_le": "2026-09-11T08:19:30+0000"
+      "synchro_le": "2026-09-12T15:51:25+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-11T08:47:17+0000",
+    "genere_le": "2026-09-12T16:15:11+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr",
     "profils_sources": [
       "delphine-batho",
