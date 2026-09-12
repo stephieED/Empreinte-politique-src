@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-purge_interventions_nosdeputes.py — Retire les interventions héritées de l'ère
+purge_interventions_heritees.py — Retire les interventions héritées de l'ère
 NosDéputés dont l'équivalent Syceron est déjà publié dans le même profil (#839).
 
 Contexte
@@ -47,9 +47,9 @@ de perte sur `interventions`, liste stable : la perte est voulue et nommée
 d'avance, à déclarer par `allow_declared_losses` après comparaison au rapport.
 
 Usage (depuis la racine du dépôt) :
-    python3 src/purge_interventions_nosdeputes.py                        # rapport seul
-    python3 src/purge_interventions_nosdeputes.py --apply                # applique au brut
-    python3 src/purge_interventions_nosdeputes.py \
+    python3 src/purge_interventions_heritees.py                        # rapport seul
+    python3 src/purge_interventions_heritees.py --apply                # applique au brut
+    python3 src/purge_interventions_heritees.py \
         --profiles-dir pivot_data/profiles --apply                       # applique au pivot
 """
 
@@ -99,7 +99,7 @@ def _identifiant(entree: dict[str, Any]) -> Any:
     return entree.get("intervention_id", entree.get("id"))
 
 
-def est_heritee_nosdeputes(entree: dict[str, Any]) -> bool:
+def est_heritee(entree: dict[str, Any]) -> bool:
     """Signature de l'ère NosDéputés : un identifiant **entier**.
 
     Syceron rend `syceron_…`, les questions officielles `question_…`, le
@@ -138,7 +138,7 @@ def purge_profil(profil: dict[str, Any]) -> tuple[dict[str, Any], list[dict[str,
     conserves: list[dict[str, Any]] = []
     retires: list[dict[str, Any]] = []
     for entree in interventions:
-        if not isinstance(entree, dict) or not est_heritee_nosdeputes(entree):
+        if not isinstance(entree, dict) or not est_heritee(entree):
             conserves.append(entree)
             continue
         texte = _normalize_texte(entree.get("texte"))
@@ -192,7 +192,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         profil = _load(chemin)
         if profil is None:
             continue
-        heritees = [e for e in (profil.get("interventions") or []) if isinstance(e, dict) and est_heritee_nosdeputes(e)]
+        heritees = [e for e in (profil.get("interventions") or []) if isinstance(e, dict) and est_heritee(e)]
         if not heritees:
             continue
         profil, retires = purge_profil(profil)

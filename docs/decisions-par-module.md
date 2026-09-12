@@ -932,7 +932,7 @@ Le mentionnent sans le gouverner : [`agents-sans-comptes-volatils`](decisions/ag
 
 Le mentionnent sans le gouverner : [`absences-publiees-comme-faits-556-558-560`](decisions/absences-publiees-comme-faits-556-558-560.md).
 
-## `src/purge_interventions_nosdeputes.py`
+## `src/purge_interventions_heritees.py`
 
 Le mentionnent sans le gouverner : [`sediment-nosdeputes-839`](decisions/sediment-nosdeputes-839.md).
 

@@ -87,7 +87,7 @@ les charger, ni à les faire grossir. -->
   `europarl_…`: no live source renders an integer. #529 changed the source and therefore
   the merge key, and the additive merge kept both — so **492 of the 511 integer entries
   are the same speech published twice**, on 5 declared candidates. Removal is
-  `src/purge_interventions_nosdeputes.py`, prudent as #387 (an entry goes only when its
+  `src/purge_interventions_heritees.py`, prudent as #387 (an entry goes only when its
   Syceron twin is present in the same profile, same day, text contained or equal) and run
   **on both layers**, a raw-only removal never reaching the pivot (#729). The 19 without a
   twin stay published. Corollary for the witness protocol: **a blank collection runs in

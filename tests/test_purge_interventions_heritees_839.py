@@ -1,4 +1,4 @@
-"""Tests de `src/purge_interventions_nosdeputes.py` (#839).
+"""Tests de `src/purge_interventions_heritees.py` (#839).
 
 Arbitrage retenu : **prudence**, comme #387. Une intervention héritée de l'ère
 NosDéputés n'est retirée que si sa jumelle Syceron est **présente dans le même
@@ -17,10 +17,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from purge_interventions_nosdeputes import (  # noqa: E402
+from purge_interventions_heritees import (  # noqa: E402
     _normalize_date,
     _normalize_texte,
-    est_heritee_nosdeputes,
+    est_heritee,
     purge_profil,
 )
 
@@ -46,18 +46,18 @@ def test_identifiant_entier_est_la_signature_nosdeputes():
     """Aucune source vivante ne rend d'identifiant entier : Syceron, les
     questions officielles et le Parlement européen rendent tous une chaîne
     préfixée."""
-    assert est_heritee_nosdeputes({"id": 249506})
-    assert est_heritee_nosdeputes({"intervention_id": 2360})
-    assert not est_heritee_nosdeputes({"intervention_id": "syceron_CRSANR5L16S2023O1N091_000160"})
-    assert not est_heritee_nosdeputes({"intervention_id": "question_QANR5L15QOSD1118"})
-    assert not est_heritee_nosdeputes({"intervention_id": "europarl_A9-0100-2021"})
-    assert not est_heritee_nosdeputes({"intervention_id": None})
+    assert est_heritee({"id": 249506})
+    assert est_heritee({"intervention_id": 2360})
+    assert not est_heritee({"intervention_id": "syceron_CRSANR5L16S2023O1N091_000160"})
+    assert not est_heritee({"intervention_id": "question_QANR5L15QOSD1118"})
+    assert not est_heritee({"intervention_id": "europarl_A9-0100-2021"})
+    assert not est_heritee({"intervention_id": None})
 
 
 def test_un_booleen_n_est_pas_un_identifiant():
     """`True` est un `int` en Python : sans garde, une valeur aberrante serait
     lue comme une entrée héritée et l'entrée disparaîtrait."""
-    assert not est_heritee_nosdeputes({"intervention_id": True})
+    assert not est_heritee({"intervention_id": True})
 
 
 # ---------------------------------------------------------------------------
@@ -89,7 +89,7 @@ def test_retire_le_doublon_quand_la_jumelle_syceron_est_presente():
     profil, retires = purge_profil(profil)
     assert [_id(e) for e in retires] == [249506]
     assert len(profil["interventions"]) == 1
-    assert not est_heritee_nosdeputes(profil["interventions"][0])
+    assert not est_heritee(profil["interventions"][0])
 
 
 def test_conserve_l_entree_sans_jumelle():
