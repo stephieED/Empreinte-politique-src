@@ -12,6 +12,7 @@ qui ne servirait qu'une seule forme vérifierait un monde que le corpus n'a pas
 (#726).
 """
 
+import json
 import sys
 from pathlib import Path
 
@@ -145,6 +146,33 @@ def test_idempotent():
     profil, premiers = purge_profil(profil)
     profil, seconds = purge_profil(profil)
     assert len(premiers) == 1 and seconds == []
+
+
+def test_retirer_sans_jumelle_emporte_aussi_les_orphelines():
+    """Arbitrage du 12/09/2026, adossé à la source : les 19 entrées sans jumelle
+    ont été vérifiées une par une dans les archives de l'AN, qui ne les rattache
+    à aucun mandat — `PA0` et identifiants négatifs portent tous
+    `id_mandat="-1"`. Le drapeau reste explicite, et le défaut prudent."""
+    profil = {"interventions": [
+        _nosdeputes(305964, "2018-07-09", "<p>Un propos que Syceron ne rend pas.</p>"),
+        _syceron("000012", "2018-07-09", "Tout autre chose, dite le même jour."),
+    ]}
+    _, prudent = purge_profil(json.loads(json.dumps(profil)))
+    _, etendu = purge_profil(json.loads(json.dumps(profil)), retirer_sans_jumelle=True)
+    assert prudent == []
+    assert [_id(e) for e in etendu] == [305964]
+
+
+def test_retirer_sans_jumelle_ne_touche_pas_les_entrees_vivantes():
+    """Le drapeau élargit le retrait aux seules entrées héritées : une entrée
+    Syceron ou une question officielle n'est jamais concernée."""
+    profil = {"interventions": [
+        _syceron("000160", "2023-05-02", "Un propos."),
+        {"intervention_id": "question_QANR5L15QOSD1118", "date": "30/06/2020", "texte": "Une question."},
+    ]}
+    profil, retires = purge_profil(profil, retirer_sans_jumelle=True)
+    assert retires == []
+    assert len(profil["interventions"]) == 2
 
 
 def test_un_profil_sans_interventions_ne_leve_pas():

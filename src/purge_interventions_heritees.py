@@ -116,13 +116,34 @@ def _est_syceron(entree: dict[str, Any]) -> bool:
     return isinstance(identifiant, str) and identifiant.startswith("syceron")
 
 
-def purge_profil(profil: dict[str, Any]) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+def purge_profil(
+    profil: dict[str, Any], *, retirer_sans_jumelle: bool = False
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     """Retourne (profil_modifié, entrées_retirées).
 
     Une entrée héritée n'est retirée que si le profil porte, **le même jour**,
     une entrée Syceron dont le texte normalisé contient le sien ou lui est
     égal. L'inclusion vaut dans les deux sens : NosDéputés coupe parfois une
     prise de parole que le compte rendu définitif rend d'un bloc.
+
+    `retirer_sans_jumelle` étend le retrait aux entrées **sans** jumelle — les
+    19 mesurées le 12/09/2026. Ce n'est pas un relâchement de la prudence de
+    #387 mais un arbitrage adossé à la source, rendu par la propriétaire le
+    12/09/2026 après vérification des 19 dans les archives de l'AN :
+
+      - 6 n'y figurent pas du tout ;
+      - 4 y sont attribuées à **quelqu'un d'autre** (Sébastien Chenu, Christine
+        Arrighi, Grégoire de Fournas) ;
+      - 3 à un **orateur collectif** que #510 refuse de découper ;
+      - 6 à la personne nommément, mais sous `id_acteur="PA0"` ou sous un
+        identifiant **négatif** — et sur 200 comptes rendus de la XVIe, 118 033
+        paragraphes, ces deux formes portent **toutes** `id_mandat="-1"`, les
+        `PA0` avec un `code_parole` vide. L'AN ne rattache donc ces propos à
+        aucun mandat : les publier sous le nom de la personne ajouterait un lien
+        que la source ne fait pas.
+
+    Le drapeau reste **explicite**, et la valeur par défaut prudente : un outil
+    qui retire sans jumelle par défaut contredirait la règle qu'il applique.
     """
     interventions = profil.get("interventions") or []
     if not isinstance(interventions, list):
@@ -143,7 +164,8 @@ def purge_profil(profil: dict[str, Any]) -> tuple[dict[str, Any], list[dict[str,
             continue
         texte = _normalize_texte(entree.get("texte"))
         jumelles = syceron_par_jour.get(_normalize_date(entree.get("date")), [])
-        if texte and any(texte in autre or autre in texte for autre in jumelles):
+        jumelee = bool(texte) and any(texte in autre or autre in texte for autre in jumelles)
+        if jumelee or retirer_sans_jumelle:
             retires.append(entree)
         else:
             conserves.append(entree)
@@ -173,6 +195,10 @@ def main(argv: Optional[list[str]] = None) -> int:
     parser.add_argument("--apply", action="store_true",
                         help="Écrit les profils. Sans cette option, rapport seul.")
     parser.add_argument("--only", metavar="SLUG", help="Ne traiter qu'un profil (diagnostic).")
+    parser.add_argument("--retirer-sans-jumelle", action="store_true",
+                        help="Retire aussi les entrées héritées sans jumelle Syceron — les 19 vérifiées "
+                             "une par une dans les archives de l'AN, qui ne les rattache à aucun mandat "
+                             "(arbitrage du 12/09/2026).")
     args = parser.parse_args(argv)
 
     repertoire = Path(args.profiles_dir)
@@ -195,7 +221,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         heritees = [e for e in (profil.get("interventions") or []) if isinstance(e, dict) and est_heritee(e)]
         if not heritees:
             continue
-        profil, retires = purge_profil(profil)
+        profil, retires = purge_profil(profil, retirer_sans_jumelle=args.retirer_sans_jumelle)
         conserves_sans_jumelle += len(heritees) - len(retires)
         if not retires:
             print(f"  {slug} : {len(heritees)} héritée(s), aucune jumelle Syceron — rien retiré")
@@ -207,8 +233,11 @@ def main(argv: Optional[list[str]] = None) -> int:
             ecrire_profil_json(chemin, profil)
 
     mode = "APPLIQUÉ" if args.apply else "SIMULATION (--apply pour écrire)"
+    reste = (f"{conserves_sans_jumelle} conservée(s) faute de jumelle."
+             if not args.retirer_sans_jumelle
+             else "aucune conservée : les entrées sans jumelle sont retirées aussi.")
     print(f"\n[{mode}] {repertoire} — {total_retires} intervention(s) retirée(s) "
-          f"sur {profils_touches} profil(s) ; {conserves_sans_jumelle} conservée(s) faute de jumelle.")
+          f"sur {profils_touches} profil(s) ; {reste}")
     return 0
 
 
