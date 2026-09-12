@@ -540,6 +540,56 @@ def backfill_mandat_categorie_source(
     return result
 
 
+def backfill_mandat_organe_source(
+    merged: list[dict[str, Any]],
+    new_list: Optional[list[dict[str, Any]]],
+    key_fn: Callable[[dict[str, Any]], Key],
+) -> list[dict[str, Any]]:
+    """Reporte `sigle_organe` et `type_organe_source` d'un mandat neuf sur
+    l'entrée ancienne (#863).
+
+    **Septième occurrence de la famille** — #492, #639, #641, #696, #710, #718 :
+    `_mandat_key` ne contient aucun des deux champs, donc l'entrée neuve qui les
+    porte a la même clé que l'ancienne et serait écartée à chaque régénération.
+    Le remède reste un report **nommé**, jamais une clé élargie (défaut de #668).
+
+    **Monotone, et muet sur ce que la collecte neuve ne dit pas.** Un champ n'est
+    posé que s'il est absent, et seule une valeur renseignée est reportée : une
+    entrée qu'aucune collecte neuve ne couvre reste sans sigle et sans type, ce
+    qui dit « la source ne l'a pas classée », jamais « elle n'a pas de sigle ».
+    `sigle_organe_non_resolu` suit le même chemin : c'est le motif qui accompagne
+    un sigle absent (§2 règle 5), pas une valeur de repli.
+    """
+    if not new_list:
+        return merged
+
+    neufs: dict[Key, dict[str, Any]] = {}
+    for m in new_list:
+        if not isinstance(m, dict):
+            continue
+        apports = {
+            cle: m[cle]
+            for cle in ("sigle_organe", "type_organe_source", "sigle_organe_non_resolu")
+            if m.get(cle)
+        }
+        if apports:
+            neufs.setdefault(key_fn(m), apports)
+
+    if not neufs:
+        return merged
+
+    result: list[dict[str, Any]] = []
+    for m in merged:
+        if isinstance(m, dict):
+            apports = neufs.get(key_fn(m))
+            if apports:
+                manquants = {k: v for k, v in apports.items() if not m.get(k)}
+                if manquants:
+                    m = {**m, **manquants}
+        result.append(m)
+    return result
+
+
 def _prefer_non_empty(new_value: Any, old_value: Any) -> Any:
     """Garde `new_value` si elle est renseignée (non vide/non nulle), sinon
     retombe sur `old_value` (évite qu'un échec transitoire de collecte fasse
@@ -1395,8 +1445,12 @@ def merge_raw_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dic
     merged["source"] = _prefer_non_empty(new.get("source"), old.get("source"))
     merged["votes_source"] = _prefer_non_empty(new.get("votes_source"), old.get("votes_source"))
     merged["mandats"] = backfill_mandat_chambre(
-        backfill_mandat_categorie_source(
-            merge_lists_by_key(old.get("mandats"), new.get("mandats"), _mandat_key),
+        backfill_mandat_organe_source(
+            backfill_mandat_categorie_source(
+                merge_lists_by_key(old.get("mandats"), new.get("mandats"), _mandat_key),
+                new.get("mandats"),
+                _mandat_key,
+            ),
             new.get("mandats"),
             _mandat_key,
         ),
@@ -2362,8 +2416,12 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
     # le champ arriver dans le profil brut sans jamais atteindre le pivot, qui
     # est la seule couche que `web/` lit — un correctif vrai et sans effet.
     merged["mandats"] = backfill_mandat_chambre(
-        backfill_mandat_categorie_source(
-            merge_lists_by_key(old.get("mandats"), new.get("mandats"), _pivot_mandat_key),
+        backfill_mandat_organe_source(
+            backfill_mandat_categorie_source(
+                merge_lists_by_key(old.get("mandats"), new.get("mandats"), _pivot_mandat_key),
+                new.get("mandats"),
+                _pivot_mandat_key,
+            ),
             new.get("mandats"),
             _pivot_mandat_key,
         ),

@@ -762,6 +762,16 @@ python3 src/purge_mandats_non_faits.py
 python3 src/purge_mandats_non_faits.py --profiles-dir pivot_data/profiles --apply
 ```
 
+`purge_mandats_doublons_europarl.py` retire le mandat européen publié **deux
+fois** parce que le portail du Parlement européen publie deux fois la même
+appartenance — l'une classée, l'autre non. Il ne touche que le **pivot** : le
+brut garde les deux entrées de la source (#580).
+
+```bash
+python3 src/purge_mandats_doublons_europarl.py
+python3 src/purge_mandats_doublons_europarl.py --apply
+```
+
 ---
 
 ## Voir ce que voit l'utilisatrice
