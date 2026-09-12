@@ -1171,6 +1171,7 @@ const LIBELLE_LIMITE = {
   'position-non-declaree': 'Qualification du groupe',
   suspension: 'Entrée au gouvernement',
   'sieges-replies': 'Enregistrements de mandat',
+  'mandats-anterieurs': 'Mandats antérieurs',
 };
 
 /* DEUX SORTES DE LIMITES, ET ELLES NE DISENT PAS LA MÊME CHOSE.
@@ -1189,6 +1190,9 @@ const LIMITES_DU_PARCOURS = new Set([
   'position-non-declaree',
   'suspension',
   'sieges-replies',
+  /* Un mandat antérieur à ce que l'Assemblée publie est, très exactement, ce
+     que le corpus ne dit pas de son parcours (#860). */
+  'mandats-anterieurs',
 ]);
 
 export default function CandidateProfile({ candidate }) {

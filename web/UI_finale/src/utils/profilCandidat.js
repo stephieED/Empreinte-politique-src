@@ -26,7 +26,7 @@ import {
   isWholeTextVote,
   normalizeLabel,
   selectDerniereLectureVotes,
-} from './lecture';
+} from './lecture.js';
 
 /* ── Règle : la position dans l'hémicycle est DÉCLARÉE, jamais déduite ───────
  *
@@ -2537,6 +2537,12 @@ export function couvertureDesListes(couverture, decomptes) {
  * lue, pas devinée : un avertissement `lecteur` apparaîtra le jour où il en
  * sera écrit un, sans toucher à ce composant.
  */
+/* Le premier jour des données publiées par l'Assemblée — la XIIe législature.
+ * Sa jumelle, qui valide la table, est `BORNE_COUVERTURE_AN` dans
+ * `src/mandats_anterieurs.py` : aucune sortie ne la porte, et une borne
+ * structurelle ne vieillit pas comme une borne de fraîcheur (#484). */
+export const JOUR_BORNE_AN = '19 juin 2002';
+
 export function limitesDeclarees({ profil, roles, sieges }) {
   /* CES TEXTES SONT DES LIMITES, PAS DES EXPLICATIONS (#328).
    *
@@ -2606,6 +2612,40 @@ export function limitesDeclarees({ profil, roles, sieges }) {
    * sans `nature_texte`. Le fait vrai — combien de textes sont des projets de
    * loi signés comme ministre — reste publié sous la cascade de « Ce qui est
    * proposé », et la répartition sur `/couverture`. */
+
+  /* LES MANDATS QUE LE CORPUS NE PEUT PAS PORTER (#860).
+   *
+   * `mandats_anterieurs` ne vient d'aucune collecte : c'est une table relue à
+   * la main, une ligne par mandat, chacune sur sa source primaire — Sycomore
+   * pour un siège, un décret au Journal officiel pour une fonction. Sa place
+   * est donc ici et nulle part ailleurs sur la fiche : un fait cité n'a ni
+   * vote, ni amendement, ni intervention derrière lui, et le poser sur la frise
+   * du parcours ferait lire « couvert depuis 1988 » là où rien ne l'est.
+   *
+   * Une fiche NON RELUE (`null` + `non_relu`) ne produit aucune limite : elle
+   * dirait que la relecture n'a pas eu lieu, ce qui parle de notre travail et
+   * non de cette personne. */
+  const anterieurs = profil?.mandats_anterieurs || [];
+  if (anterieurs.length) {
+    const parInstitution = anterieurs.reduce((acc, m) => {
+      acc[m.institution] = (acc[m.institution] || 0) + 1;
+      return acc;
+    }, {});
+    const detail = [
+      parInstitution.assemblee_nationale ? `${parInstitution.assemblee_nationale} à l’Assemblée` : null,
+      parInstitution.gouvernement ? `${parInstitution.gouvernement} au gouvernement` : null,
+    ].filter(Boolean);
+    const n = anterieurs.length;
+    const pluriel = n > 1;
+    limites.push({
+      cle: 'mandats-anterieurs',
+      texte:
+        `${n} mandat${pluriel ? 's' : ''} exercé${pluriel ? 's' : ''} avant le ${JOUR_BORNE_AN}`
+        + (detail.length > 1 ? ` — ${detail.join(', ')} —` : '')
+        + ` ${pluriel ? 'sont cités' : 'est cité'} depuis ${pluriel ? 'leur' : 'sa'} source primaire. `
+        + `Aucune activité n’y est collectée.`,
+    });
+  }
 
   const enregistrements = electifs.length;
   if (sieges && enregistrements > sieges.length) {
