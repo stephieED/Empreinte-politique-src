@@ -137,6 +137,35 @@ Convention d'écriture : `AGENTS.md` §8.
 
 ## Known bugs
 
+- **Le téléphone : ça tient dans l'écran, ça ne s'y lit pas (#867, mesuré le
+  12/09/2026).** Sept pages relevées à 360, 400 et 768 px — le relevé complet,
+  avec ses captures et ses causes, est le
+  [commentaire du 12/09 sur #867](https://github.com/stephieED/Empreinte-politique-src/issues/867#issuecomment-5645223332)
+  et l'artifact qu'il cite. **Ne pas re-mesurer avant de corriger** ; trois
+  constats seulement sont à connaître avant de rouvrir le sujet :
+  **1.** « aucun débordement horizontal » était faux — deux causes nommées,
+  `.cp-gouv-periode { white-space: nowrap }` (fiche candidat, document à 419 px
+  et 440 px selon la fiche) et le chip `.gb-chip` le plus long (364 px à 360) ;
+  correctifs d'une ligne, sans maquette.
+  **2.** Quatre figures deviennent illisibles et **changent de forme plutôt que
+  de rétrécir** : la frise du parcours (les graduations se superposent), la
+  cascade des textes portés, le tableau de `/couverture` (720 px pour 280
+  visibles, sans indice de défilement) et les cartes de membres du
+  gouvernement. Chacune appelle une maquette avant le code.
+  **3.** Rien n'a été vu sur un vrai téléphone : les captures viennent de
+  Firefox. La taille du doigt, la latence au défilement et le rendu des polices
+  ne sont pas mesurés.
+
+- **Les mandats antérieurs sont collectés mais invisibles (#860, mesuré le
+  12/09/2026).** `raw_data/mandats_anterieurs.json` porte **11 lignes relues pour
+  5 candidats** depuis #861 ; le champ dérivé `mandats_anterieurs` n'est présent
+  sur **aucun** des 32 profils de candidats déclarés, faute de run depuis la
+  fusion. Côté interface, seuls `sources.config.js` et
+  `scripts/couverture-corpus.mjs` lisent le champ — **la fiche candidat ne le lit
+  pas** : sa frise du parcours commencera à 2002 même pour une carrière qui
+  démarre en 1988. Le travail d'interface attend le run, et la frise est la figure
+  qui doit l'accueillir (voir le point mobile ci-dessus, qui la refait).
+
 - **La méthodologie porte cinq chiffres écrits à la main, mesurés sur un corpus
   de 27 fiches (#328).** `MethodologyPage.jsx` affiche « 1 160 positions de
   dernière lecture », « 711 des 1 160 », « le banc seul en couvre 719 et le
