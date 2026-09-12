@@ -748,7 +748,19 @@ son numéro, sous `docs/decisions/`.
 la fusion est additive aux deux étages, et un retrait appliqué au seul brut ne
 descend jamais dans `pivot_data/` (#729). Il ne retire une intervention héritée
 que si sa jumelle Syceron est présente dans le même profil ; sans jumelle, il la
-conserve et le dit.
+conserve et le dit. `--retirer-sans-jumelle` étend le retrait à celles-là —
+vérifiées une par une dans les archives de l'AN, qui ne les rattache à aucun
+mandat (#839). Au pivot, il **recompose les champs dérivés** (`tags_thematiques`,
+`meta.licence_donnees`) après le retrait, comme la fusion le fait (§4).
+
+`purge_mandats_non_faits.py` retire les onglets de page publiés comme des
+commissions, sur une **liste close** de libellés : même signature de forme que
+des organes réels du Sénat, qu'il conserve et compte.
+
+```bash
+python3 src/purge_mandats_non_faits.py
+python3 src/purge_mandats_non_faits.py --profiles-dir pivot_data/profiles --apply
+```
 
 ---
 

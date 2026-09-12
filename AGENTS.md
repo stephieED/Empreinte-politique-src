@@ -132,7 +132,7 @@ invented, and never silently dropped** — it is published `null` alongside its
 | Individual cohesion/participation **index** vs group average | **Never** — internal only (`--rapport-interne`) |
 | A member's position beside their group's majority position, **one sourced ballot at a time** | Public — never counted, never rated |
 | `mandats[].notableCount` | Internal only (display ordering) |
-| `tags_thematiques[]` (8 categories) | Public |
+| `tags_thematiques[]` — the **titles of the sitting items** spoken under (`theme_officiel`), deduplicated per profile; never a closed list of categories | Public — reading aids, never declared positions (rule 8) |
 
 Full rationale: `web/old/v3/methodologie.html` — do not duplicate prose here.
 
