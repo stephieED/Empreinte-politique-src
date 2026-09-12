@@ -416,6 +416,25 @@ sinon. Sans drapeau, la purge s'applique aux **deux** étages — les slugs cibl
 corpus, sans réseau, idempotente.
 → `docs/decisions/purge-textes-portes-roster-747.md`.
 
+### Une fiche de candidat sait-elle dire que sa carrière commence avant 2002 ?
+
+```bash
+python3 scripts/poser_mandats_anterieurs_860.py --verifier
+python3 scripts/poser_mandats_anterieurs_860.py --dry-run
+python3 scripts/poser_mandats_anterieurs_860.py
+```
+
+`--verifier` ne modifie rien : sortie 0 si tout profil de candidat déclaré porte
+`mandats_anterieurs` — la liste relue s'il est dans la table, `null` et son motif
+`non_relu` sinon —, 1 s'il en manque. Sans drapeau, la reprise repose le champ
+sur les profils déjà écrits, depuis `raw_data/mandats_anterieurs.json`.
+
+À lancer quand la table relue change **entre deux runs** : le pipeline repose ce
+champ dérivé à chaque écriture de profil, donc un run complet le ferait aussi —
+mais au prix de sa collecte, alors que la reprise ne demande aucun réseau. Passe
+de corpus, idempotente, candidats déclarés seulement : un membre de roster ne
+publie pas de fiche. → `docs/decisions/mandats-anterieurs-couverture-860.md`.
+
 ### Volumétrie : ce que pèse le corpus et ce que rapporterait chaque levier
 
 ```bash
