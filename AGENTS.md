@@ -231,6 +231,12 @@ too long. Sorting is the agent's work, not hers.
 - Test/command output: pass/fail counts only, unless something failed.
 - Always flag, even briefly: schema/validation changes, anything touching
   Section 2, new warnings or errors introduced.
+- **End every reply with what remains.** Never present partial work as done:
+  the last lines say what is still open, so nothing silently drops.
+- **A PR touching `src/` or `raw_data/*.json` pushed while a data run is going
+  says "do not merge"** — first line of the reply and of the PR body. The run
+  commits data built from the code it started with; merging under it mixes two
+  states.
 
 ## 10. A subagent's report is a claim, not a result
 
@@ -271,6 +277,28 @@ draft produced buries the two or three decisions that are genuinely hers —
 sorting is the agent's work, not the owner's.
 
 **One "awaiting your decision" section per report, and nothing else pending.**
+
+**Push yes, merge never.** Branch, push and open the PR without asking; the
+merge is hers, always.
+
+**A mockup before code, on anything visual** — an artifact, rendered on real
+data, and **several forms to compare**, not one. Charting libraries (D3,
+ECharts…) may be loaded in a mockup; the constraint "one form, bars only" was
+never hers. Explanatory text on a figure is an admission that the form failed.
+
+### Working alongside other sessions
+
+- **One worktree per session.** The main checkout is shared between sessions:
+  never `checkout`, `stash`, `clean`, `reset` or `pull` in it. A green suite
+  means something only in your own worktree.
+- **Write to another session only when she asks.** When she tells you what
+  another session is doing, that is information, not a request to relay — a
+  message sent on your own initiative arrives twice, and may state a decision
+  differently from how she put it.
+- **Data needs flow from the interface to the backend.** The session that draws
+  a figure states the field it needs; the backend session does not go looking.
+- **Warn at about 80 % of the context**, one line at the top of a reply, before
+  a compaction happens — the agent estimates, `/context` gives the figure.
 
 ### The shape of an arbitration
 
