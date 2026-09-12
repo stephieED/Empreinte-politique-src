@@ -52,7 +52,7 @@ from population_profils import (  # noqa: E402
 #: La ventilation telle qu'elle doit apparaître pour 1 candidat déclaré et
 #: 2 membres de roster. Écrite une fois : si la forme change, elle change ici,
 #: et tous les rendus la suivent — c'est tout l'intérêt du module partagé.
-DETAIL_1_2 = "(1 candidats déclarés · 2 membres de roster)"
+DETAIL_1_2 = "(1 candidats · 2 membres de roster)"
 
 
 # ---------------------------------------------------------------------------
@@ -104,10 +104,10 @@ def test_la_forme_affichee_est_celle_que_l_issue_demande():
     ventilation = Ventilation(candidats_declares=13, membres_roster=468)
     assert ventilation.total == 481
     assert ventilation.ligne("Profils publiés") == (
-        "Profils publiés : 481   (13 candidats déclarés · 468 membres de roster)"
+        "Profils publiés : 481   (13 candidats · 468 membres de roster)"
     )
     assert ventilation.cellule_markdown() == (
-        "481 (13 candidats déclarés · 468 membres de roster)"
+        "481 (13 candidats · 468 membres de roster)"
     )
 
 

@@ -180,7 +180,7 @@ def test_aucun_total_entre_deux_natures_de_mandat(regles, composant):
 
 def test_le_role_ne_s_affiche_que_lorsqu_il_distingue(regles):
     """`Membre` couvre 90,7 % des 14 128 mandats de commission du corpus, et 203
-    des 225 des 13 candidats déclarés. L'écrire partout serait un mot dont le
+    des 225 des 13 candidats. L'écrire partout serait un mot dont le
     lecteur ne tire rien — la règle 1 de #326 le disqualifie."""
     bloc = _corps(regles, "const ROLES_PAR_DEFAUT", "\n}")
     for defaut in ("'membre'", "'membre titulaire'", "'membre de droit'"):
@@ -378,7 +378,7 @@ def test_l_adaptateur_passe_la_forme_entiere_sans_la_defaire(regles):
 #
 # La section ne montrait que les sept catégories parlementaires. Un portefeuille
 # ministériel est pourtant un siège occupé — un intitulé, des dates, une durée —
-# et 6 des 13 candidats déclarés en ont exercé un. Ce qui suit verrouille les
+# et 6 des 13 candidats en ont exercé un. Ce qui suit verrouille les
 # trois natures que la catégorie `fonction_gouvernementale` mélange, et le fait
 # que le discriminant soit SOURCÉ.
 

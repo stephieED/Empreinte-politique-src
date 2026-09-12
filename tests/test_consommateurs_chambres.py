@@ -145,7 +145,7 @@ def test_population_an_garde_un_bicameral_que_le_scalaire_perdait(tmp_path):
 
     soft, regression, console, md = _report_amendements_coverage(tmp_path)
 
-    assert "| ✅ Profils AN avec identité | 1 (1 candidats déclarés · 0 membres de roster) |" in md
+    assert "| ✅ Profils AN avec identité | 1 (1 candidats · 0 membres de roster) |" in md
     # Corollaire : il n'est plus dans les profils qui publient des amendements
     # sans appartenir à la population dont on en attend.
     assert "hors population AN" not in md
@@ -165,7 +165,7 @@ def test_population_an_perd_le_bicameral_quand_la_liste_ne_dit_pas_AN(tmp_path):
 
     soft, regression, console, md = _report_amendements_coverage(tmp_path)
 
-    assert "| ✅ Profils AN avec identité | 0 (0 candidats déclarés · 0 membres de roster) |" in md
+    assert "| ✅ Profils AN avec identité | 0 (0 candidats · 0 membres de roster) |" in md
     assert "hors population AN" in md
 
 
@@ -178,7 +178,7 @@ def test_population_an_inchangee_sur_le_corpus_publie(tmp_path):
 
     soft, regression, console, md = _report_amendements_coverage(tmp_path)
 
-    assert "Profils AN avec identité | 2 (2 candidats déclarés · 0 membres de roster) |" in md
+    assert "Profils AN avec identité | 2 (2 candidats · 0 membres de roster) |" in md
 
 
 def test_syceron_garde_un_bicameral_que_le_scalaire_perdait(tmp_path):
@@ -232,7 +232,7 @@ def test_les_18_senateurs_sans_mandat_electif_restent_comptes_a_l_identique(tmp_
 
     soft, regression, console, md = _report_amendements_coverage(tmp_path)
 
-    assert "| ✅ Profils AN avec identité | 1 (1 candidats déclarés · 0 membres de roster) |" in md
+    assert "| ✅ Profils AN avec identité | 1 (1 candidats · 0 membres de roster) |" in md
 
 
 # ---------------------------------------------------------------------------

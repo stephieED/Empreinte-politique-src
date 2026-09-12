@@ -3,7 +3,7 @@
 Ce script **compte, il ne juge pas** : les tests portent donc sur ce qui se
 compte et sur ce qui, délibérément, ne se compte pas — une couche qui ne porte
 pas le champ n'a pas « zéro entrée », et une couche sans `meta.provenance` n'est
-pas ventilée (#630 : le brut rendrait « 1 181 candidats déclarés », ce qui est
+pas ventilée (#630 : le brut rendrait « 1 181 candidats », ce qui est
 faux).
 
 Aucun test ne lit le corpus réel : les fixtures décrivent les **deux** couches,
@@ -117,7 +117,7 @@ def test_un_champ_absent_de_la_couche_n_est_pas_zero(tmp_path):
 
 def test_une_couche_sans_provenance_n_est_pas_ventilee(tmp_path):
     """Sans `meta.provenance`, tout profil compterait comme candidat déclaré :
-    le brut rendrait « 1 181 candidats déclarés », faux (#630)."""
+    le brut rendrait « 1 181 candidats », faux (#630)."""
     (tmp_path / "a.json").write_text(json.dumps({"mandats": []}), encoding="utf-8")
     _, _, _, _, provenance_portee = auditer_repertoire(tmp_path)
     assert provenance_portee is False

@@ -47,7 +47,16 @@ ROSTER_GROUPE = "roster_groupe"
 #: Libellés affichés. Au singulier près, ce sont les seuls mots qui doivent
 #: nommer les deux populations dans une sortie d'outil — un libellé stable est
 #: ce qui rend la ventilation reconnaissable d'un rapport à l'autre.
-LIBELLE_CANDIDATS = "candidats déclarés"
+#:
+#: **« candidats », et non « candidats déclarés » (#873).** La provenance dit
+#: quelle population a fait collecter le profil, jamais où en est la
+#: candidature : `raw_data/candidats.json` porte 34 entrées, dont 2 au statut
+#: `decline`, et les 32 profils de cette provenance les comptent. « 32 candidats
+#: déclarés » affirmait donc un statut pour une population qui en compte 30 —
+#: une figure juste sur la mauvaise population, ce que §9 nomme une erreur et
+#: non une approximation. Le compte par statut, lui, se lit dans la liste
+#: éditoriale, et aucun outil ne le publie.
+LIBELLE_CANDIDATS = "candidats"
 LIBELLE_ROSTER = "membres de roster"
 LIBELLE_AUTRE = "provenance inconnue"
 LIBELLE_ILLISIBLES = "illisibles"

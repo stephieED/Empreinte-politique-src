@@ -359,7 +359,7 @@ def test_la_section_5c_compte_ce_qui_est_qualifie_et_ce_qui_attend(tmp_path):
     assert "Projets de loi portés au nom du Gouvernement : 1" in console
     assert "Initiateurs sans nature établie : 1" in console
     assert "edouard-philippe : 1/2" in console
-    assert "1 candidats déclarés" in markdown, "la population de chaque chiffre est nommée"
+    assert "1 candidats" in markdown, "la population de chaque chiffre est nommée"
     assert len(soft) == 1
 
 
@@ -417,7 +417,7 @@ def test_chaque_role_publie_a_un_libelle():
 
 def test_le_libelle_nomme_l_initiative_pas_la_chambre():
     """« Issue de l'Assemblée nationale » aurait été faux 157 fois sur 391 :
-    122 des 313 projets de loi des 13 candidats déclarés ont été déposés au
+    122 des 313 projets de loi des 13 candidats ont été déposés au
     Sénat sans cesser d'être des textes du gouvernement, et 35 des 78
     propositions sont sénatoriales. Ce que le libellé nomme, c'est l'article 39
     — qui est à l'initiative du texte — jamais la chambre de dépôt."""

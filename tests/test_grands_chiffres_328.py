@@ -211,7 +211,7 @@ def test_une_ligne_sans_aucun_chiffre_ne_s_affiche_pas(regles):
 
 
 def test_le_troisieme_cas_ne_rend_aucune_ligne(regles):
-    """Trois des 13 candidats déclarés n'ont ni mandat parlementaire ni
+    """Trois des 13 candidats n'ont ni mandat parlementaire ni
     appartenance gouvernementale. Le bloc n'a rien à montrer, et il le dit
     plutôt que d'afficher cinq tirets : l'arbitrage sur le travail européen et
     municipal est ouvert, pas rendu."""

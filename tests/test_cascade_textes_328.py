@@ -18,7 +18,7 @@ CE QU'ILS NE COUVRENT PAS, et il faut le dire (§2 règle 5) : comme
 `test_essentiel_328.py`, ils ne rendent aucun composant React et n'exécutent pas
 d3-sankey. La géométrie — conservation des textes, branche basse plus fin de
 course égale le total, aucun chemin `NaN`, contiguïté des barres — a été
-vérifiée hors dépôt sur les **13 candidats déclarés** à quatre largeurs, et
+vérifiée hors dépôt sur les **13 candidats** à quatre largeurs, et
 l'interaction en navigateur (clic ruban, clic étiquette, remise à zéro, mobile)
 sur cinq profils. Rien de tout cela n'est rejoué ici.
 """

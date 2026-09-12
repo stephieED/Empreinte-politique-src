@@ -196,7 +196,7 @@ def test_le_role_d_un_texte_porte_lit_le_role_avant_la_nature(regles):
 
 
 def test_un_texte_sans_nature_n_est_range_d_aucun_cote(regles):
-    """Trois états, pas deux : 4 des 423 textes portés des 13 candidats déclarés
+    """Trois états, pas deux : 4 des 423 textes portés des 13 candidats
     ne portent ni rôle qualifiant ni nature. Ranger par défaut au parlement
     inventerait une initiative personnelle (§2 règle 5)."""
     assert "sansNature" in regles

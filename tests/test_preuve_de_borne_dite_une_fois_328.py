@@ -15,7 +15,7 @@ LA CORRECTION NE PASSE PAS PAR LA SOURCE, et c'est le point que ces tests
 tiennent. `couverture_profil._deriver` écrit deux entrées par liste : la seconde
 porte toujours `borne.preuve`, la première la porte aussi SAUF quand un fait
 « hors AN » est établi, où elle porte la sienne. Mesuré hors dépôt sur les 27
-candidats déclarés, 135 listes portant au moins une preuve : 69 répètent la
+candidats, 135 listes portant au moins une preuve : 69 répètent la
 même, **35 en portent de différentes** — sur `marine-tondelier`, la borne AMO30
 et l'absence déclarée dans la table de correspondance expliquent deux états
 distincts de la même liste. Supprimer la seconde preuve « parce qu'elle fait
