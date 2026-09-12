@@ -156,15 +156,20 @@ Convention d'écriture : `AGENTS.md` §8.
   Firefox. La taille du doigt, la latence au défilement et le rendu des polices
   ne sont pas mesurés.
 
-- **Les mandats antérieurs sont collectés mais invisibles (#860, mesuré le
-  12/09/2026).** `raw_data/mandats_anterieurs.json` porte **11 lignes relues pour
-  5 candidats** depuis #861 ; le champ dérivé `mandats_anterieurs` n'est présent
-  sur **aucun** des 32 profils de candidats déclarés, faute de run depuis la
-  fusion. Côté interface, seuls `sources.config.js` et
+- **Les mandats antérieurs sont sur les fiches, mais pas encore sur la fiche
+  candidat (#860, mesuré le 12/09/2026).** `raw_data/mandats_anterieurs.json`
+  porte **11 lignes relues pour 5 candidats** depuis #861, et la reprise #869 a
+  posé le champ dérivé sur les **32** profils de candidats déclarés — 5 relus,
+  27 déclarés `non_relu` — sans attendre un run, la pose étant une fonction pure.
+  L'accueil nomme donc désormais les cinq fiches concernées.
+  **Ce qui reste** : côté interface, seuls `sources.config.js` et
   `scripts/couverture-corpus.mjs` lisent le champ — **la fiche candidat ne le lit
-  pas** : sa frise du parcours commencera à 2002 même pour une carrière qui
-  démarre en 1988. Le travail d'interface attend le run, et la frise est la figure
-  qui doit l'accueillir (voir le point mobile ci-dessus, qui la refait).
+  pas**, et sa frise du parcours commence à 2002 même pour une carrière qui
+  démarre en 1988. La frise est la figure qui doit accueillir ces mandats, et
+  c'est celle que le point mobile ci-dessus doit de toute façon refaire.
+  **À ne pas re-découvrir** : quand la table relue change entre deux runs,
+  `scripts/poser_mandats_anterieurs_860.py` repose le champ sans réseau —
+  inutile de déclencher une collecte complète pour ça.
 
 - **La méthodologie porte cinq chiffres écrits à la main, mesurés sur un corpus
   de 27 fiches (#328).** `MethodologyPage.jsx` affiche « 1 160 positions de
