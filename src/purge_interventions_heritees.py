@@ -64,7 +64,9 @@ from pathlib import Path
 from typing import Any, Optional
 
 from json_io import ecrire_profil_json
+from licences import appliquer_licence_donnees
 from profil_brut import charger_socle
+from schema_pivot import deriver_tags_thematiques
 
 DEFAULT_PROFILES_DIR = Path("raw_data") / "profiles"
 
@@ -175,6 +177,37 @@ def purge_profil(
     return profil, retires
 
 
+def recomposer_champs_derives(profil: dict[str, Any]) -> list[str]:
+    """Recalcule les champs **dérivés** d'`interventions[]`, et rend leurs noms.
+
+    §4 : un champ dérivé est recomposé après chaque étape qui le déplace, jamais
+    fusionné. Un retrait d'interventions en déplace deux :
+
+      - `tags_thematiques`, qui en dérive entièrement (#710) — `marine-le-pen`
+        publiait **470** tags, dont 318 mots-clés de l'ancienne source, et n'en
+        garde que 152 une fois recollectée ;
+      - `meta.licence_donnees`, que `licences.py` recompose depuis `sources[]`
+        **et** les URL d'interventions (#530).
+
+    Sans cette recomposition, le corpus committé publierait des tags dérivés
+    d'entrées qui n'y sont plus — et il faudrait attendre un run pour que la
+    couche que `web/` lit redevienne cohérente.
+
+    Ne touche au profil que s'il porte déjà le champ : le socle brut n'a ni
+    `tags_thematiques` ni `meta.licence_donnees`, et les lui fabriquer ici
+    changerait sa nature de couche source-near.
+    """
+    recomposes = []
+    if "tags_thematiques" in profil:
+        profil["tags_thematiques"] = deriver_tags_thematiques(profil.get("interventions"))
+        recomposes.append("tags_thematiques")
+    meta = profil.get("meta")
+    if isinstance(meta, dict) and "licence_donnees" in meta:
+        appliquer_licence_donnees(profil)
+        recomposes.append("meta.licence_donnees")
+    return recomposes
+
+
 def _load(path: Path) -> Optional[dict[str, Any]]:
     """Lit le SOCLE, et lui seul (#580) : les interventions y vivent, le
     manifeste `amendements_partitionnes` est round-trippé tel quel et les
@@ -228,7 +261,9 @@ def main(argv: Optional[list[str]] = None) -> int:
             continue
         profils_touches += 1
         total_retires += len(retires)
-        print(f"  {slug} : {len(retires)} retirée(s) sur {len(heritees)} héritée(s)")
+        recomposes = recomposer_champs_derives(profil)
+        detail = f" ; dérivés recomposés : {', '.join(recomposes)}" if recomposes else ""
+        print(f"  {slug} : {len(retires)} retirée(s) sur {len(heritees)} héritée(s){detail}")
         if args.apply:
             ecrire_profil_json(chemin, profil)
 
