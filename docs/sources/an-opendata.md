@@ -144,6 +144,39 @@ Two datasets share the same JSON schema, at different scopes:
 | `AMO10` (**no longer used**, see below) | `.../17/amo/deputes_actifs_mandats_actifs_organes/AMO10_deputes_actifs_mandats_actifs_organes.json.zip` | ~4.9 MB, daily updates | Deputies with an active mandate in the current legislature only (~577 acteurs) |
 | `AMO30` (`AN_ACTEURS_HISTORIQUE_ZIP_URL`, in use) | `.../17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip` | ~13.6 MB, daily updates | All acteurs referenced since the 11th legislature, active or not (3117 acteurs) |
 
+**« Acteur » ne veut pas dire « député », et la borne de 2002 ne vaut que pour les
+députés (mesuré le 12/09/2026 sur l'archive en cache).** Deux confusions que le
+nom du fichier et la page du portail entretiennent, et qui ont produit une phrase
+publiée fausse sur 2 337 entrées de couverture
+(`docs/decisions/borne-mandats-acteur-nest-pas-depute.md`) :
+
+| La population | Acteurs |
+| --- | ---: |
+| ont siégé à l'Assemblée | **2 122** |
+| **sénateurs, n'ayant jamais siégé à l'Assemblée** | **905** |
+| fonction gouvernementale seulement | 90 |
+| **total** | **3 117** |
+
+| Type d'organe | Mandat le plus ancien |
+| --- | --- |
+| `GROUPESENAT` | **1980-10-02** |
+| `SENAT` | 1998-10-01 |
+| `COMSENAT`, `DELEGSENAT`, `HCJ`, `CJR` | 2001 |
+| **`ASSEMBLEE`** | **2002-06-19** (ouverture de la XIIe) |
+
+Le fichier porte donc **390 mandats sénatoriaux commencés avant le 19/06/2002**
+(192 `SENAT`, 123 `COMSENAT`, 75 `GROUPESENAT`) — et **aucun** mandat de député.
+La page du portail annonce « l'état civil des députés et anciens députés élus à
+partir du début de la XIe législature en juin 1997» : cette couverture porte sur
+**les personnes**, pas sur leurs mandats. Vérifié nommément — `segolene-royal`
+(députée depuis 1988), `nicolas-dupont-aignan` et `bernard-cazeneuve`
+(1997-2002) sont **présents comme acteurs, avec 0 mandat avant 2002**.
+
+Conséquence pour le pipeline : les mandats sénatoriaux que le référentiel publie
+sur des profils déjà collectés — **291 entrées sur 33 profils** — sont
+aujourd'hui jetés par la normalisation, qui ne lit que les organes de
+l'Assemblée. C'est l'objet de #878.
+
 `_build_acteur_identite_index` used `AMO10` until issue #354 (sub-issue 3/6 of
 #351): switched to `AMO30` to cover elected officials whose mandate has
 ended, invisible in `AMO10`. `AMO30` was already downloaded/cached by
