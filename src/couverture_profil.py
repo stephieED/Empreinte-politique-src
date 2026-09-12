@@ -245,25 +245,37 @@ class Borne(NamedTuple):
 # explique qu'un profil publie légitimement 11 mandats et zéro vote.
 BORNES: dict[str, Borne] = {
     # AMO30 est un référentiel HISTORIQUE, pas un roster : sa borne n'est pas
-    # celle des autres. Mesurée sur `.cache/acteurs_historique_an/` le
-    # 28/08/2026 — 3 117 acteurs, plus ancien `mandat_debut` d'un acteur
-    # 2002-06-19 (150 acteurs), soit l'ouverture de la XIIe. Des mandats
-    # d'ORGANES remontent au 09/07/1998 (9 en 1998, 10 en 1999, 34 en 2001),
-    # mais aucun acteur n'y est rattaché sans mandat de la XIIe : la borne
-    # prouvable est donc la XIIe, pas la XIe que nomme l'URL de l'archive.
-    # C'est la condition C1 : sans cette mesure écrite avec la règle, la phrase
-    # publiable n'est pas « jamais élue » mais « jamais élue depuis la XIIe ».
+    # celle des autres. Et **« acteur » n'y veut pas dire « député »** — mesuré
+    # le 12/09/2026 sur `.cache/acteurs_historique_an/` : 3 117 acteurs, dont
+    # **2 122** ont siégé à l'Assemblée, **905 sont des sénateurs qui n'y ont
+    # jamais siégé**, et 90 n'ont qu'une fonction gouvernementale.
+    #
+    # La distinction n'est pas de forme : le fichier porte des mandats bien
+    # antérieurs à 2002, mais ce sont des organes du **Sénat** — le plus ancien
+    # est un groupe du Sénat du **02/10/1980**, et 192 mandats `SENAT`, 123
+    # `COMSENAT`, 75 `GROUPESENAT` commencent avant le 19/06/2002. Le plus ancien
+    # mandat `ASSEMBLEE`, lui, est bien du **19/06/2002**, l'ouverture de la XIIe.
+    #
+    # La phrase publiée disait « aucun acteur à un mandat antérieur à la XIIe » :
+    # juste dans son esprit, fausse dans sa lettre, sur un texte que le lecteur
+    # voit (2 337 entrées de couverture). Elle dit désormais ce que la mesure
+    # établit : aucun mandat **de député**. La borne prouvable reste la XIIe, pas
+    # la XIe que nomme l'URL de l'archive — c'est la condition C1, sans laquelle
+    # la phrase publiable n'est pas « jamais élue » mais « jamais élue depuis la
+    # XIIe ».
     "mandats": Borne(
         legislatures=(12, 13, 14, 15, 16, 17),
         limite_source=(
             "l'Assemblée nationale publie l'état civil et les mandats de ses "
             "élu·es depuis la XIe législature (juin 1997), mais son référentiel "
-            "historique AMO30 ne rattache aucun acteur à un mandat antérieur à "
+            "historique AMO30 ne rattache aucun mandat de député antérieur à "
             "la XIIe"
         ),
         constante=(
-            "AMO30 (référentiel historique des acteurs AN) — mesuré le 28/08/2026 : "
-            "3 117 acteurs, plus ancien mandat_debut d'acteur 2002-06-19 (XIIe)"
+            "AMO30 (référentiel historique des acteurs AN) — mesuré le 12/09/2026 : "
+            "3 117 acteurs, dont 2 122 ayant siégé à l'Assemblée ; plus ancien "
+            "mandat de député 2002-06-19 (XIIe), les organes du Sénat que le "
+            "référentiel porte remontant à 1980 et restant hors périmètre (#528)"
         ),
     ),
     "votes": Borne(
