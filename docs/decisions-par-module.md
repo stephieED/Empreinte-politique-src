@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 299 décisions
+gouverne sans avoir à fouiller les 300 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -42,12 +42,12 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 | `src/audit_pipeline.py` | 3 |
 | `src/budget_collecte.py` | 3 |
 | `src/parltrack_dumps.py` | 3 |
+| `src/purge_mandats_dupliques.py` | 3 |
 | `src/audit_gouvernement_dataset.py` | 2 |
 | `src/avertissements.py` | 2 |
 | `src/fetch_candidats_declares.py` | 2 |
 | `src/gouvernement_profile.py` | 2 |
 | `src/licences.py` | 2 |
-| `src/purge_mandats_dupliques.py` | 2 |
 | `src/build_amendements_index.py` | 1 |
 | `src/candidate_profile_ue.py` | 1 |
 | `src/europarl_documents.py` | 1 |
@@ -159,6 +159,10 @@ Le mentionnent sans le gouverner : [`audit-des-rattachements`](decisions/audit-d
 ## `src/audit_legislature_votes.py`
 
 Le mentionnent sans le gouverner : [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`point-de-sauvegarde-dans-les-profils-518`](decisions/point-de-sauvegarde-dans-les-profils-518.md), [`resolution-legislature-deux-mecanismes-432`](decisions/resolution-legislature-deux-mecanismes-432.md).
+
+## `src/audit_mandats_reproductibles.py`
+
+Le mentionnent sans le gouverner : [`reproductibilite-mandats-sans-estampille-839`](decisions/reproductibilite-mandats-sans-estampille-839.md).
 
 ## `src/audit_pipeline.py`
 
@@ -941,12 +945,13 @@ Le mentionnent sans le gouverner : [`absences-publiees-comme-faits-556-558-560`]
 
 ## `src/purge_mandats_dupliques.py`
 
-2 décision(s) le gouvernent ; le module en cite 0.
+3 décision(s) le gouvernent ; le module en cite 0.
 
 | Décision | Nomme |
 | --- | --- |
 | [185 doublons hérités retirés : l'outil existait, il n'avait jamais été relancé (#729) (2026-09-04)](decisions/purge-doublons-herites-729.md) | `_normalize_label` |
 | [Purge des mandats hérités dupliqués : appariement prudent (#387) (2026-08-17)](decisions/purge-mandats-dupliques-prudence.md) | `_PREFIXES_NATURE` |
+| [280 des 406 mandats sans estampille sont portés par un référentiel vivant, et aucun n'est introuvable (#839, lot B) (2026-09-12)](decisions/reproductibilite-mandats-sans-estampille-839.md) | `_normalize_label` |
 
 Le mentionnent sans le gouverner : [`categorie-source-des-mandats-718`](decisions/categorie-source-des-mandats-718.md), [`collecte-vs-publie-545`](decisions/collecte-vs-publie-545.md), [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`point-de-sauvegarde-dans-les-profils-518`](decisions/point-de-sauvegarde-dans-les-profils-518.md).
 

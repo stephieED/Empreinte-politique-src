@@ -320,6 +320,23 @@ retirée. `--profiles-dir` restreint à une couche, et se répète.
 **Ne retire rien, ne juge rien** : c'est le compteur de référence, à relancer
 après chaque run. Une famille revenue à zéro qui remonte est une régression.
 
+### La reproductibilité des mandats sans `categorie_source`
+
+```bash
+python3 src/audit_mandats_reproductibles.py
+python3 src/audit_mandats_reproductibles.py --introuvables --json verdicts.json
+python3 src/audit_mandats_reproductibles.py --only jean-luc-melenchon
+```
+
+Produit : un verdict par entrée, contre **deux** référentiels — AMO30 lu dans
+`.cache/acteurs_historique_an/` et le bloc `mandat_europeen` du profil brut,
+qu'AMO30 ne porte pas. Aucun appel réseau.
+
+`--introuvables` liste ce qui demande une relecture à la main ; `--pivot-dir` et
+`--brut-dir` déplacent les deux couches lues. **Aucun retrait ne se déduit de
+cette sortie** : « aucune date », « acteur non résolu » et « référentiel vide »
+déclarent ce que la mesure n'a pas établi, ils ne jugent pas (§2 règle 5).
+
 ### Les profils pivot
 
 ```bash
