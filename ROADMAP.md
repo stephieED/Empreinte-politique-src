@@ -137,6 +137,40 @@ Convention d'écriture : `AGENTS.md` §8.
 
 ## Known bugs
 
+- **Le téléphone : ça tient dans l'écran, ça ne s'y lit pas (#867, mesuré le
+  12/09/2026).** Sept pages relevées à 360, 400 et 768 px — le relevé complet,
+  avec ses captures et ses causes, est le
+  [commentaire du 12/09 sur #867](https://github.com/stephieED/Empreinte-politique-src/issues/867#issuecomment-5645223332)
+  et l'artifact qu'il cite. **Ne pas re-mesurer avant de corriger** ; trois
+  constats seulement sont à connaître avant de rouvrir le sujet :
+  **1.** « aucun débordement horizontal » était faux — deux causes nommées,
+  `.cp-gouv-periode { white-space: nowrap }` (fiche candidat, document à 419 px
+  et 440 px selon la fiche) et le chip `.gb-chip` le plus long (364 px à 360) ;
+  correctifs d'une ligne, sans maquette.
+  **2.** Quatre figures deviennent illisibles et **changent de forme plutôt que
+  de rétrécir** : la frise du parcours (les graduations se superposent), la
+  cascade des textes portés, le tableau de `/couverture` (720 px pour 280
+  visibles, sans indice de défilement) et les cartes de membres du
+  gouvernement. Chacune appelle une maquette avant le code.
+  **3.** Rien n'a été vu sur un vrai téléphone : les captures viennent de
+  Firefox. La taille du doigt, la latence au défilement et le rendu des polices
+  ne sont pas mesurés.
+
+- **Les mandats antérieurs sont sur les fiches, mais pas encore sur la fiche
+  candidat (#860, mesuré le 12/09/2026).** `raw_data/mandats_anterieurs.json`
+  porte **11 lignes relues pour 5 candidats** depuis #861, et la reprise #869 a
+  posé le champ dérivé sur les **32** profils de candidats déclarés — 5 relus,
+  27 déclarés `non_relu` — sans attendre un run, la pose étant une fonction pure.
+  L'accueil nomme donc désormais les cinq fiches concernées.
+  **Ce qui reste** : côté interface, seuls `sources.config.js` et
+  `scripts/couverture-corpus.mjs` lisent le champ — **la fiche candidat ne le lit
+  pas**, et sa frise du parcours commence à 2002 même pour une carrière qui
+  démarre en 1988. La frise est la figure qui doit accueillir ces mandats, et
+  c'est celle que le point mobile ci-dessus doit de toute façon refaire.
+  **À ne pas re-découvrir** : quand la table relue change entre deux runs,
+  `scripts/poser_mandats_anterieurs_860.py` repose le champ sans réseau —
+  inutile de déclencher une collecte complète pour ça.
+
 - **La méthodologie porte cinq chiffres écrits à la main, mesurés sur un corpus
   de 27 fiches (#328).** `MethodologyPage.jsx` affiche « 1 160 positions de
   dernière lecture », « 711 des 1 160 », « le banc seul en couvre 719 et le
