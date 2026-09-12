@@ -337,6 +337,22 @@ qu'AMO30 ne porte pas. Aucun appel réseau.
 cette sortie** : « aucune date », « acteur non résolu » et « référentiel vide »
 déclarent ce que la mesure n'a pas établi, ils ne jugent pas (§2 règle 5).
 
+### Ce que les profils devraient encore à la source retirée
+
+```bash
+python3 src/audit_residus_source_retiree.py
+python3 src/audit_residus_source_retiree.py --par-profil --retirer-orphelines --json residus.json
+```
+
+Produit : pour chaque profil concerné, ce qui retient la clause ODbL une fois le
+nettoyage **simulé** — une donnée encore publiée, ou le seul marqueur
+`sources[]`. La licence est recomposée par `licences.licences_du_profil()`, la
+fonction de production. Rien n'est écrit.
+
+`--retirer-orphelines` pose en plus le retrait des interventions héritées sans
+jumelle Syceron. Le retrait du marqueur lui-même n'est pas un geste technique :
+c'est une décision éditoriale à effet juridique (§7).
+
 ### Les profils pivot
 
 ```bash

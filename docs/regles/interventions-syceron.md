@@ -94,6 +94,17 @@ les charger, ni à les faire grossir. -->
   two passes**, the second with `--enrich-parltrack` — without it the whole European side
   is missing and the diff accuses the code of losing it.
   → `docs/decisions/sediment-nosdeputes-839.md`
+- **`PA0` and NEGATIVE actor ids carry `id_mandat="-1"`: the source attaches the words to no
+  mandate (#839).** Measured over 200 XVIe comptes rendus, 118 033 paragraphs: 1 834 `PA0`
+  and 11 negative ids, **100 % of them with `id_mandat="-1"`**, and every `PA0` with an
+  **empty `code_parole`** — those are the interjections thrown from the benches, not floor
+  speeches. A negative id is an actor outside the AN referential, typically a senator
+  speaking at the Congrès: the Assembly publishes the name and states there is no AN
+  mandate behind it. **Never attribute either to a profile.** The name is published, but
+  reading it as an attribution adds a link the source refuses — the same defect as #510's
+  contradicted `id_acteur`. This is what settled the 19 inherited interventions without a
+  Syceron twin: they leave.
+  → `docs/decisions/residus-source-retiree-839.md`
 - **What is not measured says so** — per-candidate cost and RSS of the sharded index are
   bounded by construction, not by measurement, and the #429 and #500 balances are
   un-remeasured. Naming them is the rule: §2.5 applies to our own work too.
