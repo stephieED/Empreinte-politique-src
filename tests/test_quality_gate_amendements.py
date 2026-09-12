@@ -731,7 +731,7 @@ def test_report_amendements_coverage_hors_population_an_ne_fausse_pas_les_compte
     soft, regression, console, md = _report_amendements_coverage(tmp_path)
 
     assert regression is not None and "aucun profil AN sur 1" in regression
-    assert "| ⚠️ Profils AN avec identité | 1 (1 candidats déclarés · 0 membres de roster) |" in md
+    assert "| ⚠️ Profils AN avec identité | 1 (1 candidats · 0 membres de roster) |" in md
     # Chaque compteur garde un sens unique : l'apport hors population AN est
     # rendu explicite au lieu d'être fondu dans les compteurs « candidats AN ».
     assert "| Avec ≥ 1 amendement | 0 |" in md
