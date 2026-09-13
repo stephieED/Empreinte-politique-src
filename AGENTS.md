@@ -140,7 +140,8 @@ Full rationale: `web/old/v3/methodologie.html` — do not duplicate prose here.
 
 | Source | Collected? | License | Constraint |
 |---|---|---|---|
-| data.assemblee-nationale.fr / questions.assemblee-nationale.fr | **Yes — the only French source** (#529) | Licence Ouverte / Open Licence (Etalab) | Attribution only |
+| data.assemblee-nationale.fr / questions.assemblee-nationale.fr | **Yes — the main French source** (#529) | Licence Ouverte / Open Licence (Etalab) | Attribution only |
+| data.senat.fr | **Yes since #885 — memberships only.** The dataset carries no ballots and no floor records, so §7.2 of #528 stays **declared unmet**, not worked around. Three tables of individual attendance are refused at collection (§2 rule 3) | Licence Ouverte (`fr-lo`) | Attribution only — **no share-alike**, so a profile that gains Senate data does not enter the ODbL clause |
 | Parltrack (JSON dumps) | Yes | ODbL v1.0 | **Share-alike** if republished as downloadable dataset |
 | European Parliament (data.europarl.europa.eu, www.europarl.europa.eu) | Yes | EP Legal Notice (reuse policy, attribution-based) | Attribution only |
 | NosDeputes.fr / NosSenateurs.fr | **No** since #528/#529 — but published fields still derive from it | ODbL v1.0 | **Share-alike** if published as downloadable dataset |
