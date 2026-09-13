@@ -851,7 +851,7 @@
     "andre-villiers": {
       "identifiants": {
         "an": "PA421348",
-        "senat": null,
+        "senat": "09011R",
         "europarl": null,
         "hatvp": null
       },
@@ -866,7 +866,8 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA421348",
       "verifie_le": "2026-09-11",
-      "origine": "derivee"
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "andree-taurinya": {
       "identifiants": {
@@ -1339,7 +1340,7 @@
     "annick-girardin": {
       "identifiants": {
         "an": "PA337633",
-        "senat": null,
+        "senat": "21032X",
         "europarl": null,
         "hatvp": null
       },
@@ -1354,7 +1355,8 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA337633",
       "verifie_le": "2026-09-09",
-      "origine": "derivee"
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "annie-chapelier": {
       "identifiants": {
@@ -3067,7 +3069,7 @@
     "brigitte-bourguignon": {
       "identifiants": {
         "an": "PA608083",
-        "senat": null,
+        "senat": "18045D",
         "europarl": null,
         "hatvp": null
       },
@@ -3082,7 +3084,8 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA608083",
       "verifie_le": "2026-09-09",
-      "origine": "derivee"
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "brigitte-klinkert": {
       "identifiants": {
@@ -3364,7 +3367,7 @@
     "bruno-retailleau": {
       "identifiants": {
         "an": "PA2538",
-        "senat": null,
+        "senat": "04033B",
         "europarl": null,
         "hatvp": null
       },
@@ -3378,7 +3381,9 @@
       "ecart": null,
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2538",
-      "verifie_le": "2026-08-26"
+      "verifie_le": "2026-08-26",
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "bruno-studer": {
       "identifiants": {
@@ -3653,7 +3658,7 @@
     "catherine-belrhiti": {
       "identifiants": {
         "an": "PA773891",
-        "senat": null,
+        "senat": "19954N",
         "europarl": null,
         "hatvp": null
       },
@@ -3667,7 +3672,9 @@
       "ecart": null,
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA773891",
-      "verifie_le": "2026-08-26"
+      "verifie_le": "2026-08-26",
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "catherine-couturier": {
       "identifiants": {
@@ -3731,7 +3738,7 @@
     "catherine-deroche": {
       "identifiants": {
         "an": "PA425322",
-        "senat": null,
+        "senat": "10006L",
         "europarl": null,
         "hatvp": null
       },
@@ -3745,12 +3752,14 @@
       "ecart": null,
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA425322",
-      "verifie_le": "2026-08-26"
+      "verifie_le": "2026-08-26",
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "catherine-dumas": {
       "identifiants": {
         "an": "PA404656",
-        "senat": null,
+        "senat": "07033P",
         "europarl": null,
         "hatvp": null
       },
@@ -3764,7 +3773,9 @@
       "ecart": null,
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA404656",
-      "verifie_le": "2026-08-26"
+      "verifie_le": "2026-08-26",
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "catherine-fabre": {
       "identifiants": {
@@ -3888,7 +3899,7 @@
     "catherine-procaccia": {
       "identifiants": {
         "an": "PA304086",
-        "senat": null,
+        "senat": "04043D",
         "europarl": null,
         "hatvp": null
       },
@@ -3902,7 +3913,9 @@
       "ecart": null,
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA304086",
-      "verifie_le": "2026-08-26"
+      "verifie_le": "2026-08-26",
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "catherine-rimbert": {
       "identifiants": {
@@ -4302,7 +4315,7 @@
     "charles-guene": {
       "identifiants": {
         "an": "PA227078",
-        "senat": null,
+        "senat": "01057W",
         "europarl": null,
         "hatvp": null
       },
@@ -4316,7 +4329,9 @@
       "ecart": null,
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA227078",
-      "verifie_le": "2026-08-26"
+      "verifie_le": "2026-08-26",
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "charles-rodwell": {
       "identifiants": {
@@ -5219,7 +5234,7 @@
     "claude-de-ganay": {
       "identifiants": {
         "an": "PA267735",
-        "senat": null,
+        "senat": "14299H",
         "europarl": null,
         "hatvp": null
       },
@@ -5234,7 +5249,8 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267735",
       "verifie_le": "2026-09-10",
-      "origine": "derivee"
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "claude-goasguen": {
       "identifiants": {
@@ -5259,7 +5275,7 @@
     "claude-raynal": {
       "identifiants": {
         "an": "PA703505",
-        "senat": null,
+        "senat": "14225N",
         "europarl": null,
         "hatvp": null
       },
@@ -5273,7 +5289,9 @@
       "ecart": null,
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA703505",
-      "verifie_le": "2026-08-26"
+      "verifie_le": "2026-08-26",
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "claudia-rouaux": {
       "identifiants": {
@@ -6432,7 +6450,7 @@
     "dominique-de-legge": {
       "identifiants": {
         "an": "PA415467",
-        "senat": null,
+        "senat": "08034U",
         "europarl": null,
         "hatvp": null
       },
@@ -6446,7 +6464,9 @@
       "ecart": null,
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA415467",
-      "verifie_le": "2026-08-26"
+      "verifie_le": "2026-08-26",
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "dominique-faure": {
       "identifiants": {
@@ -6509,7 +6529,7 @@
     "dominique-voynet": {
       "identifiants": {
         "an": "PA2940",
-        "senat": null,
+        "senat": "04082L",
         "europarl": null,
         "hatvp": "https://www.hatvp.fr/pages_nominatives/voynet-dominique-8816"
       },
@@ -6524,7 +6544,8 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2940",
       "verifie_le": "2026-09-10",
-      "origine": "derivee"
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "dorine-bregman": {
       "identifiants": {
@@ -7428,7 +7449,7 @@
     "eric-dolige": {
       "identifiants": {
         "an": "PA1142",
-        "senat": null,
+        "senat": "01027Q",
         "europarl": null,
         "hatvp": null
       },
@@ -7442,7 +7463,9 @@
       "ecart": null,
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1142",
-      "verifie_le": "2026-08-26"
+      "verifie_le": "2026-08-26",
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "eric-girardin": {
       "identifiants": {
@@ -7761,7 +7784,7 @@
     "evelyne-renaud-garabedian": {
       "identifiants": {
         "an": "PA736193",
-        "senat": null,
+        "senat": "19705W",
         "europarl": null,
         "hatvp": null
       },
@@ -7775,7 +7798,9 @@
       "ecart": null,
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA736193",
-      "verifie_le": "2026-08-26"
+      "verifie_le": "2026-08-26",
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "fabien-di-filippo": {
       "identifiants": {
@@ -9510,7 +9535,7 @@
     "gerard-larcher": {
       "identifiants": {
         "an": "PA1828",
-        "senat": null,
+        "senat": "86034E",
         "europarl": null,
         "hatvp": null
       },
@@ -9524,7 +9549,9 @@
       "ecart": null,
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1828",
-      "verifie_le": "2026-08-26"
+      "verifie_le": "2026-08-26",
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "gerard-leseul": {
       "identifiants": {
@@ -10431,7 +10458,7 @@
     "hussein-bourgi": {
       "identifiants": {
         "an": "PA775196",
-        "senat": null,
+        "senat": "20114U",
         "europarl": null,
         "hatvp": null
       },
@@ -10445,7 +10472,9 @@
       "ecart": null,
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA775196",
-      "verifie_le": "2026-08-26"
+      "verifie_le": "2026-08-26",
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "ian-boucard": {
       "identifiants": {
@@ -10526,7 +10555,7 @@
     "isabelle-florennes": {
       "identifiants": {
         "an": "PA721742",
-        "senat": null,
+        "senat": "19111A",
         "europarl": null,
         "hatvp": null
       },
@@ -10541,7 +10570,8 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721742",
       "verifie_le": "2026-09-11",
-      "origine": "derivee"
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "isabelle-mesnard": {
       "identifiants": {
@@ -11336,7 +11366,7 @@
     "jean-jacques-panunzi": {
       "identifiants": {
         "an": "PA703521",
-        "senat": null,
+        "senat": "14191V",
         "europarl": null,
         "hatvp": null
       },
@@ -11350,7 +11380,9 @@
       "ecart": null,
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA703521",
-      "verifie_le": "2026-08-26"
+      "verifie_le": "2026-08-26",
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "jean-laussucq": {
       "identifiants": {
@@ -11552,7 +11584,7 @@
     "jean-luc-melenchon": {
       "identifiants": {
         "an": "PA2150",
-        "senat": null,
+        "senat": "86039K",
         "europarl": "96742",
         "hatvp": null
       },
@@ -11566,7 +11598,9 @@
       "ecart": null,
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2150",
-      "verifie_le": "2026-08-26"
+      "verifie_le": "2026-08-26",
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "jean-luc-poudroux": {
       "identifiants": {
@@ -11965,7 +11999,7 @@
     "jean-pierre-bansard": {
       "identifiants": {
         "an": "PA736180",
-        "senat": null,
+        "senat": "19707Y",
         "europarl": null,
         "hatvp": null
       },
@@ -11979,7 +12013,9 @@
       "ecart": null,
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA736180",
-      "verifie_le": "2026-08-26"
+      "verifie_le": "2026-08-26",
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "jean-pierre-bataille": {
       "identifiants": {
@@ -12101,7 +12137,7 @@
     "jean-raymond-hugonet": {
       "identifiants": {
         "an": "PA736238",
-        "senat": null,
+        "senat": "19399H",
         "europarl": null,
         "hatvp": null
       },
@@ -12115,7 +12151,9 @@
       "ecart": null,
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA736238",
-      "verifie_le": "2026-08-26"
+      "verifie_le": "2026-08-26",
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "jean-rene-cazeneuve": {
       "identifiants": {
@@ -12511,7 +12549,7 @@
     "joel-bigot": {
       "identifiants": {
         "an": "PA736199",
-        "senat": null,
+        "senat": "19549D",
         "europarl": null,
         "hatvp": null
       },
@@ -12525,7 +12563,9 @@
       "ecart": null,
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA736199",
-      "verifie_le": "2026-08-26"
+      "verifie_le": "2026-08-26",
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "joel-bruneau": {
       "identifiants": {
@@ -12918,7 +12958,7 @@
     "julien-aubert": {
       "identifiants": {
         "an": "PA609726",
-        "senat": null,
+        "senat": "18003S",
         "europarl": null,
         "hatvp": null
       },
@@ -12933,7 +12973,8 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA609726",
       "verifie_le": "2026-09-10",
-      "origine": "derivee"
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "julien-bayou": {
       "identifiants": {
@@ -14349,7 +14390,7 @@
     "luc-carvounas": {
       "identifiants": {
         "an": "PA429893",
-        "senat": null,
+        "senat": "11032E",
         "europarl": null,
         "hatvp": null
       },
@@ -14364,7 +14405,8 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA429893",
       "verifie_le": "2026-09-08",
-      "origine": "derivee"
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "luc-geismar": {
       "identifiants": {
@@ -14901,7 +14943,7 @@
     "marie-christine-chauvin": {
       "identifiants": {
         "an": "PA736172",
-        "senat": null,
+        "senat": "19467C",
         "europarl": null,
         "hatvp": null
       },
@@ -14915,7 +14957,9 @@
       "ecart": null,
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA736172",
-      "verifie_le": "2026-08-26"
+      "verifie_le": "2026-08-26",
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "marie-christine-dalloz": {
       "identifiants": {
@@ -15956,7 +16000,7 @@
     "michel-barnier": {
       "identifiants": {
         "an": "PA368",
-        "senat": null,
+        "senat": "95008D",
         "europarl": null,
         "hatvp": "https://www.hatvp.fr/pages_nominatives/barnier-michel-27734"
       },
@@ -15971,7 +16015,8 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA368",
       "verifie_le": "2026-09-02",
-      "origine": "derivee"
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "michel-castellani": {
       "identifiants": {
@@ -18544,7 +18589,7 @@
     "philippe-folliot": {
       "identifiants": {
         "an": "PA267673",
-        "senat": null,
+        "senat": "17023S",
         "europarl": null,
         "hatvp": null
       },
@@ -18559,7 +18604,8 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267673",
       "verifie_le": "2026-09-09",
-      "origine": "derivee"
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "philippe-frei": {
       "identifiants": {
@@ -20013,7 +20059,7 @@
     "samantha-cazebonne": {
       "identifiants": {
         "an": "PA721166",
-        "senat": null,
+        "senat": "19057M",
         "europarl": null,
         "hatvp": null
       },
@@ -20028,7 +20074,8 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721166",
       "verifie_le": "2026-09-09",
-      "origine": "derivee"
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "sandra-boelle": {
       "identifiants": {
@@ -20997,7 +21044,7 @@
     "sophie-taille-polian": {
       "identifiants": {
         "an": "PA736201",
-        "senat": null,
+        "senat": "19689Q",
         "europarl": null,
         "hatvp": "https://www.hatvp.fr/pages_nominatives/taille-polian-sophie"
       },
@@ -21012,7 +21059,8 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA736201",
       "verifie_le": "2026-09-08",
-      "origine": "derivee"
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "souad-zitouni": {
       "identifiants": {
@@ -21253,7 +21301,7 @@
     "stephane-mazars": {
       "identifiants": {
         "an": "PA677483",
-        "senat": null,
+        "senat": "12039E",
         "europarl": null,
         "hatvp": null
       },
@@ -21267,7 +21315,9 @@
       "ecart": null,
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA677483",
-      "verifie_le": "2026-08-26"
+      "verifie_le": "2026-08-26",
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "stephane-peu": {
       "identifiants": {
@@ -21940,7 +21990,7 @@
     "thierry-cozic": {
       "identifiants": {
         "an": "PA775210",
-        "senat": null,
+        "senat": "20070A",
         "europarl": null,
         "hatvp": null
       },
@@ -21954,7 +22004,9 @@
       "ecart": null,
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA775210",
-      "verifie_le": "2026-08-26"
+      "verifie_le": "2026-08-26",
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "thierry-frappe": {
       "identifiants": {
@@ -22410,7 +22462,7 @@
     "valerie-boyer": {
       "identifiants": {
         "an": "PA330684",
-        "senat": null,
+        "senat": "17737W",
         "europarl": null,
         "hatvp": null
       },
@@ -22425,7 +22477,8 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA330684",
       "verifie_le": "2026-09-10",
-      "origine": "derivee"
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "valerie-gomez-bassac": {
       "identifiants": {
@@ -22470,7 +22523,7 @@
     "valerie-letard": {
       "identifiants": {
         "an": "PA227089",
-        "senat": null,
+        "senat": "01043Q",
         "europarl": null,
         "hatvp": "https://www.hatvp.fr/pages_nominatives/letard-valerie"
       },
@@ -22485,7 +22538,8 @@
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA227089",
       "verifie_le": "2026-09-11",
-      "origine": "derivee"
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "valerie-oppelt": {
       "identifiants": {
@@ -22957,7 +23011,7 @@
     "viviane-malet": {
       "identifiants": {
         "an": "PA736185",
-        "senat": null,
+        "senat": "19657G",
         "europarl": null,
         "hatvp": null
       },
@@ -22971,7 +23025,9 @@
       "ecart": null,
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA736185",
-      "verifie_le": "2026-08-26"
+      "verifie_le": "2026-08-26",
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "william-martinet": {
       "identifiants": {
@@ -23287,7 +23343,7 @@
     "yannick-vaugrenard": {
       "identifiants": {
         "an": "PA429852",
-        "senat": null,
+        "senat": "11066Q",
         "europarl": "28175",
         "hatvp": null
       },
@@ -23301,7 +23357,9 @@
       "ecart": null,
       "motif": null,
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA429852",
-      "verifie_le": "2026-08-26"
+      "verifie_le": "2026-08-26",
+      "origine": "derivee",
+      "senat_apparie_le": "2026-09-13T16:43:40+0200"
     },
     "yoann-gillet": {
       "identifiants": {
