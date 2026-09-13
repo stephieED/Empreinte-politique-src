@@ -77,9 +77,20 @@ DUMP_TABLES_UTILES: frozenset[str] = frozenset({
     "memgrppol",    # appartenance à un groupe politique, datée, avec son type
     "libgrppol",    # les libellés de groupe, BORNÉS — le nom à la date
     "grppol",       # les groupes eux-mêmes
+    "typapppol",    # N = membre, R = rattaché, A = apparenté
     "memcom",       # commissions et missions, datées
+    "libcom",       # leurs libellés, bornés — même mécanique que libgrppol
+    "com",          # les commissions elles-mêmes
     "memgrpsen",    # groupes d'études, d'amitié, de liaison
     "libgrpsen",    # leurs libellés, bornés de la même façon
+    "grpsenami",    # les groupes sénatoriaux, et leur type
+    "typgrpsen",    # AMITIE, INFO, ETUDES, LIAISON
+    "fonmemgrppol", # fonction tenue dans un groupe politique, datée
+    "fonmemcom",    # fonction tenue en commission, datée
+    "fonmemgrpsen", # fonction tenue dans un groupe sénatorial, datée
+    "fongrppol",    # les libellés de ces fonctions
+    "foncom",
+    "fongrpsen",
 })
 
 #: Ce que la collecte refuse **à l'entrée**, et la raison.
