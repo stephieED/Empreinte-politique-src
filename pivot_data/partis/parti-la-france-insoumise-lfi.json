@@ -141,30 +141,31 @@
   ],
   "sources": [
     {
-      "type": "nossenateurs",
-      "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-deja-en-lice-et-des-pretendants-436373",
-      "synchro_le": "2026-08-19T21:13:30+0000"
-    },
-    {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2150",
-      "synchro_le": "2026-09-09T17:08:52+0000"
+      "synchro_le": "2026-09-13T21:40:05+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/96742",
-      "synchro_le": "2026-09-09T17:09:03+0000"
+      "synchro_le": "2026-09-13T02:46:01+0000"
     },
     {
       "type": "parltrack",
       "url": "https://parltrack.org/dumps",
-      "synchro_le": "2026-09-09T17:26:18"
+      "synchro_le": "2026-09-13T21:56:27"
+    },
+    {
+      "type": "senat",
+      "url": "https://data.senat.fr/",
+      "synchro_le": "2026-09-13T21:10:39+0000",
+      "licence": "Licence Ouverte / Open Licence (Sénat) — data.senat.fr"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-09T17:41:41+0000",
-    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO) + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu) + ODbL v1.0 (ParlTrack — https://parltrack.org/dumps)",
+    "genere_le": "2026-09-13T22:11:36+0000",
+    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + Licence Ouverte / Open Licence (Sénat) — data.senat.fr + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu) + ODbL v1.0 (ParlTrack — https://parltrack.org/dumps)",
     "nb_candidats_declares": 1,
     "nb_candidats_avec_pivot": 1,
     "warnings": []

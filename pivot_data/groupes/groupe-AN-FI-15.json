@@ -69862,14 +69862,9 @@
   },
   "sources": [
     {
-      "type": "nossenateurs",
-      "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-deja-en-lice-et-des-pretendants-436373",
-      "synchro_le": "2026-08-19T21:13:30+0000"
-    },
-    {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2150",
-      "synchro_le": "2026-09-13T02:45:53+0000"
+      "synchro_le": "2026-09-13T21:40:05+0000"
     },
     {
       "type": "europarl",
@@ -69879,93 +69874,99 @@
     {
       "type": "parltrack",
       "url": "https://parltrack.org/dumps",
-      "synchro_le": "2026-09-13T03:04:30"
+      "synchro_le": "2026-09-13T21:56:27"
+    },
+    {
+      "type": "senat",
+      "url": "https://data.senat.fr/",
+      "synchro_le": "2026-09-13T21:10:39+0000",
+      "licence": "Licence Ouverte / Open Licence (Sénat) — data.senat.fr"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA588884",
-      "synchro_le": "2026-09-13T02:48:32+0000"
+      "synchro_le": "2026-09-13T21:46:18+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718860",
-      "synchro_le": "2026-09-13T02:45:05+0000"
+      "synchro_le": "2026-09-13T21:39:33+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718868",
-      "synchro_le": "2026-09-13T02:45:11+0000"
+      "synchro_le": "2026-09-13T21:39:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719578",
-      "synchro_le": "2026-09-13T02:45:24+0000"
+      "synchro_le": "2026-09-13T21:39:43+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719676",
-      "synchro_le": "2026-09-13T02:52:07+0000"
+      "synchro_le": "2026-09-13T21:46:30+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720286",
-      "synchro_le": "2026-09-13T02:45:03+0000"
+      "synchro_le": "2026-09-13T21:39:30+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720422",
-      "synchro_le": "2026-09-13T02:44:49+0000"
+      "synchro_le": "2026-09-13T21:39:33+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720430",
-      "synchro_le": "2026-09-13T02:51:47+0000"
+      "synchro_le": "2026-09-13T21:46:06+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720846",
-      "synchro_le": "2026-09-13T02:51:53+0000"
+      "synchro_le": "2026-09-13T21:45:59+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720892",
-      "synchro_le": "2026-09-13T02:48:33+0000"
+      "synchro_le": "2026-09-13T21:46:19+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721062",
-      "synchro_le": "2026-09-13T02:53:45+0000"
+      "synchro_le": "2026-09-13T21:46:00+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721202",
-      "synchro_le": "2026-09-13T02:45:06+0000"
+      "synchro_le": "2026-09-13T21:39:33+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721210",
-      "synchro_le": "2026-09-13T02:45:25+0000"
+      "synchro_le": "2026-09-13T21:39:44+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721226",
-      "synchro_le": "2026-09-13T02:52:12+0000"
+      "synchro_le": "2026-09-13T21:46:22+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721960",
-      "synchro_le": "2026-09-13T02:45:03+0000"
+      "synchro_le": "2026-09-13T21:39:30+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722142",
-      "synchro_le": "2026-09-13T02:44:49+0000"
+      "synchro_le": "2026-09-13T21:39:34+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-13T03:20:59+0000",
-    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO) + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu) + ODbL v1.0 (ParlTrack — https://parltrack.org/dumps)",
+    "genere_le": "2026-09-13T22:12:51+0000",
+    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + Licence Ouverte / Open Licence (Sénat) — data.senat.fr + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu) + ODbL v1.0 (ParlTrack — https://parltrack.org/dumps)",
     "profils_sources": [
       "jean-luc-melenchon",
       "clementine-autain",
