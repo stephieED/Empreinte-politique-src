@@ -99,10 +99,11 @@ const SECTIONS = [
         <p>
           Ces deux sources, projets de l'association Regards Citoyens, <strong>ne sont plus
           interrogées</strong> : NosSénateurs.fr est sorti du périmètre du site en août 2026, et
-          NosDéputés.fr a été retiré du pipeline de collecte le même mois. Rien de ce qu'elles ont
-          produit n'a pour autant été effacé — des mandats, des éléments d'identité, des prises de
-          parole (dont l'URL de source pointe encore vers nosdeputes.fr) et les mots-clés dont
-          dérivent les tags thématiques restent publiés. L'attribution et les obligations de la{' '}
+          NosDéputés.fr a été retiré du pipeline de collecte le même mois. Des mandats et des
+          éléments d'identité collectés avant 2026 en dérivent encore et restent publiés. Les prises
+          de parole qui en venaient ont été retirées du corpus en septembre 2026, vérifiées une par
+          une contre les comptes rendus de l'Assemblée, et les mots-clés dont dérivaient les tags
+          thématiques avec elles. L'attribution et les obligations de la{' '}
           <strong>licence Open Database License (ODbL) v1.0</strong> leur restent donc dues :{' '}
           <a href="https://opendatacommons.org/licenses/odbl/1-0/" target="_blank" rel="noopener noreferrer">
             https://opendatacommons.org/licenses/odbl/1-0/
