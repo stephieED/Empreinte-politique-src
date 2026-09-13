@@ -24,6 +24,16 @@ Le jeu « Les Sénateurs » est référencé sur `data.gouv.fr` par **55 ressour
 | extraits | `https://data.senat.fr/data/senateurs/ODSEN_<NOM>.csv` (aussi `.json`, `.xls`) | l'appartenance **courante** pour les groupes politiques ; l'historique pour les commissions, délégations, groupes d'études et d'amitié |
 | export complet | `https://data.senat.fr/data/senateurs/export_sens.zip` | 8,3 Mo → **58 Mo** de `export_sens.sql` (PostgreSQL) — **l'historique daté des groupes politiques, et lui seul** |
 
+
+> **L'export a déjà été servi vide (13/09/2026).** À 03 h 33 l'archive faisait
+> **444 octets** et ne portait **aucune table** — en-tête PostgreSQL et quatre
+> `GRANT` — avec un **HTTP 200** et un `Content-Type: application/zip`. Rien
+> qu'un code de retour ne signale. Republiée saine à **12 h 42**, 93 tables : une
+> régénération quotidienne ratée, transitoire. Les extraits `ODSEN_*.csv`
+> étaient servis intacts pendant toute la panne, qui n'a donc touché que
+> l'historique des groupes politiques. `src/senat_opendata.py` lève
+> `ExportSenatVide` plutôt que de rendre un corpus vide, et `data.gouv.fr` n'en
+> garde **aucune copie** : son permalien redirige vers la même URL.
 **Lire les seuls extraits conduit à conclure que l'historique des groupes n'existe pas.** C'est
 l'erreur commise puis corrigée le 13/09/2026 : `ODSEN_GENERAL.csv` ne porte qu'une colonne
 « Groupe politique », celle de la fin du mandat.
