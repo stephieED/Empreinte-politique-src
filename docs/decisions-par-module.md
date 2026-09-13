@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 316 décisions
+gouverne sans avoir à fouiller les 317 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -37,7 +37,6 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 
 | Module | Décisions qui le gouvernent |
 | --- | ---: |
-| `src/licences.py` | 4 |
 | `src/parse_syceron.py` | 4 |
 | `src/perimetre_candidats.py` | 4 |
 | `src/audit_pipeline.py` | 3 |
@@ -472,7 +471,7 @@ Le mentionnent sans le gouverner : [`absences-publiees-comme-faits-556-558-560`]
 | [Le Parlement européen prend sa place sur `/couverture`, et cesse de déplacer les bornes de l'Assemblée — 11/09/2026 (#328)](decisions/parlement-europeen-sur-la-couverture-328.md) | `bornes_europeennes` |
 | [L'européen entre dans les listes que la fiche a déjà (#683, lot 2)](decisions/stockage-europeen-dans-les-listes-existantes-683.md) | `bornes_europeennes` |
 
-Le mentionnent sans le gouverner : [`couverture-remplacee-par-liste-602`](decisions/couverture-remplacee-par-liste-602.md), [`fiches-groupe-17e-legislature-700`](decisions/fiches-groupe-17e-legislature-700.md), [`lecture-dumps-parltrack-683`](decisions/lecture-dumps-parltrack-683.md), [`pied-de-site-et-section-6-328`](decisions/pied-de-site-et-section-6-328.md), [`preuve-de-borne-dite-une-fois-328`](decisions/preuve-de-borne-dite-une-fois-328.md), [`retrait-residus-senat-908`](decisions/retrait-residus-senat-908.md).
+Le mentionnent sans le gouverner : [`couverture-remplacee-par-liste-602`](decisions/couverture-remplacee-par-liste-602.md), [`fiches-groupe-17e-legislature-700`](decisions/fiches-groupe-17e-legislature-700.md), [`lecture-dumps-parltrack-683`](decisions/lecture-dumps-parltrack-683.md), [`licence-jamais-en-dur-909`](decisions/licence-jamais-en-dur-909.md), [`pied-de-site-et-section-6-328`](decisions/pied-de-site-et-section-6-328.md), [`preuve-de-borne-dite-une-fois-328`](decisions/preuve-de-borne-dite-une-fois-328.md), [`retrait-residus-senat-908`](decisions/retrait-residus-senat-908.md).
 
 ## `src/download_watchdog.py`
 
@@ -747,11 +746,12 @@ Le mentionnent sans le gouverner : [`profils-json-compact`](decisions/profils-js
 
 ## `src/licences.py`
 
-4 décision(s) le gouvernent ; le module en cite 0.
+5 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
 | [Le sédiment se compte avant de se juger : sept familles, deux couches, aucun retrait (#839, lot A) (2026-09-12)](decisions/audit-sediment-inventaire-839.md) | `LICENCE_PAR_TYPE_SOURCE` |
+| [Une étiquette de licence écrite en dur survit à la source qu'elle décrit (#909) (2026-09-13)](decisions/licence-jamais-en-dur-909.md) | `LICENCE_PARLTRACK`, `appliquer_licence_donnees` |
 | [Le versant AN passe en Licence Ouverte, et `meta.licence_donnees` devient un champ dérivé (#530, lot 6 de l'épic « une seule source AN ») (2026-08-27)](decisions/licence-lot-6-530.md) | `appliquer_licence_donnees` |
 | [Le nettoyage fait, la clause ODbL ne tiendrait plus que par un marqueur, sur 475 profils (#839, lot C) (2026-09-12)](decisions/residus-source-retiree-839.md) | `licences_du_profil` |
 | [Un marqueur de provenance sans donnée derrière lui n'est plus une traçabilité, c'est une inexactitude (#890) (2026-09-13)](decisions/retrait-marqueur-regards-citoyens-deputes-890.md) | `appliquer_licence_donnees`, `licences_du_profil` |
@@ -777,6 +777,12 @@ Le mentionnent sans le gouverner : [`contact-et-comptes-publics-328`](decisions/
 Le mentionnent sans le gouverner : [`accueil-borne-par-institution-328`](decisions/accueil-borne-par-institution-328.md), [`mention-mandats-anterieurs-fiche-candidat-860`](decisions/mention-mandats-anterieurs-fiche-candidat-860.md), [`sediment-nosdeputes-839`](decisions/sediment-nosdeputes-839.md).
 
 ## `src/mep_profile.py`
+
+1 décision(s) le gouvernent ; le module en cite 1.
+
+| Décision | Nomme |
+| --- | --- |
+| [Une étiquette de licence écrite en dur survit à la source qu'elle décrit (#909) (2026-09-13)](decisions/licence-jamais-en-dur-909.md) | `normalize_parltrack` |
 
 Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambres-profil-derivees.md), [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`id-pivot-sans-prefixe`](decisions/id-pivot-sans-prefixe.md), [`licences`](decisions/licences.md), [`mandats-officiels-an-369`](decisions/mandats-officiels-an-369.md).
 

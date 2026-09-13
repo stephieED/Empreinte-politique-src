@@ -60,6 +60,20 @@ Ce qui n'est **pas** un signal de dérivation, et pourquoi :
   (#529 §3) : les 6 profils qui en portent portent aussi une source RC. Un
   troisième signal n'aurait rien ajouté qu'une chance de plus de diverger.
 
+## Les trois décisions à lire avant de toucher ce module
+
+Cinq le gouvernent (`docs/decisions-par-module.md`) ; ces trois-là suffisent à
+ne pas se tromper :
+
+- `docs/decisions/licence-lot-6-530.md` — pourquoi `meta.licence_donnees` est
+  **dérivé** et non constant. C'est la fondation de tout ce fichier.
+- `docs/decisions/licence-jamais-en-dur-909.md` — le corollaire, et son
+  garde-fou : **aucun autre module** n'écrit ce champ à la main. Un constructeur
+  de profil l'a fait pendant quatre lots en annonçant du CC0 pour de l'ODbL.
+- `docs/decisions/retrait-marqueur-regards-citoyens-deputes-890.md` — quand un
+  marqueur de source cesse d'être une traçabilité : la clause ODbL s'en va avec
+  la donnée qui la justifiait, jamais avant.
+
 Usage :
     from licences import LICENCE_AN, appliquer_licence_donnees
     appliquer_licence_donnees(profil_pivot)   # écrit meta.licence_donnees
