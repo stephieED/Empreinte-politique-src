@@ -204,9 +204,12 @@ def fetch_full_roster(
         raise ValueError(
             f"Chambre {chambre!r} hors périmètre. Seule valeur servie : 'deputes'. "
             "Le Sénat a été retiré par #528 (archive.nossenateurs.fr ne sert plus "
-            "de certificat valide, aucune source de remplacement établie) ; les "
-            "2 groupes Sénat restent suspendus, voir "
-            "docs/decisions/retrait-senat-528.md."
+            "de certificat valide) ; les 2 groupes Sénat restent suspendus, voir "
+            "docs/decisions/retrait-senat-528.md. #885 établit une source de "
+            "remplacement — data.senat.fr — mais elle ne passe PAS par ici : ce "
+            "refus garde le chemin NosSénateurs, qui ne rouvre pas. Un roster "
+            "sénatorial viendra d'une voie distincte ; voir "
+            "docs/decisions/reouverture-partielle-senat-885.md."
         )
     return an_roster.fetch_full_roster_an(legislature)
 

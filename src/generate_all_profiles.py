@@ -195,6 +195,11 @@ _PARLTRACK_CACHE_DIR = Path(".cache") / "parltrack"
 # refuse désormais la valeur, ce qui est le comportement voulu — un run qui
 # demande encore le Sénat doit échouer à la ligne de commande, pas produire un
 # job vert sans profil (c'est exactement ce que faisait `extract-senat`).
+#
+# #885 la rouvrira, mais pas avant qu'il y ait une collecte derrière : une
+# valeur acceptée par argparse et servie par rien redonne exactement le job vert
+# sans profil que ce refus a fermé. L'ordre est donc imposé — le collecteur
+# `data.senat.fr` d'abord, cette ligne ensuite, jamais l'inverse.
 SOURCE_VALUES = ("an", "ue", "all")
 
 # Verrou global pour sérialiser les print() et éviter un affichage interleaved.

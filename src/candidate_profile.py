@@ -93,10 +93,20 @@ from syceron_debates import (
 #
 # La cle "senateurs" avait deja disparu avec #528 : www.nossenateurs.fr a
 # definitivement ferme, son archive sert un certificat TLS expire depuis le
-# 24/08/2026, le Senat est sorti du perimetre editorial du produit et aucune
-# source de remplacement (data.senat.fr / www.senat.fr) n'est etablie a ce jour.
-# Remettre une entree ici n'est PAS un geste technique : lire d'abord la
-# condition de reouverture dans docs/decisions/retrait-senat-528.md.
+# 24/08/2026, et le Senat est sorti du perimetre editorial du produit.
+#
+# #885 (13/09/2026) : UNE SOURCE DE REMPLACEMENT EST DESORMAIS ETABLIE.
+# `data.senat.fr`, producteur Senat, sous Licence Ouverte, porte l'historique
+# date des appartenances. La phrase qui tenait ici — « aucune source de
+# remplacement (data.senat.fr / www.senat.fr) n'est etablie a ce jour » — a
+# cesse d'etre vraie, et une condition de reouverture qu'on laisse affirmer le
+# contraire referme le sujet toute seule.
+#
+# Ce que ca ne change pas : la chambre reste hors de CE tuple tant que la voie
+# de collecte n'est pas cablee, parce qu'ouvrir une cle sans collecte derriere
+# rendrait un profil vide qui passerait pour un constat (#501, #510) — le
+# defaut exact que #528 a ferme. Lire docs/decisions/reouverture-partielle-senat-885.md
+# pour ce qui rentre (les appartenances) et ce qui reste dehors (les scrutins).
 CHAMBRES_COLLECTEES: tuple[str, ...] = ("deputes",)
 
 HEADERS = {
@@ -5553,9 +5563,13 @@ def build_profile(
     if chambre not in CHAMBRES_COLLECTEES:
         raise ValueError(
             f"chambre invalide : {chambre} (attendu: {list(CHAMBRES_COLLECTEES)}). "
-            "Le Sénat a été retiré du périmètre par #528 — source morte, aucune "
-            "source de remplacement établie ; voir "
-            "docs/decisions/retrait-senat-528.md."
+            "Le Sénat a été retiré du périmètre par #528 — source morte ; voir "
+            "docs/decisions/retrait-senat-528.md. Une source de remplacement EST "
+            "établie depuis #885 (data.senat.fr, Licence Ouverte), mais sa voie "
+            "de collecte n'est pas encore câblée : cette chambre reste refusée "
+            "ici tant qu'elle n'a rien derrière, plutôt que de rendre un profil "
+            "vide qui passerait pour un constat ; voir "
+            "docs/decisions/reouverture-partielle-senat-885.md."
         )
 
     # #514 : la phase d'interventions est bornée par SON budget quand il existe
