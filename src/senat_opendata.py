@@ -102,11 +102,28 @@ DUMP_TABLES_UTILES: frozenset[str] = frozenset({
 #: indéfiniment (#729). Une donnée qu'on ne publiera jamais ne se collecte pas.
 TABLES_REFUSEES: dict[str, str] = {
     "activite_senateur": (
-        "participation nominative en séance : un taux de présence individuel, "
-        "que AGENTS.md §2 règle 3 interdit de publier. Refusée à l'entrée de la "
-        "collecte, jamais filtrée à l'affichage (#729)."
+        "11 069 lignes d'activité nominative — un taux de présence individuel, "
+        "que AGENTS.md §2 règle 3 interdit de publier."
+    ),
+    "activite_participant": (
+        "675 839 lignes portant `typactparcod: PRESENT` sur 698 sénateurs — "
+        "c'est **le** registre de présence, soixante fois plus volumineux que "
+        "`activite_senateur`, et celui qu'on aurait manqué en ne refusant qu'une "
+        "table nommée. §2 règle 3."
+    ),
+    "activite_delegation": (
+        "3 049 délégations de vote, `senmat` → `senmat_delegue` : qui a donné "
+        "procuration à qui. Ce n'est pas de la présence, c'est **de l'absence "
+        "nominative**, et elle se publierait aussi mal. §2 règle 3."
     ),
 }
+
+#: La colonne qui nomme une personne dans ce jeu. Toute table qui la porte
+#: décrit quelqu'un, et son sort doit être **décidé**, jamais laissé au hasard
+#: de ce que `DUMP_TABLES_UTILES` liste — c'est ce qui a manqué au premier
+#: passage, où `activite_senateur` était refusée et `activite_participant` ne
+#: l'était pas.
+COLONNE_NOMINATIVE = "senmat"
 
 #: Dates que la source emploie pour dire « depuis toujours ». Ce ne sont pas des
 #: dates : les publier ferait commencer un groupe en 1899.
@@ -222,6 +239,48 @@ def lire_tables(
             "poursuivrait viderait les fiches sénatoriales en silence."
         )
     return trouvees
+
+
+def tables_nominatives_non_declarees(
+    colonnes_par_table: dict[str, Iterable[str]],
+) -> list[str]:
+    """Les tables qui nomment des personnes et dont personne n'a décidé du sort.
+
+    Une table porteuse de `senmat` décrit quelqu'un. Trois issues sont
+    acceptables — elle est **utile** (et lue), elle est **refusée** (et nommée
+    avec sa raison), ou elle est signalée ici. La quatrième, l'oubli, est celle
+    qui a laissé passer `activite_participant` et ses 675 839 lignes de présence
+    au premier passage : refuser une table **par son nom** ne protège que de ce
+    qu'on a déjà vu.
+
+    Ce contrôle ne bloque rien de lui-même : il rend une liste, et c'est
+    l'appelant qui décide. Un jeu tiers qui gagne une table n'est pas un défaut
+    de notre pipeline — l'ignorer en serait un.
+    """
+    a_decider = []
+    for table, colonnes in colonnes_par_table.items():
+        if table in DUMP_TABLES_UTILES or table in TABLES_REFUSEES:
+            continue
+        if COLONNE_NOMINATIVE in set(colonnes):
+            a_decider.append(table)
+    return sorted(a_decider)
+
+
+def colonnes_des_tables(chemin: Path) -> dict[str, list[str]]:
+    """Le nom et les colonnes de **chaque** table du dump, sans lire une ligne.
+
+    Ne matérialise aucune donnée : seuls les en-têtes `COPY` sont retenus. C'est
+    ce qui permet d'inventorier un jeu de 93 tables et 58 Mo pour y chercher ce
+    qui nomme des personnes.
+    """
+    colonnes: dict[str, list[str]] = {}
+    with chemin.open(encoding="utf-8", errors="replace") as flux:
+        for ligne in flux:
+            entete = _DEBUT_COPY.match(ligne)
+            if entete:
+                colonnes[entete.group("table")] = [
+                    c.strip() for c in entete.group("colonnes").split(",")]
+    return colonnes
 
 
 def tables_manquantes(tables: dict[str, list[dict[str, Any]]]) -> list[str]:

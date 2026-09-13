@@ -27,12 +27,15 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from senat_opendata import (  # noqa: E402
+    COLONNE_NOMINATIVE,
     DUMP_TABLES_UTILES,
     SENTINELLES_DATE,
     TABLES_REFUSEES,
     ExportSenatVide,
+    colonnes_des_tables,
     date_publiable,
     lire_tables,
+    tables_nominatives_non_declarees,
     periodes_se_recouvrent,
     tables_manquantes,
 )
@@ -254,3 +257,69 @@ def test_une_ligne_plus_courte_que_son_entete_ne_leve_pas(tmp_path):
     tables = lire_tables(chemin, tables={"sen"})
 
     assert tables["sen"] == [{"senmat": "86039K", "sennomuse": "Mélenchon"}]
+
+
+# ---------------------------------------------------------------------------
+# #885 point 4 — refuser une table par son nom ne protège que du déjà-vu
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize("table", sorted(TABLES_REFUSEES))
+def test_les_trois_tables_de_presence_sont_refusees(table):
+    """Il n'y en avait qu'une au premier passage. Mesuré ensuite :
+
+      - `activite_senateur`, 11 069 lignes d'activité nominative ;
+      - `activite_participant`, **675 839** lignes portant `typactparcod:
+        PRESENT` sur 698 sénateurs — soixante fois plus, et c'est **le**
+        registre de présence ;
+      - `activite_delegation`, 3 049 délégations de vote `senmat` →
+        `senmat_delegue`, c'est-à-dire de l'**absence** nominative.
+    """
+    assert table in TABLES_REFUSEES
+    assert "règle 3" in TABLES_REFUSEES[table]
+
+
+def test_aucune_table_d_activite_nominative_n_est_lue(tmp_path):
+    """Demandées explicitement, aucune des trois n'est rendue."""
+    chemin = _dump(tmp_path, {
+        "sen": (["senmat"], [["04033B"]]),
+        "activite_senateur": (["senmat", "libelle"], [["04033B", "Réunion"]]),
+        "activite_participant": (["senmat", "typactparcod"], [["04033B", "PRESENT"]]),
+        "activite_delegation": (["senmat", "senmat_delegue"], [["04033B", "86039K"]]),
+    })
+
+    tables = lire_tables(chemin, tables={"sen"} | set(TABLES_REFUSEES))
+
+    assert set(tables) == {"sen"}
+
+
+def test_une_table_nominative_non_declaree_est_signalee():
+    """Refuser par le nom ne protège que de ce qu'on a déjà vu. Une table qui
+    porte `senmat` décrit quelqu'un : elle est utile, refusée, ou signalée — la
+    quatrième issue, l'oubli, est celle qui a laissé passer 675 839 lignes."""
+    inventaire = {
+        "sen": ["senmat", "sennomuse"],                  # utile
+        "activite_participant": ["senmat", "actid"],     # refusée
+        "activite_secrete": ["senmat", "presence"],      # ni l'un ni l'autre
+        "dpt": ["dptnum", "dptlib"],                     # ne nomme personne
+    }
+
+    assert tables_nominatives_non_declarees(inventaire) == ["activite_secrete"]
+
+
+def test_la_colonne_nominative_est_celle_du_jeu():
+    """Si le Sénat renommait sa clé de personne, le contrôle deviendrait muet
+    sans rien signaler — d'où une constante, lisible, plutôt qu'un littéral."""
+    assert COLONNE_NOMINATIVE == "senmat"
+
+
+def test_l_inventaire_ne_lit_aucune_ligne(tmp_path):
+    """Inventorier 93 tables et 58 Mo ne doit pas coûter leur contenu."""
+    chemin = _dump(tmp_path, {
+        "sen": (["senmat", "sennomuse"], [["04033B", "Retailleau"]]),
+        "activite_participant": (["senmat", "typactparcod"], [["04033B", "PRESENT"]]),
+    })
+
+    colonnes = colonnes_des_tables(chemin)
+
+    assert colonnes == {"sen": ["senmat", "sennomuse"],
+                        "activite_participant": ["senmat", "typactparcod"]}
