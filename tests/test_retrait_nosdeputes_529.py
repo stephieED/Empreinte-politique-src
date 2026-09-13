@@ -96,6 +96,14 @@ OCCURRENCES_ADMISES = {
         "mention d'attribution ODbL qui reste due aux 475 profils et aux 511 "
         "interventions publiées qui en dérivent encore"
     ),
+    # (d) retrait du marqueur — le lot qui fait sortir la source du corpus (#890)
+    "purge_marqueur_regards_citoyens.py": (
+        "TYPES_RETIRES et CLE_JOURNAL_BRUT : pour retirer un marqueur il faut "
+        "le nommer. C'est le seul module dont l'occurrence est destinée à "
+        "disparaître avec le corpus qu'elle vise — quand les 21 profils que "
+        "#885 couvre auront quitté Regards Citoyens, ce module n'aura plus rien "
+        "à retirer"
+    ),
     # (b) message destiné à un lecteur, au passé
     "group_profile.py": "meta.warnings publié : nomme la source d'avant #527",
     "group_roster.py": "refus de chambre : nomme la panne qui a motivé #528",
