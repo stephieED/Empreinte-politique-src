@@ -44,6 +44,7 @@ from __future__ import annotations
 from typing import Any, Optional
 
 from licences import MOTIFS_URL_REGARDS_CITOYENS
+from senat_opendata import periodes_se_recouvrent
 
 #: Les types de source qui **prétendent** venir de Regards Citoyens. Une entrée
 #: de ce type dont l'URL n'en vient pas est une provenance fausse.
@@ -91,10 +92,22 @@ def mandats_electifs_remplaces(
     Rend la liste sans rien retirer : ce retrait attend la publication, et une
     fonction qui retire ce qui n'a pas encore de remplaçant produit un trou.
 
-    Le critère est l'absence de `categorie_source` — « personne n'a établi cette
-    catégorie » (#718) — **et** la présence d'au moins un mandat de la même
-    chambre qui, lui, est estampillé. Sans remplaçant, rien n'est proposé : c'est
-    ce qui empêche le retrait de s'exécuter trop tôt.
+    Trois conditions, et la troisième a été ajoutée après coup parce qu'elle
+    manquait :
+
+      - l'absence de `categorie_source` — « personne n'a établi cette
+        catégorie » (#718) ;
+      - la présence d'au moins un mandat **estampillé de la chambre
+        remplaçante**, sans quoi rien n'est proposé — c'est ce qui empêche le
+        retrait de s'exécuter avant la publication ;
+      - **le recouvrement de période avec l'un de ces remplaçants.**
+
+    Sans la troisième, la fonction proposait le mandat de **député** de
+    `jean-luc-melenchon` (21/06/2017 → 21/06/2022) au seul motif qu'il n'était
+    pas estampillé et qu'un mandat sénatorial existait ailleurs sur sa fiche.
+    Ses mandats de sénateur s'arrêtent en 2010 : celui de 2017 n'est remplacé
+    par rien, et le retirer aurait effacé un mandat de député. C'est aussi ce
+    qui fait que le compte est **2 et non 3**, comme #878 l'avait mesuré.
     """
     mandats = profil.get("mandats") or []
     remplacants = [m for m in mandats if isinstance(m, dict)
@@ -105,4 +118,33 @@ def mandats_electifs_remplaces(
         return []
     return [m for m in mandats if isinstance(m, dict)
             and m.get("categorie") == "mandat_electif"
-            and not m.get("categorie_source")]
+            and not m.get("categorie_source")
+            and any(periodes_se_recouvrent(m.get("debut"), m.get("fin"),
+                                           r.get("debut"), r.get("fin"))
+                    for r in remplacants)]
+
+
+def mandats_bruts_remplaces(brut: dict[str, Any]) -> list[dict[str, Any]]:
+    """Les mêmes, côté **brut** — et c'est la moitié qu'on oublie.
+
+    Le point 5 de #885 dit « aux deux couches » (#729), et la raison est
+    mécanique : `audit_collecte_vs_publie` compare le brut au pivot, seuil 0.
+    Retirer d'un seul côté produit un **déficit** qui bloque le commit — mesuré,
+    2 couples et 2 entrées, avant que ce retrait n'existe.
+
+    Le remplaçant se lit dans le bloc `mandat_senatorial` du brut lui-même, et
+    non dans le pivot : les deux couches se contrôlent l'une l'autre, et faire
+    dépendre le brut du pivot inverserait le sens de la chaîne.
+    """
+    bloc = brut.get("mandat_senatorial") or {}
+    remplacants = [m for m in (bloc.get("mandats_senatoriaux") or [])
+                   if isinstance(m, dict) and m.get("famille") == "mandat_parlementaire"]
+    if not remplacants:
+        return []
+    return [m for m in (brut.get("mandats") or [])
+            if isinstance(m, dict)
+            and m.get("categorie") == "mandat_electif"
+            and not m.get("categorie_source")
+            and any(periodes_se_recouvrent(m.get("debut"), m.get("fin"),
+                                           r.get("debut"), r.get("fin"))
+                    for r in remplacants)]

@@ -29,6 +29,21 @@ rougir la suite ici, au lieu de survivre dans la doc.
 
 ## Générer des données
 
+### Collecter les appartenances sénatoriales (#885)
+
+```bash
+python3 src/collecte_senat.py --export .cache/senat/export_sens.sql          # simulation
+python3 src/collecte_senat.py --export .cache/senat/export_sens.sql --apply  # écrit le brut
+```
+
+Écrit le bloc `mandat_senatorial` dans `raw_data/profiles/<slug>.json`, **pour
+les candidats déclarés seulement** — les membres de roster sont écartés et
+comptés. L'export se télécharge depuis
+`https://data.senat.fr/data/senateurs/export_sens.zip` puis se décompresse ; il
+a déjà été servi **vide** (444 octets, 0 table, 13/09/2026 à 03 h 33), et la
+commande s'arrête alors sans rien écrire.
+
+
 ### Un profil brut, un seul candidat
 
 ```bash

@@ -140,7 +140,30 @@ def _noms_de_jobs() -> list[str]:
     return re.findall(r"^  ([a-z][a-z0-9-]*):\n", corps[1], flags=re.M)
 
 
-def test_le_job_extract_senat_nexiste_plus():
+def test_le_job_extract_senat_est_revenu_sur_une_autre_source():
+    """**Gel retourné par #885**, et c'est le §8 de la décision qui le prévoit :
+    « un verrou qu'on supprime le jour où il se déclenche n'a jamais rien gardé ».
+
+    `extract-senat` existe de nouveau — mais il lit `data.senat.fr`, producteur
+    Sénat sous Licence Ouverte, et **jamais** `archive.nossenateurs.fr`, dont le
+    certificat reste expiré et dont l'archive reste morte pour le produit.
+
+    Ce que ce test garde désormais : que le job ne retourne pas à l'ancienne
+    source. C'est la seule chose que #528 protégeait vraiment."""
+    contenu = WORKFLOW.read_text(encoding="utf-8")
+
+    assert "extract-senat:" in contenu
+    assert "data.senat.fr" in contenu
+    # Le critère porte sur une URL **appelée**, pas sur le mot : le workflow
+    # garde une ligne de commentaire qui explique le coût évité par #528, et
+    # l'effacer perdrait la trace de la décision. Ce qui ne doit pas revenir,
+    # c'est une requête.
+    appels = [ligne for ligne in contenu.splitlines()
+              if "nossenateurs" in ligne and not ligne.lstrip().startswith("#")]
+    assert not appels, appels
+
+
+def _ancien_test_le_job_extract_senat_nexiste_plus():
     jobs = _noms_de_jobs()
     assert "extract-senat" not in jobs, (
         "`extract-senat` est de retour dans generate-data.yml. Ce job tournait, "
@@ -163,7 +186,21 @@ def test_aucun_needs_ne_reference_le_job_retire():
     assert not orphelins, f"`needs:` pointant sur des jobs inexistants : {sorted(set(orphelins))}"
 
 
-def test_le_workflow_ne_lance_plus_de_collecte_senatoriale():
+def test_le_workflow_ne_collecte_le_senat_que_pour_ses_appartenances():
+    """**Gel retourné par #885.** Le Sénat rentre pour ses appartenances, pas
+    pour son activité : son jeu ne porte ni scrutins ni comptes rendus, et la
+    condition 2 du §7 de #528 reste **déclarée non remplie**.
+
+    Ce que ce test garde : que le workflow n'appelle pas `--source senat`, qui
+    déclencherait la collecte d'activité de l'ancien chemin — celle que #528 a
+    fermée et que #885 ne rouvre pas."""
+    contenu = WORKFLOW.read_text(encoding="utf-8")
+
+    assert "--source senat" not in contenu
+    assert "collecte_senat.py" in contenu
+
+
+def _ancien_test_le_workflow_ne_lance_plus_de_collecte_senatoriale():
     lignes = [
         ligne for ligne in _workflow().splitlines()
         if not ligne.lstrip().startswith("#")

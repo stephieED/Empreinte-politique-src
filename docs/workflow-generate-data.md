@@ -729,3 +729,33 @@ référentielle : une perte peut être légitime, une référence orpheline non.
 
 Le commit ne part que si `check_quality_gate.py` sort en 0, et le push suit la
 §6.
+
+
+### `extract-senat` — les appartenances sénatoriales (#885)
+
+**Ce qu'il fait.** Télécharge `export_sens.zip` depuis `data.senat.fr`, le
+décompresse, et écrit le bloc `mandat_senatorial` dans les profils bruts des
+**candidats déclarés appariés** — 2 profils, 133 appartenances au 13/09/2026.
+
+**Ce qu'il consomme.** `raw_data/correspondance_acteurs_an.json`, dont le champ
+`identifiants.senat` porte le matricule ; `pivot_data/profiles/` pour lire la
+provenance, seule couche qui l'ait (#630).
+
+**Ce qu'il produit.** L'artifact `raw-profiles-senat`, **scopé au manifeste**
+(#450) : uploader `raw_data/profiles/` entier réinjecterait la baseline
+committée du checkout. Consommé par `merge-and-pivot` dans `_artifacts/senat`,
+répertoire que #528 avait retiré de `merge_raw_dirs` et que ce lot rétablit.
+
+**Cache.** Clé au **jour** (`public-data-cache-senat-<date>`), là où ParlTrack
+se contente de la semaine : le Sénat régénère son export chaque nuit.
+
+**Ses refus.** `continue-on-error` comme `extract-parltrack` — une source tierce
+indisponible ne coûte pas le run, et la fusion additive garde ce que le run
+précédent a publié. Un export de moins d'1 Mo **échoue le step** : l'archive a
+déjà été servie vide, 444 octets et 0 table le 13/09/2026 à 03 h 33, avec un
+HTTP 200 et un `Content-Type: application/zip`.
+
+**Ce qu'il ne collecte pas.** L'activité en séance — le jeu ne porte ni
+scrutins ni comptes rendus (condition 2 du §7 de #528, **déclarée non
+remplie**) — et les trois tables de présence individuelle, refusées à l'entrée
+de `senat_opendata` (§2 règle 3).

@@ -160,3 +160,57 @@ def test_seuls_les_mandats_electifs_sont_concernes():
     ]}
 
     assert mandats_electifs_remplaces(profil) == []
+
+
+# ---------------------------------------------------------------------------
+# La moitié qu'on oublie : le brut
+# ---------------------------------------------------------------------------
+
+def test_le_retrait_au_brut_lit_le_bloc_senatorial_du_brut():
+    """Le point 5 dit « aux deux couches » (#729), et la raison est mécanique :
+    `audit_collecte_vs_publie` compare le brut au pivot, seuil 0. Retirer d'un
+    seul côté produit un déficit qui **bloque le commit** — mesuré, 2 couples et
+    2 entrées, avant que ce retrait n'existe.
+
+    Le remplaçant se lit dans le brut lui-même : faire dépendre le brut du pivot
+    inverserait le sens de la chaîne."""
+    from retrait_heritage_senat import mandats_bruts_remplaces
+
+    brut = {
+        "mandats": [_mandat(), _mandat(categorie="commission")],
+        "mandat_senatorial": {"mandats_senatoriaux": [
+            {"famille": "mandat_parlementaire", "debut": "2004-10-01", "fin": "2014-09-30"},
+        ]},
+    }
+
+    proposes = mandats_bruts_remplaces(brut)
+
+    assert len(proposes) == 1
+    assert proposes[0]["categorie"] == "mandat_electif"
+
+
+def test_sans_bloc_senatorial_le_brut_ne_perd_rien():
+    """Même garde qu'au pivot : pas de remplaçant, pas de retrait."""
+    from retrait_heritage_senat import mandats_bruts_remplaces
+
+    assert mandats_bruts_remplaces({"mandats": [_mandat()]}) == []
+    assert mandats_bruts_remplaces({"mandats": [_mandat()],
+                                    "mandat_senatorial": {"mandats_senatoriaux": []}}) == []
+
+
+def test_un_mandat_de_depute_n_est_pas_remplace_par_un_mandat_de_senateur():
+    """Le cas réel : `jean-luc-melenchon` publie un mandat de député
+    21/06/2017 → 21/06/2022, non estampillé. Ses mandats de sénateur s'arrêtent
+    en 2010. Sans la condition de recouvrement, il était proposé au retrait — et
+    l'appliquer aurait effacé un mandat de député.
+
+    C'est ce qui fait que le compte est **2 et non 3** (#878)."""
+    profil = {"mandats": [
+        {"categorie": "mandat_electif", "label": "Mandat parlementaire (LFI)",
+         "debut": "2017-06-21", "fin": "2022-06-21"},
+        {"categorie": "mandat_electif", "label": "Mandat de sénateur",
+         "debut": "2004-10-01", "fin": "2010-01-07",
+         "categorie_source": "senat", "chambre": "Senat"},
+    ]}
+
+    assert mandats_electifs_remplaces(profil) == []

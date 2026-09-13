@@ -84,6 +84,10 @@ INVENTAIRE_STEPS = {
     ("extract-an", 1): True,   # cache dossiers : produit aussi
     ("extract-ue-officiel", 0): True,
     ("extract-parltrack", 0): True,
+    # #885 : l'export du Sénat est régénéré chaque nuit, d'où une clé au JOUR
+    # là où ParlTrack se contente de la semaine. Producteur-écrivain : le job
+    # télécharge et remplit son cache.
+    ("extract-senat", 0): True,
     ("extract-amendements-an", 0): True,
     # #505 : le job roster ne produit ni questions/débats (--skip-interventions)
     # ni dossiers (--skip-dossiers-legislatifs). Restauration seule sur les deux.

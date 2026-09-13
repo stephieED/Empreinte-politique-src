@@ -425,7 +425,8 @@ RELATIONS: tuple[Relation, ...] = (
     ),
     Relation(
         champ_pivot="mandats",
-        sources=(("mandats",), ("mandat_europeen", "mandats_europeens")),
+        sources=(("mandats",), ("mandat_europeen", "mandats_europeens"),
+                 ("mandat_senatorial", "mandats_senatoriaux")),
         justification=(
             "**Enrichissement attribué.** Le pivot porte 278 mandats de plus "
             "que `mandats[]` du brut, et ce n'est pas une marge : "
@@ -436,7 +437,13 @@ RELATIONS: tuple[Relation, ...] = (
             "exception (40 432 = 40 154 + 278). D'où une somme, et un seuil qui "
             "reste 0 — jamais une tolérance. **Moins la réduction de #879** : le "
             "portail européen publie certaines appartenances deux fois, et la "
-            "normalisation n'en publie qu'une."
+            "normalisation n'en publie qu'une. **Plus le bloc sénatorial depuis "
+            "#885** : `mandat_senatorial.mandats_senatoriaux`, versé dans "
+            "`mandats[]` par `generate_all_profiles` exactement comme l'européen. "
+            "Le déclarer ici est ce qui distingue un apport d'une perte — sans "
+            "cette ligne, la garde lirait un déficit de la taille du bloc et "
+            "bloquerait le commit, ce qui est précisément ce qu'elle a fait au "
+            "run `34712936188` pour la raison inverse (#888)."
         ),
         reduction=REDUCTION_DOUBLONS_EUROPEENS,
     ),

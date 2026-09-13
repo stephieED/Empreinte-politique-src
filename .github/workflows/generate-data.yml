@@ -2455,8 +2455,99 @@ jobs:
   # arrête encore ce job. La résilience aux sources partiellement en échec est
   # déléguée à la quality gate (check_quality_gate.py) plutôt qu'à needs:.
   # ──────────────────────────────────────────────────────────────────────────
+  # ───────────────────────────────────────────────────────────────────────────
+  # #885 — LES APPARTENANCES SÉNATORIALES.
+  #
+  # Le Sénat rentre dans le périmètre pour ses appartenances, PAS pour son
+  # activité : son jeu ne porte ni scrutins ni comptes rendus, et la condition 2
+  # du §7 de #528 reste déclarée non remplie, pas contournée.
+  #
+  # Le job ne collecte QUE les candidats déclarés (`normalize_senat.POPULATIONS_PUBLIEES`).
+  # Mesuré : 2 profils et 133 appartenances, contre 36 profils et 1 794 entrées
+  # sans ce filtre — dont 1 674 pour des membres de roster que seule
+  # `mandats_agreges` lirait, un agrégat que #853 conteste déjà.
+  #
+  # `continue-on-error` comme extract-parltrack : une source tierce indisponible
+  # ne doit pas coûter le run entier. Le corpus garde alors ce que la fusion
+  # additive a publié au run précédent.
+  extract-senat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: ./.github/actions/bootstrap-extraction
+
+      - name: Jour courant (clé de cache Sénat)
+        id: jour
+        run: echo "jour=$(date +%F)" >> "$GITHUB_OUTPUT"
+
+      # L'export est régénéré chaque nuit par le Sénat : la clé est le JOUR, là
+      # où ParlTrack se contente de la semaine.
+      - uses: actions/cache@v5
+        if: ${{ !inputs.cold_start }}
+        with:
+          path: .cache/senat
+          key: public-data-cache-senat-${{ steps.jour.outputs.jour }}
+          restore-keys: |
+            public-data-cache-senat-
+
+      - name: Nettoyage cache Sénat (cold_start uniquement)
+        if: ${{ inputs.cold_start }}
+        run: rm -rf .cache/senat
+
+      # L'ARCHIVE A DÉJÀ ÉTÉ SERVIE VIDE : 444 octets, 0 table, le 13/09/2026 à
+      # 03 h 33, avec un HTTP 200 et un Content-Type application/zip. Republiée
+      # saine à 12 h 42. Rien qu'un code de retour ne signale, d'où le contrôle
+      # de taille ici ET `ExportSenatVide` dans `senat_opendata` : un collecteur
+      # qui aurait tourné entre les deux aurait vidé les fiches en silence.
+      - name: Téléchargement de l'export Sénat
+        run: |
+          mkdir -p .cache/senat
+          if [[ -s .cache/senat/export_sens.sql ]]; then
+            echo "Export déjà en cache, téléchargement sauté."
+            exit 0
+          fi
+          curl -sS -L --max-time 300 -o .cache/senat/export_sens.zip \
+            https://data.senat.fr/data/senateurs/export_sens.zip
+          TAILLE=$(stat -c%s .cache/senat/export_sens.zip)
+          echo "export_sens.zip : $TAILLE octets"
+          if [[ "$TAILLE" -lt 1000000 ]]; then
+            echo "::error::Export Sénat vide ou tronqué ($TAILLE octets, attendu ~8 Mo)."
+            echo "::error::L'archive a déjà été servie vide le 13/09/2026 à 03h33 (444 octets, HTTP 200)."
+            rm -f .cache/senat/export_sens.zip
+            exit 1
+          fi
+          unzip -o -q .cache/senat/export_sens.zip -d .cache/senat/
+
+      - name: Collecte des appartenances sénatoriales
+        run: |
+          python3 src/collecte_senat.py \
+            --export .cache/senat/export_sens.sql \
+            --manifest-out _publish/manifeste-senat.txt \
+            --apply
+
+      # #450 — UN ARTIFACT = LA CONTRIBUTION D'UN JOB. `raw_data/profiles/`
+      # contient la baseline committée récupérée par le checkout : l'uploader
+      # entier réinjecterait une copie périmée de tous les autres profils, que
+      # `merge_raw_dirs` fusionnerait additivement avec les versions fraîches.
+      - uses: ./.github/actions/publish-written-profiles
+        if: always()
+        with:
+          manifest: _publish/manifeste-senat.txt
+
+      - name: Upload artifact profils bruts (Sénat)
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: raw-profiles-senat
+          path: _publish/profiles/
+          if-no-files-found: warn
+
   merge-and-pivot:
-    needs: [extract-an, extract-ue-officiel, extract-parltrack, extract-roster-groupes]
+    needs: [extract-an, extract-ue-officiel, extract-parltrack, extract-roster-groupes, extract-senat]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     # 60 → 120 (#827). Le job tournait en 28 min ; la PREMIÈRE interrogation du
@@ -2613,6 +2704,18 @@ jobs:
           restore-keys: |
             public-data-cache-europarl-
 
+      # #885 — optionnel comme les autres : si extract-senat a échoué, le corpus
+      # garde ce que la fusion additive a publié au run précédent, et rien ne
+      # disparaît. Vers `_artifacts/senat` et JAMAIS vers `raw_data/profiles` :
+      # un artifact qui atterrit directement dans l'arbre court-circuite
+      # `merge_raw_dirs` et écrase les contributions des autres jobs (#450).
+      - name: Download artifact profils bruts Sénat (optionnel)
+        uses: actions/download-artifact@v7
+        continue-on-error: true
+        with:
+          name: raw-profiles-senat
+          path: _artifacts/senat
+
       - name: Download artifact ParlTrack (optionnel)
         uses: actions/download-artifact@v7
         continue-on-error: true
@@ -2657,10 +2760,13 @@ jobs:
       # touche que les caches de téléchargement des runners d'extraction. Un
       # profil qu'aucun job d'extraction ne couvre survit de toute façon par le
       # checkout de ce job — c'était déjà le cas avant #450.
-      # #528 : plus de `_artifacts/senat` — le job qui le produisait a été
-      # retiré avec le Sénat. Un répertoire absent est un no-op pour
-      # `merge_raw_dirs`, mais le laisser listé aurait fait croire à une source
-      # muette là où il n'y a plus de source du tout.
+      # #885 : `_artifacts/senat` EST DE RETOUR, et son producteur avec —
+      # `extract-senat`, qui lit `data.senat.fr` et non l'archive NosSénateurs.
+      # #528 l'avait retiré en écrivant qu'il ne fallait pas « faire croire à une
+      # source muette là où il n'y a plus de source du tout » ; il y en a une, et
+      # le laisser dehors ferait maintenant l'inverse — taire une source qui
+      # parle. Un répertoire absent reste un no-op pour `merge_raw_dirs`, donc
+      # un run où `extract-senat` échoue se comporte exactement comme avant.
       # LA LISTE DU JOUR (#757). Elle écrase `raw_data/candidats.json` du
       # checkout : c'est elle qu'a servi `extract-an`, et c'est donc elle que la
       # première passe pivot doit normaliser. Les deux divergeraient sinon —
@@ -2716,7 +2822,7 @@ jobs:
       - name: Fusion des profils bruts (AN + UE + roster)
         run: |
           python3 src/merge_profile.py \
-            --dirs _artifacts/an _artifacts/ue _artifacts/roster \
+            --dirs _artifacts/an _artifacts/ue _artifacts/roster _artifacts/senat \
             --out raw_data/profiles
 
       # ── Pivot + enrichissement ParlTrack ──────────────────────────────────
