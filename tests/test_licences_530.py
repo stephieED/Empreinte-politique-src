@@ -225,11 +225,27 @@ def test_la_config_des_sources_garde_regards_citoyens_en_odbl():
     assert "attribution" in bloc.lower()
 
 
-def test_la_config_des_sources_designe_l_an_comme_seule_source_francaise():
+def test_la_config_des_sources_designe_l_an_comme_seule_source_de_l_activite():
+    """AFFIRMATION RESSERRÉE LE 13/09/2026, parce qu'elle est devenue fausse.
+
+    Elle disait « Seule source française collectée », et c'était vrai tant que
+    le Sénat était hors périmètre. Depuis #885, `data.senat.fr` est collecté —
+    pour les APPARTENANCES seulement : 133 entrées sur les deux candidats
+    déclarés concernés, et aucun scrutin ni compte rendu de séance, ce jeu de
+    données n'en contenant pas.
+
+    Ce qui reste vrai, et que ce test garde : l'Assemblée est la seule source de
+    l'ACTIVITÉ parlementaire française. La distinction n'est pas cosmétique —
+    c'est elle qui empêche de lire les fiches sénatoriales comme des fiches
+    d'activité vides (§2 règle 5).
+    """
     config = _texte(CONFIG_SOURCES)
     bloc = config[config.index("id: 'assemblee-nationale-opendata'"):config.index("id: 'parltrack'")]
     assert "Licence Ouverte / Open Licence (Etalab)" in bloc
-    assert "Seule source française collectée" in bloc
+    assert "Seule source de l'activité parlementaire française" in bloc
+    assert "Seule source française collectée" not in bloc, (
+        "l'affirmation est redevenue absolue alors que le Sénat est collecté (#885)"
+    )
 
 
 def test_la_config_des_sources_garde_le_share_alike_parltrack():

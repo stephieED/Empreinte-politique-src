@@ -75,7 +75,7 @@ const SECTIONS = [
 
         <h3>Open Data de l'Assemblée nationale</h3>
         <p>
-          <strong>Seule source française collectée.</strong> L'identité et les mandats des députés,
+          <strong>Seule source de l'activité parlementaire française.</strong> L'identité et les mandats des députés,
           la composition des groupes parlementaires, les scrutins, les amendements, les dossiers
           législatifs, les questions écrites et les débats en séance (Syceron) proviennent du portail
           Open Data officiel de l'Assemblée nationale (data.assemblee-nationale.fr et
