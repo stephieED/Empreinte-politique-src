@@ -471,6 +471,10 @@ _LIST_KEYS = (
 # Leur sort, avec les mentions d'attribution ODbL, est le lot 6.
 KNOWN_SOURCE_TYPES: frozenset[str] = frozenset({
     "nosdeputes", "nossenateurs", "parltrack", "wikidata", "assemblee_nationale", "europarl",
+    # #885 : data.senat.fr, producteur Sénat, Licence Ouverte. Distinct de
+    # `nossenateurs`, qui désignait un réutilisateur tiers sous ODbL — la
+    # confusion coûterait la clause de partage à l'identique dans le mauvais sens.
+    "senat",
 })
 
 # Valeurs de chambre reconnues.
@@ -885,7 +889,7 @@ KNOWN_POSITIONS: frozenset[str] = frozenset({
 #: `_TYPE_ORGANE_TO_CATEGORIE` — ou des deux chemins qui lisent la même archive
 #: (`mandat_electif`, `groupe_politique`/`fonction_gouvernementale`).
 #: `europarl` : la catégorie vient du Parlement européen.
-KNOWN_CATEGORIE_SOURCES: frozenset[str] = frozenset({"an", "europarl"})
+KNOWN_CATEGORIE_SOURCES: frozenset[str] = frozenset({"an", "europarl", "senat"})
 
 #: #863 — la **nature de l'organe telle que la source la classe**, quand elle la
 #: classe. `categorie` répond à « comment le pivot le range » ; ce champ répond à
@@ -901,6 +905,17 @@ KNOWN_TYPES_ORGANE_SOURCE: frozenset[str] = frozenset({
     "groupe_de_travail_europeen",
     "organe_dirigeant_europeen",
     "mandat_parlementaire_europeen",
+    # #885 — les organes du Sénat. Les deux derniers n'ont **pas** de catégorie
+    # pivot propre : ils sont rangés `autre`, et c'est ici que leur nature
+    # survit au rangement.
+    "mandat_senatorial",
+    "groupe_politique_senatorial",
+    "commission_senatoriale",
+    "groupe_etudes_senatorial",
+    "groupe_amitie_senatorial",
+    "groupe_information_senatorial",
+    "groupe_liaison_senatorial",
+    "organisme_extra_parlementaire_senat",
 })
 
 KNOWN_CATEGORIES: frozenset[str] = frozenset({

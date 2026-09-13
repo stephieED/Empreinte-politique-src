@@ -72,6 +72,13 @@ from typing import Any
 #: https://data.assemblee-nationale.fr/licence-ouverte-open-licence
 LICENCE_AN = "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr"
 
+#: #885 — le Sénat publie sous **Licence Ouverte** (`fr-lo` dans l'API
+#: data.gouv), attribution seule, sans partage à l'identique. Elle est donc
+#: **plus permissive que l'ODbL** de Regards Citoyens : un profil qui cesse de
+#: porter du Regards Citoyens et gagne du Sénat sort de la clause share-alike,
+#: il n'y entre pas.
+LICENCE_SENAT = "Licence Ouverte / Open Licence (Sénat) — data.senat.fr"
+
 #: NosDéputés.fr / NosSénateurs.fr (Regards Citoyens). **Plus collectée**
 #: (#528, #529), mais toujours due aux champs déjà publiés qui en dérivent.
 #: https://opendatacommons.org/licenses/odbl/1-0/
@@ -101,6 +108,7 @@ LICENCES_SHARE_ALIKE = frozenset({LICENCE_REGARDS_CITOYENS, LICENCE_PARLTRACK})
 #: qu'on n'a pas qualifiée.
 LICENCE_PAR_TYPE_SOURCE: dict[str, str] = {
     "assemblee_nationale": LICENCE_AN,
+    "senat": LICENCE_SENAT,
     "nosdeputes": LICENCE_REGARDS_CITOYENS,
     "nossenateurs": LICENCE_REGARDS_CITOYENS,
     "europarl": LICENCE_EUROPARL,
@@ -113,6 +121,7 @@ LICENCE_PAR_TYPE_SOURCE: dict[str, str] = {
 #: scalaire que rien n'a fait bouger.
 ORDRE_LICENCES: tuple[str, ...] = (
     LICENCE_AN,
+    LICENCE_SENAT,
     LICENCE_REGARDS_CITOYENS,
     LICENCE_EUROPARL,
     LICENCE_PARLTRACK,

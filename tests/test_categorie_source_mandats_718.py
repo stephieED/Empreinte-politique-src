@@ -63,7 +63,11 @@ def _mandat(**kw):
 def test_le_vocabulaire_nomme_les_referentiels_et_rien_d_autre():
     """Il n'y a pas de valeur « héritée » : ce serait une accusation, et le
     corpus ne permet pas de la porter (#486)."""
-    assert KNOWN_CATEGORIE_SOURCES == frozenset({"an", "europarl"})
+    # #885 ajoute « senat » : data.senat.fr classe ses propres organes par ses
+    # tables de types, et c'est donc un référentiel au même titre que les deux
+    # premiers. Le gel se **retourne**, il ne se supprime pas — c'est lui qui
+    # empêche une valeur inventée d'entrer sans que personne ne l'ait voulue.
+    assert KNOWN_CATEGORIE_SOURCES == frozenset({"an", "europarl", "senat"})
 
 
 def test_la_cle_absente_est_licite():
