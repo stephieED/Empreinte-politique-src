@@ -17,9 +17,9 @@ export const sourcesConfig = [
     nom: 'NosDeputes.fr / NosSenateurs.fr',
     type: 'Source retirée — attribution toujours due',
     contenuCouvert:
-      "Champs déjà publiés qui en dérivent : mandats et identité collectés avant 2026, 511 interventions dont l'URL de source pointe encore vers nosdeputes.fr, et les mots-clés dont sont dérivés les tags thématiques.",
+      "Champs déjà publiés qui en dérivent : des mandats et des éléments d'identité collectés avant 2026. Les prises de parole et les mots-clés qui en venaient ont été retirés du corpus en septembre 2026 ; aucune donnée publiée ne pointe plus vers nosdeputes.fr.",
     cadenceMiseAJour:
-      "Plus collectée depuis août 2026 : NosSénateurs est sorti du périmètre (certificat expiré), et NosDéputés a été retiré du pipeline après une panne durable. Rien n'est plus rafraîchi depuis cette source ; rien de ce qu'elle a produit n'a été effacé.",
+      "Plus collectée depuis août 2026 : NosSénateurs est sorti du périmètre (certificat expiré), et NosDéputés a été retiré du pipeline après une panne durable. Rien n'est plus rafraîchi depuis cette source. Les prises de parole qui en venaient ont été retirées en septembre 2026, après vérification une par une contre les comptes rendus de l'Assemblée ; les mandats et l'identité collectés avant 2026 restent publiés.",
     licence: 'ODbL v1.0',
     implication:
       "Réutilisation possible, mais toute republication sous forme de jeu de données téléchargeable incluant ces champs doit être partagée sous la même licence (share-alike). L'attribution reste due tant que ces champs sont publiés.",
