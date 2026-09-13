@@ -1043,25 +1043,20 @@
   ],
   "sources": [
     {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/jerome-guedj",
-      "synchro_le": null
-    },
-    {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1567",
-      "synchro_le": "2026-09-12T15:50:31+0000"
+      "synchro_le": "2026-09-13T02:51:45+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2650",
-      "synchro_le": "2026-09-12T15:18:47+0000"
+      "synchro_le": "2026-09-13T02:19:59+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-12T16:13:46+0000",
-    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
+    "genere_le": "2026-09-13T03:19:43+0000",
+    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr",
     "nb_candidats_declares": 2,
     "nb_candidats_avec_pivot": 2,
     "warnings": []

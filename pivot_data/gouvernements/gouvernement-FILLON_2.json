@@ -137,53 +137,43 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA331481",
-      "synchro_le": "2026-09-11T12:15:11+0000"
-    },
-    {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/eric-woerth",
-      "synchro_le": null
+      "synchro_le": "2026-09-13T02:45:12+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2960",
-      "synchro_le": "2026-09-11T12:12:21+0000"
-    },
-    {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/laurent-wauquiez",
-      "synchro_le": null
+      "synchro_le": "2026-09-13T02:44:13+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267285",
-      "synchro_le": "2026-09-11T12:21:49+0000"
+      "synchro_le": "2026-09-13T02:48:51+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA368",
-      "synchro_le": "2026-09-11T08:19:26+0000"
+      "synchro_le": "2026-09-13T02:54:07+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/72776",
-      "synchro_le": "2026-09-11T08:19:29+0000"
+      "synchro_le": "2026-09-13T02:54:11+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA227089",
-      "synchro_le": "2026-09-11T12:16:02+0000"
+      "synchro_le": "2026-09-13T02:47:49+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267080",
-      "synchro_le": "2026-09-11T11:46:22+0000"
+      "synchro_le": "2026-09-13T02:23:12+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-11T12:52:24+0000",
-    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO) + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
+    "genere_le": "2026-09-13T03:23:37+0000",
+    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
     "warnings": []
   }
 }

@@ -520,22 +520,17 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2538",
-      "synchro_le": "2026-09-12T15:22:49+0000"
-    },
-    {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/laurent-wauquiez",
-      "synchro_le": null
+      "synchro_le": "2026-09-13T02:23:56+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267285",
-      "synchro_le": "2026-09-12T15:51:54+0000"
+      "synchro_le": "2026-09-13T02:48:51+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-12T16:13:46+0000",
+    "genere_le": "2026-09-13T03:19:43+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "nb_candidats_declares": 2,
     "nb_candidats_avec_pivot": 2,

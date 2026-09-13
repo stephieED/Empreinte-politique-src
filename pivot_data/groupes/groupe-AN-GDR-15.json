@@ -73621,103 +73621,98 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267306",
-      "synchro_le": "2026-09-12T15:44:43+0000"
+      "synchro_le": "2026-09-13T02:45:10+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335612",
-      "synchro_le": "2026-09-12T15:50:37+0000"
+      "synchro_le": "2026-09-13T02:52:06+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA441",
-      "synchro_le": "2026-09-12T15:44:57+0000"
+      "synchro_le": "2026-09-13T02:45:48+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA610634",
-      "synchro_le": "2026-09-12T15:45:54+0000"
-    },
-    {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/jean-philippe-nilor",
-      "synchro_le": null
+      "synchro_le": "2026-09-13T02:46:01+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA610654",
-      "synchro_le": "2026-09-12T15:50:55+0000"
+      "synchro_le": "2026-09-13T02:53:45+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA610667",
-      "synchro_le": "2026-09-12T15:45:38+0000"
+      "synchro_le": "2026-09-13T02:46:09+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA689",
-      "synchro_le": "2026-09-12T15:44:45+0000"
+      "synchro_le": "2026-09-13T02:45:12+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718720",
-      "synchro_le": "2026-09-12T15:50:39+0000"
+      "synchro_le": "2026-09-13T02:52:07+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718926",
-      "synchro_le": "2026-09-12T15:51:56+0000"
+      "synchro_le": "2026-09-13T02:48:53+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720546",
-      "synchro_le": "2026-09-12T15:50:58+0000"
+      "synchro_le": "2026-09-13T02:52:15+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720692",
-      "synchro_le": "2026-09-12T15:51:26+0000"
+      "synchro_le": "2026-09-13T02:54:12+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721012",
-      "synchro_le": "2026-09-12T15:51:59+0000"
+      "synchro_le": "2026-09-13T02:48:56+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721118",
-      "synchro_le": "2026-09-12T15:45:53+0000"
+      "synchro_le": "2026-09-13T02:46:00+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721270",
-      "synchro_le": "2026-09-12T15:44:53+0000"
+      "synchro_le": "2026-09-13T02:45:52+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721896",
-      "synchro_le": "2026-09-12T15:44:43+0000"
+      "synchro_le": "2026-09-13T02:45:10+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722110",
-      "synchro_le": "2026-09-12T15:50:37+0000"
+      "synchro_le": "2026-09-13T02:52:06+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722202",
-      "synchro_le": "2026-09-12T15:50:57+0000"
+      "synchro_le": "2026-09-13T02:52:12+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA774962",
-      "synchro_le": "2026-09-12T15:51:56+0000"
+      "synchro_le": "2026-09-13T02:48:53+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-12T16:15:13+0000",
-    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
+    "genere_le": "2026-09-13T03:21:09+0000",
+    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr",
     "profils_sources": [
       "andre-chassaigne",
       "jean-paul-lecoq",

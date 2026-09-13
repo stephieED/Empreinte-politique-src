@@ -783,24 +783,19 @@
   ],
   "sources": [
     {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/marine-le-pen",
-      "synchro_le": null
-    },
-    {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720614",
-      "synchro_le": "2026-09-12T15:51:10+0000"
+      "synchro_le": "2026-09-13T02:48:06+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/28210",
-      "synchro_le": "2026-09-12T15:51:23+0000"
+      "synchro_le": "2026-09-13T02:48:20+0000"
     },
     {
       "type": "parltrack",
       "url": "https://parltrack.org/dumps",
-      "synchro_le": "2026-09-12T15:59:24"
+      "synchro_le": "2026-09-13T03:05:22"
     },
     {
       "type": "europarl",
@@ -810,8 +805,8 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-12T16:13:46+0000",
-    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO) + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu) + ODbL v1.0 (ParlTrack — https://parltrack.org/dumps)",
+    "genere_le": "2026-09-13T03:19:43+0000",
+    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu) + ODbL v1.0 (ParlTrack — https://parltrack.org/dumps)",
     "nb_candidats_declares": 2,
     "nb_candidats_avec_pivot": 2,
     "warnings": []

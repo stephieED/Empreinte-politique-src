@@ -827,33 +827,23 @@
     {
       "type": "assemblee_nationale",
       "url": "https://fr.wikipedia.org/wiki/Karim_Bouamrane",
-      "synchro_le": "2026-09-08T21:24:15+0000"
-    },
-    {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/philippe-brun",
-      "synchro_le": null
+      "synchro_le": "2026-09-13T02:27:50+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793624",
-      "synchro_le": "2026-09-08T21:44:13+0000"
-    },
-    {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/olivier-faure",
-      "synchro_le": null
+      "synchro_le": "2026-09-13T02:45:06+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA609332",
-      "synchro_le": "2026-09-08T21:46:53+0000"
+      "synchro_le": "2026-09-13T02:53:39+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-08T22:08:24+0000",
-    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
+    "genere_le": "2026-09-13T03:19:43+0000",
+    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr",
     "nb_candidats_declares": 3,
     "nb_candidats_avec_pivot": 3,
     "warnings": []

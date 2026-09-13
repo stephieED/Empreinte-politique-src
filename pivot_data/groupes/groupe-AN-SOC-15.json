@@ -90382,275 +90382,190 @@
   },
   "sources": [
     {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/alain-david",
-      "synchro_le": null
-    },
-    {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1008",
-      "synchro_le": "2026-09-12T15:50:08+0000"
+      "synchro_le": "2026-09-13T02:51:40+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1198",
-      "synchro_le": "2026-09-12T15:51:57+0000"
+      "synchro_le": "2026-09-13T02:48:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1592",
-      "synchro_le": "2026-09-12T15:51:27+0000"
+      "synchro_le": "2026-09-13T02:54:12+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1809",
-      "synchro_le": "2026-09-12T15:44:56+0000"
+      "synchro_le": "2026-09-13T02:45:47+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267233",
-      "synchro_le": "2026-09-12T15:45:53+0000"
+      "synchro_le": "2026-09-13T02:46:00+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA332614",
-      "synchro_le": "2026-09-12T15:45:05+0000"
-    },
-    {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/guillaume-garot",
-      "synchro_le": null
+      "synchro_le": "2026-09-13T02:46:01+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA333285",
-      "synchro_le": "2026-09-12T15:51:08+0000"
+      "synchro_le": "2026-09-13T02:48:05+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA333818",
-      "synchro_le": "2026-09-12T15:44:44+0000"
-    },
-    {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/marietta-karamanli",
-      "synchro_le": null
+      "synchro_le": "2026-09-13T02:45:11+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335054",
-      "synchro_le": "2026-09-12T15:50:47+0000"
+      "synchro_le": "2026-09-13T02:53:39+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335532",
-      "synchro_le": "2026-09-12T15:50:38+0000"
+      "synchro_le": "2026-09-13T02:52:07+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA337483",
-      "synchro_le": "2026-09-12T15:50:58+0000"
-    },
-    {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/herve-saulignac",
-      "synchro_le": null
+      "synchro_le": "2026-09-13T02:52:15+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA340343",
-      "synchro_le": "2026-09-12T15:44:08+0000"
+      "synchro_le": "2026-09-13T02:44:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA340357",
-      "synchro_le": "2026-09-12T15:51:57+0000"
-    },
-    {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/claudia-rouaux",
-      "synchro_le": null
+      "synchro_le": "2026-09-13T02:48:56+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA342196",
-      "synchro_le": "2026-09-12T15:44:41+0000"
-    },
-    {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/marie-noelle-battistel",
-      "synchro_le": null
+      "synchro_le": "2026-09-13T02:45:03+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA342415",
-      "synchro_le": "2026-09-12T15:44:11+0000"
+      "synchro_le": "2026-09-13T02:44:56+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA405480",
-      "synchro_le": "2026-09-12T15:51:27+0000"
+      "synchro_le": "2026-09-13T02:54:13+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA429893",
-      "synchro_le": "2026-09-12T15:44:57+0000"
+      "synchro_le": "2026-09-13T02:45:47+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA508",
-      "synchro_le": "2026-09-12T15:45:53+0000"
+      "synchro_le": "2026-09-13T02:46:01+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605069",
-      "synchro_le": "2026-09-12T15:44:44+0000"
-    },
-    {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/dominique-potier",
-      "synchro_le": null
+      "synchro_le": "2026-09-13T02:45:11+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607553",
-      "synchro_le": "2026-09-12T15:50:09+0000"
+      "synchro_le": "2026-09-13T02:51:40+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA608011",
-      "synchro_le": "2026-09-12T15:50:38+0000"
-    },
-    {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/christine-pires-beaune",
-      "synchro_le": null
+      "synchro_le": "2026-09-13T02:52:07+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA608172",
-      "synchro_le": "2026-09-12T15:50:31+0000"
-    },
-    {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/cecile-untermaier",
-      "synchro_le": null
+      "synchro_le": "2026-09-13T02:51:46+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA608695",
-      "synchro_le": "2026-09-12T15:51:09+0000"
+      "synchro_le": "2026-09-13T02:48:05+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA608741",
-      "synchro_le": "2026-09-12T15:50:58+0000"
-    },
-    {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/olivier-faure",
-      "synchro_le": null
+      "synchro_le": "2026-09-13T02:52:15+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA609332",
-      "synchro_le": "2026-09-12T15:50:48+0000"
-    },
-    {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/valerie-rabault",
-      "synchro_le": null
+      "synchro_le": "2026-09-13T02:53:39+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA609590",
-      "synchro_le": "2026-09-12T15:44:08+0000"
+      "synchro_le": "2026-09-13T02:44:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA610681",
-      "synchro_le": "2026-09-12T15:51:59+0000"
-    },
-    {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/joel-aviragnet",
-      "synchro_le": null
+      "synchro_le": "2026-09-13T02:48:56+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA642764",
-      "synchro_le": "2026-09-12T15:44:43+0000"
+      "synchro_le": "2026-09-13T02:45:05+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643145",
-      "synchro_le": "2026-09-12T15:51:28+0000"
-    },
-    {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/philippe-naillet",
-      "synchro_le": null
+      "synchro_le": "2026-09-13T02:54:13+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643157",
-      "synchro_le": "2026-09-12T15:44:06+0000"
-    },
-    {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/chantal-jourdan",
-      "synchro_le": null
+      "synchro_le": "2026-09-13T02:44:33+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643192",
-      "synchro_le": "2026-09-12T15:50:09+0000"
-    },
-    {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/boris-vallaud",
-      "synchro_le": null
+      "synchro_le": "2026-09-13T02:51:41+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719930",
-      "synchro_le": "2026-09-12T15:50:32+0000"
+      "synchro_le": "2026-09-13T02:51:46+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720988",
-      "synchro_le": "2026-09-12T15:44:57+0000"
-    },
-    {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/gerard-leseul",
-      "synchro_le": null
+      "synchro_le": "2026-09-13T02:45:48+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA774958",
-      "synchro_le": "2026-09-12T15:51:09+0000"
-    },
-    {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/isabelle-santiago",
-      "synchro_le": null
+      "synchro_le": "2026-09-13T02:48:06+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA774960",
-      "synchro_le": "2026-09-12T15:50:48+0000"
+      "synchro_le": "2026-09-13T02:53:39+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA783468",
-      "synchro_le": "2026-09-12T15:45:54+0000"
+      "synchro_le": "2026-09-13T02:46:01+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-12T16:15:11+0000",
-    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
+    "genere_le": "2026-09-13T03:21:07+0000",
+    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr",
     "profils_sources": [
       "alain-david",
       "laurence-dumont",

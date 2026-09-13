@@ -137,73 +137,58 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA337633",
-      "synchro_le": "2026-09-11T12:18:28+0000"
+      "synchro_le": "2026-09-13T02:54:13+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA331481",
-      "synchro_le": "2026-09-09T17:09:13+0000"
+      "synchro_le": "2026-09-13T02:45:12+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605131",
-      "synchro_le": "2026-09-11T12:15:11+0000"
-    },
-    {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/edouard-philippe",
-      "synchro_le": null
+      "synchro_le": "2026-09-13T02:45:12+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA345619",
-      "synchro_le": "2026-09-11T11:43:58+0000"
-    },
-    {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/elisabeth-borne",
-      "synchro_le": null
+      "synchro_le": "2026-09-13T02:21:13+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717161",
-      "synchro_le": "2026-09-11T12:13:52+0000"
-    },
-    {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/gerald-darmanin",
-      "synchro_le": null
+      "synchro_le": "2026-09-13T02:44:52+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607846",
-      "synchro_le": "2026-09-11T12:13:30+0000"
+      "synchro_le": "2026-09-13T02:44:46+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717151",
-      "synchro_le": "2026-09-11T12:15:19+0000"
+      "synchro_le": "2026-09-13T02:45:20+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/4335",
-      "synchro_le": "2026-09-11T12:15:56+0000"
+      "synchro_le": "2026-09-13T02:45:51+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717167",
-      "synchro_le": "2026-09-11T12:15:52+0000"
+      "synchro_le": "2026-09-13T02:46:11+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA606171",
-      "synchro_le": "2026-09-11T12:22:04+0000"
+      "synchro_le": "2026-09-13T02:52:15+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-11T12:52:24+0000",
-    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO) + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
+    "genere_le": "2026-09-13T03:23:37+0000",
+    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
     "warnings": []
   }
 }
