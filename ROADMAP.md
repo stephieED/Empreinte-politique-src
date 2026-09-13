@@ -484,6 +484,13 @@ Convention d'écriture : `AGENTS.md` §8.
 
 ## Ideas not yet scheduled
 
+- **Notifications de suivi (candidats/groupes)** — idée identifiée, **pas priorisée**.
+  Piste retenue : un **flux RSS/Atom par candidat ou par groupe**, généré en sortie du
+  pivot à partir du **diff entre deux régénérations** — zéro compte, zéro donnée
+  personnelle, zéro modération de contenu tiers. Diffusion croisée envisagée sur LinkedIn
+  (manuel d'abord) et X (API payante depuis 2026) ; **pas de subreddit propre**, pour une
+  raison de responsabilité. Les trois refus et leurs raisons sont instruits et ne se
+  re-tranchent pas : `docs/decisions/notifications-de-suivi.md`.
 - Câbler `src/an_roster.py --divergence` dans `generate-data.yml` (prévu par #526 §6) :
   demande d'ajouter `.cache/acteurs_historique_an` au cache de `prepare-roster-matrix`,
   qui n'en a aucun et retélécharge donc 13,6 Mo par run depuis la bascule (#527).
