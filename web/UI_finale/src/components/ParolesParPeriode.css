@@ -367,3 +367,57 @@
     margin-left: 8px;
   }
 }
+
+/* ── LA QUALITÉ : à quel titre la personne a parlé (#328, 13/09/2026) ───────
+ *
+ * Le vocabulaire est celui des puces d'institution d'« En bref » — un pilulier,
+ * la teinte de l'institution allumée, l'encre sourde éteinte. La fiche ne gagne
+ * pas un second jeu de commandes : elle réutilise celui qu'elle a déjà.
+ *
+ * Le sélecteur ne s'affiche que si la fiche porte plusieurs qualités, et sur 17
+ * fiches mesurées, 13 n'en ont qu'une. */
+.pp-qualites {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 14px;
+}
+
+.pp-qualite {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 7px 13px;
+  min-height: 40px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color .12s, background .12s, border-color .12s;
+}
+
+.pp-qualite i {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: currentColor;
+  flex: none;
+}
+
+.pp-qualite span {
+  font-weight: 500;
+  opacity: .75;
+  font-variant-numeric: tabular-nums;
+}
+
+.pp-qualite:hover { border-color: var(--ink-soft); }
+.pp-qualite:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+.pp-qualite[aria-pressed='true'] { color: #fff; border-color: transparent; }
+.pp-qualite--an[aria-pressed='true'] { background: var(--parl); }
+.pp-qualite--gouv[aria-pressed='true'] { background: var(--gouv); }
+.pp-qualite--pe[aria-pressed='true'] { background: var(--pe); }

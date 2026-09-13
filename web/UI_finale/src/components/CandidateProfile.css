@@ -701,7 +701,13 @@
 .cp-section-critere {
   font-size: 13px;
   color: #6e6a78;
-  max-width: 78ch;
+  /* 78ch bridait le critère à 619 px quand la colonne en offre 1 020, et
+     coupait en deux la phrase la plus longue de la fiche — « Ses interventions
+     par période politique, puis par nature et par sujet. Le verbatim est celui
+     du compte rendu. », 109 signes. Un critère est une ligne de service, pas du
+     texte courant : il a le droit d'aller au bout. Mesuré le 13/09/2026 — il
+     lui faut 834 px, la colonne en a 1 020. */
+  max-width: 108ch;
   margin-top: 8px;
   line-height: 1.55;
 }

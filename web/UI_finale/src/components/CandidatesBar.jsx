@@ -66,13 +66,13 @@ export default function CandidatesBar() {
                 role="listitem"
                 aria-pressed={active}
                 className={`cb-chip ${active ? 'active' : ''}${
-                  candidate.mandatAnOuGouvernement ? '' : ' cb-chip--sans-mandat'
+                  candidate.aSiegeOuGouverne ? '' : ' cb-chip--sans-mandat'
                 }`}
                 onClick={() => navigate(`/candidats/${candidate.id}`)}
                 title={
-                  candidate.mandatAnOuGouvernement
+                  candidate.aSiegeOuGouverne
                     ? undefined
-                    : 'Aucun mandat à l’Assemblée nationale ni fonction gouvernementale : sa fiche existe, mais elle ne porte ni vote, ni intervention, ni amendement.'
+                    : 'Aucun mandat à l’Assemblée nationale, au Sénat, au Parlement européen ni au gouvernement : sa fiche existe, mais elle ne porte ni vote, ni intervention, ni amendement.'
                 }
               >
                 <span className="cb-chip-label">{candidate.nom}</span>

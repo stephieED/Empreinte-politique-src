@@ -744,7 +744,7 @@ function Paroles({ interventions, cause }) {
 
   return (
     <ParolesParPeriode
-      periodes={interventions.periodes}
+      qualites={interventions.qualites}
       plafondPeriode={interventions.plafondPeriode}
       plafondEnsemble={interventions.plafondEnsemble}
       couverture={interventions.couverture}

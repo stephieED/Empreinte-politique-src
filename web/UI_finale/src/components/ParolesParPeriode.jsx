@@ -34,6 +34,16 @@ import './ParolesParPeriode.css';
 const jour = (d) => (d ? `${d.slice(8, 10)}/${d.slice(5, 7)}/${d.slice(0, 4)}` : '');
 const mois = (d) => (d ? `${d.slice(0, 4)}/${d.slice(5, 7)}` : '');
 
+/* La classe d'une qualité est ÉCRITE, jamais dérivée : `toLowerCase` est
+   interdit dans ce composant (#639) parce qu'il ouvre la porte au
+   rapprochement de deux libellés voisins. La règle vaut aussi pour une clé
+   technique — on ne garde pas un outil en promettant de ne pas s'en servir. */
+const CLASSE_QUALITE = {
+  AN: 'pp-qualite--an',
+  GOUV: 'pp-qualite--gouv',
+  PE: 'pp-qualite--pe',
+};
+
 const SUJETS_REPLIES = 10;
 const PAS_DE_FIL = 25;
 
@@ -115,17 +125,33 @@ function Intervention({ i }) {
   );
 }
 
-export default function ParolesParPeriode({ periodes, plafondPeriode, plafondEnsemble, couverture }) {
+export default function ParolesParPeriode({ qualites, plafondPeriode, plafondEnsemble, couverture }) {
+  /* LA QUALITÉ D'ABORD, LA PÉRIODE ENSUITE (#328).
+   *
+   * On ne parle pas du même endroit selon qu'on siège à Paris, qu'on gouverne
+   * ou qu'on siège à Strasbourg — et les natures elles-mêmes ne se comparent
+   * pas : l'explication de vote domine au Parlement européen (683 des 845 chez
+   * Emmanuel Maurel), la réaction courte à l'Assemblée. Le sélecteur ne
+   * s'affiche que si la fiche porte PLUSIEURS qualités : sur 17 fiches, 13
+   * n'en ont qu'une, et lui en montrer une seule serait un dispositif vide. */
+  const [qualite, setQualite] = useState(qualites[0]?.qualite ?? null);
+  const bloc = qualites.find((q) => q.qualite === qualite) ?? qualites[0];
+  const periodes = bloc?.periodes ?? [];
+  /* Une législature européenne ne suit pas les gouvernements français : y
+     ranger ces interventions produisait le « gouvernement Attal » de Raphaël
+     Glucksmann. La sélection des périodes disparaît donc, et le dit. */
+  const sansDecoupage = periodes.length === 1 && periodes[0].sansDecoupage;
   const [index, setIndex] = useState(periodes.length - 1);
   const [natures, setNatures] = useState(() => new Set());
   const [sujet, setSujet] = useState(null);
   const [tousSujets, setTousSujets] = useState(false);
   const [limite, setLimite] = useState(PAS_DE_FIL);
 
+  const indexSur = Math.min(index ?? periodes.length - 1, periodes.length - 1);
   const tout = index === null;
   const lot = useMemo(
-    () => (tout ? periodes.flatMap((p) => p.interventions) : periodes[index].interventions),
-    [periodes, index, tout],
+    () => (tout ? periodes.flatMap((p) => p.interventions) : periodes[indexSur].interventions),
+    [periodes, indexSur, tout],
   );
 
   const parNature = useMemo(() => naturesDuLot(lot), [lot]);
@@ -178,21 +204,47 @@ export default function ParolesParPeriode({ periodes, plafondPeriode, plafondEns
     setLimite(PAS_DE_FIL);
   };
 
-  const periodeCourante = tout ? null : periodes[index];
+  const periodeCourante = tout ? null : periodes[indexSur];
   const sujetsVus = tousSujets ? sujets : sujets.slice(0, SUJETS_REPLIES);
 
   return (
     <div className="pp">
-      <NavigationPeriodes
-        periodes={periodes}
-        index={index}
-        onIndex={changerPeriode}
-        poids={(p) => p.interventions.length}
-        libelle={libelleCourtDePeriode}
-        unite="interventions"
-        uniteSingulier="intervention"
-        avecTout
-      />
+      {qualites.length > 1 && (
+        <div className="pp-qualites" role="group" aria-label="En quelle qualité">
+          {qualites.map((q) => (
+            <button
+              className={`pp-qualite ${CLASSE_QUALITE[q.qualite]}`}
+              key={q.qualite}
+              type="button"
+              aria-pressed={q.qualite === bloc.qualite}
+              onClick={() => { setQualite(q.qualite); setIndex(null); }}
+            >
+              <i aria-hidden="true" />
+              {q.libelle}
+              <span>· {formatNumber(q.total)}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* LA SÉLECTION DES PÉRIODES DISPARAÎT, SANS RIEN À LA PLACE.
+          Une législature européenne ne suit pas les gouvernements français : y
+          ranger ces interventions produisait le « gouvernement Attal » de
+          Raphaël Glucksmann. Rien ne remplace le dispositif — ce n'est pas une
+          liste vide à expliquer (§2 règle 5), ce sont toutes les interventions,
+          simplement sans découpage. */}
+      {!sansDecoupage && (
+        <NavigationPeriodes
+          periodes={periodes}
+          index={index}
+          onIndex={changerPeriode}
+          poids={(p) => p.interventions.length}
+          libelle={libelleCourtDePeriode}
+          unite="interventions"
+          uniteSingulier="intervention"
+          avecTout
+        />
+      )}
 
       <div className="cp-carte cp-bloc pp-cadre">
         <div className="pp-tete">
