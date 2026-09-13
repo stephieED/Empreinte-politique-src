@@ -528,6 +528,7 @@ export function positionSurAxe(date, bornes) {
  *  « À l'Assemblée ». */
 const NOM_DE_CHAMBRE = {
   [INSTITUTION_PARLEMENT]: 'Assemblée nationale',
+  [INSTITUTION_SENAT]: 'Sénat',
   [INSTITUTION_PE]: 'Parlement européen',
 };
 
@@ -543,6 +544,23 @@ export const CATEGORIES_FONCTIONS = [
   { cle: 'delegation', titre: 'Délégations', banc: INSTITUTION_PARLEMENT },
   { cle: 'extra_parlementaire', titre: 'Organismes extra-parlementaires', banc: INSTITUTION_PARLEMENT },
   { cle: 'groupe_amitie', titre: "Groupes d'amitié", banc: INSTITUTION_PARLEMENT },
+
+  /* Ces deux-là sont rangés `categorie: "autre"` par la normalisation, et leur
+     nature vraie vit dans `type_organe_source`. L'équivalent existe déjà à
+     l'Assemblée — `delegation` — et une délégation européenne n'est pas moins
+     une fonction exercée parce que le pivot n'a pas de case pour elle. */
+  {
+    cle: 'delegation_europeenne',
+    typeOrgane: 'delegation_parlementaire_europeenne',
+    titre: 'Délégations',
+    banc: INSTITUTION_PARLEMENT,
+  },
+  {
+    cle: 'groupe_liaison',
+    typeOrgane: 'groupe_liaison_senatorial',
+    titre: 'Groupes de liaison',
+    banc: INSTITUTION_PARLEMENT,
+  },
 
   /*
    * UNE FONCTION EXERCÉE NE L'EST PAS TOUJOURS AU PARLEMENT (#328).
@@ -717,12 +735,32 @@ export function fonctionsExercees(mandats, aujourdhui = aujourdhuiISO()) {
    * deux d'un même geste.
    *
    * Le Sénat n'apparaît pas : ses organes ne sont pas collectés (#528). */
-  const chambreDOrgane = (m) => (
-    m.categorie_source === 'europarl' ? INSTITUTION_PE : INSTITUTION_PARLEMENT
-  );
+  const chambreDOrgane = (m) => {
+    /* TROIS CHAMBRES, ET C'EST LE SÉNAT QUI L'A MONTRÉ (#885, 13/09/2026).
+       La première version n'en connaissait que deux : un organe sénatorial
+       retombait sur l'Assemblée, donc sur sa teinte et dans son compte. Mesuré
+       le jour où le Sénat est entré — Bruno Retailleau porte 26 commissions
+       sénatoriales contre 1 à l'Assemblée, 26 groupes d'études et 24 groupes
+       d'amitié, tous sénatoriaux ; et le bloc « commission » de Jean-Luc
+       Mélenchon en mêle TROIS : 31 à l'Assemblée, 10 au Parlement européen,
+       8 au Sénat. `categorie_source` les sépare, et rien d'autre ne le fait. */
+    if (m.categorie_source === 'europarl') return INSTITUTION_PE;
+    if (m.categorie_source === 'senat') return INSTITUTION_SENAT;
+    return INSTITUTION_PARLEMENT;
+  };
 
-  const blocs = CATEGORIES_FONCTIONS.flatMap(({ cle, titre, banc, fonctions, sansMarque, suffixe }) => {
-    const retenus = liste.filter((x) => x.categorie === cle && (!fonctions || fonctions(x.fonction)));
+  const blocs = CATEGORIES_FONCTIONS.flatMap(({ cle, titre, banc, fonctions, sansMarque, suffixe, typeOrgane }) => {
+    /* UN ORGANE QUE LA CATÉGORIE N'ATTRAPE PAS (#885, 13/09/2026).
+       87 mandats de candidats déclarés portent `categorie: "autre"` et
+       n'apparaissaient donc NULLE PART — ni ici, ni ailleurs sur la fiche. Ce
+       n'était pas un mauvais libellé, c'était un silence. Les deux que la
+       source nomme sans ambiguïté comme des fonctions exercées entrent par
+       leur `type_organe_source` ; le reste — un parti national, un groupe
+       politique déjà porté par la frise, 20 organes sans type — n'entre pas :
+       inventer une taxonomie que le corpus ne porte pas serait pire. */
+    const retenus = liste.filter((x) => (typeOrgane
+      ? x.type_organe_source === typeOrgane
+      : x.categorie === cle) && (!fonctions || fonctions(x.fonction)));
     // Seules les fonctions PARLEMENTAIRES se scindent : un portefeuille
     // ministériel n'a pas de chambre, et lui en inventer une serait faux.
     const chambres = banc === INSTITUTION_PARLEMENT

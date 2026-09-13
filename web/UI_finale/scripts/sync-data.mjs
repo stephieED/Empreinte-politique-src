@@ -227,14 +227,37 @@ const manifestCandidates = candidats
   .sort((a, b) => a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' }));
 
 // --- profils de groupe réels ---
+/* LES GROUPES DU SÉNAT SORTENT DE L'INTERFACE (#885, 13/09/2026).
+ *
+ * `groupe-Senat-LR` et `groupe-Senat-SER` sont gelés depuis #516 : jamais
+ * régénérés, ils étaient conservés parce qu'« une migration ne se paie pas en
+ * cassant ce qui est déjà publié »
+ * (`docs/decisions/date-de-reference-des-comptes-de-groupe-653.md`). La
+ * réouverture partielle du Sénat (#885) tranche l'autre sens : les
+ * APPARTENANCES sont collectées, les groupes ne le seront pas.
+ *
+ * Ce qui restait à l'écran n'était plus une fiche mais une coquille — mesuré le
+ * 13/09/2026, après le retrait des 19 profils orphelins (#905) : 0 membre,
+ * 0 scrutin de cohésion, 0 mandat agrégé. Deux boutons menaient à deux pages
+ * qui ne pouvaient rien dire, et une page vide se lit comme une absence
+ * d'activité (§2 règle 5).
+ *
+ * Le retrait est NOMMÉ au build, comme les fiches masquées : une page qui
+ * disparaît en silence est une page qu'on croit encore publiée. */
+const CHAMBRE_HORS_INTERFACE = 'Senat';
 const slugByMembreId = new Map(manifestCandidates.map((c) => [c.slug, c]));
 const groupeFiles = readdirSync(pivotGroupesDir).filter((f) => f.endsWith('.json'));
+const groupesRetires = [];
 const manifestGroupes = [];
 const fichesPourComparaison = [];
 for (const file of groupeFiles) {
-  cpSync(path.join(pivotGroupesDir, file), path.join(outDir, 'groupes', file));
   const groupe = JSON.parse(readFileSync(path.join(pivotGroupesDir, file), 'utf-8'));
   const id = file.replace(/^groupe-/, '').replace(/\.json$/, '');
+  if (groupe.chambre === CHAMBRE_HORS_INTERFACE) {
+    groupesRetires.push(id);
+    continue;
+  }
+  cpSync(path.join(pivotGroupesDir, file), path.join(outDir, 'groupes', file));
   fichesPourComparaison.push({ id, groupe });
   manifestGroupes.push({
     id,
@@ -285,9 +308,15 @@ const idDeFicheParFichier = new Map(manifestGroupes.map((g) => [g.fichier, g.id]
 const ficheParFichier = new Map(fichesPourComparaison.map(({ id, groupe }) => [`groupe-${id}.json`, groupe]));
 const manifestLignees = [];
 const ligneeDeFiche = new Map();
+const ligneesRetirees = [];
 for (const file of lignesFiles) {
   const lignee = JSON.parse(readFileSync(path.join(pivotLigneesDir, file), 'utf-8'));
   const id = idDePage(file);
+  // La lignée suit ses maillons : sans fiche de groupe, elle n'a rien à publier.
+  if (lignee.chambre === CHAMBRE_HORS_INTERFACE) {
+    ligneesRetirees.push(id);
+    continue;
+  }
   const fiches = (lignee.maillons || []).map((m) => idDeFicheParFichier.get(m.fichier)).filter(Boolean);
   for (const f of fiches) ligneeDeFiche.set(f, id);
   manifestLignees.push({
@@ -480,6 +509,13 @@ writeFileSync(
 console.log(`sync-data : ${manifestCandidates.length} candidat(s), ${manifestGroupes.length} groupe(s), ${manifestGouvernements.length} gouvernement(s) copiés vers public/data/.`);
 if (slugsMasques.size) {
   // Nommés, jamais seulement comptés : une fiche retirée de l'interface doit se
+if (groupesRetires.length || ligneesRetirees.length) {
+  console.log(
+    `sync-data : ${groupesRetires.length} fiche(s) de groupe et ${ligneesRetirees.length} lignée(s) `
+    + `retirées de l'interface — ${[...groupesRetires, ...ligneesRetirees].join(', ')} `
+    + '(groupes du Sénat, hors périmètre #885 ; fichiers conservés dans pivot_data/).',
+  );
+}
   // distinguer d'une fiche qu'on a oublié de produire (#510).
   console.log(`sync-data : ${slugsMasques.size} fiche(s) masquée(s) — ${[...slugsMasques].join(', ')} (statut masqué, profil conservé dans pivot_data/).`);
 }

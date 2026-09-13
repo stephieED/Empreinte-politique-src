@@ -448,7 +448,12 @@ def test_la_couleur_dit_le_banc_et_non_la_categorie(regles, composant, feuille):
     bancs, c'est le banc qu'on aurait perdu — et ce qui sépare une commission
     d'un groupe d'amitié est déjà écrit dans le titre du bloc."""
     categories = _corps(regles, "export const CATEGORIES_FONCTIONS", "\n];")
-    assert categories.count("banc: INSTITUTION_PARLEMENT") == 7
+    # SEPT catégories à l'origine, NEUF depuis le 13/09/2026 : deux organes que
+    # la normalisation range sous `categorie: "autre"` — les délégations
+    # parlementaires européennes et les groupes de liaison sénatoriaux —
+    # entrent par leur `type_organe_source`. 87 mandats de candidats déclarés
+    # portent cette catégorie et n'apparaissaient NULLE PART (#885).
+    assert categories.count("banc: INSTITUTION_PARLEMENT") == 9
     assert categories.count("banc: INSTITUTION_GOUVERNEMENT") == 1
     assert categories.count("banc: INSTITUTION_MISSION") == 1
     assert "cp-fonctions-bloc--${b.banc}" in composant
