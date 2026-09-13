@@ -8,6 +8,22 @@ les charger, ni à les faire grossir. -->
 
 ### 3a. Files, indexes, merge
 
+- **A profile is merged; an aggregate is recomposed — and that difference decides where a
+  retraction has to be applied (#890).** `merge_pivot_profile` is additive: `sources[]` is
+  unioned by `type`, so a type a fresh collection no longer returns is **never** dropped —
+  which is why the Regards Citoyens marker survived on 475 profiles eighteen days after
+  `retrait-senat-528` §3 announced it would disappear on its own. Group, lineage,
+  government and party sheets work the other way: `group_profile` assigns
+  `profil_groupe["sources"]`, rebuilt from the member profiles on every run, and
+  `lignee_profile._union_sources` unions the **sheets**, not a previous version of itself.
+  `--merge-existing` does not weaken this — it recovers **members** missing from a live
+  roster, never a `sources[]` entry. Measured on 13/09/2026, regenerating the 29 sheets a
+  run produces: **2 001 marked occurrences over 23 sheets → 1 over 1**, the only survivor
+  being the entry of a profile that legitimately keeps its marker. **So a retraction is
+  applied to the profiles and to the raw layer, and the aggregates follow by construction**
+  — purging them by hand would write, one run early, what the pipeline writes anyway.
+  → `docs/decisions/retrait-marqueur-regards-citoyens-deputes-890.md`
+
 - **A closed legislature's amendments are already stored, deduplicated and inverted — the
   raw slices only recopy them (#691).** `raw_data/profiles/` weighs 9.7 GiB, 89 % of it
   amendment slices, and no single field is large: `co_signataires` is **79.5 %** of a
