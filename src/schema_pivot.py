@@ -915,6 +915,7 @@ KNOWN_TYPES_ORGANE_SOURCE: frozenset[str] = frozenset({
     "groupe_amitie_senatorial",
     "groupe_information_senatorial",
     "groupe_liaison_senatorial",
+    "organisme_extra_parlementaire_senat",
 })
 
 KNOWN_CATEGORIES: frozenset[str] = frozenset({

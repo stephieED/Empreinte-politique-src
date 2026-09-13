@@ -91,6 +91,14 @@ DUMP_TABLES_UTILES: frozenset[str] = frozenset({
     "fongrppol",    # les libellés de ces fonctions
     "foncom",
     "fongrpsen",
+    # #885 — organismes extra-parlementaires : le Sénat les DATE et dit **qui a
+    # désigné**, là où l'Assemblée en publie 3 sans date pour `bruno-retailleau`.
+    # Mesuré : 49 entrées côté AN contre 202 côté Sénat sur les 36 appariés.
+    "memextpar",
+    "orgext",
+    "liborg",
+    "designoep",
+    "fonmemextpar",
 })
 
 #: Ce que la collecte refuse **à l'entrée**, et la raison.

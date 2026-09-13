@@ -252,3 +252,51 @@ def test_senat_et_nossenateurs_restent_deux_types_distincts():
     partage à l'identique dans le mauvais sens."""
     assert {"senat", "nossenateurs"} <= KNOWN_SOURCE_TYPES
     assert TYPE_SOURCE != "nossenateurs"
+
+
+# ---------------------------------------------------------------------------
+# Le périmètre : qui reçoit ces mandats
+# ---------------------------------------------------------------------------
+
+def test_seuls_les_candidats_declares_recoivent_les_mandats_senatoriaux():
+    """Mesuré sur les 36 profils appariés : le lot verserait **+120** entrées
+    aux 2 candidats déclarés et **+1 674** aux 34 membres de roster, doublant
+    les mandats de ces derniers.
+
+    890 de ces 1 674 seraient des groupes d'amitié et d'études, qu'aucune vue
+    n'affiche : ils n'iraient que dans `mandats_agreges`, un agrégat que #853
+    conteste déjà. Doubler le volume d'un champ dont on sait qu'il compte la
+    mauvaise chose n'est pas un gain."""
+    from population_profils import CANDIDAT_DECLARE, ROSTER_GROUPE
+    from normalize_senat import POPULATIONS_PUBLIEES, est_dans_le_perimetre
+
+    assert POPULATIONS_PUBLIEES == frozenset({CANDIDAT_DECLARE})
+    assert est_dans_le_perimetre(CANDIDAT_DECLARE)
+    assert not est_dans_le_perimetre(ROSTER_GROUPE)
+
+
+def test_une_provenance_inconnue_est_hors_perimetre():
+    """Publier sur un profil dont on ne sait pas ce qu'il est reviendrait à
+    décider à sa place (§2 règle 5)."""
+    from normalize_senat import est_dans_le_perimetre
+
+    assert not est_dans_le_perimetre(None)
+    assert not est_dans_le_perimetre("population_future")
+
+
+# ---------------------------------------------------------------------------
+# Les organismes extra-parlementaires
+# ---------------------------------------------------------------------------
+
+def test_un_organisme_extra_parlementaire_se_range_et_dit_qui_a_designe():
+    """L'Assemblée en publie 3 pour `bruno-retailleau`, **sans date**. Le Sénat
+    en date 13, avec le rang et le désignateur — `SENCOMECON`, la commission des
+    affaires économiques. Une désignation sans son désignateur perd ce qui en
+    fait un fait institutionnel."""
+    entree = normalize_mandat(_compose(
+        "extra_parlementaire", label="Commission du dividende numérique",
+        titulaire_ou_suppleant="TITULAIRE", designe_par="Commission des affaires économiques"))
+
+    assert entree["categorie"] == "extra_parlementaire"
+    assert entree["type_organe_source"] == "organisme_extra_parlementaire_senat"
+    assert entree["label"] == "Commission du dividende numérique"

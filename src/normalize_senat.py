@@ -44,6 +44,45 @@ from __future__ import annotations
 from typing import Any, Optional
 
 from licences import LICENCE_SENAT
+from population_profils import CANDIDAT_DECLARE
+
+#: **Les populations dont les mandats sénatoriaux sont publiés.** Un seul
+#: élément, et c'est une décision de périmètre mesurée, pas une timidité.
+#:
+#: `pivot_data/profiles/` porte deux populations (#630). Les **candidats
+#: déclarés** ont une fiche que le site publie ; les **membres de roster** sont
+#: collectés pour nourrir les agrégats de groupe, et `group_profile` ne lit
+#: d'eux que `nom`, `mandats`, `votes`, `interventions`, `amendements`.
+#:
+#: Mesuré le 13/09/2026 sur les 36 profils appariés à un matricule sénatorial :
+#:
+#: | population | ce que le lot verserait | ce qu'ils publient déjà |
+#: | --- | ---: | ---: |
+#: | 2 candidats déclarés | **+120** | 94 |
+#: | 34 membres de roster | **+1 674** | 1 575 |
+#:
+#: Le lot **doublerait** les mandats des membres de roster, et 890 des 1 674
+#: entrées seraient des groupes d'amitié et d'études. Aucune vue ne les affiche :
+#: elles n'iraient que dans `mandats_agreges`, un agrégat que **#853 conteste
+#: déjà** — « il compte la carrière des membres, pas leur passage dans le
+#: groupe ». Doubler le volume d'un champ dont on sait qu'il compte la mauvaise
+#: chose n'est pas un gain.
+#:
+#: Rien n'est perdu pour autant : `senat_mandats.composer_mandats` compose les
+#: 36 sans distinction, et c'est **l'écriture** qui se limite. Servir les rosters
+#: un jour ne demandera pas de recoder, seulement d'élargir cette constante.
+POPULATIONS_PUBLIEES: frozenset[str] = frozenset({CANDIDAT_DECLARE})
+
+
+def est_dans_le_perimetre(provenance: Optional[str]) -> bool:
+    """Les mandats sénatoriaux de cette population sont-ils publiés ?
+
+    Une provenance **inconnue** est hors périmètre : publier sur un profil dont
+    on ne sait pas ce qu'il est reviendrait à décider à sa place, et §2 règle 5
+    refuse de lire une absence comme un constat.
+    """
+    return provenance in POPULATIONS_PUBLIEES
+
 
 #: Le type de source, au sens de `schema_pivot.KNOWN_SOURCE_TYPES`.
 TYPE_SOURCE = "senat"
@@ -62,6 +101,7 @@ _CATEGORIE_PAR_FAMILLE: dict[str, str] = {
     "mandat_parlementaire": "mandat_electif",
     "groupe_politique": "groupe_politique",
     "commission": "commission",
+    "extra_parlementaire": "extra_parlementaire",
 }
 
 #: Type de groupe sénatorial → catégorie pivot. **INFO et LIAISON n'ont pas
@@ -81,6 +121,7 @@ _TYPE_ORGANE_SOURCE: dict[str, str] = {
     "mandat_parlementaire": "mandat_senatorial",
     "groupe_politique": "groupe_politique_senatorial",
     "commission": "commission_senatoriale",
+    "extra_parlementaire": "organisme_extra_parlementaire_senat",
 }
 
 _TYPE_ORGANE_GROUPE_SENATORIAL: dict[str, str] = {

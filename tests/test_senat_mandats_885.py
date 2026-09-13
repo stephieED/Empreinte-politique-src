@@ -234,7 +234,11 @@ def test_une_sentinelle_ne_devient_pas_une_borne_de_mandat():
     assert groupe["debut"] is None
 
 
-def test_les_quatre_familles_sont_nommees():
-    """Un ajout de famille sans nom la rendrait invisible aux consommateurs."""
-    assert FAMILLES == ("mandat_parlementaire", "groupe_politique",
-                        "commission", "groupe_senatorial")
+def test_les_familles_composees_sont_nommees():
+    """Un ajout de famille sans nom la rendrait invisible aux consommateurs.
+
+    `extra_parlementaire` est la cinquième, arrivée après coup : l'Assemblée en
+    publie 3 pour `bruno-retailleau` **sans date**, le Sénat en date 13 avec leur
+    désignateur."""
+    assert FAMILLES == ("mandat_parlementaire", "groupe_politique", "commission",
+                        "groupe_senatorial", "extra_parlementaire")

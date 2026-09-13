@@ -59,7 +59,8 @@ GABARIT_FICHE = "https://www.senat.fr/senateur/{matricule_minuscule}.html"
 #: Les quatre familles composées, et la catégorie pivot qu'elles visent. La
 #: catégorie définitive est posée par la normalisation, jamais ici : ce module
 #: reste **source-near** (§3 : `raw_data/` dit ce que la source a rendu).
-FAMILLES = ("mandat_parlementaire", "groupe_politique", "commission", "groupe_senatorial")
+FAMILLES = ("mandat_parlementaire", "groupe_politique", "commission",
+            "groupe_senatorial", "extra_parlementaire")
 
 
 def _libelle_fonction(ligne: dict[str, Any], prefixe: str) -> Optional[str]:
@@ -72,6 +73,21 @@ def _libelle_fonction(ligne: dict[str, Any], prefixe: str) -> Optional[str]:
     """
     for suffixe in ("lib", "lic", "lil"):
         valeur = (ligne.get(f"{prefixe}{suffixe}") or "").strip()
+        if valeur:
+            return valeur
+    return None
+
+
+def _premier_libelle(ligne: dict[str, Any]) -> Optional[str]:
+    """Le nom d'un organe, quelle que soit la colonne où la table le range.
+
+    Le jeu du Sénat n'est pas régulier : `libgrppol` remplit `evelib`, `orgext`
+    remplit `evelil` et laisse `evelib` vide sur ses 447 lignes. Lire une seule
+    colonne publierait `None` sans que rien ne le signale — l'entrée existerait,
+    sans nom, et passerait pour une donnée manquante à la source.
+    """
+    for colonne in ("evelib", "evelil", "evelic"):
+        valeur = (ligne.get(colonne) or "").strip()
         if valeur:
             return valeur
     return None
@@ -252,6 +268,21 @@ def composer_mandats(tables: dict[str, list[dict[str, Any]]], senmat: str) -> li
         tables.get("fonmemcom", []), "memcomid", "foncomcod",
         {f["foncomcod"]: _libelle_fonction(f, "foncom") for f in tables.get("foncom", [])},
         "fonmemcomdatdeb", "fonmemcomdatfin")
+    # `liborg` borne les libellés d'organisme comme `libgrppol` borne ceux des
+    # groupes ; `orgext` porte le nom courant, en repli.
+    lib_extpar = _index_libelles(tables.get("liborg", []), "orgcod",
+                                 "liborgdatdeb", "liborgdatfin", "evelib")
+    # `orgext` range le nom dans `evelil` — `evelib` y est vide sur les 447
+    # lignes. Les colonnes `eve*` ne portent pas la même chose d'une table à
+    # l'autre du même jeu, et le supposer publie `None` sans rien signaler.
+    courant_extpar = {e["orgcod"]: _premier_libelle(e)
+                      for e in tables.get("orgext", []) if e.get("orgcod")}
+    designateurs = {d["designcod"]: (d.get("evelib") or d.get("evelic") or "").strip() or None
+                    for d in tables.get("designoep", []) if d.get("designcod")}
+    fon_extpar = _index_fonctions(
+        tables.get("fonmemextpar", []), "memextparid", "fonmemextparcod", {},
+        "fonmemextpardatdeb", "fonmemextpardatfin")
+
     fon_grpsen = _index_fonctions(
         tables.get("fonmemgrpsen", []), "memgrpsenid", "fongrpsencod",
         {f["fongrpsencod"]: _libelle_fonction(f, "fongrpsen") for f in tables.get("fongrpsen", [])},
@@ -344,6 +375,41 @@ def composer_mandats(tables: dict[str, list[dict[str, Any]]], senmat: str) -> li
                 "type_groupe": types_grpsen.get(type_par_organe.get(organe) or ""),
                 "type_groupe_code": type_par_organe.get(organe),
                 "fonctions": _fonctions_pendant(fonctions, entree["debut"], entree["fin"]),
+                "organe_code": organe,
+                "source_url": url,
+                **_marqueurs_libelle(entree),
+            })
+
+    # --- 5. Organismes extra-parlementaires. L'Assemblée en publie aussi, mais
+    # **sans date** — 3 entrées pour `bruno-retailleau` contre 13 ici. Le Sénat
+    # ajoute la période, le rang (titulaire ou suppléant) et **qui a désigné** :
+    # `designcod` vaut par exemple `SENCOMECON`, la commission des affaires
+    # économiques. Une désignation sans son désignateur perd ce qui en fait un
+    # fait institutionnel.
+    #
+    # La table porte AUSSI toute la procédure de l'article 13 — avis des deux
+    # assemblées, dates d'audition, publication au JO. Rien n'en est repris :
+    # c'est une autre matière que l'appartenance, et le corpus n'a rien qui lui
+    # ressemble. L'instruire est un lot en soi, pas un sous-produit.
+    for ligne in tables.get("memextpar", []):
+        if ligne.get("senmat") != senmat:
+            continue
+        organe = ligne.get("orgcod") or ""
+        debut = date_publiable(ligne.get("memextpardatdeb"))
+        fin = date_publiable(ligne.get("memextpardatfin"))
+        for entree in decouper_sur_renommages(debut, fin, lib_extpar.get(organe, []),
+                                              courant_extpar.get(organe)):
+            mandats.append({
+                "famille": "extra_parlementaire",
+                "label": entree["libelle"],
+                "debut": entree["debut"],
+                "fin": entree["fin"],
+                "titulaire_ou_suppleant": ligne.get("memextpartitsup"),
+                "designe_par": designateurs.get(ligne.get("designcod") or "")
+                               or ligne.get("designcod"),
+                "fonctions": _fonctions_pendant(
+                    fon_extpar.get(ligne.get("memextparid") or "", []),
+                    entree["debut"], entree["fin"]),
                 "organe_code": organe,
                 "source_url": url,
                 **_marqueurs_libelle(entree),
