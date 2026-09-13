@@ -151,13 +151,20 @@ Full rationale: `web/old/v3/methodologie.html` — do not duplicate prose here.
 
 **"No French source is collected from Regards Citoyens any more" does not mean "the corpus
 is under Licence Ouverte" (#530).** Share-alike survives on two counts: Parltrack is a
-*live* source under ODbL, and — **measured on 27/08/2026, commit `74c77c2`** — 475 of
-476 published profiles still carried a `sources[].type` of `nosdeputes`/`nossenateurs`
-(511 published interventions still linked to `www.nosdeputes.fr`). The date is part of
-the evidence: re-measure before relying on it, never read it as today's corpus
-(`docs/decisions/licence-lot-6-530.md`). `merge_pivot_profile` unions `sources[]` by type, so additive
-regeneration never drops them. Attribution stays due while the fields stay published
-(§2 rule 2), exactly as `docs/decisions/retrait-senat-528.md` §4 already ruled.
+*live* source under ODbL, and the Regards Citoyens marker survives on the profiles whose
+data still needs it. **That second leg has shrunk, and the date is part of the
+evidence**: 475 of 476 published profiles carried it on 27/08/2026 (commit `74c77c2`);
+**21 of 1 196 do on 13/09/2026** (commit `636680618`), after #839 emptied the data and
+#890 retracted the marker from the 454 deputy profiles it no longer described. Those 21
+are the Sénat's, and #885 is what will settle them. **Re-measure before relying on either
+figure, never read one as today's corpus** (`docs/decisions/licence-lot-6-530.md`) — that
+is the very thing that makes a published sentence go false (#886).
+`merge_pivot_profile` unions `sources[]` by type, so additive regeneration never drops a
+marker **and a retraction has to be written**, at both layers
+(`docs/decisions/retrait-marqueur-regards-citoyens-deputes-890.md`); aggregates recompose
+instead, and follow on their own. Attribution stays due while the fields stay published
+(§2 rule 2), exactly as `docs/decisions/retrait-senat-528.md` §4 already ruled — and stops
+being due when they no longer are.
 
 `meta.licence_donnees` is therefore a **derived** field, never a constant: `src/licences.py`
 holds the four canonical labels and `appliquer_licence_donnees(profil)` recomposes the
