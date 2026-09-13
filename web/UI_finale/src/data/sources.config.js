@@ -32,13 +32,13 @@ export const sourcesConfig = [
     nom: 'data.assemblee-nationale.fr',
     type: 'Dumps ZIP (open data)',
     contenuCouvert:
-      "Seule source française collectée : identité et mandats des députés, composition des groupes, votes officiels, amendements, dossiers législatifs, questions (questions.assemblee-nationale.fr) et débats en séance (Syceron).",
+      "Seule source de l'activité parlementaire française : identité et mandats des députés, composition des groupes, votes officiels, amendements, dossiers législatifs, questions (questions.assemblee-nationale.fr) et débats en séance (Syceron). Le Sénat publie ses appartenances (data.senat.fr), jamais son activité en séance.",
     cadenceMiseAJour: 'Quotidienne.',
     licence: 'Licence Ouverte / Open Licence (Etalab)',
     implication: 'Réutilisation libre sous réserve de mention de la source (attribution uniquement, pas de partage à l\'identique).',
     perimetre: ['AN'],
     couverturePeriode:
-      "Votes officiels disponibles pour les législatures 14 à 17, selon les dumps existants ; aucun équivalent officiel intégré pour le Sénat, sorti du périmètre.",
+      "Votes officiels disponibles pour les législatures 14 à 17, selon les dumps existants. Le jeu de données du Sénat n'en contient aucun : ses fiches ne portent ni vote ni prise de parole.",
   },
   {
     id: 'parltrack',
