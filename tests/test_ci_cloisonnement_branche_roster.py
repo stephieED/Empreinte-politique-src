@@ -42,6 +42,9 @@ RACINE = Path(__file__).resolve().parents[1]
 WORKFLOW = RACINE / ".github" / "workflows" / "generate-data.yml"
 SCRIPT = "python3 src/generate_roster_candidats.py"
 ROSTER_JSON = "raw_data/roster_candidats.json"
+#: Ce qui distingue la passe pivot des **candidats déclarés** de celle du
+#: roster : elle seule enrichit depuis ParlTrack.
+PASSE_PIVOT_DECLARES = "--enrich-parltrack"
 #: Les trois appelants du script dans un run, dans l'ordre chronologique.
 APPELANTS = ("prepare-roster-matrix", "extract-roster-groupes", "merge-and-pivot")
 
@@ -155,18 +158,26 @@ def test_l_extraction_des_shards_est_conditionnee_de_la_meme_facon():
 def test_les_profils_de_candidats_declares_ne_dependent_pas_du_roster():
     """L'invariant que B rétablit, lu dans l'ordre des steps.
 
-    La première passe pivot (candidats déclarés) et les profils de parti
-    précèdent la branche roster. Si l'un d'eux venait APRÈS un step de roster
-    non tolérant, sa publication redeviendrait tributaire de NosDéputés.
+    La première passe pivot — celle des candidats déclarés, reconnaissable à
+    `--enrich-parltrack` — précède la branche roster. Si elle venait APRÈS un
+    step de roster non tolérant, sa publication redeviendrait tributaire de
+    NosDéputés.
+
+    Ce test s'ancrait aussi sur `src/parti_profile.py`, qui venait **après** le
+    roster : c'était le cas qui obligeait le repli à cesser de tuer le job.
+    #906 a retiré les fiches de parti — aucun lecteur, 25 des 29 n'agrégeant
+    qu'un seul candidat — et l'ancrage restant est le plus fort des deux : ce
+    qui compte est que les déclarés soient publiés **avant** que le roster
+    puisse échouer.
     """
     code = _sans_commentaires(_bloc_job("merge-and-pivot"))
-    rang_partis = code.find("src/parti_profile.py")
+    rang_pivot_declares = code.find(PASSE_PIVOT_DECLARES)
     rang_repli_roster = code.find(SCRIPT)
     assert 0 <= rang_repli_roster
-    assert 0 <= rang_partis
-    # Le repli roster est bien AVANT les partis dans le job : c'est pour cela
-    # qu'il devait cesser de le tuer, et non l'inverse.
-    assert rang_repli_roster < rang_partis
+    assert 0 <= rang_pivot_declares, (
+        f"la passe pivot des candidats déclarés ne se reconnaît plus à "
+        f"{PASSE_PIVOT_DECLARES!r} — l'invariant n'est plus vérifié par personne.")
+    assert rang_pivot_declares < rang_repli_roster
 
 
 def test_l_audit_de_collecte_non_publiee_reste_arme():

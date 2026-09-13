@@ -512,7 +512,7 @@ def test_la_section_4b_compte_dans_le_code_de_sortie(tmp_path, monkeypatch, caps
     profils.mkdir()
     groupes = tmp_path / "groupes"
     _fiche_publiee(groupes, "groupe-AN-XYZ-16.json", "AN", "XYZ", "16")
-    for nom in ("partis", "gouvernements", "raw", "figes_absent"):
+    for nom in ("gouvernements", "raw", "figes_absent"):
         (tmp_path / nom).mkdir()
     for nom, cle in (("gouvernements_reels.json", "gouvernements"),
                      ("candidats.json", "candidats")):
@@ -540,7 +540,6 @@ def test_la_section_4b_compte_dans_le_code_de_sortie(tmp_path, monkeypatch, caps
         "check_quality_gate.py",
         "--profiles-dir", str(profils),
         "--groupes-dir", str(groupes),
-        "--partis-dir", str(tmp_path / "partis"),
         "--gouvernements-dir", str(tmp_path / "gouvernements"),
         "--raw-dir", str(tmp_path / "raw"),
         "--candidats", str(tmp_path / "candidats.json"),

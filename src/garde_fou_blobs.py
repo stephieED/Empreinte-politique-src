@@ -80,7 +80,6 @@ REPERTOIRES_SURVEILLES: tuple[str, ...] = (
     "pivot_data/amendements",
     "pivot_data/groupes",
     "pivot_data/gouvernements",
-    "pivot_data/partis",
 )
 
 #: Ancre de la décision, citée dans chaque message : un contrôle qui dit

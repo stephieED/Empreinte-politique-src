@@ -263,7 +263,7 @@ def _run_main(monkeypatch, tmp_path: Path, cache_dir: Path | None, pivots: dict 
         )
     _write_correspondance(tmp_path / "correspondance_acteurs_an.json", profils)
 
-    for sous_dossier in ("groupes", "partis", "gouvernements", "raw"):
+    for sous_dossier in ("groupes", "gouvernements", "raw"):
         (tmp_path / sous_dossier).mkdir()
     _write_config_vide(tmp_path / "groupes_reels.json", "groupes")
     _write_config_vide(tmp_path / "gouvernements_reels.json", "gouvernements")
@@ -273,7 +273,6 @@ def _run_main(monkeypatch, tmp_path: Path, cache_dir: Path | None, pivots: dict 
         "check_quality_gate.py",
         "--profiles-dir", str(profiles_dir),
         "--groupes-dir", str(tmp_path / "groupes"),
-        "--partis-dir", str(tmp_path / "partis"),
         "--gouvernements-dir", str(tmp_path / "gouvernements"),
         "--raw-dir", str(tmp_path / "raw"),
         "--candidats", str(tmp_path / "candidats.json"),

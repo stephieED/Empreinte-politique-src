@@ -1,9 +1,9 @@
-# Ce que devient la donnée — les huit sorties de `pivot_data/`
+# Ce que devient la donnée — les sept sorties de `pivot_data/`
 
 Ce fichier décrit le **flux** : les sources, les fichiers, les schémas, la
-volumétrie, et ce que le web lit. Il couvre les huit sorties de `pivot_data/` —
-`profiles`, `groupes`, `lignees`, `partis`, `gouvernements`, `scrutins.json`,
-`amendements/`, `commissions_dossiers.json`.
+volumétrie, et ce que le web lit. Il couvre les sept sorties de `pivot_data/` —
+`profiles`, `groupes`, `lignees`, `gouvernements`, `scrutins.json`,
+`amendements/`, `commissions_dossiers.json`. `partis/` en est sortie avec #906.
 
 Trois voisins, et ce qui les sépare :
 
@@ -110,7 +110,6 @@ graph TD
     GOUC --> GVP
 
     GRP --> OGR["pivot_data/groupes/groupe-*.json<br/>schema_groupe.py"]
-    PAR --> OPA["pivot_data/partis/parti-*.json<br/>schema_parti.py"]
     GVP --> OGO["pivot_data/gouvernements/gouvernement-*.json<br/>schema_gouvernement.py"]
 
     %% ── GATE ────────────────────────────────────────────────
@@ -250,7 +249,7 @@ reprend :
 
 Les profils individuels (`raw_data/profiles/`, `pivot_data/profiles/`) sont
 écrits **compacts** via `src/json_io.py` : l'indentation représentait 35 % de leur
-volume (#433). Groupes, partis, gouvernements, rosters et rapports d'audit
+volume (#433). Groupes, gouvernements, rosters et rapports d'audit
 restent en `indent=2`, parce qu'ils se relisent à l'œil.
 
 Un profil ne se lit jamais ligne à ligne : le format ne porte aucun sens.
@@ -426,7 +425,7 @@ Clé de fusion d'un amendement : son `amendement_id`, ou — pour une entrée no
 résolue — l'enregistrement conservé sous `amendement_non_resolu`. Se clé sur le
 seul mapping ferait s'effondrer toutes les entrées non résolues en une seule.
 
-Les agrégats (groupes, partis, gouvernements) passent par
+Les agrégats (groupes, gouvernements) passent par
 `merge_profile.load_existing_document` et
 `preserve_stable_freshness_timestamps` : une régénération ne fait pas bouger un
 horodatage de fraîcheur qui n'a pas de raison de bouger.
@@ -441,7 +440,6 @@ fusion indexées par `docs/technical_decisions.md`.
 | `pivot_data/profiles/` | `normalize_profil.py`, `normalize_europarl.py` | `src/schema_pivot.py` | **481** fiches committées, 623 Mo |
 | `pivot_data/groupes/` | `group_profile.py` (roster réel + pivots locaux) | `src/schema_groupe.py` | **30** fiches, 83 Mo (mesuré 11/09/2026, commit de données `62db21a9`) — 28 AN et 2 Sénat gelées, une par groupe **et** par législature (#700). Il y en avait **7** au 30/08/2026, pour 11 Mo |
 | `pivot_data/lignees/` | `generate_lignee_profiles.py` → `lignee_profile.py` (#836) | `src/schema_lignee.py` | **13** fiches, 48 Mo (mesuré 11/09/2026, commit de données `62db21a9` — la sortie n'existait pas au 30/08) — une par LIGNÉE de groupe, c'est-à-dire par suite de fiches chaînées sur `succede_a` : 30 fiches de groupe pour 13 lignées, dont 2 lignées Sénat à un seul maillon. `membres` et `cohesion_votes` y sont des UNIONS, `amendements_agreges` et `tags_thematiques_agreges` des RECALCULS depuis `profiles[].amendements`. Écrites en **compact** : le critère de #433 est « relu à la main », et une fiche de lignée pèse jusqu'à 11,5 Mo. C'est la SEULE collection que l'interface publie pour les groupes — une fiche de lignée absente est une page du site en moins, d'où la §4c du portail |
-| `pivot_data/partis/` | `parti_profile.py` (agrégation éditoriale) | `src/schema_parti.py` | **10** fiches, < 1 Mo |
 | `pivot_data/gouvernements/` | `gouvernement_roster.py` + `gouvernement_textes.py` → `gouvernement_profile.py` | `src/schema_gouvernement.py` | **10** fiches, < 1 Mo |
 | `pivot_data/scrutins.json` | index partagé, ci-dessus | `scrutins-v1` | **17 748** scrutins, 9 Mo (~10,2 Mo une fois la qualification de #639 régénérée) |
 | `pivot_data/amendements/` | index partagé, ci-dessus | `amendements-v1` + `amendements-cosignatures-v1` | **484 132** amendements distincts, 259 Mo (index + compagnons) |
@@ -697,27 +695,6 @@ d'un retour est invisible et l'amplitude est un **minorant**.
 profils **individuels** bruts couvrant tous les membres du roster, en amont de
 l'agrégation faite ici. → [`extract-roster-groupes.md`](./extract-roster-groupes.md)
 
-### `pivot_data/partis/` — l'agrégation éditoriale
-
-Logique **distincte** du groupe parlementaire réel, et c'est le point qui compte :
-un « parti » ici est le regroupement des **candidats déclarés** de
-`raw_data/candidats.json` partageant un même label. Ils peuvent n'avoir aucun
-mandat commun, voire aucun mandat. `schema_parti.py` interdit donc, par
-construction :
-
-- **aucune `cohesion_votes`** — rien ne garantit qu'ils aient siégé ensemble ni
-  voté sur les mêmes scrutins ;
-- **aucun `amendements_agreges`** — un taux agrégé sur une ou deux personnes
-  hétéroclites n'est pas un comparateur ;
-- **aucun effectif façon groupe** — `meta.nb_candidats_declares` documente la
-  taille de l'**échantillon éditorial**, jamais celle du parti ni de son groupe
-  parlementaire.
-
-`parti_profile.py` n'interroge pas le réseau ; les pivots individuels doivent
-déjà être sur disque. **Cette couche n'est pas publiée sur le web** :
-`sync-data.mjs` ne la copie pas, et `web/UI_finale` n'a pas d'onglet Partis
-(AGENTS.md §1).
-
 ### `pivot_data/gouvernements/` — les gouvernements
 
 **10 fiches** publiées, déclarées dans `raw_data/gouvernements_reels.json` —
@@ -822,7 +799,6 @@ graph TD
     COM["pivot_data/commissions_dossiers.json"] --> SYNC
     SDO["pivot_data/scrutins_dossiers.json"] --> SYNC
     CAND["raw_data/candidats.json"] --> SYNC
-    PAR["pivot_data/partis/<br/>NON copié — pas d'onglet Partis"]
 
     SYNC --> MAN["public/data/manifest.json<br/>candidates + groupes + lignees + gouvernements<br/>(+ groupIds[] par candidat)"]
     SYNC --> PUB["public/data/ — profiles · groupes · gouvernements<br/>+ scrutins.json + amendements/ + commissions_dossiers.json<br/>+ scrutins_dossiers.json"]
@@ -900,8 +876,8 @@ graph TD
   lignée ; une adresse de fiche par législature (`/groupes/AN-SOC-17`) mène à
   sa lignée.
 - Les trois onglets sont **Candidats**, **Groupes**, **Gouvernement**. Il n'y a
-  pas d'onglet Partis : `pivot_data/partis/` reste une sortie de données, pas une
-  page.
+  pas d'onglet Partis, et il n'y a plus de `pivot_data/partis/` : la sortie a été
+  retirée avec #906, faute de lecteur.
 
 ## Contrôles
 
@@ -910,7 +886,7 @@ commit de données. Ses sections, dans l'ordre :
 
 | Section | Ce qu'elle contrôle | Bloquant ? |
 |---|---|---|
-| 1 | `IncompleteRead` dans les profils pivot, groupes, partis, gouvernements et profils bruts, contre un seuil | oui, au-delà du seuil |
+| 1 | `IncompleteRead` dans les profils pivot, groupes, gouvernements et profils bruts, contre un seuil | oui, au-delà du seuil |
 | 2 | Couverture candidats (`raw_data/candidats.json` vs profils pivot) | non |
 | 3 / 3b | Interventions faibles ; couverture Syceron | non |
 | 3c / 3d | Couverture amendements AN ; fraîcheur de l'index | non (#378) |
