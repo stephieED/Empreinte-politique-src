@@ -58,6 +58,34 @@ une deuxième liste collectée, nommée, et comptée.
 
 Écrire ces relations, c'est écrire ce que la normalisation a le droit de faire.
 
+## La réduction nommée, troisième chose qu'une relation sait écrire (#888)
+
+Une somme de longueurs suppose que **chaque entrée collectée est une entrée
+distincte**. Le portail européen la dément : depuis #879 la normalisation sait
+que la même appartenance y arrive **en paire** — l'une classée, l'autre non — et
+`normalize_europarl.dedupliquer_appartenances` la réduit à une. Le brut garde
+les deux, parce que le brut dit ce que la source a rendu ; le pivot en publie
+une, parce que c'est **un** fait.
+
+Face à ça, une somme de longueurs crie un déficit qui n'existe pas : le run
+`34712936188` a bloqué sur **29 profils, 45 entrées**, toutes sur `mandats`,
+tous les profils nommés portant un mandat européen. Rien n'était perdu — 45
+entrées avaient été reconnues comme les doublons de 45 autres.
+
+Une relation peut donc déclarer, à côté de ses sources, une **réduction
+nommée** : la fonction que la normalisation applique, rejouée sur le brut par ce
+contrôle. Ce n'est ni une marge ni une tolérance — c'est la même fonction, au
+même endroit de la chaîne, appelée par son nom. Le seuil reste **0**, et le jour
+où cette fonction cesse de réduire quoi que ce soit, la soustraction vaut 0
+d'elle-même.
+
+**Elle est rejouée, jamais recalculée.** Un contrôle qui réimplémenterait le
+critère de #879 de son côté dériverait du jour où ce critère bouge — c'est le
+mode de défaillance que `merge_profile._repli_texte_key` décrit pour les clés de
+repli. `allow_declared_losses` était l'autre geste possible, et c'est le mauvais :
+`nettoyage-sediment-839` §5 interdit de déclarer un écart plutôt que de
+l'expliquer.
+
 ## Ce qui bloque, et ce qui est seulement rapporté
 
 **Bloque — le déficit** : une liste publiée qui porte **moins** d'entrées que
@@ -143,9 +171,14 @@ import json
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 import gha
+# #888 — la réduction que ce contrôle rejoue sur le brut est **importée**, pas
+# réécrite : rejouer la fonction de la normalisation est ce qui garantit que les
+# deux étages disent la même chose d'un doublon de source le jour où le critère
+# de #879 bouge.
+from normalize_europarl import dedupliquer_appartenances
 from profil_brut import (
     CLE_ACTEUR_TRANCHE,
     CLE_MANIFESTE,
@@ -218,10 +251,17 @@ class Relation:
     #: Pourquoi cette relation, en une phrase. Reprise telle quelle dans le
     #: rapport : un garde-fou qui bloque doit dire de quoi il tient sa règle.
     justification: str = ""
+    #: Ce que la normalisation retire au brut avant de publier, quand elle le
+    #: fait par une fonction nommée. `None` — le cas de quatre relations sur
+    #: cinq — dit « rien n'est retiré », pas « on ne sait pas ».
+    reduction: Optional["Reduction"] = None
 
     @property
     def libelle_sources(self) -> str:
-        return " + ".join(".".join(chemin) for chemin in self.sources)
+        libelle = " + ".join(".".join(chemin) for chemin in self.sources)
+        if self.reduction is not None:
+            libelle += f" − {self.reduction.libelle}"
+        return libelle
 
     @property
     def est_renommage(self) -> bool:
@@ -230,6 +270,111 @@ class Relation:
     @property
     def est_enrichissement(self) -> bool:
         return len(self.sources) > 1
+
+
+@dataclass(frozen=True)
+class Reduction:
+    """Des entrées collectées que la normalisation reconnaît comme une seule.
+
+    Ce n'est pas une tolérance : c'est la **même fonction** que la normalisation
+    applique, rejouée ici sur le brut, appelée par son nom. Le compte qu'elle
+    rend se soustrait au compte collecté, et le seuil du déficit reste 0.
+
+    `compter` reçoit le répertoire brut et un slug, et rend le nombre d'entrées
+    que la normalisation écarte pour ce profil. Elle lit le disque parce que le
+    relevé en flux ne porte que des longueurs — c'est le seul endroit du module
+    où un fragment de document est matérialisé, et il est borné au bloc
+    `mandat_europeen` d'un profil (26 entrées sur le plus gros socle du corpus,
+    8,3 Mo, mesuré le 13/09/2026).
+    """
+
+    #: Comment la réduction s'écrit dans le libellé de la relation.
+    libelle: str
+    #: Pourquoi la source publie ces entrées en double, en une phrase.
+    justification: str
+    #: `(raw_dir, slug) -> nombre d'entrées écartées`.
+    compter: Callable[[Path, str], int]
+
+
+#: Les seules clés dont `dedupliquer_appartenances` a besoin pour trancher :
+#: l'organisation, la période, la classification de la source, le rôle. Le
+#: crochet ci-dessous ne garde qu'elles, ce qui borne la mémoire comme le fait
+#: `_crochet` pour le reste du module.
+CLES_APPARTENANCE_EUROPEENNE = frozenset({
+    "mandat_europeen",
+    "mandats_europeens",
+    "organisation_nom",
+    "organisation_sigle",
+    "debut",
+    "fin",
+    "type",
+    "role",
+    "role_label",
+})
+
+
+def _crochet_appartenances(pairs: list[tuple[str, Any]]) -> Optional[dict[str, Any]]:
+    """Crochet qui garde le bloc européen **en entier**, et rien d'autre.
+
+    `_crochet` réduit toute liste à sa longueur : il est fait pour compter. Ici
+    il faut les entrées elles-mêmes, parce que c'est `dedupliquer_appartenances`
+    qui décide lesquelles sont des doublons — et ce module ne réimplémente pas
+    ce critère (#888).
+
+    Les autres objets du socle — mandats de l'Assemblée, votes, interventions —
+    traversent aussi ce crochet et n'en gardent que les clés ci-dessus, soit
+    quelques chaînes chacun. `None` pour ceux qui n'en portent aucune.
+    """
+    garde: dict[str, Any] = {}
+    for cle, valeur in pairs:
+        if cle not in CLES_APPARTENANCE_EUROPEENNE:
+            continue
+        if cle == "mandats_europeens":
+            garde[cle] = valeur if isinstance(valeur, list) else []
+        elif isinstance(valeur, (dict, str)):
+            garde[cle] = valeur
+    return garde or None
+
+
+def compter_doublons_europeens(raw_dir: Path, slug: str) -> int:
+    """Combien d'appartenances européennes la normalisation écarte, pour ce profil.
+
+    Rend 0 pour un profil sans bloc européen — l'écrasante majorité — et pour un
+    socle illisible : l'appelant relève déjà l'illisibilité comme un
+    rapprochement qui n'a pas eu lieu, et la compter deux fois brouillerait le
+    verdict. Une entrée que le crochet a vidée (`None`) n'est jamais appariée :
+    elle compte pour une entrée distincte, ce qui va dans le sens du contrôle.
+    """
+    chemin = raw_dir / f"{slug}{SUFFIXE_BRUT}"
+    try:
+        with chemin.open(encoding="utf-8") as flux:
+            racine = json.load(flux, object_pairs_hook=_crochet_appartenances)
+    except (OSError, ValueError):
+        return 0
+    if not isinstance(racine, dict):
+        return 0
+    bloc = racine.get("mandat_europeen")
+    entrees = bloc.get("mandats_europeens") if isinstance(bloc, dict) else None
+    if not isinstance(entrees, list):
+        return 0
+    _, ecartes = dedupliquer_appartenances([m for m in entrees if isinstance(m, dict)])
+    return len(ecartes)
+
+
+#: La seule réduction nommée du corpus à ce jour (#879, mesurée par #888).
+REDUCTION_DOUBLONS_EUROPEENS = Reduction(
+    libelle="doublons du portail européen (#879)",
+    justification=(
+        "Le portail européen publie la même appartenance **deux fois** — l'une "
+        "classée, l'autre non — et `normalize_europarl.dedupliquer_appartenances` "
+        "n'en publie qu'une (#879). Le brut garde les deux parce qu'il dit ce que "
+        "la source a rendu ; le pivot en publie une parce que c'est **un** fait. "
+        "Sans cette soustraction, le contrôle lit un déficit là où rien n'est "
+        "perdu : 29 profils et 45 entrées au run `34712936188`, tous sur des "
+        "profils à mandat européen (#888)."
+    ),
+    compter=compter_doublons_europeens,
+)
 
 
 #: La table. Une entrée par liste métier publiée, chacune avec sa justification.
@@ -289,8 +434,11 @@ RELATIONS: tuple[Relation, ...] = (
             "`mandat_europeen.mandats_europeens`. Mesuré : l'écart pivot−brut "
             "égale **exactement** ce compte sur les 476 profils, sans "
             "exception (40 432 = 40 154 + 278). D'où une somme, et un seuil qui "
-            "reste 0 — jamais une tolérance."
+            "reste 0 — jamais une tolérance. **Moins la réduction de #879** : le "
+            "portail européen publie certaines appartenances deux fois, et la "
+            "normalisation n'en publie qu'une."
         ),
+        reduction=REDUCTION_DOUBLONS_EUROPEENS,
     ),
 )
 
@@ -664,6 +812,13 @@ def auditer(
 
         for relation in relations:
             collecte = sum(_longueur(releve_brut, c) for c in relation.sources)
+            if relation.reduction is not None:
+                # Le compte collecté est celui des entrées **distinctes** : une
+                # appartenance que la source publie deux fois n'en fait qu'une
+                # (#888). Jamais en dessous de 0 — une réduction qui dépasserait
+                # son propre chemin serait un défaut de ce module, pas un
+                # excédent du corpus.
+                collecte = max(0, collecte - relation.reduction.compter(raw_dir, slug))
             publie = _longueur(releve_pivot, (relation.champ_pivot,))
             total = totaux[relation.champ_pivot]
             total.collecte += collecte
@@ -704,7 +859,10 @@ def auditer(
                 "sources": r.libelle_sources,
                 "nature": ("enrichissement attribué" if r.est_enrichissement
                            else "renommage" if r.est_renommage else "égalité"),
-                "justification": r.justification,
+                "justification": (
+                    r.justification if r.reduction is None
+                    else f"{r.justification} {r.reduction.justification}"
+                ),
                 "collecte": totaux[r.champ_pivot].collecte,
                 "publie": totaux[r.champ_pivot].publie,
                 "delta": (totaux[r.champ_pivot].publie

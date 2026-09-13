@@ -565,3 +565,129 @@ def test_le_rapport_expose_la_table_de_relations(tmp_path):
     for relation in RELATIONS:
         assert f"`{relation.champ_pivot}`" in markdown
         assert f"`{relation.libelle_sources}`" in markdown
+
+
+# ---------------------------------------------------------------------------
+# #888 — la réduction nommée : des entrées collectées qui n'en font qu'une
+# ---------------------------------------------------------------------------
+
+def _paire_europeenne(organisation, debut, fin):
+    """La forme exacte que le portail européen publie en double (#879).
+
+    L'une classée (`EU_INSTITUTION`, rôle générique), l'autre non (`AUTRE`,
+    rôle explicite). Même organisation, même période : c'est **une**
+    appartenance, écrite deux fois par la source.
+    """
+    return [
+        {"type": "EU_INSTITUTION", "organisation_nom": organisation,
+         "debut": debut, "fin": fin, "role": "MEMBER", "role_label": "Membre"},
+        {"type": "AUTRE", "organisation_nom": organisation,
+         "debut": debut, "fin": fin, "role": "MEMBER_PARLIAMENT",
+         "role_label": "Membre du Parlement européen"},
+    ]
+
+
+def test_un_doublon_du_portail_europeen_n_est_pas_un_deficit(tmp_path):
+    """Le run `34712936188` a bloqué sur 29 profils et 45 entrées, toutes sur
+    `mandats`, sans qu'aucune donnée soit perdue : le brut porte les deux
+    moitiés d'une paire que `dedupliquer_appartenances` réduit à une (#879).
+
+    Le compte collecté est celui des entrées **distinctes**. Pas une tolérance :
+    la même fonction, rejouée sur le brut.
+    """
+    raw_dir, pivot_dir = _corpus(tmp_path, {
+        "jordan-bardella": (
+            {"mandats": [],
+             "mandat_europeen": {"mandats_europeens":
+                                 _paire_europeenne("Mandat de député européen",
+                                                   "2019-07-02", "2024-07-15")
+                                 + _paire_europeenne("Mandat de député européen",
+                                                     "2024-07-16", None)}},
+            {"mandats": _entrees(2)},
+        ),
+    })
+
+    rapport = auditer(raw_dir, pivot_dir)
+
+    assert rapport["bloquant"] is False
+    assert rapport["nb_deficits"] == 0
+    assert rapport["nb_excedents"] == 0
+    relation = next(r for r in rapport["relations"] if r["champ_pivot"] == "mandats")
+    assert relation["collecte"] == 2
+
+
+def test_la_reduction_ne_couvre_pas_une_vraie_perte(tmp_path):
+    """La contrepartie, et c'est elle qui fait du correctif autre chose qu'un
+    `allow_declared_losses` déguisé : une entrée qui n'est le doublon de rien
+    reste un déficit."""
+    raw_dir, pivot_dir = _corpus(tmp_path, {
+        "jordan-bardella": (
+            {"mandats": [],
+             "mandat_europeen": {"mandats_europeens":
+                                 _paire_europeenne("Mandat de député européen",
+                                                   "2019-07-02", "2024-07-15")
+                                 + [{"type": "COMMITTEE_PARLIAMENTARY_STANDING",
+                                     "organisation_nom": "Commission des pétitions",
+                                     "debut": "2019-07-02", "fin": None,
+                                     "role": "MEMBER"}]}},
+            {"mandats": _entrees(1)},
+        ),
+    })
+
+    rapport = auditer(raw_dir, pivot_dir)
+
+    assert rapport["bloquant"] is True
+    assert rapport["deficits"][0]["delta"] == -1
+
+
+def test_deux_appartenances_classees_ne_sont_jamais_reduites(tmp_path):
+    """Le critère de #879 est étroit, et ce contrôle ne l'élargit pas : membre
+    et vice-président d'une même commission sur la même période sont **deux**
+    faits, et les confondre en perdrait un (§2 règle 2)."""
+    raw_dir, pivot_dir = _corpus(tmp_path, {
+        "jean-louis-bourlanges": (
+            {"mandats": [],
+             "mandat_europeen": {"mandats_europeens": [
+                 {"type": "COMMITTEE_PARLIAMENTARY_STANDING",
+                  "organisation_nom": "Commission des budgets",
+                  "debut": "1999-07-20", "fin": "2004-07-19", "role": "MEMBER"},
+                 {"type": "COMMITTEE_PARLIAMENTARY_STANDING",
+                  "organisation_nom": "Commission des budgets",
+                  "debut": "1999-07-20", "fin": "2004-07-19", "role": "CHAIR_VICE"},
+             ]}},
+            {"mandats": _entrees(1)},
+        ),
+    })
+
+    rapport = auditer(raw_dir, pivot_dir)
+
+    assert rapport["bloquant"] is True
+    assert rapport["deficits"][0]["delta"] == -1
+
+
+def test_la_reduction_se_lit_dans_le_rapport(tmp_path):
+    """Un garde-fou qui soustrait doit dire ce qu'il soustrait, et pourquoi —
+    sinon la soustraction est indistinguable d'une marge tolérée."""
+    raw_dir, pivot_dir = _corpus(tmp_path, {
+        "alice": ({"votes": _entrees(3)}, {"votes": _entrees(3)}),
+    })
+
+    rapport = auditer(raw_dir, pivot_dir)
+    markdown = generate_markdown_report(rapport)
+
+    assert "doublons du portail européen (#879)" in markdown
+    relation = next(r for r in rapport["relations"] if r["champ_pivot"] == "mandats")
+    assert "deux fois" in relation["justification"]
+
+
+def test_une_seule_relation_porte_une_reduction():
+    """Quatre relations sur cinq ne retirent rien, et `None` le dit : une
+    réduction qu'on ajouterait ailleurs sans la mesurer serait exactement la
+    marge non attribuée que #545 refuse."""
+    avec_reduction = [r.champ_pivot for r in RELATIONS if r.reduction is not None]
+
+    assert avec_reduction == ["mandats"]
+    for relation in RELATIONS:
+        if relation.reduction is not None:
+            assert relation.reduction.justification
+            assert relation.reduction.libelle in relation.libelle_sources
