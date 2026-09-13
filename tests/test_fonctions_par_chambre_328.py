@@ -72,13 +72,20 @@ def test_les_deux_teintes_manquantes_existent():
 
 def test_un_bloc_parlementaire_se_scinde_par_chambre():
     code = sans_commentaires(MODULE_REGLES.read_text(encoding="utf-8"))
-    assert "const chambreDOrgane = (m) => (" in code, (
+    assert "const chambreDOrgane = (m) => {" in code, (
         "La chambre d'un organe n'est plus dérivée : le banc redeviendrait "
         "écrit en dur."
     )
-    assert "m.categorie_source === 'europarl' ? INSTITUTION_PE : INSTITUTION_PARLEMENT" in code, (
-        "`categorie_source` est le discriminant : les organes ne portent pas "
-        "tous une `chambre` (mesuré le 13/09/2026)."
+    assert "m.categorie_source === 'europarl'" in code and "m.categorie_source === 'senat'" in code, (
+        "`categorie_source` est le discriminant — les organes ne portent pas "
+        "tous une `chambre` —, et il y a TROIS chambres depuis que le Sénat "
+        "est collecté (#885). La première version n'en connaissait que deux : "
+        "les 26 commissions sénatoriales de Bruno Retailleau retombaient sur "
+        "l'Assemblée, teinte et compte compris."
+    )
+    assert "return INSTITUTION_SENAT" in code, (
+        "Le Sénat n'a plus de banc à lui : ses organes seraient comptés avec "
+        "ceux de l'Assemblée."
     )
     assert "CATEGORIES_FONCTIONS.flatMap(" in code, (
         "Sans `flatMap`, une catégorie ne peut plus produire deux blocs."
