@@ -104,6 +104,13 @@ OCCURRENCES_ADMISES = {
         "#885 couvre auront quitté Regards Citoyens, ce module n'aura plus rien "
         "à retirer"
     ),
+    # (e) juger une provenance — le lot qui retire ce qui ment (#885 point 5)
+    "retrait_heritage_senat.py": (
+        "TYPES_REGARDS_CITOYENS : pour dire qu'une entrée `sources[]` ment sur "
+        "sa provenance, il faut nommer la provenance qu'elle prétend. Le "
+        "référentiel des URL reste `licences.MOTIFS_URL_REGARDS_CITOYENS` — ce "
+        "module ne recopie que les deux TYPES"
+    ),
     # (b) message destiné à un lecteur, au passé
     "group_profile.py": "meta.warnings publié : nomme la source d'avant #527",
     "group_roster.py": "refus de chambre : nomme la panne qui a motivé #528",

@@ -108,6 +108,10 @@ SITES_PYTHON: dict[tuple[str, str], str] = {
     # ailleurs : le Sénat est la seule source qui l'établisse sans ambiguïté
     # pour ses propres mandats, et un groupe d'amitié ne dit pas où l'on siège.
     ("normalize_senat.py", "normalize_mandat"): MANDAT,
+    # #885 — LIT la `chambre` d'un mandat pour savoir si un mandat sénatorial
+    # daté remplace un mandat hérité. Un remplaçant d'une autre chambre n'en est
+    # pas un, et le confondre retirerait un fait sans contrepartie.
+    ("retrait_heritage_senat.py", "mandats_electifs_remplaces"): MANDAT,
     ("mep_profile.py", "normalize_parltrack"): REPLI,
     # -- La fusion ----------------------------------------------------------
     # `merge_pivot_profile` réécrit les deux champs par `appliquer_chambres`
