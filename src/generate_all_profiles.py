@@ -130,6 +130,7 @@ from merge_profile import (
     preserver_collectes_non_vides,
 )
 from normalize_europarl import normalize_europarl
+from normalize_senat import normalize_mandats as normalize_mandats_senat, source_senat
 from normalize_profil import normalize_profil
 from schema_pivot import appliquer_chambres, poser_identifiant
 from mandats_anterieurs import (
@@ -902,6 +903,28 @@ def _normaliser_en_pivot(
             # Sans ce recalcul, un profil AN + PE publierait `["AN"]` et
             # effacerait le mandat européen — le défaut même que #486
             # reproche au scalaire, reconduit dans le champ censé le corriger.
+            appliquer_chambres(pivot_profile)
+
+    # #885 — LE BLOC SÉNATORIAL, versé exactement comme l'européen au-dessus.
+    #
+    # Deux sources étrangères au référentiel de l'Assemblée, deux blocs de même
+    # forme dans le brut, un seul chemin de normalisation à comprendre. La
+    # différence tient en une ligne : le Sénat ne rend **que** des mandats — ni
+    # votes, ni interventions, ni textes — parce que son jeu ne porte ni
+    # scrutins ni comptes rendus. La condition 2 du §7 de #528 reste déclarée
+    # non remplie, et l'absence se dit dans l'interface (#885 §5.7), pas ici.
+    mandat_senat = profile.get("mandat_senatorial")
+    if mandat_senat and pivot_profile is not None:
+        mandats_senat = normalize_mandats_senat(
+            mandat_senat.get("mandats_senatoriaux") or [])
+        if mandats_senat:
+            pivot_profile["mandats"].extend(mandats_senat)
+            pivot_profile.setdefault("sources", []).append(
+                source_senat(mandat_senat.get("synchro_le")))
+            # #493 : `mandats[]` vient de changer, donc `chambres` aussi. Sans
+            # ce recalcul, un profil AN + Sénat publierait `["AN"]` et effacerait
+            # la carrière sénatoriale — le défaut exact que #486 reproche au
+            # scalaire, et que l'oubli du recalcul reconduirait ici.
             appliquer_chambres(pivot_profile)
 
     if pivot_profile is None:
