@@ -296,8 +296,24 @@ def _perimetre(mep_id: Optional[int] = None) -> frozenset[int]:
     return (_PERIMETRE_MEPS or frozenset()) | demande
 
 
+#: Version du **schéma** des entrées d'index, versée dans le nom du fichier.
+#:
+#: L'empreinte ne portait que le périmètre, et c'est un cas qu'elle ne couvrait
+#: pas : quand une entrée d'index gagne un champ, un cache écrit par la version
+#: précédente reste lisible, se relit sans erreur, et rend le nouveau champ
+#: **absent partout**. Un stade nul se lirait alors comme « la source ne le
+#: publie pas » — le contraire de ce que #901 vient d'établir.
+#:
+#: L'incrémenter à chaque changement de forme d'une entrée. C'est le même geste
+#: que l'empreinte de périmètre : faire rater le cache plutôt que le faire
+#: mentir (#510).
+#:
+#:   2 — #901 : `stade_source` sur les entrées de `build_dossiers_index`.
+VERSION_SCHEMA_INDEX = 2
+
+
 def _empreinte_perimetre(perimetre: frozenset[int]) -> str:
-    """Empreinte courte du périmètre, portée par le NOM du fichier d'index.
+    """Empreinte courte du périmètre et du schéma, portée par le NOM du fichier.
 
     Même geste qu'au #505 pour les caches de collecte : un index construit pour
     3 personnes et relu pour 7 rendrait quatre listes vides, et quatre listes
@@ -305,11 +321,11 @@ def _empreinte_perimetre(perimetre: frozenset[int]) -> str:
     cache au lieu de le faire mentir.
     """
     if not perimetre:
-        return "tous"
+        return f"v{VERSION_SCHEMA_INDEX}-tous"
     empreinte = hashlib.sha256(
         ",".join(str(m) for m in sorted(perimetre)).encode("utf-8")
     ).hexdigest()
-    return f"{len(perimetre)}-{empreinte[:12]}"
+    return f"v{VERSION_SCHEMA_INDEX}-{len(perimetre)}-{empreinte[:12]}"
 
 
 # ---------------------------------------------------------------------------
@@ -380,6 +396,14 @@ def build_dossiers_index(
                     "role": "rapporteur",
                     "date": date[:10] if date else None,
                     "source_url": url,
+                    # #901 — `procedure.stage_reached`, tel que la source
+                    # l'écrit. Il était lu ici puis jeté, et les 383 textes
+                    # portés européens publiaient `stade_procedural: null`.
+                    # Mesuré le 13/09/2026 sur le dump entier : 20 442 des
+                    # 23 885 dossiers en portent un (85,6 %), sur 16 valeurs.
+                    # Conservé BRUT : la traduction vers la nomenclature pivot
+                    # est le travail du normaliseur, pas de l'indexeur.
+                    "stade_source": procedure.get("stage_reached") or None,
                 })
 
     if warnings:
