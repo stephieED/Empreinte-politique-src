@@ -528,6 +528,7 @@ export function positionSurAxe(date, bornes) {
  *  « À l'Assemblée ». */
 const NOM_DE_CHAMBRE = {
   [INSTITUTION_PARLEMENT]: 'Assemblée nationale',
+  [INSTITUTION_SENAT]: 'Sénat',
   [INSTITUTION_PE]: 'Parlement européen',
 };
 
@@ -717,9 +718,19 @@ export function fonctionsExercees(mandats, aujourdhui = aujourdhuiISO()) {
    * deux d'un même geste.
    *
    * Le Sénat n'apparaît pas : ses organes ne sont pas collectés (#528). */
-  const chambreDOrgane = (m) => (
-    m.categorie_source === 'europarl' ? INSTITUTION_PE : INSTITUTION_PARLEMENT
-  );
+  const chambreDOrgane = (m) => {
+    /* TROIS CHAMBRES, ET C'EST LE SÉNAT QUI L'A MONTRÉ (#885, 13/09/2026).
+       La première version n'en connaissait que deux : un organe sénatorial
+       retombait sur l'Assemblée, donc sur sa teinte et dans son compte. Mesuré
+       le jour où le Sénat est entré — Bruno Retailleau porte 26 commissions
+       sénatoriales contre 1 à l'Assemblée, 26 groupes d'études et 24 groupes
+       d'amitié, tous sénatoriaux ; et le bloc « commission » de Jean-Luc
+       Mélenchon en mêle TROIS : 31 à l'Assemblée, 10 au Parlement européen,
+       8 au Sénat. `categorie_source` les sépare, et rien d'autre ne le fait. */
+    if (m.categorie_source === 'europarl') return INSTITUTION_PE;
+    if (m.categorie_source === 'senat') return INSTITUTION_SENAT;
+    return INSTITUTION_PARLEMENT;
+  };
 
   const blocs = CATEGORIES_FONCTIONS.flatMap(({ cle, titre, banc, fonctions, sansMarque, suffixe }) => {
     const retenus = liste.filter((x) => x.categorie === cle && (!fonctions || fonctions(x.fonction)));
