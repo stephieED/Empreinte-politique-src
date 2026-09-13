@@ -1542,6 +1542,18 @@
   --teinte-banc: var(--gouv);
 }
 
+/* LA CHAMBRE PORTE LA TEINTE, PAS LE SEUL BANC (#328, 13/09/2026). Une
+   commission du Parlement européen se peignait de la teinte de l'Assemblée : le
+   banc était écrit en dur, et ces deux blocs n'existaient pas. Ce sont les
+   mêmes valeurs que la frise, jamais un second jeu. */
+.cp-fonctions-bloc--pe {
+  --teinte-banc: var(--pe);
+}
+
+.cp-fonctions-bloc--senat {
+  --teinte-banc: var(--senat);
+}
+
 /* La mission n'est ni l'un ni l'autre : un⋅e parlementaire en mission auprès
    d'un ministère reste parlementaire. La frise la rend en contour tireté ; la
    pastille la reprend en tireté, pour qu'elle se distingue aussi par la FORME
@@ -1551,6 +1563,8 @@
 }
 
 .cp-fonctions-bloc--parlement .cp-fonctions-titre,
+.cp-fonctions-bloc--pe .cp-fonctions-titre,
+.cp-fonctions-bloc--senat .cp-fonctions-titre,
 .cp-fonctions-bloc--gouvernement .cp-fonctions-titre,
 .cp-fonctions-bloc--mission .cp-fonctions-titre {
   color: var(--teinte-banc);
