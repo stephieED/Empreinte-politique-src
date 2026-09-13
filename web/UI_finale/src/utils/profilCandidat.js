@@ -523,6 +523,14 @@ export function positionSurAxe(date, bornes) {
  * son temps. Une catégorie par bloc, jamais un total — un groupe d'amitié et
  * une commission d'enquête ne s'additionnent pas.
  */
+/** Le nom de la chambre dans un titre de bloc — « Commissions · Assemblée
+ *  nationale ». Distinct de `LIBELLE_PISTE`, qui nomme des colonnes et se lit
+ *  « À l'Assemblée ». */
+const NOM_DE_CHAMBRE = {
+  [INSTITUTION_PARLEMENT]: 'Assemblée nationale',
+  [INSTITUTION_PE]: 'Parlement européen',
+};
+
 export const CATEGORIES_FONCTIONS = [
     // La source range sous `commission` bien plus que les commissions
   // permanentes : commissions spéciales, groupes de travail, un comité
@@ -693,9 +701,40 @@ export function fonctionsExercees(mandats, aujourdhui = aujourdhuiISO()) {
     aujourdhui,
   );
 
-  const blocs = CATEGORIES_FONCTIONS.map(({ cle, titre, banc, fonctions, sansMarque, suffixe }) => {
+  /* LA CHAMBRE D'UN ORGANE, ET POURQUOI ELLE SCINDE LE BLOC (#328).
+   *
+   * `banc` était écrit en dur à `parlement` pour les sept catégories
+   * parlementaires, si bien qu'une commission du Parlement européen se peignait
+   * de la teinte de l'Assemblée — le défaut même que #328 avait corrigé sur la
+   * frise, et que cette section n'avait pas suivi. Mesuré le 13/09/2026 sur les
+   * 21 fiches qui ont des fonctions : **4** les ont toutes européennes
+   * (Glucksmann, Philippot, Bardella, Massard) et **3** mélangent les deux
+   * chambres dans leur bloc « Commissions » (Maurel, Mélenchon, Le Pen).
+   *
+   * Pour ces trois-là, une seule teinte ne pouvait pas dire les deux — et le
+   * titre annonçait « 13 intitulés » sans dire combien étaient européens, un
+   * dénominateur qui agrège deux institutions (§2 règle 7). Scinder corrige les
+   * deux d'un même geste.
+   *
+   * Le Sénat n'apparaît pas : ses organes ne sont pas collectés (#528). */
+  const chambreDOrgane = (m) => (
+    m.categorie_source === 'europarl' ? INSTITUTION_PE : INSTITUTION_PARLEMENT
+  );
+
+  const blocs = CATEGORIES_FONCTIONS.flatMap(({ cle, titre, banc, fonctions, sansMarque, suffixe }) => {
+    const retenus = liste.filter((x) => x.categorie === cle && (!fonctions || fonctions(x.fonction)));
+    // Seules les fonctions PARLEMENTAIRES se scindent : un portefeuille
+    // ministériel n'a pas de chambre, et lui en inventer une serait faux.
+    const chambres = banc === INSTITUTION_PARLEMENT
+      ? [...new Set(retenus.map(chambreDOrgane))]
+      : [null];
+    // Le titre ne porte la chambre que si la fiche en a PLUSIEURS : sur une
+    // fiche qui n'a connu qu'un banc, la teinte suffit et le préciser ferait un
+    // refrain.
+    const nommerLaChambre = chambres.length > 1;
+    return chambres.map((chambre) => {
     const parIntitule = new Map();
-    for (const m of liste.filter((x) => x.categorie === cle && (!fonctions || fonctions(x.fonction)))) {
+    for (const m of (chambre ? retenus.filter((x) => chambreDOrgane(x) === chambre) : retenus)) {
       const label = m.label || 'Intitulé non publié';
       if (!parIntitule.has(label)) parIntitule.set(label, []);
       parIntitule.get(label).push(m);
@@ -730,16 +769,20 @@ export function fonctionsExercees(mandats, aujourdhui = aujourdhuiISO()) {
 
     return {
       // Deux blocs partagent la catégorie `fonction_gouvernementale` : leur clé
-      // les distingue, sinon React en monterait deux sous la même.
-      cle: suffixe ? `${cle}_${suffixe}` : cle,
-      titre,
+      // les distingue, sinon React en monterait deux sous la même. La chambre
+      // s'y ajoute depuis que les blocs parlementaires se scindent.
+      cle: [cle, suffixe, chambre].filter(Boolean).join('_'),
+      titre: nommerLaChambre && chambre ? `${titre} · ${NOM_DE_CHAMBRE[chambre]}` : titre,
       // Le BANC dont relève la fonction, pour que la vue reprenne la grammaire
-      // de couleurs de la frise plutôt que d'en inventer une.
-      banc,
+      // de couleurs de la frise plutôt que d'en inventer une. Depuis le
+      // 13/09/2026 il porte la CHAMBRE quand il y en a une : une commission
+      // européenne se peignait de la teinte de l'Assemblée.
+      banc: chambre ?? banc,
       nbIntitules: lignes.length,
       montrees: lignes.slice(0, NB_FONCTIONS_MONTREES),
       reste: lignes.slice(NB_FONCTIONS_MONTREES),
     };
+    });
   }).filter((c) => c.nbIntitules > 0);
 
   return { mandat: { jours, duree: dureeDeSiege(jours) }, blocs };

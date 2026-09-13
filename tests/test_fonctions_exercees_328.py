@@ -421,9 +421,12 @@ def test_la_mission_aupres_d_un_ministere_a_son_propre_bloc(regles):
 
 def test_les_deux_blocs_gouvernementaux_ont_des_cles_distinctes(regles):
     """Ils partagent la catégorie `fonction_gouvernementale` : sans suffixe,
-    React en monterait deux sous la même clé."""
+    React en monterait deux sous la même clé.
+
+    Depuis le 13/09/2026 la CHAMBRE s'y ajoute, pour la même raison : les deux
+    blocs « Commissions » d'une fiche mixte partageraient la leur."""
     fabrique = _corps(regles, "export function fonctionsExercees", "\n}")
-    assert "suffixe ? `${cle}_${suffixe}` : cle" in fabrique
+    assert "cle: [cle, suffixe, chambre].filter(Boolean).join('_')" in fabrique
 
 
 def test_la_marque_ne_s_applique_pas_aux_blocs_gouvernementaux(regles):
@@ -449,9 +452,11 @@ def test_la_couleur_dit_le_banc_et_non_la_categorie(regles, composant, feuille):
     assert categories.count("banc: INSTITUTION_GOUVERNEMENT") == 1
     assert categories.count("banc: INSTITUTION_MISSION") == 1
     assert "cp-fonctions-bloc--${b.banc}" in composant
-    # Trois classes de banc, pas neuf de catégorie.
+    # Une classe par BANC, pas neuf de catégorie. Le banc compte la CHAMBRE
+    # depuis le 13/09/2026 : une commission européenne se peignait de la teinte
+    # de l'Assemblée (#328). Les catégories, elles, restent sans classe.
     bancs = set(re.findall(r"\.cp-fonctions-bloc--(\w+)", feuille))
-    assert bancs == {"parlement", "gouvernement", "mission"}, (
+    assert bancs == {"parlement", "pe", "senat", "gouvernement", "mission"}, (
         f"une classe par banc, pas par catégorie : {sorted(bancs)}"
     )
 
