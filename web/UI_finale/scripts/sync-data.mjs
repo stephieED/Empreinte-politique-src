@@ -190,7 +190,21 @@ const aSiegeOuGouverne = (slug) => {
   const gouvernement = (profil.mandats || []).some(
     (m) => m.categorie === 'fonction_gouvernementale',
   );
-  return chambres.includes('AN') || gouvernement;
+  /* UN MANDAT DANS L'UNE DES QUATRE INSTITUTIONS, quelle qu'elle soit
+     (arbitrage de la propriétaire, 13/09/2026). `chambres` porte les trois
+     assemblées — Assemblée nationale, Sénat, Parlement européen — et la
+     quatrième institution est le gouvernement.
+
+     Le critère ne nommait que l'Assemblée et le gouvernement, et grisait donc
+     trois fiches qui portent de l'activité : Glucksmann 4 672 entrées,
+     Philippot 3 466, Massard 432. La pastille affirmait « ni vote, ni
+     intervention, ni amendement » — c'était faux.
+
+     Il reste ce qui a été EXERCÉ, jamais ce que nous avons collecté : c'est ce
+     qui garde Ségolène Royal non grisée, sept fonctions gouvernementales et
+     aucun vote publié. Mesuré le 13/09/2026 : les 11 fiches grisées portent
+     zéro mandat, toutes institutions confondues. */
+  return chambres.length > 0 || gouvernement;
 };
 
 const manifestCandidates = candidats
@@ -201,7 +215,7 @@ const manifestCandidates = candidats
     parti: c.parti,
     famillePolitique: c.famille_politique,
     statut: c.statut,
-    mandatAnOuGouvernement: aSiegeOuGouverne(c.slug),
+    aSiegeOuGouverne: aSiegeOuGouverne(c.slug),
   }))
   /* L'ORDRE EST CELUI DU LIBELLÉ AFFICHÉ, pas celui du fichier source.
    * `raw_data/candidats.json` suit l'ordre de collecte, que rien ne rend

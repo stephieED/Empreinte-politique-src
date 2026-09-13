@@ -74,25 +74,49 @@ def test_le_tri_porte_sur_le_libelle_affiche(sync: str) -> None:
 
 
 def test_le_critere_lit_deux_faits_sourcees(sync: str) -> None:
+    """Deux faits publiés, jamais un intitulé : le champ dérivé `chambres`, et
+    la catégorie du mandat."""
     bloc = sync[sync.index("const aSiegeOuGouverne") :]
     bloc = bloc[: bloc.index("\n};")]
-    assert "chambres" in bloc, "le mandat AN n'est pas lu dans le champ dérivé"
-    assert "'AN'" in bloc
+    assert "chambres" in bloc, "le banc n'est pas lu dans le champ dérivé"
     assert "fonction_gouvernementale" in bloc
 
 
-def test_le_parlement_europeen_ne_vaut_pas_un_mandat_a_l_assemblee(sync: str) -> None:
-    """Quatre candidats ont toute leur carrière au PE. `chambres` les distingue,
-    et c'est la seule chose qui les distingue — un intitulé ne le dirait pas."""
+def test_un_mandat_dans_l_une_des_quatre_institutions_suffit(sync: str) -> None:
+    """ARBITRAGE RENVERSÉ LE 13/09/2026, et c'est volontaire.
+
+    Ce test s'appelait `test_le_parlement_europeen_ne_vaut_pas_un_mandat_a_l_assemblee`
+    et exigeait `includes('AN')` : le Parlement européen ne comptait pas, ce qui
+    grisait quatre fiches dont toute la carrière y est. Trois d'entre elles
+    portent pourtant de l'activité — Glucksmann 4 672 entrées, Philippot 3 466,
+    Massard 432 — et la pastille affirmait « ni vote, ni intervention, ni
+    amendement ».
+
+    La propriétaire a tranché : est grisée une fiche **sans mandat dans aucune
+    des quatre institutions** — Assemblée nationale, Sénat, Parlement européen,
+    gouvernement. `chambres` porte les trois assemblées, la catégorie du mandat
+    porte la quatrième, d'où `chambres.length > 0 || gouvernement`.
+
+    Ce que le renversement ne change pas : le critère reste ce qui a été
+    EXERCÉ, jamais ce que nous avons collecté — Ségolène Royal, sept fonctions
+    gouvernementales et aucun vote publié, n'est pas grisée.
+    """
     bloc = sync[sync.index("const aSiegeOuGouverne") :]
     bloc = bloc[: bloc.index("\n};")]
-    assert "includes('AN')" in bloc, "le test de chambre accepterait 'PE'"
+    assert "chambres.length > 0" in bloc, (
+        "le critère est redevenu une liste d'institutions nommées : une "
+        "cinquième chambre publiée un jour y serait oubliée en silence"
+    )
+    assert "includes('AN')" not in bloc, (
+        "l'Assemblée est redevenue un cas particulier, et le Parlement "
+        "européen ne compte plus (arbitrage du 13/09/2026)"
+    )
 
 
 def test_le_manifeste_publie_la_cle_et_le_chargeur_la_lit(sync: str) -> None:
-    assert "mandatAnOuGouvernement: aSiegeOuGouverne(c.slug)" in sync
+    assert "aSiegeOuGouverne: aSiegeOuGouverne(c.slug)" in sync
     chargeur = sans_commentaires(CHARGEUR.read_text(encoding="utf-8"))
-    assert "mandatAnOuGouvernement" in chargeur
+    assert "aSiegeOuGouverne" in chargeur
 
 
 def test_l_absence_de_cle_ne_grise_pas(chargeur=CHARGEUR) -> None:
@@ -102,14 +126,14 @@ def test_l_absence_de_cle_ne_grise_pas(chargeur=CHARGEUR) -> None:
     se rend pas comme un fait négatif (§2 règle 5).
     """
     source = sans_commentaires(chargeur.read_text(encoding="utf-8"))
-    assert "c.mandatAnOuGouvernement !== false" in source
+    assert "c.aSiegeOuGouverne !== false" in source
 
 
 def test_la_pastille_grisee_reste_une_pastille(barre: str) -> None:
     """Ni `disabled`, ni retrait de la liste : la fiche existe et s'atteint."""
     assert "disabled" not in barre
     assert "cb-chip--sans-mandat" in barre
-    assert "filter((c) => c.mandatAnOuGouvernement" not in barre
+    assert "filter((c) => c.aSiegeOuGouverne" not in barre
 
 
 def test_le_grise_dit_ce_qu_il_veut_dire(barre: str) -> None:

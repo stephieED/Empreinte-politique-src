@@ -42,6 +42,7 @@ import {
 } from '../utils/votesParPeriode';
 import {
   couvertureDesParoles,
+  parolesParQualite,
   periodesDeParole,
   plafondParPeriode,
   plafondToutesPeriodes,
@@ -350,6 +351,14 @@ export function buildCandidateView(
     gouvernements: tousLesGouvernements || [],
   });
   const periodesDeParoles = periodesDeParole(parolesQualifiees);
+  /* Les mêmes paroles, rangées par QUALITÉ (#328) : on ne parle pas du même
+     endroit selon qu'on siège à Paris, qu'on gouverne ou qu'on siège à
+     Strasbourg. `periodes` reste servi pour les vues qui lisent tout d'un bloc
+     (la couverture, les plafonds) ; la section, elle, lit les qualités. */
+  const qualitesDeParole = parolesParQualite(interventions, {
+    roles: roles.filter((r) => r.institution === INSTITUTION_PARLEMENT),
+    gouvernements: tousLesGouvernements || [],
+  });
 
   return {
     id: manifestEntry.slug,
@@ -424,6 +433,7 @@ export function buildCandidateView(
       qualite,
       questions,
       periodes: periodesDeParoles,
+      qualites: qualitesDeParole,
       plafondPeriode: plafondParPeriode(periodesDeParoles),
       plafondEnsemble: plafondToutesPeriodes(periodesDeParoles),
       couverture: couvertureDesParoles(parolesQualifiees),

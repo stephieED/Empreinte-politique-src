@@ -137,6 +137,44 @@ export function qualifierInterventions(interventions, { roles = [], gouvernement
   });
 }
 
+/* ── La qualité : à quel titre la personne a parlé (#328) ───────────────────
+ *
+ * Une carrière traverse des bancs, et on n'y parle pas du même endroit. La
+ * section les mélangeait sous un seul titre, et les rangeait toutes par
+ * GOUVERNEMENT FRANÇAIS — y compris les interventions européennes. Mesuré le
+ * 13/09/2026 : les 128 interventions de Raphaël Glucksmann au Parlement
+ * européen se répartissaient sur quatre gouvernements français, dont une seule
+ * sous « gouvernement Attal ». Le cadre ne disait rien, et il le disait avec
+ * assurance (§2 règle 2).
+ *
+ * Trois qualités, jamais devinées : la fonction publiée par le compte rendu
+ * pour le gouvernement, le marqueur d'institution pour l'Europe, et le reste à
+ * l'Assemblée. Mesuré sur les 17 fiches qui portent des interventions : 13
+ * n'ont qu'une qualité, 4 en ont deux, aucune n'en a trois.
+ */
+export const QUALITE_AN = 'AN';
+export const QUALITE_GOUVERNEMENT = 'GOUV';
+export const QUALITE_PE = 'PE';
+
+const FONCTION_GOUVERNEMENTALE = /ministre|secrétaire d'état|premier ministre/i;
+
+export const LIBELLE_QUALITE = {
+  [QUALITE_AN]: 'En qualité de député(e)',
+  [QUALITE_GOUVERNEMENT]: 'En qualité de membre du gouvernement',
+  [QUALITE_PE]: 'En qualité de député(e) européen(ne)',
+};
+
+/** L'ordre est celui de la frise — le banc français d'abord, l'Europe ensuite —
+ *  pour que deux fiches se comparent. */
+export const ORDRE_QUALITES = [QUALITE_AN, QUALITE_GOUVERNEMENT, QUALITE_PE];
+
+export function qualiteDeParole(intervention) {
+  const fonction = intervention?.fonction;
+  if (fonction && FONCTION_GOUVERNEMENTALE.test(fonction)) return QUALITE_GOUVERNEMENT;
+  if ((intervention?.source?.institution ?? null) === 'parlement_europeen') return QUALITE_PE;
+  return QUALITE_AN;
+}
+
 /* ── Le découpage ───────────────────────────────────────────────────────────
  *
  * Une nouvelle période dès que le couple (banc, gouvernement) change — le même
@@ -180,6 +218,53 @@ export function periodesDeParole(qualifiees) {
     // la période voisine (§2 règle 5).
     sansRepere: !p.banc && !p.gouvernementId,
   }));
+}
+
+/* ── Les paroles, rangées par qualité ───────────────────────────────────────
+ *
+ * Une qualité française se découpe en périodes politiques, comme avant. La
+ * qualité EUROPÉENNE, non : une législature européenne ne suit pas les
+ * gouvernements français, et les y ranger produisait le « gouvernement Attal »
+ * de Glucksmann. Elle rend donc UNE période, non datée, que la vue sait
+ * reconnaître à `sansDecoupage` — et la sélection des périodes disparaît.
+ *
+ * Elle rend une période plutôt que rien parce que tout le reste de la vue —
+ * natures, sujets, fil — travaille sur des périodes : lui faire deux chemins
+ * aurait dupliqué ce que le découpage seul distingue.
+ */
+export function parolesParQualite(interventions, { roles = [], gouvernements = [] } = {}) {
+  const parQualite = new Map();
+  for (const i of interventions || []) {
+    const q = qualiteDeParole(i);
+    if (!parQualite.has(q)) parQualite.set(q, []);
+    parQualite.get(q).push(i);
+  }
+
+  return ORDRE_QUALITES.filter((q) => parQualite.has(q)).map((q) => {
+    const lot = parQualite.get(q);
+    const qualifiees = qualifierInterventions(lot, { roles, gouvernements });
+    if (q !== QUALITE_PE) {
+      return { qualite: q, libelle: LIBELLE_QUALITE[q], total: lot.length, periodes: periodesDeParole(qualifiees) };
+    }
+    const datees = qualifiees.filter((i) => i.date).sort((a, b) => (a.date < b.date ? -1 : 1));
+    return {
+      qualite: q,
+      libelle: LIBELLE_QUALITE[q],
+      total: lot.length,
+      periodes: datees.length ? [{
+        cle: 'pe',
+        banc: null,
+        gouvernementId: null,
+        gouvernement: null,
+        debut: datees[0].date,
+        fin: datees[datees.length - 1].date,
+        interventions: datees,
+        groupes: [],
+        sansRepere: true,
+        sansDecoupage: true,
+      }] : [],
+    };
+  }).filter((b) => b.periodes.length);
 }
 
 /* ── Les sujets d'un lot ────────────────────────────────────────────────────
