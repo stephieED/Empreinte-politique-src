@@ -83,6 +83,105 @@ def retirer_sources_menteuses(profil: dict[str, Any]) -> list[dict[str, Any]]:
     return retirees
 
 
+#: Les appartenances non électives héritées de NosSénateurs, et l'organe
+#: sénatorial qui les remplace — **une ligne par entrée, écrite à la main**
+#: (#908).
+#:
+#: Pourquoi une table et non une heuristique. Six des huit s'apparient à
+#: l'identique une fois #912 corrigé, et une règle de similarité les prendrait
+#: aussi. Les deux dernières ne diffèrent pas dans le même sens : « Groupe
+#: Chrétiens d'Orient » porte un mot **de plus** que le libellé du Sénat,
+#: « Groupe d'études Agriculture et alimentation » un mot **de moins**. Une
+#: règle assez souple pour les deux accepterait « Groupe d'études Élevage »,
+#: qui est un organe **distinct** du Sénat. C'est la faute que #878 a commise
+#: dans l'autre sens, et la raison pour laquelle #908 écrit « pas de
+#: remplacement en bloc ».
+#:
+#: Chaque ligne a été vérifiée contre l'export : pour les deux libellés qui ne
+#: coïncident pas, la source ne porte **qu'un seul** organe candidat.
+APPARIEMENTS_HERITES: dict[str, str] = {
+    # Identiques au libellé publié par le Sénat une fois `libcomlilmin` lu (#912).
+    "Collège consultatif de la commission du fonds pour le développement de la vie associative":
+        "Collège consultatif de la commission du fonds pour le développement de la vie associative",
+    "Commission départementale de la coopération intercommunale":
+        "Commission départementale de la coopération intercommunale",
+    "Commission départementale de répartition des crédits de la dotation d'équipement des territoires ruraux":
+        "Commission départementale de répartition des crédits de la dotation d'équipement des territoires ruraux",
+    "Groupe d'information internationale sur le Haut-Karabagh":
+        "Groupe d'information internationale sur le Haut-Karabagh",
+    "Groupe d'études Statut, rôle et place des Français établis hors de France":
+        "Groupe d'études Statut, rôle et place des Français établis hors de France",
+    # #912 fait de celui-ci un exact : `evelib` publiait « Culture ».
+    "Commission de la culture, de l'éducation et de la communication":
+        "Commission de la culture, de l'éducation et de la communication",
+    # Le Sénat nomme l'organe sans le mot « Groupe », et le range en groupe de
+    # LIAISON — l'entrée héritée le rangeait en groupe d'amitié. Le
+    # remplacement corrige donc aussi sa catégorie.
+    "Groupe Chrétiens d'Orient": "Chrétiens d'Orient",
+    # `orgcod=919`, seul organe sénatorial dont le nom porte « agriculture » ou
+    # « alimentation ». « Groupe d'études Élevage » existe à côté : c'est un
+    # autre organe, et il n'est pas concerné.
+    "Groupe d'études Agriculture et alimentation":
+        "Groupe d'études Agriculture, élevage et alimentation",
+}
+
+
+def _labels_publies(labels: Any) -> set[str]:
+    """Les libellés sénatoriaux effectivement publiés — **`None` exclu**.
+
+    Cinq appartenances sénatoriales sont publiées sans nom : leur organe n'a
+    aucune ligne dans la table des libellés, et `decouper_sur_renommages` le
+    déclare (`libelle_non_resolu`) plutôt que de l'inventer (§2 règle 5).
+
+    Les garder ici serait une faute, et elle a été commise : `table.get(label)`
+    rend `None` pour un libellé **absent de la table**, et `None in publies`
+    était alors vrai. La fonction proposait au retrait **17 mandats de député**
+    de `jean-luc-melenchon` — « Commission des affaires étrangères », 2017-2022,
+    Assemblée nationale — au seul motif qu'ils n'étaient pas estampillés. Même
+    famille que le défaut que le recouvrement de période a corrigé sur
+    `mandats_electifs_remplaces` : **un critère trop large efface un fait**.
+    """
+    return {label for label in labels if isinstance(label, str) and label}
+
+
+def _est_remplace(mandat: dict[str, Any], table: dict[str, str], publies: set[str]) -> bool:
+    """True si ce mandat a une ligne dans la table ET que son remplaçant est publié."""
+    remplacant = table.get(mandat.get("label"))
+    return bool(remplacant) and remplacant in publies
+
+
+def mandats_apparies_remplaces(
+    profil: dict[str, Any],
+    appariements: Optional[dict[str, str]] = None,
+) -> list[dict[str, Any]]:
+    """Les appartenances **non électives** héritées qu'un organe sénatorial remplace.
+
+    Rend la liste sans rien retirer, comme `mandats_electifs_remplaces` : le
+    retrait attend que le remplaçant soit publié.
+
+    Trois conditions, et la troisième est celle qui empêche de publier un trou :
+
+      - l'absence de `categorie_source` — personne n'a établi cette catégorie ;
+      - une ligne dans `APPARIEMENTS_HERITES`, écrite et vérifiée à la main ;
+      - **la présence effective du remplaçant** dans `mandats[]`, estampillé
+        `senat`. Une table d'appariement dit ce qui *devrait* remplacer ; elle
+        ne prouve pas que la collecte l'a publié. Sans ce contrôle, un lot qui
+        renommerait l'organe côté source retirerait le fait hérité sans que
+        rien ne prenne sa place.
+
+    Les mandats électifs sont hors de ce périmètre : ils ont leur propre
+    fonction, et leur critère est le **recouvrement de période**, pas le nom.
+    """
+    table = APPARIEMENTS_HERITES if appariements is None else appariements
+    mandats = profil.get("mandats") or []
+    publies = _labels_publies(m.get("label") for m in mandats
+                              if isinstance(m, dict) and m.get("categorie_source") == "senat")
+    return [m for m in mandats if isinstance(m, dict)
+            and m.get("categorie") != "mandat_electif"
+            and not m.get("categorie_source")
+            and _est_remplace(m, table, publies)]
+
+
 def mandats_electifs_remplaces(
     profil: dict[str, Any],
     chambre_remplacante: str = "Senat",
@@ -122,6 +221,27 @@ def mandats_electifs_remplaces(
             and any(periodes_se_recouvrent(m.get("debut"), m.get("fin"),
                                            r.get("debut"), r.get("fin"))
                     for r in remplacants)]
+
+
+def mandats_bruts_apparies_remplaces(
+    brut: dict[str, Any],
+    appariements: Optional[dict[str, str]] = None,
+) -> list[dict[str, Any]]:
+    """`mandats_apparies_remplaces`, côté **brut** — la moitié qu'on oublie (#729).
+
+    Le remplaçant se lit dans le bloc `mandat_senatorial` du brut lui-même, et
+    non dans le pivot : les deux couches se contrôlent l'une l'autre, et faire
+    dépendre le brut du pivot inverserait le sens de la chaîne.
+    """
+    table = APPARIEMENTS_HERITES if appariements is None else appariements
+    bloc = brut.get("mandat_senatorial") or {}
+    publies = _labels_publies(m.get("label") for m in (bloc.get("mandats_senatoriaux") or [])
+                              if isinstance(m, dict))
+    return [m for m in (brut.get("mandats") or [])
+            if isinstance(m, dict)
+            and m.get("categorie") != "mandat_electif"
+            and not m.get("categorie_source")
+            and _est_remplace(m, table, publies)]
 
 
 def mandats_bruts_remplaces(brut: dict[str, Any]) -> list[dict[str, Any]]:
