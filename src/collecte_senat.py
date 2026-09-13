@@ -125,8 +125,17 @@ def collecter(
     *,
     appliquer: bool = False,
     synchro_le: Optional[str] = None,
+    manifest_out: Optional[Path] = None,
 ) -> dict[str, Any]:
-    """Écrit (ou simule) le bloc sénatorial des profils du périmètre."""
+    """Écrit (ou simule) le bloc sénatorial des profils du périmètre.
+
+    `manifest_out` consigne **les seuls fichiers que ce job a écrits**, un par
+    ligne (#450). La CI uploade ce périmètre-là et jamais `raw_data/profiles/` :
+    le répertoire contient la baseline committée récupérée par le checkout, et
+    l'uploader entier réinjecterait une copie périmée de tous les autres
+    profils — mesuré au run 32277443716, 3 335 amendements sur `antoine-armand`
+    dont 1 289 périmés cohabitant avec leurs 2 046 corrigés.
+    """
     tables = lire_tables(export)
     document = _charger(correspondance)
     if document is None:
@@ -154,6 +163,11 @@ def collecter(
         ecrits.append({"slug": slug, "matricule": matricule,
                        "mandats": len(bloc["mandats_senatoriaux"])})
 
+    if manifest_out is not None and appliquer:
+        manifest_out.parent.mkdir(parents=True, exist_ok=True)
+        manifest_out.write_text(
+            "".join(f"{e['slug']}.json\n" for e in ecrits), encoding="utf-8")
+
     return {
         "applique": appliquer,
         "nb_profils": len(ecrits),
@@ -174,12 +188,14 @@ def main(argv: Optional[list[str]] = None) -> int:
     parser.add_argument("--raw-dir", type=Path, default=DEFAULT_RAW_DIR)
     parser.add_argument("--pivot-dir", type=Path, default=DEFAULT_PIVOT_DIR)
     parser.add_argument("--correspondance", type=Path, default=DEFAULT_CORRESPONDANCE)
+    parser.add_argument("--manifest-out", type=Path,
+                        help="Consigne les profils écrits par CE job (#450).")
     parser.add_argument("--apply", action="store_true",
                         help="Écrit les profils bruts. Sans ce drapeau, rien n'est modifié.")
     args = parser.parse_args(argv)
 
     rapport = collecter(args.export, args.raw_dir, args.pivot_dir, args.correspondance,
-                        appliquer=args.apply)
+                        appliquer=args.apply, manifest_out=args.manifest_out)
     mode = "APPLIQUÉ" if rapport["applique"] else "simulation (aucun fichier écrit)"
     print(f"→ collecte sénatoriale — {mode}")
     print(f"  {rapport['nb_profils']} profil(s), {rapport['nb_mandats']} appartenance(s).")
