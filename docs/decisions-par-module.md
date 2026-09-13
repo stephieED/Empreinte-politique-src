@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 310 décisions
+gouverne sans avoir à fouiller les 311 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -56,6 +56,7 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 | `src/json_io.py` | 1 |
 | `src/lignee_profile.py` | 1 |
 | `src/mandats_anterieurs.py` | 1 |
+| `src/normalize_europarl.py` | 1 |
 | `src/purge_interventions_heritees.py` | 1 |
 | `src/scrutins_dossiers_an.py` | 1 |
 | `src/scrutins_legislature.py` | 1 |
@@ -110,7 +111,7 @@ Le mentionnent sans le gouverner : [`cle-fusion-interventions-540`](decisions/cl
 | [« Collecté = publié » compte une tranche dérivée dans l'archive (#691, lot 3a)](decisions/audit-compte-les-tranches-derivees-691.md) | `compter_listes_profil_brut` |
 | [Le seuil de blob sort du critère de sortie, et les profils bruts se partitionnent par législature (#580) (2026-08-29)](decisions/partition-profils-legislature-580.md) | `compter_listes_profil_brut` |
 
-Le mentionnent sans le gouverner : [`cle-fusion-textes-portes-668`](decisions/cle-fusion-textes-portes-668.md), [`collecte-vs-publie-545`](decisions/collecte-vs-publie-545.md), [`defaut-collecte-vs-panne-562`](decisions/defaut-collecte-vs-panne-562.md), [`dossier-des-amendements-639`](decisions/dossier-des-amendements-639.md), [`populations-profils-portees-par-les-outils-630`](decisions/populations-profils-portees-par-les-outils-630.md), [`qualification-scrutins-et-cle-dossier-639`](decisions/qualification-scrutins-et-cle-dossier-639.md), [`reconstruction-tranches-depuis-archive-691`](decisions/reconstruction-tranches-depuis-archive-691.md), [`tranches-derivees-lecteur-691`](decisions/tranches-derivees-lecteur-691.md).
+Le mentionnent sans le gouverner : [`cle-fusion-textes-portes-668`](decisions/cle-fusion-textes-portes-668.md), [`collecte-vs-publie-545`](decisions/collecte-vs-publie-545.md), [`defaut-collecte-vs-panne-562`](decisions/defaut-collecte-vs-panne-562.md), [`dossier-des-amendements-639`](decisions/dossier-des-amendements-639.md), [`populations-profils-portees-par-les-outils-630`](decisions/populations-profils-portees-par-les-outils-630.md), [`qualification-scrutins-et-cle-dossier-639`](decisions/qualification-scrutins-et-cle-dossier-639.md), [`reconstruction-tranches-depuis-archive-691`](decisions/reconstruction-tranches-depuis-archive-691.md), [`reduction-nommee-collecte-vs-publie-888`](decisions/reduction-nommee-collecte-vs-publie-888.md), [`tranches-derivees-lecteur-691`](decisions/tranches-derivees-lecteur-691.md).
 
 ## `src/audit_diff_profils.py`
 
@@ -401,6 +402,8 @@ Le mentionnent sans le gouverner : [`consommateurs-chambres-migres`](decisions/c
 | Décision | Nomme |
 | --- | --- |
 | [Données UE — investigation des sources (2026-08-04)](decisions/investigation-sources-ue.md) | `find_mep_by_name` |
+
+Le mentionnent sans le gouverner : [`reduction-nommee-collecte-vs-publie-888`](decisions/reduction-nommee-collecte-vs-publie-888.md).
 
 ## `src/check_quality_gate.py`
 
@@ -776,7 +779,7 @@ Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambr
 
 ## `src/merge_profile.py`
 
-61 décision(s) le gouvernent ; le module en cite 5.
+62 décision(s) le gouvernent ; le module en cite 5.
 
 | Décision | Nomme |
 | --- | --- |
@@ -826,6 +829,7 @@ Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambr
 | [185 doublons hérités retirés : l'outil existait, il n'avait jamais été relancé (#729) (2026-09-04)](decisions/purge-doublons-herites-729.md) | `merge_pivot_profile` |
 | [La qualification d'un scrutin se perdait entre la collecte et le profil brut (#639, rang 1) (2026-08-31)](decisions/qualification-perdue-a-la-fusion-639.md) | `CHAMPS_QUALIFICATION_VOTE`, `_pivot_vote_key`, `_vote_key`, `backfill_mandat_chambre`, `backfill_vote_qualification`, `merge_lists_by_key`, `merge_raw_profile` |
 | [Un projet de loi porté au nom du Gouvernement n'est pas une production personnelle (#689) (2026-09-01)](decisions/qualification-textes-portes-689.md) | `_dossier_key`, `backfill_dossier_nature`, `backfill_mandat_chambre`, `backfill_vote_qualification`, `merge_raw_profile` |
+| [Une somme de longueurs suppose que chaque entrée collectée est distincte, et le portail européen le dément (#888) (2026-09-13)](decisions/reduction-nommee-collecte-vs-publie-888.md) | `_repli_texte_key` |
 | [Le `texte_vise` fautif se reprend depuis l'archive figée, pas par une fusion plus permissive (#696, 01/09/2026)](decisions/report-texte-vise-source-696.md) | `backfill_dossier_nature` |
 | [Résilience de `generate-data.yml` face aux `shutdown signal` runner : continue-on-error généralisé, watchdog réseau, retry générique sur `_get_payload`, retry `retry-generate-data.yml` non-régressif, et appels NosDéputés morts pour les députés (dossiers, votes) (2026-08-16)](decisions/resilience-generate-data-shutdown-signal.md) | `merge_raw_dirs` |
 | [Retrait de `fetch_activity_synthesis` (#356) (2026-08-16)](decisions/retrait-fetch-activity-synthesis.md) | `merge_raw_profile` |
@@ -845,6 +849,12 @@ Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambr
 Le mentionnent sans le gouverner : [`bascule-identite-an-primaire`](decisions/bascule-identite-an-primaire.md), [`deux-axes-formulaire-578`](decisions/deux-axes-formulaire-578.md), [`investigation-sources-ue`](decisions/investigation-sources-ue.md), [`marquage-tranches-derivees-691`](decisions/marquage-tranches-derivees-691.md), [`profession-code-nomenclature-641`](decisions/profession-code-nomenclature-641.md), [`reconstruction-tranches-depuis-archive-691`](decisions/reconstruction-tranches-depuis-archive-691.md), [`restauration-interventions`](decisions/restauration-interventions.md).
 
 ## `src/normalize_europarl.py`
+
+1 décision(s) le gouvernent ; le module en cite 0.
+
+| Décision | Nomme |
+| --- | --- |
+| [Une somme de longueurs suppose que chaque entrée collectée est distincte, et le portail européen le dément (#888) (2026-09-13)](decisions/reduction-nommee-collecte-vs-publie-888.md) | `dedupliquer_appartenances` |
 
 Le mentionnent sans le gouverner : [`chambre-par-mandat-electif`](decisions/chambre-par-mandat-electif.md), [`chambres-profil-derivees`](decisions/chambres-profil-derivees.md), [`collecte-non-publiee`](decisions/collecte-non-publiee.md), [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`deux-chambres-interrogees`](decisions/deux-chambres-interrogees.md), [`doublons-europarl-729`](decisions/doublons-europarl-729.md), [`id-pivot-sans-prefixe`](decisions/id-pivot-sans-prefixe.md), [`identite-profils-539`](decisions/identite-profils-539.md), [`licence-lot-6-530`](decisions/licence-lot-6-530.md), [`pivot-freshness-timestamps-stables`](decisions/pivot-freshness-timestamps-stables.md), [`provenance-par-champ-603`](decisions/provenance-par-champ-603.md), [`provenance-pivot`](decisions/provenance-pivot.md), [`retrait-nosdeputes-529`](decisions/retrait-nosdeputes-529.md).
 

@@ -55,7 +55,18 @@ tolerance is **partitioned** — no input disarms another's check.
   threshold at **0** everywhere. Blocking: a deficit, or an unreadable profile. Reported:
   a surplus, and a raw list with no declared relation. Tolerance
   `allow_publication_gaps`.
-  → `docs/decisions/collecte-vs-publie-545.md`
+  **A sum of lengths assumes every collected entry is a distinct entry, and a source
+  may deny it (#888).** The European portal publishes the same membership **twice** —
+  one classified, one not — and `dedupliquer_appartenances` publishes one (#879); the
+  raw keeps both, because the raw says what the source returned. A relation may
+  therefore declare a **named reduction** beside its sources: the normalisation's own
+  function, **replayed** on the raw by this guard, never reimplemented — a control that
+  rewrote the criterion would drift the day the criterion moves. The threshold stays
+  **0**: an entry that is nobody's duplicate is still a deficit, and two entries the
+  source *both* classifies are never reduced (§2 rule 2). A reduction is added only
+  once it is **measured**; without that it is the unattributed margin #545 refuses.
+  → `docs/decisions/collecte-vs-publie-545.md`,
+  `docs/decisions/reduction-nommee-collecte-vs-publie-888.md`
 - **A progress file is not a profile — and `Path.glob` disagrees (#518, third incident).**
   `Path.glob("*.json")` **returns dotfiles**, unlike the `glob` module: every inventory of
   `raw_data/profiles/` skips `name.startswith(".")`, safe by construction since no slug
