@@ -41,6 +41,19 @@ export const sourcesConfig = [
       "Votes officiels disponibles pour les législatures 14 à 17, selon les dumps existants. Le jeu de données du Sénat n'en contient aucun : ses fiches ne portent ni vote ni prise de parole.",
   },
   {
+    id: 'senat-opendata',
+    nom: 'data.senat.fr',
+    type: 'Open data (export PostgreSQL, extraits CSV)',
+    contenuCouvert:
+      "Les appartenances des sénateurs : mandats avec leur motif de début et de fin, groupes politiques, commissions, délégations, groupes d'études, d'amitié et de liaison, organismes extra-parlementaires. Chaque organe est nommé tel qu'il s'appelait à la date du mandat, et un mandat qui traverse un changement de nom est publié en deux périodes.",
+    cadenceMiseAJour: 'Quotidienne.',
+    licence: 'Licence Ouverte / Open Licence (Sénat)',
+    implication: "Réutilisation libre sous réserve de mention de la source (attribution uniquement, pas de partage à l'identique).",
+    perimetre: ['Senat'],
+    couverturePeriode:
+      "L'activité en séance n'est pas publiée : ce jeu de données ne contient ni scrutins ni comptes rendus de débats. Les fiches ne portent donc aucun vote et aucune prise de parole au Sénat. Les taux de présence que la source publie ne sont pas collectés — un taux de présence individuel n'est jamais publié ici.",
+  },
+  {
     id: 'parltrack',
     nom: 'Parltrack',
     type: 'Dumps LZMA (JSON)',

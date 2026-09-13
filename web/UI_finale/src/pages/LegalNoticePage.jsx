@@ -95,6 +95,24 @@ const SECTIONS = [
           l'adaptation sans obligation de partage à l'identique, sous réserve de mention de la paternité.
         </p>
 
+        <h3>Open Data du Sénat</h3>
+        <p>
+          <strong>Les appartenances, jamais l'activité.</strong> Le Sénat publie sous{' '}
+          <strong>Licence Ouverte / Open Licence</strong> les mandats de ses membres, leurs groupes
+          politiques, leurs commissions, délégations, groupes d'études, d'amitié et de liaison, et
+          les organismes extra-parlementaires où ils siègent (data.senat.fr). Ces données
+          alimentent, pour les candidats concernés, la partie sénatoriale de leur parcours.{' '}
+          <strong>Ce jeu de données ne contient ni scrutins ni comptes rendus de séance</strong> :
+          aucune fiche ne porte de vote ni de prise de parole au Sénat, et ce silence est une limite
+          de la source, pas une absence d'activité. Les taux de présence que le Sénat publie ne sont
+          pas collectés.
+        </p>
+        <p className="static-note">
+          Contient des informations issues de data.senat.fr, mises à disposition par le Sénat sous
+          Licence Ouverte / Open Licence. L'attribution est due ; il n'y a pas d'obligation de
+          partage à l'identique.
+        </p>
+
         <h3>NosDéputés.fr et NosSénateurs.fr (Regards Citoyens)</h3>
         <p>
           Ces deux sources, projets de l'association Regards Citoyens, <strong>ne sont plus

@@ -545,6 +545,23 @@ export const CATEGORIES_FONCTIONS = [
   { cle: 'extra_parlementaire', titre: 'Organismes extra-parlementaires', banc: INSTITUTION_PARLEMENT },
   { cle: 'groupe_amitie', titre: "Groupes d'amitié", banc: INSTITUTION_PARLEMENT },
 
+  /* Ces deux-là sont rangés `categorie: "autre"` par la normalisation, et leur
+     nature vraie vit dans `type_organe_source`. L'équivalent existe déjà à
+     l'Assemblée — `delegation` — et une délégation européenne n'est pas moins
+     une fonction exercée parce que le pivot n'a pas de case pour elle. */
+  {
+    cle: 'delegation_europeenne',
+    typeOrgane: 'delegation_parlementaire_europeenne',
+    titre: 'Délégations',
+    banc: INSTITUTION_PARLEMENT,
+  },
+  {
+    cle: 'groupe_liaison',
+    typeOrgane: 'groupe_liaison_senatorial',
+    titre: 'Groupes de liaison',
+    banc: INSTITUTION_PARLEMENT,
+  },
+
   /*
    * UNE FONCTION EXERCÉE NE L'EST PAS TOUJOURS AU PARLEMENT (#328).
    *
@@ -732,8 +749,18 @@ export function fonctionsExercees(mandats, aujourdhui = aujourdhuiISO()) {
     return INSTITUTION_PARLEMENT;
   };
 
-  const blocs = CATEGORIES_FONCTIONS.flatMap(({ cle, titre, banc, fonctions, sansMarque, suffixe }) => {
-    const retenus = liste.filter((x) => x.categorie === cle && (!fonctions || fonctions(x.fonction)));
+  const blocs = CATEGORIES_FONCTIONS.flatMap(({ cle, titre, banc, fonctions, sansMarque, suffixe, typeOrgane }) => {
+    /* UN ORGANE QUE LA CATÉGORIE N'ATTRAPE PAS (#885, 13/09/2026).
+       87 mandats de candidats déclarés portent `categorie: "autre"` et
+       n'apparaissaient donc NULLE PART — ni ici, ni ailleurs sur la fiche. Ce
+       n'était pas un mauvais libellé, c'était un silence. Les deux que la
+       source nomme sans ambiguïté comme des fonctions exercées entrent par
+       leur `type_organe_source` ; le reste — un parti national, un groupe
+       politique déjà porté par la frise, 20 organes sans type — n'entre pas :
+       inventer une taxonomie que le corpus ne porte pas serait pire. */
+    const retenus = liste.filter((x) => (typeOrgane
+      ? x.type_organe_source === typeOrgane
+      : x.categorie === cle) && (!fonctions || fonctions(x.fonction)));
     // Seules les fonctions PARLEMENTAIRES se scindent : un portefeuille
     // ministériel n'a pas de chambre, et lui en inventer une serait faux.
     const chambres = banc === INSTITUTION_PARLEMENT
