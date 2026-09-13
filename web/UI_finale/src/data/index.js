@@ -313,8 +313,14 @@ function avecSiglesDeSiege(view, manifest) {
     parNom.set(nom, g.sigle);
   }
   for (const nom of ambigus) parNom.delete(nom);
+  /* Un sigle DÉJÀ POSÉ n'est pas recalculé : c'est le cas du groupe européen,
+     que la source publie elle-même (`sigle_organe`, #863). Le repasser par
+     `sigleDuSiege` le perdrait — « GUE/NGL » et « Verts/ALE » portent une
+     barre, « The Left » une espace, et aucun ne passe `FORME_DE_SIGLE`, qui
+     existe pour ne jamais fabriquer une abréviation, pas pour refuser celles
+     que la source écrit. */
   const roles = view.parcours.roles.map((r) => (r.institution === INSTITUTION_PARLEMENT
-    ? { ...r, sigle: sigleDuSiege(r.detail, parNom) }
+    ? { ...r, sigle: r.sigle ?? sigleDuSiege(r.detail, parNom) }
     : r));
   return { ...view, parcours: { ...view.parcours, roles } };
 }
