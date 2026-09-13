@@ -105,6 +105,25 @@ def test_le_groupe_retenu_est_le_plus_long_du_siege():
     )
 
 
+def test_le_segment_porte_le_sigle_et_la_liste_datee_le_nom_complet():
+    """« La frise donne la silhouette, la liste la nomme » — demandé le 13/09/2026.
+
+    Un sigle seul ne dit rien de ce qu'est S&D à qui ne le connaît pas déjà ;
+    le nom complet ne tient pas dans un segment. Les deux coexistent donc, et
+    `detail` — que la liste datée rend — porte le nom.
+    """
+    code = sans_commentaires(MODULE_REGLES.read_text(encoding="utf-8"))
+    bloc = re.search(r"function periodesDeGroupeEuropeen\(mandats\) \{(.*?)\n\}", code, re.DOTALL)
+    assert "nom: m.label" in bloc.group(1), (
+        "Le nom complet du groupe n'est plus repris de la source : la liste "
+        "datée retomberait sur le sigle, qu'elle répéterait après la frise."
+    )
+    assert "detail: groupePE?.nom ?? groupePE?.sigle" in code, (
+        "La liste datée doit recevoir le NOM, le segment le SIGLE. Inverser "
+        "les deux ferait déborder le segment et rendrait la liste muette."
+    )
+
+
 def test_seul_un_siege_europeen_lit_un_groupe_europeen():
     code = sans_commentaires(MODULE_REGLES.read_text(encoding="utf-8"))
     assert "siege.chambre === 'PE' ? groupeEuropeenDuSiege(" in code, (

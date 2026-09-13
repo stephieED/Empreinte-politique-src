@@ -14,7 +14,11 @@ Mesuré sur la page rendue, avant et après :
 | `emmanuel-maurel` | deux segments muets ; l'Assemblée affichait « GDR » | « S&D », « The Left », « GDR » |
 | `jean-luc-melenchon` | deux segments muets ; l'Assemblée affichait « FI · opposition » | « GUE/NGL », « GUE/NGL », « FI · opposition » — **et le Sénat toujours muet** |
 
-La liste datée suit : « Député(e) européen(ne) · S&D » là où elle écrivait « Député(e) européen(ne) ». C'est le principe posé le 11/09 — la frise donne la silhouette, la liste la nomme.
+La liste datée suit, et elle porte le **nom complet** — « Député(e) européen(ne) · Groupe
+de l'Alliance Progressiste des Socialistes et Démocrates au Parlement européen » — là où
+elle écrivait « Député(e) européen(ne) ». C'est le principe posé le 11/09 : la frise donne
+la silhouette et le sigle, la liste nomme. Un sigle seul ne dit rien de ce qu'est S&D à qui
+ne le connaît pas déjà, et le nom complet ne tient dans aucun segment.
 
 ## Pourquoi le sigle n'est pas repassé par le garde-fou
 
