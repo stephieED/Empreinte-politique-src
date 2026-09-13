@@ -629,8 +629,14 @@ function Propositions({ amendements, textes, causeAmendements, causeTextes, voix
             <span className="cp-gouv-periode cp-num">
               {formatNumber(amendements.totalAuteur)} amendements ·{' '}
               {formatNumber(amendements.dossiers?.distincts ?? amendements.chute.totalDossiers)}{' '}
-              dossiers · {formatNumber(amendements.adoptes)} adopté
-              {amendements.adoptes > 1 ? 's' : ''}
+              dossiers ·{' '}
+              {/* Un `0` n'est publiable que si la source dit quelque chose du
+                  sort. Aucun des 7 303 amendements européens n'en porte : « 0
+                  adopté » s'y lisait « aucun n'a été adopté » quand la vérité
+                  est que rien n'est publié (§2 règle 5). */}
+              {amendements.sortsPublies === 0
+                ? 'sort non publié'
+                : `${formatNumber(amendements.adoptes)} adopté${amendements.adoptes > 1 ? 's' : ''}`}
             </span>
           </div>
           <Matieres
@@ -780,6 +786,21 @@ function Votes({ votes, cause }) {
           <ListeVide
             cause="non_collecte"
             motif="L’index des scrutins n’a pas pu être lu. Sans lui, la dernière lecture de chaque texte n’est pas déterminable, et un décompte non replié afficherait une position de première lecture comme sa position sur la loi."
+          />
+        </div>
+      ) : votes.surEnsemble === 0 && votes.nonResolusEuropeens === votes.total ? (
+        /* TOUS SES VOTES SONT EUROPÉENS, ET AUCUN N'EST RATTACHÉ À UN SCRUTIN.
+           Le motif générique — « aucune position ne porte sur l'ensemble d'un
+           texte » — est une règle de l'Assemblée : la servir ici attribuerait à
+           la personne une limite qui est la nôtre (§2 règle 2). */
+        <div className="cp-carte">
+          {/* `couvert`, et non `non_collecte` : ces positions SONT collectées —
+              le tableau « ce que chaque liste porte » les compte, et dire
+              l'inverse ici recréerait la contradiction que ce correctif retire.
+              Ce qui manque n'est pas la donnée, c'est notre rattachement. */}
+          <ListeVide
+            cause="couvert"
+            motif={`Ses ${formatNumber(votes.total)} positions au Parlement européen sont collectées, mais aucune n’est rattachée à un scrutin identifié : la source ne publie pas d’identifiant que notre index sache résoudre. Elles ne sont donc ni repliées sur une dernière lecture, ni affichées ici — et aucune n’est perdue.`}
           />
         </div>
       ) : votes.surEnsemble === 0 ? (

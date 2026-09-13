@@ -180,6 +180,11 @@ function periodesDePosition(mandats, categorie) {
  * République »), et le sigle vit sur la fiche de groupe. `siglesParNom` vient
  * des fiches de groupe du manifeste : un nom qui y porte deux sigles n'y figure
  * pas. Sans sigle établi, rien — jamais une abréviation fabriquée. */
+/** Le marqueur d'institution que #328 pose sur une entrée que l'Assemblée ne
+ *  source pas : `scrutin_non_resolu.institution`, `amendement_non_resolu`,
+ *  `institution` sur un texte, `source.institution` sur une intervention. */
+export const INSTITUTION_PE_SOURCE = 'parlement_europeen';
+
 const FORME_DE_SIGLE = /^[\p{L}&-]{1,8}$/u;
 
 export function sigleDuSiege(detail, siglesParNom = new Map()) {
@@ -818,6 +823,12 @@ export function agregerAmendements(
   const parAnnee = new Map();
   let depotsSansDate = 0;
   let adoptesTotal = 0;
+  /* Combien de dépôts portent un sort PUBLIÉ. Sans ce compte, « 0 adopté »
+     se lit « aucun n'a été adopté » là où la vérité est « le sort n'est publié
+     pour aucun » — c'est le cas des 7 303 amendements européens, dont pas un
+     ne porte de `sort` (mesuré le 13/09/2026). Une absence n'est pas un zéro
+     (§2 règle 5). */
+  let sortsPublies = 0;
 
   for (const a of amendementsJoints) {
     if (a.role_signataire !== 'auteur_principal') continue;
@@ -833,6 +844,7 @@ export function agregerAmendements(
     // dossier ne rattache : la somme par dossier en perdrait 6 chez Jérôme
     // Guedj et 25 chez Laurent Wauquiez.
     if (sort === 'adopté') adoptesTotal += 1;
+    if (a.sort) sortsPublies += 1;
     if (a.date) bloc.dates.push(a.date);
 
     if (a.base_juridique_irrecevabilite) {
@@ -1030,7 +1042,9 @@ export function agregerAmendements(
       }
     : null;
 
-  return { totalAuteur, adoptes: adoptesTotal, legislatures, irrecevabilites, dossiers, chute };
+  return {
+    totalAuteur, adoptes: adoptesTotal, sortsPublies, legislatures, irrecevabilites, dossiers, chute,
+  };
 }
 
 /* Les années civiles d'un bout à l'autre, trous compris : c'est la seule façon
@@ -1214,7 +1228,7 @@ export function textesPortes(textes, commissionDuDossier = () => null) {
         // La CHAMBRE d'où vient le texte, à côté du banc qui le signe : une
         // proposition de résolution européenne n'est pas une proposition
         // déposée à l'Assemblée, et 405 des 423 textes portés publiés le sont.
-        europeen: t.institution === 'parlement_europeen',
+        europeen: t.institution === INSTITUTION_PE_SOURCE,
         sourceUrl: t.source_url ?? null,
       }))
       .sort((a, b) => String(b.dateMax || '').localeCompare(String(a.dateMax || ''))),
@@ -1477,6 +1491,23 @@ export function votesDuProfil(
   const liste = votesJoints || [];
   const surEnsemble = liste.filter((v) => isWholeTextVote(v.scrutin));
 
+  /* LES VOTES QUE L'INDEX NE RÉSOUT PAS, ET POURQUOI ILS SE COMPTENT À PART.
+   *
+   * Un vote européen n'a pas de `scrutin_id` — mesuré le 13/09/2026 : **0 des
+   * 11 013** votes européens portés par les 7 fiches concernées en porte un.
+   * `joinVotes` retombe alors sur `scrutin_non_resolu`, qui ne porte ni
+   * `type_vote` ni `texte` : `isWholeTextVote` rend faux, et la section se
+   * vidait en expliquant qu'« aucune de ses positions ne porte sur l'ensemble
+   * d'un texte ».
+   *
+   * C'est vrai à l'Assemblée. Sur une fiche européenne, cela attribuait à la
+   * personne une limite qui est la NÔTRE (§2 règle 2) : ses votes existent, ils
+   * sont collectés et comptés, et c'est notre index qui ne sait pas les
+   * rattacher à un scrutin. */
+  const nonResolusEuropeens = liste.filter(
+    (v) => !v.scrutin_id && v.scrutin?.institution === INSTITUTION_PE_SOURCE,
+  ).length;
+
   // `null` — et non un tableau vide — quand le corpus des scrutins n'a pas pu
   // être lu : « je ne sais pas quelle est la dernière lecture » n'est pas
   // « aucun texte » (§2 règle 5).
@@ -1541,6 +1572,7 @@ export function votesDuProfil(
   return {
     total: liste.length,
     surEnsemble: surEnsemble.length,
+    nonResolusEuropeens,
     derniereLectureDisponible: dernieresLectures !== null,
     textes: retenus.length,
     // Les votes RETENUS eux-mêmes, et non leur seul décompte : « ce qu'il a
@@ -2247,7 +2279,7 @@ export function grandsChiffres({
    * elle a lieu dans un autre hémicycle. Elle est donc lue sur sa source, avant
    * la règle de date — sans quoi les 1 803 interventions européennes de
    * Mélenchon se répartiraient entre « À l'Assemblée » et « Au gouvernement ». */
-  const estEuropeenne = (i) => (i?.source?.institution) === 'parlement_europeen';
+  const estEuropeenne = (i) => (i?.source?.institution) === INSTITUTION_PE_SOURCE;
   const coteDe = (i) => {
     if (estEuropeenne(i)) return INSTITUTION_PE;
     return auBanc(i.date) ? COLONNE_GOUVERNEMENT : pisteFrancaise;
