@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 315 décisions
+gouverne sans avoir à fouiller les 317 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -57,8 +57,10 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 | `src/mandats_anterieurs.py` | 1 |
 | `src/normalize_europarl.py` | 1 |
 | `src/purge_interventions_heritees.py` | 1 |
+| `src/retrait_heritage_senat.py` | 1 |
 | `src/scrutins_dossiers_an.py` | 1 |
 | `src/scrutins_legislature.py` | 1 |
+| `src/senat_mandats.py` | 1 |
 | `src/textes_vises_figes.py` | 1 |
 | `src/verifier_transport_artifacts.py` | 1 |
 
@@ -469,7 +471,7 @@ Le mentionnent sans le gouverner : [`absences-publiees-comme-faits-556-558-560`]
 | [Le Parlement européen prend sa place sur `/couverture`, et cesse de déplacer les bornes de l'Assemblée — 11/09/2026 (#328)](decisions/parlement-europeen-sur-la-couverture-328.md) | `bornes_europeennes` |
 | [L'européen entre dans les listes que la fiche a déjà (#683, lot 2)](decisions/stockage-europeen-dans-les-listes-existantes-683.md) | `bornes_europeennes` |
 
-Le mentionnent sans le gouverner : [`couverture-remplacee-par-liste-602`](decisions/couverture-remplacee-par-liste-602.md), [`fiches-groupe-17e-legislature-700`](decisions/fiches-groupe-17e-legislature-700.md), [`lecture-dumps-parltrack-683`](decisions/lecture-dumps-parltrack-683.md), [`licence-jamais-en-dur-909`](decisions/licence-jamais-en-dur-909.md), [`pied-de-site-et-section-6-328`](decisions/pied-de-site-et-section-6-328.md), [`preuve-de-borne-dite-une-fois-328`](decisions/preuve-de-borne-dite-une-fois-328.md).
+Le mentionnent sans le gouverner : [`couverture-remplacee-par-liste-602`](decisions/couverture-remplacee-par-liste-602.md), [`fiches-groupe-17e-legislature-700`](decisions/fiches-groupe-17e-legislature-700.md), [`lecture-dumps-parltrack-683`](decisions/lecture-dumps-parltrack-683.md), [`licence-jamais-en-dur-909`](decisions/licence-jamais-en-dur-909.md), [`pied-de-site-et-section-6-328`](decisions/pied-de-site-et-section-6-328.md), [`preuve-de-borne-dite-une-fois-328`](decisions/preuve-de-borne-dite-une-fois-328.md), [`retrait-residus-senat-908`](decisions/retrait-residus-senat-908.md).
 
 ## `src/download_watchdog.py`
 
@@ -1004,6 +1006,14 @@ Le mentionnent sans le gouverner : [`fraicheur-dossiers-762`](decisions/fraicheu
 
 Le mentionnent sans le gouverner : [`purge-doublons-herites-729`](decisions/purge-doublons-herites-729.md).
 
+## `src/retrait_heritage_senat.py`
+
+1 décision(s) le gouvernent ; le module en cite 0.
+
+| Décision | Nomme |
+| --- | --- |
+| [Le dernier marqueur Regards Citoyens part quand il ne couvre plus rien, et pas avant (#908) (2026-09-13)](decisions/retrait-residus-senat-908.md) | `mandats_electifs_remplaces` |
+
 ## `src/schema_gouvernement.py`
 
 11 décision(s) le gouvernent ; le module en cite 1.
@@ -1125,6 +1135,22 @@ Le mentionnent sans le gouverner : [`normalisation-votes`](decisions/normalisati
 | Décision | Nomme |
 | --- | --- |
 | [Ce qu'une liste vide veut dire : les quatre états de couverture (#539) (2026-08-28)](decisions/couverture-listes-539.md) | `LEGISLATURES_AN` |
+
+## `src/senat_mandats.py`
+
+1 décision(s) le gouvernent ; le module en cite 0.
+
+| Décision | Nomme |
+| --- | --- |
+| [Le libellé d'un organe sénatorial se lit sur la colonne complète, pas sur l'abrégée (#912) (2026-09-13)](decisions/libelles-senat-colonne-complete-912.md) | `composer_mandats` |
+
+## `src/senat_opendata.py`
+
+1 décision(s) le gouvernent ; le module en cite 1.
+
+| Décision | Nomme |
+| --- | --- |
+| [Le libellé d'un organe sénatorial se lit sur la colonne complète, pas sur l'abrégée (#912) (2026-09-13)](decisions/libelles-senat-colonne-complete-912.md) | `reparer_mojibake` |
 
 ## `src/syceron_debates.py`
 

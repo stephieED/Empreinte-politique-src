@@ -93,16 +93,41 @@ def _premier_libelle(ligne: dict[str, Any]) -> Optional[str]:
     return None
 
 
+def _libelle_le_plus_complet(ligne: dict[str, Any], colonnes: tuple[str, ...]) -> Optional[str]:
+    """Le premier libellé rempli, dans l'ordre de complétude donné.
+
+    L'ordre est celui de l'appelant, et il n'est pas cosmétique : `libcom` porte
+    l'abrégé (`evelib`, « Culture ») à côté du complet (`libcomlilmin`,
+    « commission de la culture, de l'éducation, de la communication et du
+    sport »), et lire l'abrégé publiait trois fois le même mot là où le
+    découpage sur renommage avait correctement produit trois périodes (#912).
+
+    La source normalise `libcomlilmin` en minuscules ; seule l'initiale est
+    relevée. Le reste n'est pas touché — recapitaliser un intitulé abîmerait les
+    sigles et les noms propres qu'il contient.
+    """
+    for colonne in colonnes:
+        # Les espaces multiples sont une scorie de saisie — « Aucune  (Président
+        # du Sénat) », « diffusion et  protection » — et non une information.
+        valeur = " ".join((ligne.get(colonne) or "").split())
+        if valeur:
+            return valeur[0].upper() + valeur[1:]
+    return None
+
+
 def _index_libelles(lignes: list[dict[str, Any]], cle: str,
-                    debut: str, fin: str, libelle: str) -> dict[str, list[dict[str, Any]]]:
-    """Les libellés d'un organe, groupés par code, avec leurs bornes publiables."""
+                    debut: str, fin: str, *libelles: str) -> dict[str, list[dict[str, Any]]]:
+    """Les libellés d'un organe, groupés par code, avec leurs bornes publiables.
+
+    `libelles` se lit dans l'ordre : la première colonne remplie gagne.
+    """
     index: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for ligne in lignes:
         code = ligne.get(cle)
         if not code:
             continue
         index[code].append({
-            "libelle": (ligne.get(libelle) or "").strip() or None,
+            "libelle": _libelle_le_plus_complet(ligne, libelles),
             "debut": date_publiable(ligne.get(debut)),
             "fin": date_publiable(ligne.get(fin)),
         })
@@ -248,15 +273,25 @@ def composer_mandats(tables: dict[str, list[dict[str, Any]]], senmat: str) -> li
     # Non datés, et l'entrée produite le déclare.
     courant_grpsen = {g["orgcod"]: (g.get("evelib") or "").strip() or None
                       for g in tables.get("grpsenami", []) if g.get("orgcod")}
-    courant_com = {c["orgcod"]: (c.get("evelib") or "").strip() or None
+    # Même ordre de complétude que `lib_com` : `com` porte `comlilmin` à côté de
+    # l'abrégé, et c'est ce nom-là qui sert de repli non daté (#912).
+    courant_com = {c["orgcod"]: _libelle_le_plus_complet(c, ("comlilmin", "evelib", "evelil"))
                    for c in tables.get("com", []) if c.get("orgcod")}
     courant_grppol = {g["grppolcod"]: (g.get("grppollibcou") or "").strip() or None
                       for g in tables.get("grppol", []) if g.get("grppolcod")}
 
     lib_grppol = _index_libelles(tables.get("libgrppol", []), "grppolcod",
                                  "libgrppoldatdeb", "libgrppoldatfin", "evelib")
+    # `libcom` porte trois libellés et ils ne disent pas la même chose : `evelib`
+    # est l'abrégé (« Culture », coupé à 60 caractères sur les commissions
+    # spéciales), `evelil` le complet mais en MAJUSCULES et vide sur 109 des 571
+    # lignes, `libcomlilmin` le complet en casse normalisée — rempli sur 568.
+    # 420 lignes portent un abrégé différent du complet. Même piège que celui
+    # payé sur `orgext` juste en dessous : les colonnes `eve*` ne portent pas la
+    # même chose d'une table à l'autre du même jeu (#912).
     lib_com = _index_libelles(tables.get("libcom", []), "orgcod",
-                              "libcomdatdeb", "libcomdatfin", "evelib")
+                              "libcomdatdeb", "libcomdatfin",
+                              "libcomlilmin", "evelib", "evelil")
     lib_grpsen = _index_libelles(tables.get("libgrpsen", []), "orgcod",
                                  "libgrpsendatautbur", "libgrpsendatfin", "libgrpsenlib")
 

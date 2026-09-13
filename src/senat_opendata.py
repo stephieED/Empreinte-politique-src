@@ -198,13 +198,43 @@ def periodes_se_recouvrent(
     return debut_a <= fin_b and debut_b <= fin_a
 
 
+#: Les caractères de contrôle C1 que la source produit à la place des
+#: typographies cp1252 dont ils portent le code — un double encodage **chez
+#: elle** : l'octet `0x92` a été encodé en UTF-8 comme s'il était du latin-1,
+#: donnant `U+0092`, une séquence UTF-8 **valide**. `errors="replace"` ne la voit
+#: donc jamais passer, et le caractère ressort tel quel dans le libellé publié —
+#: un carré vide à l'écran. Mesuré le 13/09/2026 : 61 des 755 lignes de `com`,
+#: et aucune ligne d'aucune autre table utile (#912).
+_MOJIBAKE_C1: dict[int, str] = {
+    0x82: "‚", 0x83: "ƒ", 0x84: "„", 0x85: "…", 0x86: "†", 0x87: "‡",
+    0x88: "ˆ", 0x89: "‰", 0x8a: "Š", 0x8b: "‹", 0x8c: "Œ", 0x8e: "Ž",
+    0x91: "‘", 0x92: "’", 0x93: "“", 0x94: "”", 0x95: "•", 0x96: "–",
+    0x97: "—", 0x98: "˜", 0x99: "™", 0x9a: "š", 0x9b: "›", 0x9c: "œ",
+    0x9e: "ž", 0x9f: "Ÿ",
+}
+
+
+def reparer_mojibake(valeur: str) -> str:
+    """Rend à un texte les typographies que le double encodage a réduites en C1.
+
+    Réparation **de forme**, jamais de fond : la table ne remplace que les 26
+    points de code que cp1252 définit dans la zone C1, et un texte qui n'en
+    porte aucun ressort identique. Un C1 restant — cp1252 en laisse cinq
+    indéfinis — n'est pas deviné : il reste tel quel, visible, plutôt que
+    remplacé par une apostrophe qui aurait l'air juste (§2 règle 5).
+    """
+    if not any(0x80 <= ord(c) <= 0x9f for c in valeur):
+        return valeur
+    return valeur.translate(_MOJIBAKE_C1)
+
+
 def _lignes_du_bloc(flux: Iterator[str], colonnes: list[str]) -> Iterator[dict[str, Any]]:
     """Les lignes TSV d'un bloc `COPY`, jusqu'au `\\.` qui le ferme."""
     for ligne in flux:
         if ligne.startswith("\\."):
             return
         champs = ligne.rstrip("\n").split("\t")
-        yield {colonne: (None if valeur == "\\N" else valeur)
+        yield {colonne: (None if valeur == "\\N" else reparer_mojibake(valeur))
                for colonne, valeur in zip(colonnes, champs)}
 
 
