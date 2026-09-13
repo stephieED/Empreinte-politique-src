@@ -44,6 +44,7 @@ from avertissements import (
     deriver_avertissements,
 )
 from download_watchdog import download_with_watchdog
+from licences import appliquer_licence_donnees
 
 from normalize_profil import WARNING_PREFIX_CHAMBRES_NON_CORROBOREE
 from schema_pivot import SCHEMA_VERSION, appliquer_chambres, make_empty_profil
@@ -458,7 +459,16 @@ def normalize_parltrack(mep_raw: dict[str, Any], votes: Optional[list[dict[str, 
             DESTINATAIRE_INTERNE,
         ))
 
-    profil["meta"]["licence_donnees"] = "Open Data — Parltrack (CC0 / Open Database License)"
+    # --- licence ---
+    # Dérivée de `sources[]`, jamais écrite en dur (#530, AGENTS.md §7). Ce
+    # constructeur inscrivait « Open Data — Parltrack (CC0 / Open Database
+    # License) », une étiquette que `docs/decisions/licences.md` avait déjà
+    # relevée comme fausse en instruisant #530 : les dumps JSON de ParlTrack
+    # sont sous **ODbL v1.0**, avec partage à l'identique, et le CC0 annoncé
+    # l'effaçait. Elle n'a jamais atteint le corpus — les profils européens
+    # publiés passent tous par un chemin qui recompose le champ — mais
+    # `--out pivot_data/profiles/<slug>.pivot.json` écrit sans recomposer.
+    appliquer_licence_donnees(profil)
     if not mep_raw.get("active"):
         profil["meta"]["warnings"].append(avertissement(
             "MEP marqué inactif dans le dump Parltrack.",
