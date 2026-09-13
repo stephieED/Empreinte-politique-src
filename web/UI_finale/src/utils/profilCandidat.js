@@ -227,6 +227,12 @@ function periodesDeGroupeEuropeen(mandats) {
     .filter((m) => m.type_organe_source === TYPE_GROUPE_EUROPEEN && m.sigle_organe && m.debut)
     .map((m) => ({
       sigle: m.sigle_organe,
+      /* Le NOM COMPLET, pour la liste datée : « Groupe de l'Alliance
+         Progressiste des Socialistes et Démocrates au Parlement européen ».
+         La frise donne la silhouette et le sigle, la liste la nomme — c'est le
+         partage posé le 11/09, et un sigle seul ne dit rien de ce qu'est S&D à
+         qui ne le connaît pas déjà. */
+      nom: m.label || null,
       debut: m.debut,
       fin: borneFin(m),
       sourceUrl: m.source_url ?? null,
@@ -421,7 +427,8 @@ export function rolesDuParcours(mandats) {
       // toucher au banc que quinze consommateurs lisent (`pisteDuRole`).
       chambre: siege.chambre ?? null,
       role: CHAMBRE_ROLE[siege.chambre] || 'Mandat parlementaire',
-      detail: groupePE?.sigle ?? (groupe && groupe !== siege.label ? groupe : null),
+      // Le SIGLE va sur le segment, le NOM COMPLET dans la liste datée.
+      detail: groupePE?.nom ?? groupePE?.sigle ?? (groupe && groupe !== siege.label ? groupe : null),
       sigle: groupePE?.sigle ?? undefined,
       debut: siege.debut,
       fin: siege.fin,
