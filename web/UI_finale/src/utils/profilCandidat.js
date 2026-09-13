@@ -194,6 +194,60 @@ export function sigleDeGroupePolitique(label) {
   return m ? m[1] : label || null;
 }
 
+/* ── Le groupe politique européen, qui se lit et ne se devine pas (#863) ─────
+ *
+ * L'Assemblée écrit le sigle dans l'intitulé, entre parenthèses, et il faut
+ * l'en extraire. Le Parlement européen, lui, le PUBLIE : depuis #863 le mandat
+ * porte `sigle_organe` (« S&D », « GUE/NGL », « Verts/ALE ») à côté de
+ * `type_organe_source`. Il n'y a donc rien à deviner, et c'est ce qui fait que
+ * ces segments peuvent parler alors que ceux du Sénat se taisent.
+ *
+ * DEUX PIÈGES, tous deux mesurés le 13/09/2026 sur les 6 candidats déclarés qui
+ * ont un mandat européen :
+ *
+ * 1. `sigle_organe` est AUSSI porté par le SIÈGE européen, où il vaut
+ *    « 10e législature ». Lire le sigle sur le siège écrirait « 10e
+ *    législature » en travers du segment. Le discriminant est
+ *    `type_organe_source`, jamais la présence du champ.
+ * 2. Ces sigles ne passent pas `FORME_DE_SIGLE` : « GUE/NGL » et « Verts/ALE »
+ *    portent une barre, « The Left » une espace, et le second fait 9 signes.
+ *    Ce garde-fou existe pour ne jamais FABRIQUER une abréviation à partir d'un
+ *    nom complet ; ici la source publie le sigle lui-même, donc il est posé
+ *    directement et `avecSiglesDeSiege` ne le recalcule pas.
+ */
+export const TYPE_GROUPE_EUROPEEN = 'groupe_politique_europeen';
+
+function periodesDeGroupeEuropeen(mandats) {
+  return (mandats || [])
+    .filter((m) => m.type_organe_source === TYPE_GROUPE_EUROPEEN && m.sigle_organe && m.debut)
+    .map((m) => ({
+      sigle: m.sigle_organe,
+      debut: m.debut,
+      fin: borneFin(m),
+      sourceUrl: m.source_url ?? null,
+    }));
+}
+
+/** Le groupe d'un siège européen : celui où il a passé le plus de temps.
+ *
+ *  Un siège européen en croise souvent plusieurs — Emmanuel Maurel, sur la
+ *  législature 2014-2019, passe de S&D à NI puis à GUE/NGL. Prendre le premier
+ *  venu donnerait un sigle exact mais arbitraire ; on prend le plus long, et
+ *  les autres restent visibles dans la liste datée.
+ */
+function groupeEuropeenDuSiege(siege, periodes) {
+  const jours = (p) => {
+    const debut = p.debut > siege.debut ? p.debut : siege.debut;
+    const finP = p.fin === FIN_OUVERTE ? '9999-12-31' : p.fin;
+    const finS = borneFin(siege) === FIN_OUVERTE ? '9999-12-31' : borneFin(siege);
+    const fin = finP < finS ? finP : finS;
+    return Math.max(0, Date.parse(fin) - Date.parse(debut));
+  };
+  const chevauchantes = periodes.filter((p) => chevauche(p, siege));
+  if (!chevauchantes.length) return null;
+  return chevauchantes.reduce((meilleure, p) => (jours(p) > jours(meilleure) ? p : meilleure));
+}
+
 /* ── Règle : un siège, pas un enregistrement ─────────────────────────────────
  *
  * #640 : « un profil publie TOUS ses mandats électifs, un par siège ». La
@@ -333,6 +387,7 @@ const INTITULE_CHEF = /^premier ministre$/;
 export function rolesDuParcours(mandats) {
   const liste = mandats || [];
   const positionsGroupe = periodesDePosition(liste, 'groupe_politique');
+  const groupesEuropeens = periodesDeGroupeEuropeen(liste);
   const gouvernements = appartenancesGouvernementales(liste);
 
   const roles = [];
@@ -351,18 +406,23 @@ export function rolesDuParcours(mandats) {
     // source, pas une déduction. Sans ce repli, le siège en cours s'afficherait
     // sans groupe alors que la source en nomme un.
     const groupe = retenue?.sigle ?? sigleDeGroupePolitique(siege.label);
+    // Un siège européen n'a pas de mandat `groupe_politique` : son groupe vit
+    // sur un mandat à part, qui publie son sigle (#863). Le sigle est donc posé
+    // ici, tel que la source l'écrit, et `avecSiglesDeSiege` ne le recalcule pas.
+    const groupePE = siege.chambre === 'PE' ? groupeEuropeenDuSiege(siege, groupesEuropeens) : null;
     roles.push({
       institution: INSTITUTION_PARLEMENT,
       // La chambre voyage avec le siège : elle fait la piste et la teinte, sans
       // toucher au banc que quinze consommateurs lisent (`pisteDuRole`).
       chambre: siege.chambre ?? null,
       role: CHAMBRE_ROLE[siege.chambre] || 'Mandat parlementaire',
-      detail: groupe && groupe !== siege.label ? groupe : null,
+      detail: groupePE?.sigle ?? (groupe && groupe !== siege.label ? groupe : null),
+      sigle: groupePE?.sigle ?? undefined,
       debut: siege.debut,
       fin: siege.fin,
       actif: siege.actif,
       position: retenue?.position ?? null,
-      sourceUrl: retenue?.sourceUrl ?? null,
+      sourceUrl: groupePE?.sourceUrl ?? retenue?.sourceUrl ?? null,
     });
   }
 
