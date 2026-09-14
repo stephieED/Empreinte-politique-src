@@ -229,9 +229,9 @@ def test_une_saisine_conjointe_est_aplatie_en_une_entree_par_sigle():
 
     assert entrees == [
         {"sigle": "ECON", "nom": "Economic and Monetary Affairs",
-         "type_source": "Joint Responsible Committee"},
+         "type_source": "Joint Responsible Committee", "statut": "au_fond_conjointe"},
         {"sigle": "JURI", "nom": "Legal Affairs",
-         "type_source": "Joint Responsible Committee"},
+         "type_source": "Joint Responsible Committee", "statut": "au_fond_conjointe"},
     ]
 
 
@@ -277,7 +277,8 @@ def test_un_nom_manquant_laisse_le_sigle_publie():
         {"committee": "JURI", "type": "Responsible Committee"}]})
 
     assert entrees == [{"sigle": "JURI", "nom": None,
-                        "type_source": "Responsible Committee"}]
+                        "type_source": "Responsible Committee",
+                        "statut": "au_fond"}]
 
 
 def test_un_dossier_sans_commission_rend_une_liste_vide(tmp_path):
@@ -287,3 +288,136 @@ def test_un_dossier_sans_commission_rend_une_liste_vide(tmp_path):
     entrees = construire({"A"}, dump_path=_dump(tmp_path, [_dossier("A")]))
 
     assert entrees[0]["commissions_au_fond"] == []
+
+
+# --------------------------------------------------------------------------
+# Les trois questions que l'interface doit pouvoir poser sans inférence
+# (arbitrage de la propriétaire, 14/09/2026)
+#
+# Les quatre libellés se DISTINGUENT, ils ne se fondent pas : écraser
+# publierait comme compétente une commission dessaisie, et effacerait qu'une
+# saisine est partagée — une compétence que la source n'établit pas
+# (§2 règle 2). L'arbitrage tient à sa réversibilité : fondre plus tard à
+# l'affichage reste possible, re-séparer ce qu'on a écrasé ne l'est pas.
+#
+# `type_source` garde le verbatim ; `statut` est ce verbatim LU, pour qu'aucun
+# consommateur n'ait à reconnaître une chaîne anglaise pour savoir si la
+# commission est compétente aujourd'hui.
+# --------------------------------------------------------------------------
+
+from dossiers_europeens import (  # noqa: E402
+    KNOWN_STATUTS_COMMISSION_AU_FOND,
+    commissions_au_fond_non_resolu,
+)
+
+
+def _au_fond(type_source, sigle="JURI"):
+    return commissions_au_fond({"committees": [
+        {"committee": sigle, "committee_full": "Legal Affairs", "type": type_source}]})
+
+
+@pytest.mark.parametrize("type_source,statut", [
+    ("Responsible Committee", "au_fond"),
+    ("Joint Responsible Committee", "au_fond_conjointe"),
+    ("Former Responsible Committee", "ancienne_au_fond"),
+    ("Former Joint Committee Responsible", "ancienne_au_fond_conjointe"),
+])
+def test_chaque_libelle_de_la_source_a_son_statut(type_source, statut):
+    """Les quatre libellés relevés le 14/09/2026 sur les 355 dossiers de l'index."""
+    entree = _au_fond(type_source)[0]
+
+    assert entree["statut"] == statut
+    assert entree["type_source"] == type_source, "le verbatim ne se perd jamais"
+
+
+def test_le_statut_repond_aux_trois_questions_sans_lire_l_anglais():
+    """Compétente aujourd'hui, partagée, ou dessaisie — sans reconnaître de chaîne."""
+    en_vigueur = {"au_fond", "au_fond_conjointe"}
+
+    assert _au_fond("Responsible Committee")[0]["statut"] in en_vigueur
+    assert _au_fond("Joint Responsible Committee")[0]["statut"] in en_vigueur
+    assert _au_fond("Former Responsible Committee")[0]["statut"] not in en_vigueur
+    assert _au_fond("Former Joint Committee Responsible")[0]["statut"] not in en_vigueur
+
+
+def test_une_dessaisie_ne_peut_pas_etre_prise_pour_la_competente():
+    """La question 3 de l'interface : distinguer sans confusion possible."""
+    entrees = commissions_au_fond({"committees": [
+        {"committee": "LIBE", "committee_full": "Civil Liberties",
+         "type": "Former Responsible Committee"},
+        {"committee": "JURI", "committee_full": "Legal Affairs",
+         "type": "Responsible Committee"},
+    ]})
+
+    competentes = [e["sigle"] for e in entrees if e["statut"] == "au_fond"]
+
+    assert competentes == ["JURI"]
+    assert len(entrees) == 2, "la dessaisie reste publiée, elle n'est pas filtrée"
+
+
+def test_un_libelle_inconnu_n_est_ni_devine_ni_jete():
+    """Vocabulaire fermé (`AGENTS.md` §4) : l'étendre est un geste délibéré.
+
+    Le contenir est un fait de la source, le classer est notre affirmation. Un
+    libellé que la table ne connaît pas sort `statut: None` avec sa valeur
+    reçue — §2 règle 5.
+    """
+    entree = _au_fond("Provisionally Responsible Committee")[0]
+
+    assert entree["statut"] is None
+    assert entree["statut_non_resolu"] == {
+        "motif": "libelle_inconnu", "valeur": "Provisionally Responsible Committee"}
+    assert entree["sigle"] == "JURI", "l'entrée reste publiée"
+
+
+def test_le_vocabulaire_des_statuts_est_ferme():
+    assert KNOWN_STATUTS_COMMISSION_AU_FOND == {
+        "au_fond", "au_fond_conjointe", "ancienne_au_fond", "ancienne_au_fond_conjointe"}
+
+
+# --- absence à la source contre absence de lecture -------------------------
+
+def test_aucune_commission_a_la_source_porte_son_motif():
+    """8 des 355 : le dump ne porte aucune entrée au fond. Un fait, pas un trou."""
+    dossier = {"committees": [
+        {"committee": "ENVI", "committee_full": "Environment", "type": "Committee Opinion"}]}
+
+    assert commissions_au_fond_non_resolu(dossier, []) == {
+        "motif": "source_sans_commission_au_fond"}
+
+
+def test_une_saisine_conjointe_sans_nom_ne_se_confond_pas_avec_une_absence():
+    """6 des 355, et c'est le cas qu'une liste vide effaçait.
+
+    La source AFFIRME une saisine conjointe et laisse `committee` à la liste
+    vide. L'affirmation existe, son contenu manque : le lire comme « aucune
+    commission au fond » perdrait le fait que deux commissions se la partagent.
+    """
+    dossier = {"committees": [
+        {"committee": [], "committee_full": [], "type": "Joint Responsible Committee"},
+        {"committee": [], "committee_full": [], "type": "Joint Responsible Committee"},
+    ]}
+
+    assert commissions_au_fond(dossier) == []
+    assert commissions_au_fond_non_resolu(dossier, []) == {
+        "motif": "saisine_conjointe_sans_commission_nommee"}
+
+
+def test_le_motif_est_absent_des_qu_une_commission_est_nommee():
+    """Même contrat que `sort_non_resolu` (#747) : ni les deux, ni aucun des deux."""
+    dossier = {"committees": [
+        {"committee": "JURI", "committee_full": "Legal Affairs",
+         "type": "Responsible Committee"}]}
+    publiees = commissions_au_fond(dossier)
+
+    assert publiees
+    assert commissions_au_fond_non_resolu(dossier, publiees) is None
+
+
+def test_le_motif_atteint_le_dossier_publie(tmp_path):
+    """De bout en bout : c'est `construire` qui doit le poser, pas le lecteur."""
+    entrees = construire({"A"}, dump_path=_dump(tmp_path, [_dossier("A")]))
+
+    assert entrees[0]["commissions_au_fond"] == []
+    assert entrees[0]["commissions_au_fond_non_resolu"] == {
+        "motif": "source_sans_commission_au_fond"}

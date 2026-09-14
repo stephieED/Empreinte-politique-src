@@ -325,7 +325,13 @@ def _perimetre(mep_id: Optional[int] = None) -> frozenset[int]:
 #: mentir (#510).
 #:
 #:   2 — #901 : `stade_source` sur les entrées de `build_dossiers_index`.
-VERSION_SCHEMA_INDEX = 2
+#:   3 — #901 : `dossiers` sur les entrées de `build_activities_index`. Sans
+#:       cette incrémentation le correctif n'atteindrait aucun run : le cache
+#:       `public-data-cache-parltrack-<semaine>` restaure l'index déjà bâti, et
+#:       `build_activities_index` le relit tant que sa date dépasse celle du
+#:       dump — qui, lui, n'est pas retéléchargé. Le code aurait été juste et le
+#:       corpus inchangé, une semaine durant.
+VERSION_SCHEMA_INDEX = 3
 
 
 def _empreinte_perimetre(perimetre: frozenset[int]) -> str:
@@ -790,6 +796,16 @@ def build_activities_index(
                     # Seules les explications de vote portent un texte : c'est
                     # la personne qui écrit, pas un compte rendu de tiers.
                     "texte": entree.get("text"),
+                    # Les références de PROCÉDURE que l'activité vise
+                    # (`["2022/2852(RSP)"]`), à ne pas confondre avec
+                    # `reference`, qui est celle du DOCUMENT (`B8-0144/2017`).
+                    # C'est la seule clé qui permette de retrouver le stade du
+                    # dossier, et cette projection la jetait : `_make_texte_
+                    # porte_activite` lit cet index et non le dump, si bien que
+                    # les 371 textes portés issus d'activités sortaient tous en
+                    # `activite_sans_dossier`. Voir #901 et la note de
+                    # `_reference_dossier_activite`.
+                    "dossiers": entree.get("dossiers"),
                 })
 
     if codes_inconnus:

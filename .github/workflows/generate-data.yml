@@ -954,13 +954,21 @@ jobs:
       #
       # Ce commentaire a affirmé jusqu'à #505 qu'aucune dissociation entre
       # producteur de contenu et écrivain de clé n'était possible ici, les
-      # *trois* jobs concernés consommant les mêmes archives. C'ÉTAIT FAUX.
-      # `extract-roster-groupes` porte `--skip-dossiers-legislatifs` en dur
-      # depuis #357 : il ne télécharge aucun dossier et n'en consomme aucun. Ils
-      # ne sont donc que DEUX producteurs (ce job et merge-and-pivot) sur trois
-      # jobs qui déclarent ce chemin. Le raisonnement était juste quand il a été
-      # écrit ; c'est le pipeline qui a bougé sous lui, sans que personne ne
-      # relise l'affirmation.
+      # *trois* jobs concernés consommant les mêmes archives. C'ÉTAIT FAUX au
+      # moment où on l'a écrit, et la raison invoquée est fausse à son tour
+      # aujourd'hui : `extract-roster-groupes` a porté
+      # `--skip-dossiers-legislatifs` en dur de #357 à #817, qui l'a mis sous
+      # `inputs.collect_dossiers_legislatifs`. Quand cette case est cochée, le
+      # roster télécharge et REMPLIT `.cache/dossiers_an` — il est donc un
+      # producteur de contenu, ce que ce bloc niait.
+      # Deux fois le même défaut, sur le même commentaire : une justification
+      # datée que personne ne relit quand le pipeline bouge sous elle.
+      #
+      # LA CONCLUSION NE CHANGE PAS, et #817 la renforce même : le roster reste
+      # en restauration seule. Ce qu'il en coûte est mesurable et assumé — quand
+      # la case est cochée, les 8 shards retéléchargent les dossiers à chaque
+      # run, faute d'écrire la clé. L'inverse coûterait bien plus cher : voir
+      # juste en dessous pourquoi un roster écrivain est dangereux.
       # Le défaut restait latent parce que ce job-ci est ordonné AVANT le roster
       # (`needs:`) et écrit donc la clé le premier — mais rien ne le garantit :
       # un `prepare-an-matrix` rendant une liste vide skippe ce job, et le
@@ -2081,10 +2089,21 @@ jobs:
       # mais restaurer `public-data-cache-an-*` depuis là-bas embarquerait
       # aussi `scrutins_an` — plusieurs centaines de Mo pour en utiliser 46.
       #
-      # RESTAURATION SEULE (#505), et ici la dissociation est totale : ce job
-      # porte `--skip-dossiers-legislatifs` en dur, donc il ne remplit JAMAIS
-      # `.cache/dossiers_an`. Il n'a rien à sauvegarder — seulement à lire ce
-      # qu'extract-an y a mis, pour le passer à l'agrégation de groupe.
+      # RESTAURATION SEULE (#505). La raison n'est plus celle qui était écrite
+      # ici : ce job a porté `--skip-dossiers-legislatifs` en dur jusqu'à #817,
+      # qui l'a mis sous `inputs.collect_dossiers_legislatifs`. Case cochée, il
+      # REMPLIT bien `.cache/dossiers_an`.
+      #
+      # Il reste en restauration seule pour une raison plus forte : ce qu'il y
+      # met dépend d'un input, et une clé dont le CONTENU dépend d'un input doit
+      # porter cet input (la règle du suffixe `-interv-<empreinte>`, #657).
+      # Sans ce suffixe, un run avec la case cochée écrirait la clé nue de la
+      # semaine, et tous les runs suivants — case décochée — la restaureraient
+      # en croyant y trouver ce qu'extract-an y met. Ne pas écrire du tout est
+      # ici plus sûr qu'écrire sous une clé qui ment.
+      # Le coût : quand la case est cochée, les 8 shards retéléchargent les
+      # dossiers. Mesuré nulle part à ce jour — si ça devient le poste
+      # dominant du run, la réponse est un suffixe, pas un `save`.
       # Le commentaire qui vivait ici affirmait le contraire : voir sa
       # correction dans extract-an et
       # docs/decisions/cache-mode-interventions-505.md.
