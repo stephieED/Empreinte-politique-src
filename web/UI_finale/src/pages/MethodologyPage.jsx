@@ -125,7 +125,8 @@ const SECTIONS = [
         </p>
         <h3>D'où viennent la matière et l'origine d'un texte</h3>
         <p>
-          La <strong>matière</strong> est la commission saisie au fond du dossier législatif, lue dans
+          La <strong>matière</strong> est la commission chargée d'examiner le texte, celle qui l'amende
+          et rédige le rapport. Le Parlement l'appelle la « commission saisie au fond ». Elle est lue dans
           l'archive de l'Assemblée. Un scrutin ne porte aucune référence législative : le rattachement se
           fait dans l'autre sens, depuis les actes du dossier qui nomment les scrutins tenus. Il aboutit
           pour 711 des 1 160 positions. Les autres restent en « matière non établie » : c'est une absence
@@ -353,7 +354,7 @@ const SECTIONS = [
           au titre des deux ne compte alors qu'une fois. Aucun taux d'adoption commun n'est publié.
         </p>
         <p>
-          La matière est la commission saisie au fond du dossier, comme sur la fiche d'un candidat.
+          La matière est la commission chargée d'examiner le texte, comme sur la fiche d'un candidat.
           Les textes se rangent du plus récemment amendé au plus ancien, jamais par volume : déposer
           beaucoup sur un texte peut être un travail de fond comme une obstruction, et le nombre ne
           les distingue pas. Le sort d'un texte n'est affiché que lorsqu'un scrutin le rattache à
