@@ -1,11 +1,15 @@
 # `data.senat.fr` — open data du Sénat
 
-> **Statut : sondée, pas encore collectée.** Mesurée le **13/09/2026** pour remplir la
-> condition 1 du §7 de [`retrait-senat-528`](../decisions/retrait-senat-528.md) — « une source
-> est établie, pas supposée ». La décision de réouverture partielle est
-> [`reouverture-partielle-senat-885`](../decisions/reouverture-partielle-senat-885.md) ; aucun
-> collecteur n'interroge ce domaine à ce jour. Ce fichier décrit ce que le **fournisseur**
-> publie, et dérive avec lui, non avec notre code.
+> **Statut : collectée depuis le 13/09/2026.** Sondée d'abord, pour remplir la condition 1
+> du §7 de [`retrait-senat-528`](../decisions/retrait-senat-528.md) — « une source est
+> établie, pas supposée » — puis branchée par
+> [`reouverture-partielle-senat-885`](../decisions/reouverture-partielle-senat-885.md). Le job
+> `extract-senat` télécharge l'export à chaque run et écrit le bloc `mandat_senatorial` des
+> profils bruts ; **133 appartenances sur 2 candidats déclarés** au 14/09/2026. Ce fichier
+> décrit ce que le **fournisseur** publie, et dérive avec lui, non avec notre code.
+>
+> **La condition 2 reste déclarée non remplie** : ce jeu ne porte ni scrutins ni comptes
+> rendus, et le Sénat entre donc pour ses **appartenances**, pas pour son activité.
 
 ## Producteur et licence
 
