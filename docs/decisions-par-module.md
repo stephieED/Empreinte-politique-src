@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 320 décisions
+gouverne sans avoir à fouiller les 321 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -47,6 +47,7 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 | `src/avertissements.py` | 2 |
 | `src/fetch_candidats_declares.py` | 2 |
 | `src/gouvernement_profile.py` | 2 |
+| `src/scrutins_europeens.py` | 2 |
 | `src/build_amendements_index.py` | 1 |
 | `src/candidate_profile_ue.py` | 1 |
 | `src/europarl_documents.py` | 1 |
@@ -872,13 +873,14 @@ Le mentionnent sans le gouverner : [`chambre-par-mandat-electif`](decisions/cham
 
 ## `src/normalize_parltrack_dumps.py`
 
-9 décision(s) le gouvernent ; le module en cite 3.
+10 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
 | [Une clé de déduplication ne doit dépendre d'aucun champ qui apparaît (#827)](decisions/cle-de-fusion-qui-depend-dun-champ-volatil-827.md) | `enrich_pivot_with_parltrack` |
 | [`meta.warnings[]` déclare son destinataire, dans un jumeau typé et aligné (#642) (2026-08-31)](decisions/destinataire-avertissements-642.md) | `WARNING_PREFIX_PARLTRACK_AUCUNE_DONNEE` |
 | [L'`id` d'un profil pivot est le slug : le préfixe de provenance était instable (#487) (2026-08-20)](decisions/id-pivot-sans-prefixe.md) | `enrich_pivot_with_parltrack` |
+| [L'index des scrutins européens publie les effectifs, jamais le sort (#901) (2026-09-14)](decisions/index-scrutins-europeens-901.md) | `_porte_sur_ensemble` |
 | [Le lecteur des dumps ParlTrack n'avait jamais lu une ligne (#683, lot 1)](decisions/lecture-dumps-parltrack-683.md) | `_role_signataire` |
 | [Le versant AN passe en Licence Ouverte, et `meta.licence_donnees` devient un champ dérivé (#530, lot 6 de l'épic « une seule source AN ») (2026-08-27)](decisions/licence-lot-6-530.md) | `enrich_pivot_with_parltrack` |
 | [Un profil de roster ne porte pas une liste que sa propre collecte déclare écartée — purge des 49 `textes_portes` résiduels (#747)](decisions/purge-textes-portes-roster-747.md) | `_make_texte_porte` |
@@ -1118,13 +1120,25 @@ Le mentionnent sans le gouverner : [`gouvernement-premier-ministre-portefeuille`
 | --- | --- |
 | [Un scrutin ne dit pas quel texte il tranche : le lien se lit à l'envers (#758), 07/09/2026](decisions/rattachement-scrutin-dossier-758.md) | `cle_depuis_uid` |
 
+## `src/scrutins_europeens.py`
+
+2 décision(s) le gouvernent ; le module en cite 0.
+
+| Décision | Nomme |
+| --- | --- |
+| [Index amendements des législatures 15/16 : construction manuelle hors CI, committée (2026-08-13)](decisions/amendements-legislatures-figees.md) | `identifiant` |
+| [La page de groupe devient une fiche de lignée, construite en maquette avec la propriétaire (#329)](decisions/fiche-de-lignee-ui-329.md) | `identifiant` |
+
+Le mentionnent sans le gouverner : [`index-scrutins-europeens-901`](decisions/index-scrutins-europeens-901.md).
+
 ## `src/scrutins_index.py`
 
-5 décision(s) le gouvernent ; le module en cite 3.
+6 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
 | [Un audit qui lit un champ déplacé ne se tait pas : il crie 62 000 fois (#726) (2026-09-03)](decisions/audit-champs-deplaces-726.md) | `ScrutinsIndex` |
+| [L'index des scrutins européens publie les effectifs, jamais le sort (#901) (2026-09-14)](decisions/index-scrutins-europeens-901.md) | `decomposer_id` |
 | [Le seuil de blob sort du critère de sortie, et les profils bruts se partitionnent par législature (#580) (2026-08-29)](decisions/partition-profils-legislature-580.md) | `iter_votes_du_repertoire` |
 | [La qualification d'un scrutin se perdait entre la collecte et le profil brut (#639, rang 1) (2026-08-31)](decisions/qualification-perdue-a-la-fusion-639.md) | `_valeur_scrutin`, `merge_scrutins_index` |
 | [La qualification d'un scrutin et la clé de son dossier étaient lues puis jetées (#639, rangs 1 et 2)](decisions/qualification-scrutins-et-cle-dossier-639.md) | `merge_scrutins_index` |

@@ -1,9 +1,10 @@
-# Ce que devient la donnée — les sept sorties de `pivot_data/`
+# Ce que devient la donnée — les huit sorties de `pivot_data/`
 
 Ce fichier décrit le **flux** : les sources, les fichiers, les schémas, la
-volumétrie, et ce que le web lit. Il couvre les sept sorties de `pivot_data/` —
+volumétrie, et ce que le web lit. Il couvre les huit sorties de `pivot_data/` —
 `profiles`, `groupes`, `lignees`, `gouvernements`, `scrutins.json`,
-`amendements/`, `commissions_dossiers.json`. `partis/` en est sortie avec #906.
+`scrutins_europeens.json`, `amendements/`, `commissions_dossiers.json`.
+`partis/` en est sortie avec #906, `scrutins_europeens.json` y est entré avec #901.
 
 Trois voisins, et ce qui les sépare :
 
@@ -442,6 +443,7 @@ fusion indexées par `docs/technical_decisions.md`.
 | `pivot_data/lignees/` | `generate_lignee_profiles.py` → `lignee_profile.py` (#836) | `src/schema_lignee.py` | **13** fiches, 48 Mo (mesuré 11/09/2026, commit de données `62db21a9` — la sortie n'existait pas au 30/08) — une par LIGNÉE de groupe, c'est-à-dire par suite de fiches chaînées sur `succede_a` : 30 fiches de groupe pour 13 lignées, dont 2 lignées Sénat à un seul maillon. `membres` et `cohesion_votes` y sont des UNIONS, `amendements_agreges` et `tags_thematiques_agreges` des RECALCULS depuis `profiles[].amendements`. Écrites en **compact** : le critère de #433 est « relu à la main », et une fiche de lignée pèse jusqu'à 11,5 Mo. C'est la SEULE collection que l'interface publie pour les groupes — une fiche de lignée absente est une page du site en moins, d'où la §4c du portail |
 | `pivot_data/gouvernements/` | `gouvernement_roster.py` + `gouvernement_textes.py` → `gouvernement_profile.py` | `src/schema_gouvernement.py` | **10** fiches, < 1 Mo |
 | `pivot_data/scrutins.json` | index partagé, ci-dessus | `scrutins-v1` | **17 748** scrutins, 9 Mo (~10,2 Mo une fois la qualification de #639 régénérée) |
+| `pivot_data/scrutins_europeens.json` | `scrutins_europeens.py` (dump ParlTrack `ep_votes`) | `scrutins-europeens-v1` | **5 571** scrutins, 3,8 Mo (mesuré 14/09/2026) — ceux que les 7 profils européens citent, sur les 44 648 du dump. Porte les **effectifs** pour/contre/abstention et leur ventilation par groupe politique, jamais de liste nominative ni de `sort` déduit (#901) |
 | `pivot_data/amendements/` | index partagé, ci-dessus | `amendements-v1` + `amendements-cosignatures-v1` | **484 132** amendements distincts, 259 Mo (index + compagnons) |
 | `pivot_data/commissions_dossiers.json` | `build_commissions_dossiers.py` (#328) | `commissions-dossiers-v1` | **6 024** dossiers renvoyés en commission au fond (mesuré 01/09/2026 sur les archives XV/XVI/XVII), 1,2 Mo — **produit et versionné depuis le commit de données `5de11422`** (02/09/2026). Consommé par `generate_gouvernement_profiles.py` (`--commissions-dossiers`), qui en tire `textes[].commission_saisie_au_fond` (#689) |
 | `pivot_data/scrutins_dossiers.json` | `build_scrutins_dossiers.py` (#758) | `scrutins-dossiers-v1` | **715** scrutins rattachés à **561** dossiers (mesuré 07/09/2026 sur les archives XV/XVI/XVII), 72 ko. Deux tables : `scrutins` (`clé de scrutin → uid de dossier`) et `dossiers` (`uid → {statut, sort_49_3}`). **Un scrutin AN ne nomme pas le texte qu'il tranche** — `objet.referenceLegislative` est nul sur 0/18 311 scrutins bruts —, le lien n'existe qu'en sens inverse dans `actesLegislatifs[].voteRefs`. Couvre **423 des 697 textes en dernière lecture (61 %)**, dont 412 avec une commission par jointure dans `commissions_dossiers.json`. Les 39 % restants sont une absence déclarée, jamais comblée par ressemblance de titre |

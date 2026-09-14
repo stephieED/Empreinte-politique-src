@@ -3044,6 +3044,21 @@ jobs:
       #
       # Aucune tolérance ajoutée par ailleurs : la section 4 du quality gate
       # hard-faile toujours sur une fiche de groupe absente ou invalide.
+      # #901 — l'index des scrutins européens. Il se construit APRÈS les passes
+      # pivot : son périmètre est l'ensemble des `numero_scrutin` que les
+      # profils publiés citent, et le lire avant les aurait indexé un corpus
+      # d'hier. Le dump `ep_votes` est déjà en cache — `extract-parltrack` l'a
+      # téléchargé — donc aucun appel réseau supplémentaire.
+      #
+      # Pas de tolérance : `DumpVotesIndisponible` fait échouer le step plutôt
+      # que d'écrire un index vide, qui se lirait comme « aucun scrutin
+      # européen » (#510).
+      - name: Générer l'index des scrutins européens
+        run: |
+          python3 src/scrutins_europeens.py \
+            --profils-dir pivot_data/profiles \
+            --out pivot_data/scrutins_europeens.json
+
       - name: Générer les profils de groupe parlementaire réel
         env:
           OVERWRITE: ${{ inputs.existing_profiles == 'overwrite' }}
@@ -3689,7 +3704,7 @@ jobs:
           # `resolutions_candidats.json` N'entre PAS : c'est un intermédiaire de
           # run, comme `rosters_bruts.json`, et le committer ferait bouger un
           # fichier à chaque exécution sans que personne ne le lise.
-          git add raw_data/candidats.json raw_data/profiles raw_data/correspondance_acteurs_an.json pivot_data/profiles pivot_data/groupes pivot_data/gouvernements pivot_data/scrutins.json pivot_data/amendements
+          git add raw_data/candidats.json raw_data/profiles raw_data/correspondance_acteurs_an.json pivot_data/profiles pivot_data/groupes pivot_data/gouvernements pivot_data/scrutins.json pivot_data/scrutins_europeens.json pivot_data/amendements
           # Table des commissions saisies au fond (#328), ajoutée seulement si
           # elle existe : `git add` sur un chemin absent échoue, et le step qui
           # la produit est non bloquant. Un run sans archive lisible ne doit pas
