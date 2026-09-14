@@ -47,7 +47,8 @@ Le détail et le raisonnement : [`AGENTS.md`](AGENTS.md) §2 et §6.
 
 | Source | Ce qu'elle apporte | Cadence | Licence |
 |---|---|---|---|
-| [Open data de l'Assemblée nationale](https://data.assemblee-nationale.fr/) | **La seule source française** depuis #529 : identité, mandats, votes, amendements, dossiers, comptes rendus Syceron, questions | quotidienne | Licence Ouverte (Etalab) — attribution |
+| [Open data de l'Assemblée nationale](https://data.assemblee-nationale.fr/) | **La seule source de l'activité parlementaire française** depuis #529 : identité, mandats, votes, amendements, dossiers, comptes rendus Syceron, questions | quotidienne | Licence Ouverte (Etalab) — attribution |
+| [Open data du Sénat](https://data.senat.fr/) | **Les appartenances sénatoriales seulement** depuis #885 — mandats, groupes, commissions, datés au jour près. Le jeu ne porte **ni scrutin ni compte rendu** : l'activité en séance n'est pas publiée | à chaque run | Licence Ouverte 2.0 (Etalab) — attribution |
 | [Parltrack](https://parltrack.org) | Le volet européen des anciens eurodéputés | hebdomadaire (environ) | ODbL v1.0 — **partage à l'identique** |
 | [Parlement européen](https://data.europarl.europa.eu/) | Le mandat européen | en direct, à chaque run | CC BY 4.0 — attribution, `User-Agent` identifiant le réutilisateur, 500 requêtes / 5 min |
 | [Sycomore](https://www2.assemblee-nationale.fr/sycomore/recherche) (Assemblée nationale) | **Citée, pas collectée** : les mandats de député antérieurs au 19/06/2002, relus à la main un par un (#860) | aucune — table relue | tous droits réservés — **seuls des faits** (fonction, dates) repris, avec leur lien |
