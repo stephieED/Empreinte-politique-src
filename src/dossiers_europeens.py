@@ -93,6 +93,48 @@ MARQUEUR_AU_FOND = "responsible"
 #: au fond pour 1,2 % des dossiers au lieu de 97,7 %.
 CHAMP_TYPE = "type"
 
+#: Le libellé de la source → ce qu'il affirme, en vocabulaire fermé.
+#:
+#: Les quatre libellés sont **conservés verbatim** dans `type_source` ; ce statut
+#: est ce qui permet de les lire sans refaire, chez chaque consommateur, une
+#: reconnaissance de chaîne sur de l'anglais. Deux axes s'y croisent : la saisine
+#: est-elle **en vigueur** (« Former … » ne l'est plus), est-elle **partagée**
+#: (« Joint … »).
+#:
+#: Les fondre publierait comme compétente une commission dessaisie, et effacerait
+#: qu'une saisine est partagée — une compétence que la source n'établit pas
+#: (§2 règle 2). L'arbitrage du 14/09/2026 tient à sa réversibilité : fondre plus
+#: tard à l'affichage reste possible, re-séparer ce qu'on a écrasé à la collecte
+#: ne l'est pas.
+#:
+#: Relevé le 14/09/2026 sur les 355 dossiers de cet index. Deux populations, à
+#: ne pas confondre — les entrées `committees[]` **de la source** : 326
+#: « Responsible Committee », 40 « Former Responsible Committee », 34 « Joint
+#: Responsible Committee », 2 « Former Joint Committee Responsible » ; et les
+#: entrées **publiées**, après aplatissement des sigles, une entrée pouvant en
+#: porter zéro ou plusieurs : 326 `au_fond`, 40 `ancienne_au_fond`, 31
+#: `au_fond_conjointe`, 4 `ancienne_au_fond_conjointe`.
+STATUT_PAR_LIBELLE: dict[str, str] = {
+    "responsible committee": "au_fond",
+    "joint responsible committee": "au_fond_conjointe",
+    "former responsible committee": "ancienne_au_fond",
+    "former joint committee responsible": "ancienne_au_fond_conjointe",
+}
+
+#: Vocabulaire fermé, comme les `KNOWN_*` du schéma pivot (`AGENTS.md` §4) :
+#: l'étendre est un geste délibéré, jamais un effet de bord d'une valeur reçue.
+KNOWN_STATUTS_COMMISSION_AU_FOND = frozenset(STATUT_PAR_LIBELLE.values())
+
+#: Pourquoi un dossier ne publie AUCUNE commission au fond. Non nul si et
+#: seulement si `commissions_au_fond` est vide — même contrat que
+#: `sort_non_resolu` (#747) : ni les deux, ni aucun des deux.
+#:
+#: Un dossier **absent de l'index** est un troisième cas, et il se lit à son
+#: absence : la référence était citée mais introuvable dans le dump. Rien n'est
+#: fabriqué pour lui (§2 règle 5).
+MOTIF_SANS_COMMISSION = "source_sans_commission_au_fond"
+MOTIF_CONJOINTE_SANS_NOM = "saisine_conjointe_sans_commission_nommee"
+
 
 def _sigles_et_noms(commission: dict[str, Any]) -> list[tuple[str, Optional[str]]]:
     """Les couples `(sigle, nom)` d'une entrée `committees[]`.
@@ -130,11 +172,18 @@ def commissions_au_fond(dossier: dict[str, Any]) -> list[dict[str, Any]]:
     Mesuré sur les 355 dossiers de cet index : **347 en portent au moins une**
     (97,7 %) — 299 une seule, 41 deux, 7 trois.
 
-    **Le libellé de type est conservé tel quel.** La source distingue quatre
-    états — saisine au fond, ancienne saisine, saisine conjointe, ancienne
-    saisine conjointe — et les fondre publierait une compétence qu'elle
-    sépare. Traduire le sigle ou le nom ne serait pas mieux : « JURI » et
-    « Legal Affairs » sont ce que le Parlement publie.
+    **Le libellé de type est conservé tel quel**, dans `type_source`. La source
+    distingue quatre états — saisine au fond, ancienne saisine, saisine
+    conjointe, ancienne saisine conjointe — et les fondre publierait une
+    compétence qu'elle sépare. Traduire le sigle ou le nom ne serait pas mieux :
+    « JURI » et « Legal Affairs » sont ce que le Parlement publie.
+
+    **`statut` est ce verbatim lu**, en vocabulaire fermé
+    (`STATUT_PAR_LIBELLE`) : sans lui, chaque consommateur referait une
+    reconnaissance de chaîne sur de l'anglais pour savoir si la commission est
+    compétente aujourd'hui. Un libellé que la table ne connaît pas sort
+    `statut: None` **avec** `statut_non_resolu`, portant la valeur reçue : ni
+    deviné, ni jeté (§2 règle 5).
     """
     entrees: list[dict[str, Any]] = []
     for commission in dossier.get("committees") or []:
@@ -143,9 +192,53 @@ def commissions_au_fond(dossier: dict[str, Any]) -> list[dict[str, Any]]:
         type_source = commission.get(CHAMP_TYPE)
         if not isinstance(type_source, str) or MARQUEUR_AU_FOND not in type_source.lower():
             continue
+        statut = STATUT_PAR_LIBELLE.get(type_source.strip().lower())
         for sigle, nom in _sigles_et_noms(commission):
-            entrees.append({"sigle": sigle, "nom": nom, "type_source": type_source})
+            entree = {
+                "sigle": sigle,
+                "nom": nom,
+                "type_source": type_source,
+                "statut": statut,
+            }
+            if statut is None:
+                entree["statut_non_resolu"] = {
+                    "motif": "libelle_inconnu",
+                    "valeur": type_source,
+                }
+            entrees.append(entree)
     return entrees
+
+
+def commissions_au_fond_non_resolu(
+    dossier: dict[str, Any], publiees: list[dict[str, Any]]
+) -> Optional[dict[str, str]]:
+    """Pourquoi ce dossier ne publie aucune commission au fond, ou `None`.
+
+    Deux causes, qui ne se réparent pas au même endroit et qu'une liste vide
+    confondrait — mesurées le 14/09/2026 sur les 355 dossiers de l'index :
+
+    - `source_sans_commission_au_fond` — **8 dossiers** : le dump ne porte
+      aucune entrée `committees[]` au fond. C'est un fait de la source ;
+    - `saisine_conjointe_sans_commission_nommee` — **6 dossiers** : la source
+      *affirme* une saisine conjointe (« Joint Responsible Committee ») et laisse
+      `committee` et `committee_full` à la **liste vide**. L'affirmation existe,
+      son contenu manque — publier `[]` sans le dire ferait lire ces 6 comme les
+      8 précédents.
+
+    341 + 6 + 8 = 355. Le chiffre de 347 qui circule est celui des dossiers dont
+    le **dump** porte une entrée au fond ; 341 est celui des dossiers dont
+    l'**index publié** nomme au moins une commission. Deux populations, deux
+    chiffres, tous deux justes.
+    """
+    if publiees:
+        return None
+    for commission in dossier.get("committees") or []:
+        if not isinstance(commission, dict):
+            continue
+        type_source = commission.get(CHAMP_TYPE)
+        if isinstance(type_source, str) and MARQUEUR_AU_FOND in type_source.lower():
+            return {"motif": MOTIF_CONJOINTE_SANS_NOM}
+    return {"motif": MOTIF_SANS_COMMISSION}
 
 
 def references_visees(profils_dir: Path) -> set[str]:
@@ -207,18 +300,22 @@ def construire(
         # la source ajoute une valeur.
         stade, stade_non_resolu = _stade_procedural_ue(
             {"stade_source": procedure.get("stage_reached")})
+        au_fond = commissions_au_fond(dossier)
         entree: dict[str, Any] = {
             "id": identifiant(reference),
             "reference": reference,
             "titre": procedure.get("title") or None,
             "type_procedure": procedure.get("type") or None,
             "stade_procedural": stade,
-            "commissions_au_fond": commissions_au_fond(dossier),
+            "commissions_au_fond": au_fond,
             "source_url": (dossier.get("meta") or {}).get("source")
             or f"https://parltrack.org/dossier/{reference}",
         }
         if stade_non_resolu:
             entree["stade_procedural_non_resolu"] = stade_non_resolu
+        non_resolu = commissions_au_fond_non_resolu(dossier, au_fond)
+        if non_resolu:
+            entree["commissions_au_fond_non_resolu"] = non_resolu
         entrees.append(entree)
     entrees.sort(key=lambda e: e["reference"])
     return entrees
