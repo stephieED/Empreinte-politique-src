@@ -165,10 +165,11 @@ où ils se lisaient comme des faits sur la personne affichée (#328).
   groupe (#329, #836). Les **5 groupes de la XVIIe** y sont
   entrés le 01/09/2026 (#700) ; leurs fiches paraissent au premier run qui
   suit, et couvriront **305 des 461** membres, les autres n'ayant pas encore de
-  correspondance slug ↔ acteur AN. Les **2 groupes du Sénat sont suspendus**
-  depuis le 24/08/2026 : #528 a sorti le Sénat du périmètre du produit, la
-  suspension attend donc une réouverture éditoriale explicite, plus un
-  certificat. Leurs fiches publiées restent en place, gelées.
+  correspondance slug ↔ acteur AN. Les **2 groupes du Sénat restent suspendus**
+  depuis le 24/08/2026, et #885 ne les rouvre pas : le Sénat est rentré pour ses
+  **appartenances**, pas pour son activité, et `data.senat.fr` ne porte aucun
+  scrutin. Le cœur d'une fiche de groupe resterait donc vide. Leurs fiches
+  publiées restent en place, gelées.
   → [`docs/decisions/fiches-groupe-17e-legislature-700.md`](docs/decisions/fiches-groupe-17e-legislature-700.md),
   [`docs/decisions/retrait-senat-528.md`](docs/decisions/retrait-senat-528.md),
   [`docs/decisions/extraction-groupe-suspendue-516.md`](docs/decisions/extraction-groupe-suspendue-516.md)
@@ -187,8 +188,13 @@ où ils se lisaient comme des faits sur la personne affichée (#328).
   → [`docs/decisions/seuil-couverture-groupe.md`](docs/decisions/seuil-couverture-groupe.md)
 - **Votes AN** : open data officiel, 14<sup>e</sup> à 17<sup>e</sup> législature
   selon les dumps disponibles.
-- **Sénat** : hors périmètre depuis #528 — pas de job de collecte, pas de
-  chambre `senateurs`. Les mandats sénatoriaux déjà publiés le restent.
+- **Sénat** : **les appartenances, jamais l'activité** (#885, 13/09/2026). Le job
+  `extract-senat` collecte mandats, groupes et commissions depuis `data.senat.fr`,
+  datés au jour près — 133 appartenances sur 2 candidats déclarés. Le jeu ne porte
+  **ni scrutin ni compte rendu** : la condition 2 de #528 §7 est **déclarée non
+  remplie**, pas contournée, et les fiches de groupe sénatorial publient toujours
+  0 vote de cohésion. La chambre `senateurs` du roster reste suspendue.
+  → [`docs/decisions/reouverture-partielle-senat-885.md`](docs/decisions/reouverture-partielle-senat-885.md)
 - **Parlement européen** : les cinq listes sont publiées (ParlTrack), mais les
   interventions et textes antérieurs au 22/11/2016 portent la date de leur
   republication par ParlTrack, pas celle de la séance : #858.
