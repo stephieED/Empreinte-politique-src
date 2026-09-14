@@ -113,8 +113,10 @@ pivot_data/    Le format pivot — la SEULE couche que web/ lit
   profiles/       <slug>.pivot.json
   groupes/        groupe-<SIGLE>-<leg>.json
   gouvernements/  gouvernement-<ID>.json
-  partis/         agrégats éditoriaux, usage interne
-  scrutins.json   index partagé des scrutins (#432)
+  lignees/        une fiche par lignée de groupe — la seule que web/ lit (#836)
+  scrutins.json   index partagé des scrutins de l'Assemblée (#432)
+  scrutins_europeens.json  les scrutins du PE cités, avec leurs effectifs par groupe (#901)
+  dossiers_europeens.json  référence de procédure → titre, stade, commission au fond (#901)
   amendements/    index partagé des amendements, un fichier par législature (#431)
 src/           Le pipeline (collecte, normalisation, agrégation, audits, gate)
 scripts/       Les scripts d'exploitation (run local, bornage, rendu du formulaire)
@@ -136,7 +138,7 @@ vers les deux index partagés. Pourquoi, et ce que ça a fait gagner :
 | Question | Fichier |
 |---|---|
 | **« Quelle était la commande, déjà ? »** | [`docs/commandes.md`](docs/commandes.md) |
-| **« Que devient la donnée ? »** — flux, schémas, les six sorties de `pivot_data/`, volumétrie | [`docs/data-architecture.md`](docs/data-architecture.md) |
+| **« Que devient la donnée ? »** — flux, schémas, les sorties de `pivot_data/`, volumétrie | [`docs/data-architecture.md`](docs/data-architecture.md) |
 | **« Que fait un run ? »** — les huit jobs, le formulaire de lancement, caches, artifacts, budgets, le push, la relance automatique | [`docs/workflow-generate-data.md`](docs/workflow-generate-data.md) |
 | **« Comment marche l'extraction pilotée par roster ? »** — le seul job qui a une page à lui | [`docs/extract-roster-groupes.md`](docs/extract-roster-groupes.md) |
 | **« Pourquoi c'est fait comme ça ? »** — une décision par fichier | [`docs/decisions/`](docs/decisions/), indexées par [`docs/technical_decisions.md`](docs/technical_decisions.md) |

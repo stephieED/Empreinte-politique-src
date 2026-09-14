@@ -1,11 +1,20 @@
-# Ce que devient la donnée — les neuf sorties de `pivot_data/`
+# Ce que devient la donnée — les sorties de `pivot_data/`
 
 Ce fichier décrit le **flux** : les sources, les fichiers, les schémas, la
-volumétrie, et ce que le web lit. Il couvre les neuf sorties de `pivot_data/` —
-`profiles`, `groupes`, `lignees`, `gouvernements`, `scrutins.json`,
-`scrutins_europeens.json`, `dossiers_europeens.json`, `amendements/`,
-`commissions_dossiers.json`.
-`partis/` en est sortie avec #906, `scrutins_europeens.json` y est entré avec #901.
+volumétrie, et ce que le web lit. Il couvre les sorties de `pivot_data/` :
+`profiles`, `groupes`, `lignees`, `gouvernements`, `amendements/`,
+`scrutins.json`, `scrutins_dossiers.json`, `commissions_dossiers.json`,
+`scrutins_europeens.json`, `dossiers_europeens.json`.
+
+**Sans les compter.** Le titre a annoncé « huit » puis « neuf » sorties pendant
+que le disque en portait dix : `scrutins_dossiers.json` était décrit plus bas
+sans figurer dans l'énumération, et `partis/` y figurait encore après son
+retrait. Un inventaire chiffré se lit comme courant longtemps après avoir cessé
+de l'être (`AGENTS.md` §8) ; la liste ci-dessus est vérifiable d'un `ls`, le
+compte ne l'était pas.
+
+`partis/` est sortie avec #906 ; `scrutins_europeens.json` et
+`dossiers_europeens.json` sont entrés avec #901.
 
 Trois voisins, et ce qui les sépare :
 
