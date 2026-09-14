@@ -1043,6 +1043,29 @@ STADES_PROCEDURAUX_UE: frozenset[str] = frozenset({
     "ue_attente_decision_conseil_2e_lecture",
 })
 
+#: Le stade européen qui NE se publie pas — le seul, et il est nommé plutôt que
+#: la liste de ses quinze contraires (#901, arbitré le 14/09/2026).
+#:
+#: Le seuil de `AGENTS.md` §6 est un **rang** dans la liste française : « au
+#: moins parvenu en commission ». Aucun stade européen n'a de rang dans cette
+#: liste, et l'appliquer tel quel écartait les **383** textes portés européens —
+#: `raphael-glucksmann` affichait « 0 publiés » en en portant 23.
+#:
+#: La nomenclature européenne est **plate** : ses seize valeurs ne s'ordonnent
+#: pas, « Procedure completed » et « Awaiting committee decision » décrivent des
+#: états, pas des degrés. La règle se dit donc par exclusion, et elle exclut ce
+#: qui correspond au `depose` français : un texte dont le Parlement n'a encore
+#: rien examiné. **58 dossiers sur les 20 442** qui portent un stade.
+#:
+#: Un stade que la source ajouterait ensuite n'est pas publié tant qu'il n'est
+#: pas rangé ici : il sort déjà `stade_procedural: null` + son motif, et une
+#: valeur inconnue qui se publierait par défaut ferait entrer dans le corpus un
+#: état que personne n'a qualifié (§2 règle 5).
+STADES_UE_NON_PUBLIES: frozenset[str] = frozenset({"ue_phase_preparatoire_parlement"})
+
+#: Les stades européens qu'un texte porté doit avoir pour être publié.
+STADES_UE_PUBLIES: frozenset[str] = STADES_PROCEDURAUX_UE - STADES_UE_NON_PUBLIES
+
 KNOWN_STADES_PROCEDURAUX: frozenset[str] = STADES_PROCEDURAUX_AN | STADES_PROCEDURAUX_UE
 
 # Nature du texte déposé, telle que la source l'encode (#689) : préfixe de l'uid
