@@ -120,6 +120,7 @@ invented, and never silently dropped** — it is published `null` alongside its
 |---|---|
 | `textes_portes[]` (stage ≥ `examine_commission`) | Public |
 | `textes_portes[]` below threshold | Via explicit user toggle — not published by default |
+| `textes_portes[]` **European** — any `ue_` stage **except** `ue_phase_preparatoire_parlement` | Public. The threshold is a **rank** in the French list, and no European stage has one: applying it unchanged discarded all 383 European texts. The European nomenclature is flat, so the rule is stated by exclusion — the one stage that means "not yet examined anywhere", the counterpart of `depose`. Arbitrated 14/09/2026; 58 of the 20 442 dossiers carrying a stage are in that case. A stage the source adds later is **not** published until it is placed here (§2 rule 5) |
 | `amendements[]` raw counts + `par_type_deposant` | Public |
 | Adoption rate across all submitter types | **Never** (misleading) |
 | `amendements_agreges` on a group sheet | Public — **distinct amendments**, deduplicated on `amendement_id`. A co-signed amendment is **one** |
