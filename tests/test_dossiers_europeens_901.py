@@ -196,3 +196,94 @@ def test_l_identifiant_ne_se_confond_pas_avec_celui_d_un_scrutin():
 
     assert identifiant("2021/0136(COD)") == "pe-dossier:2021/0136(COD)"
     assert not identifiant("X").startswith(identifiant_scrutin("X"))
+
+
+# --------------------------------------------------------------------------
+# La commission saisie au fond (#901, besoin remonté par l'interface)
+# --------------------------------------------------------------------------
+
+from dossiers_europeens import commissions_au_fond  # noqa: E402
+
+
+def test_la_saisine_pour_avis_n_est_pas_une_saisine_au_fond():
+    """« Committee Opinion » et ses variantes désignent une commission
+    consultée, pas compétente. Les confondre publierait une compétence que la
+    source sépare."""
+    entrees = commissions_au_fond({"committees": [
+        {"committee": "ENVI", "committee_full": "Environment", "type": "Committee Opinion"},
+        {"committee": "JURI", "committee_full": "Legal Affairs", "type": "Responsible Committee"},
+    ]})
+
+    assert [e["sigle"] for e in entrees] == ["JURI"]
+
+
+def test_une_saisine_conjointe_est_aplatie_en_une_entree_par_sigle():
+    """La source met des LISTES dans `committee` et `committee_full` quand la
+    saisine est conjointe — 36 des 402 entrées au fond de notre population.
+    Publier une liste dans un champ scalaire obligerait chaque consommateur à
+    gérer les deux formes."""
+    entrees = commissions_au_fond({"committees": [{
+        "committee": ["ECON", "JURI"],
+        "committee_full": ["Economic and Monetary Affairs", "Legal Affairs"],
+        "type": "Joint Responsible Committee"}]})
+
+    assert entrees == [
+        {"sigle": "ECON", "nom": "Economic and Monetary Affairs",
+         "type_source": "Joint Responsible Committee"},
+        {"sigle": "JURI", "nom": "Legal Affairs",
+         "type_source": "Joint Responsible Committee"},
+    ]
+
+
+def test_le_libelle_de_type_est_conserve_tel_quel():
+    """Quatre états que la source distingue : saisine au fond, ancienne,
+    conjointe, ancienne conjointe. Les fondre en un booléen perdrait le fait
+    qu'une commission a été dessaisie."""
+    entrees = commissions_au_fond({"committees": [
+        {"committee": "LIBE", "committee_full": "Civil Liberties",
+         "type": "Former Responsible Committee"}]})
+
+    assert entrees[0]["type_source"] == "Former Responsible Committee"
+
+
+def test_le_champ_lu_est_type_et_non_responsible():
+    """LE piège : `responsible: true` n'est renseigné que sur 2,9 % des entrées,
+    `type` sur 97 %. S'y fier rendait une commission au fond pour 1,2 % des
+    dossiers au lieu de 97,7 %."""
+    entrees = commissions_au_fond({"committees": [
+        {"committee": "JURI", "committee_full": "Legal Affairs",
+         "responsible": True, "type": "Committee Opinion"},
+        {"committee": "ECON", "committee_full": "Economic Affairs",
+         "responsible": None, "type": "Responsible Committee"},
+    ]})
+
+    assert [e["sigle"] for e in entrees] == ["ECON"]
+
+
+def test_un_sigle_absent_ou_vide_ne_produit_aucune_entree():
+    entrees = commissions_au_fond({"committees": [
+        {"committee": [], "committee_full": [], "type": "Responsible Committee"},
+        {"committee": None, "type": "Responsible Committee"},
+        {"committee": "", "type": "Responsible Committee"},
+    ]})
+
+    assert entrees == []
+
+
+def test_un_nom_manquant_laisse_le_sigle_publie():
+    """Le sigle est ce que l'interface affiche ; l'absence du nom complet ne
+    doit pas emporter le fait (§2 règle 5)."""
+    entrees = commissions_au_fond({"committees": [
+        {"committee": "JURI", "type": "Responsible Committee"}]})
+
+    assert entrees == [{"sigle": "JURI", "nom": None,
+                        "type_source": "Responsible Committee"}]
+
+
+def test_un_dossier_sans_commission_rend_une_liste_vide(tmp_path):
+    """8 des 355 dossiers de l'index sont dans ce cas. Une liste vide dit
+    « la source n'en publie aucune » ; l'absence de clé ferait croire à un
+    champ oublié."""
+    entrees = construire({"A"}, dump_path=_dump(tmp_path, [_dossier("A")]))
+
+    assert entrees[0]["commissions_au_fond"] == []
