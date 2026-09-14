@@ -141,17 +141,17 @@ depuis #901. Pourquoi, et ce que ça a fait gagner :
 |---|---|
 | **« Quelle était la commande, déjà ? »** | [`docs/commandes.md`](docs/commandes.md) |
 | **« Que devient la donnée ? »** — flux, schémas, les sorties de `pivot_data/`, volumétrie | [`docs/data-architecture.md`](docs/data-architecture.md) |
-| **« Que fait un run ? »** — les huit jobs, le formulaire de lancement, caches, artifacts, budgets, le push, la relance automatique | [`docs/workflow-generate-data.md`](docs/workflow-generate-data.md) |
-| **« Comment marche l'extraction pilotée par roster ? »** — le seul job qui a une page à lui | [`docs/extract-roster-groupes.md`](docs/extract-roster-groupes.md) |
+| **« Que fait un run ? »** — les dix jobs, le formulaire de lancement, caches, artifacts, budgets, le push, la relance automatique | [`docs/workflow-generate-data.md`](docs/workflow-generate-data.md) |
+| **« Comment marche l'extraction pilotée par roster ? »** — le seul job qui a une page à lui, les neuf autres étant des blocs de la page ci-dessus | [`docs/extract-roster-groupes.md`](docs/extract-roster-groupes.md) |
 | **« Pourquoi c'est fait comme ça ? »** — une décision par fichier | [`docs/decisions/`](docs/decisions/), indexées par [`docs/technical_decisions.md`](docs/technical_decisions.md) |
-| **« Où l'Assemblée publie-t-elle ce champ ? »** — les références qui dérivent avec leur fournisseur, pas avec notre code | [`docs/sources/`](docs/sources/) |
+| **« Où cette source publie-t-elle ce champ ? »** — Assemblée, Sénat, ParlTrack et Parlement européen : les références qui dérivent avec leur fournisseur, pas avec notre code | [`docs/sources/`](docs/sources/) |
 | **Les règles non négociables, pour un agent comme pour un humain** | [`AGENTS.md`](AGENTS.md) |
 | **Ce qui est planifié, et les défauts connus restés ouverts** | [`ROADMAP.md`](ROADMAP.md) |
 
 ## Ce que la couverture ne couvre pas encore
 
-Le site le publie, et pas seulement ce fichier : **[« Ce que contient ce corpus »](https://empreinte-politique.fr/couverture)**
-(`/couverture`) montre, pour les trois populations publiées, ce que le dépôt
+Le site le publie, et pas seulement ce fichier : **[« Ce que contient ce corpus »](https://empreinte-politique.fr/#/couverture)**
+(`#/couverture`) montre, pour les trois populations publiées, ce que le dépôt
 porte et depuis quand, puis par liste les fiches où elle manque. **L'accueil en
 donne la version courte** — une borne par institution, et les candidats dont une
 partie des mandats est hors couverture, nommés (#328). Deux tiers des
