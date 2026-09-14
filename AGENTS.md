@@ -54,7 +54,7 @@ retry: `docs/workflow-generate-data.md`. **The rules stay here**, because a rule
 behind a link is a rule that gets missed.
 
 Public sources → `raw_data/profiles/<slug>.json` + per-legislature amendment
-slices → `pivot_data/profiles/<slug>.pivot.json` → groupes / partis /
+slices → `pivot_data/profiles/<slug>.pivot.json` → groupes / lignées /
 gouvernements → `check_quality_gate.py`, which gates every commit. `raw_data/` is
 source-near; `pivot_data/` is the only layer `web/` reads.
 
@@ -354,11 +354,12 @@ When something does need deciding, five parts, in this order:
   intention (generate, audit, check before committing, operate, see what the user
   sees). The pipeline-internal executables are left out, and
   the file says so. Locked by `tests/test_commandes_documentees.py`.
-- `docs/data-architecture.md`: what the data becomes — the eight outputs of
-  `pivot_data/` (profiles, groupes, lignees, gouvernements, partis, scrutins,
+- `docs/data-architecture.md`: what the data becomes — the outputs of
+  `pivot_data/` (profiles, groupes, lignees, gouvernements, scrutins,
   amendements, commissions_dossiers). `lignees/` est arrivé avec #836 : **une**
   fiche par LIGNÉE de groupe, et c'est la seule collection que l'interface
-  publie côté groupes. Les **huit** outputs sont produits et versionnés.
+  publie côté groupes. Tous sont produits et versionnés — `partis/` est sorti
+  avec #906, faute de lecteur.
   `commissions_dossiers.json` ne résout que les dossiers **déposés à l'AN** : le
   référentiel est celui de l'AN et le Sénat est hors périmètre (#528) — une
   absence de cause connue, à déclarer et non à combler. Ses volumes et son taux

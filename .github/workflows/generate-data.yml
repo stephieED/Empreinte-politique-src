@@ -2964,13 +2964,6 @@ jobs:
             --workers 1 \
             "${MERGE_FLAG[@]}"
 
-      - name: Générer les profils de parti
-        run: |
-          python3 src/parti_profile.py \
-            --candidats raw_data/candidats.json \
-            --profiles-dir pivot_data/profiles \
-            --out-dir pivot_data/partis
-
       # Commission saisie au fond, par dossier législatif (#328) — l'acte
       # `AN1-COM-FOND-SAISIE` des archives de dossiers déjà restaurées par le
       # cache ci-dessus, résolu en organe par le référentiel AMO30.
@@ -3208,7 +3201,6 @@ jobs:
           python3 src/check_quality_gate.py \
             --profiles-dir      pivot_data/profiles \
             --groupes-dir       pivot_data/groupes \
-            --partis-dir        pivot_data/partis \
             --raw-dir           raw_data/profiles \
             --candidats         raw_data/candidats.json \
             --groupes-config    raw_data/groupes_reels.json \
@@ -3245,7 +3237,7 @@ jobs:
       # actions/checkout fige le SHA de main au déclenchement du run, alors que
       # ce job ne démarre qu'après les 5 jobs d'extraction (20+ min plus tard).
       # Si une PR touchant src/ est mergée dans cette fenêtre, tout ce que ce
-      # job vient de dériver (pivots, partis, groupes, gouvernements) l'a été
+      # job vient de dériver (pivots, groupes, gouvernements) l'a été
       # avec l'ANCIEN code de génération. Committer ce résultat publierait de
       # la donnée fausse — et potentiellement en silence, si git parvient à
       # merger sans conflit. Vécu sur le run #266, où seul un conflit de rebase
@@ -3697,7 +3689,7 @@ jobs:
           # `resolutions_candidats.json` N'entre PAS : c'est un intermédiaire de
           # run, comme `rosters_bruts.json`, et le committer ferait bouger un
           # fichier à chaque exécution sans que personne ne le lise.
-          git add raw_data/candidats.json raw_data/profiles raw_data/correspondance_acteurs_an.json pivot_data/profiles pivot_data/partis pivot_data/groupes pivot_data/gouvernements pivot_data/scrutins.json pivot_data/amendements
+          git add raw_data/candidats.json raw_data/profiles raw_data/correspondance_acteurs_an.json pivot_data/profiles pivot_data/groupes pivot_data/gouvernements pivot_data/scrutins.json pivot_data/amendements
           # Table des commissions saisies au fond (#328), ajoutée seulement si
           # elle existe : `git add` sur un chemin absent échoue, et le step qui
           # la produit est non bloquant. Un run sans archive lisible ne doit pas

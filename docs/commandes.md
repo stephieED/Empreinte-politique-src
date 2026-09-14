@@ -209,17 +209,6 @@ python3 src/gouvernement_profile.py --gouvernement-id "gouvernement:BAYROU" \
     --out pivot_data/gouvernements/gouvernement-BAYROU.json --validate
 ```
 
-### Les agrégats de partis
-
-```bash
-python3 src/parti_profile.py --candidats raw_data/candidats.json \
-    --profiles-dir pivot_data/profiles --out-dir pivot_data/partis
-```
-
-Produit : `pivot_data/partis/parti-<slug>.json` — des agrégats **éditoriaux** de
-candidats déclarés, pas des groupes parlementaires réels. Générés pour un usage
-interne, pas affichés comme onglet dans `web/UI_finale`.
-
 ### La table des commissions saisies au fond
 
 ```bash

@@ -2580,7 +2580,6 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--profiles-dir", type=Path, default=Path("pivot_data/profiles"))
     parser.add_argument("--groupes-dir", type=Path, default=Path("pivot_data/groupes"))
     parser.add_argument("--lignees-dir", type=Path, default=Path("pivot_data/lignees"))
-    parser.add_argument("--partis-dir", type=Path, default=Path("pivot_data/partis"))
     parser.add_argument("--raw-dir", type=Path, default=Path("raw_data/profiles"))
     parser.add_argument(
         "--blob-warn-mo", type=float, default=SEUIL_AVERTISSEMENT_OCTETS / (1024 * 1024),
@@ -2734,7 +2733,6 @@ def main() -> int:
     ir_dirs = {
         "pivot_data/profiles": args.profiles_dir,
         "pivot_data/groupes": args.groupes_dir,
-        "pivot_data/partis": args.partis_dir,
         "pivot_data/gouvernements": args.gouvernements_dir,
         "raw_data/profiles": args.raw_dir,
     }
