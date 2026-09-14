@@ -1007,10 +1007,43 @@ KNOWN_MOTIFS_SORT_NON_RESOLU: frozenset[str] = frozenset({
 })
 
 # Stade procédural d'un texte, pour identifier ce qui a été réellement débattu.
-KNOWN_STADES_PROCEDURAUX: frozenset[str] = frozenset({
+#: Les stades de la procédure **française**, dans leur ordre d'avancement. Le
+#: seuil de publication de `AGENTS.md` §6 est un rang dans cette liste.
+STADES_PROCEDURAUX_AN: frozenset[str] = frozenset({
     "depose", "examine_commission", "inscrit_ordre_jour", "discute_seance",
     "adopte", "promulgue",
 })
+
+#: Les stades de la procédure **européenne**, un par valeur de
+#: `procedure.stage_reached` (#901). Seize, relevées sur le dump entier le
+#: 13/09/2026 : 20 442 des 23 885 dossiers en portent une.
+#:
+#: **Étendues, jamais traduites** — c'est l'arbitrage du 13/09/2026, et il tient
+#: à un contre-exemple : « Procedure completed » n'est pas `promulgue`, puisque
+#: « Procedure rejected » est une procédure achevée elle aussi. Ranger un fait
+#: européen sous une étiquette française inventerait ce que la source ne dit pas
+#: (§2 règle 2). Le préfixe `ue_` rend la provenance lisible dans la valeur même,
+#: et empêche qu'un rang français s'applique à l'une d'elles par distraction.
+STADES_PROCEDURAUX_UE: frozenset[str] = frozenset({
+    "ue_procedure_achevee",
+    "ue_procedure_achevee_acte_delegue_en_vigueur",
+    "ue_procedure_achevee_acte_delegue_rejete",
+    "ue_procedure_achevee_attente_publication_jo",
+    "ue_procedure_caduque_ou_retiree",
+    "ue_procedure_rejetee",
+    "ue_phase_preparatoire_parlement",
+    "ue_attente_decision_commission",
+    "ue_attente_decision_finale",
+    "ue_attente_position_parlement_1re_lecture",
+    "ue_attente_parlement_1re_lecture",
+    "ue_attente_parlement_2e_lecture",
+    "ue_attente_vote_parlement",
+    "ue_attente_debat_vote_pleniere",
+    "ue_attente_position_conseil_1re_lecture",
+    "ue_attente_decision_conseil_2e_lecture",
+})
+
+KNOWN_STADES_PROCEDURAUX: frozenset[str] = STADES_PROCEDURAUX_AN | STADES_PROCEDURAUX_UE
 
 # Nature du texte déposé, telle que la source l'encode (#689) : préfixe de l'uid
 # du document associé au premier acte de dépôt — `PRJL` / `PION` / `PNRE`, lu par

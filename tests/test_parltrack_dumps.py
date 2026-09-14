@@ -32,6 +32,7 @@ import pytest
 from parltrack_dumps import (
     DumpParltrackIllisible,
     TYPES_ACTIVITE,
+    VERSION_SCHEMA_INDEX,
     _resolve_mepref_as_int,
     build_activities_index,
     build_amendments_index,
@@ -257,7 +258,11 @@ def test_build_dossiers_index_cache_used(tmp_path):
                     "comite": "AFET", "date": "2024-01-01",
                     "source_url": "https://parltrack.org/dossier/from_cache"}]
     }
-    index_path = tmp_path / "index_dossiers_rapporteur-tous.json"
+    # Le nom porte la VERSION du schéma d'entrée : un cache écrit par la
+    # version précédente doit être ignoré, pas relu avec un champ en moins
+    # (#901). Le composer ici plutôt que de l'écrire en dur fait échouer ce
+    # test si l'empreinte cesse de porter la version.
+    index_path = tmp_path / f"index_dossiers_rapporteur-v{VERSION_SCHEMA_INDEX}-tous.json"
     index_path.parent.mkdir(parents=True, exist_ok=True)
     index_path.write_text(json.dumps(cached), encoding="utf-8")
 
@@ -275,6 +280,35 @@ def test_build_dossiers_index_cache_used(tmp_path):
 
     assert 131580 in index
     assert index[131580][0]["reference"] == "from_cache"
+
+
+def test_un_cache_de_schema_anterieur_est_ignore(tmp_path):
+    """Le cas que l'empreinte de périmètre ne couvrait pas (#901).
+
+    Quand une entrée d'index gagne un champ, un cache écrit avant reste
+    lisible : il se relit sans erreur et rend le nouveau champ absent partout.
+    Un `stade_source` manquant se lirait alors comme « la source ne publie pas
+    de stade » — le contraire de ce que la source publie sur 85,6 % des
+    dossiers. Le cache doit RATER, pas mentir (#510).
+    """
+    import os
+    import time as _time
+
+    ancien = tmp_path / "index_dossiers_rapporteur-tous.json"
+    ancien.write_text(json.dumps({"131580": [{"reference": "schema_v1"}]}), encoding="utf-8")
+
+    dump_path = tmp_path / "ep_dossiers.json.zst"
+    _write_zst_file(dump_path, [])
+    vieux = _time.time() - 100
+    os.utime(dump_path, (vieux, vieux))
+
+    with patch("parltrack_dumps.ensure_dump", return_value=dump_path), \
+         patch("parltrack_dumps.PARLTRACK_CACHE_DIR", tmp_path):
+        index = build_dossiers_index(force_download=False)
+
+    assert 131580 not in index, (
+        "un cache d'un schéma antérieur a été relu : le nom de fichier ne porte "
+        "plus la version, et un champ ajouté ressortirait absent partout.")
 
 
 # ---------------------------------------------------------------------------
