@@ -412,13 +412,32 @@ class GroupeSuspendu(NamedTuple):
 
     @property
     def preuve(self) -> str:
-        """Preuve publiable : la décision, sa date, son motif, ses références."""
-        morceaux = [
-            f"extraction du groupe {self.groupe_id} suspendue"
-            + (f" depuis le {self.depuis}" if self.depuis else "")
-        ]
+        """Preuve publiable : le motif d'abord, puis la décision et sa date.
+
+        ## Pourquoi le motif passe en tête (#885)
+
+        La preuve s'ouvrait sur « extraction du groupe Senat:LR suspendue depuis
+        le 2026-08-24 ». Un lecteur y trouvait donc, en premier, un **incident
+        technique daté** — un certificat expiré en août — là où la vraie raison
+        est que `data.senat.fr` ne publie ni scrutin ni compte rendu. La panne
+        n'est pas la cause : elle est un épisode d'une décision éditoriale qui
+        la précède (#528) et qu'un lot ultérieur a rouverte à moitié (#885).
+
+        L'ordre n'est pas de la présentation. C'est lui qui décidait de ce que
+        la phrase affirmait, et c'est à ce titre que la propriétaire l'a
+        arbitré le 14/09/2026, sur trois formulations rendues côte à côte.
+
+        Le `groupe_id` et la date restent publiés — ils rattachent la phrase à
+        une entrée de configuration vérifiable (§2 règle 2) — mais **après** ce
+        qu'ils expliquent.
+        """
+        morceaux = []
         if self.motif:
             morceaux.append(str(self.motif))
+        morceaux.append(
+            f"extraction du groupe {self.groupe_id} suspendue"
+            + (f" depuis le {self.depuis}" if self.depuis else "")
+        )
         if self.references:
             morceaux.append(f"références : {self.references}")
         return (
