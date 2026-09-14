@@ -76,10 +76,10 @@ def test_aucune_suspension_publiee_n_annonce_le_senat_hors_perimetre():
         if "sorti le Sénat du périmètre" in motif or "Sénat est sorti du périmètre" in motif:
             fautifs.append(groupe["groupe_id"])
 
-    assert fautifs == ["Senat:SER"], (
+    assert fautifs == [], (
         f"suspensions annonçant le Sénat hors périmètre : {fautifs}. "
-        "Senat:SER est connu et attend l'arbitrage de la propriétaire sur sa "
-        "formulation ; toute autre entrée est une régression (#885).")
+        "Les deux entrées ont été reformulées le 14/09/2026, chacune arbitrée : "
+        "Senat:LR ouvre sur l'absence de source, Senat:SER sur sa clôture de 2009.")
 
 
 @pytest.mark.lit_reference_committee("raw_data/groupes_reels.json")
@@ -92,3 +92,22 @@ def test_la_preuve_de_senat_lr_ouvre_sur_l_absence_de_source():
     assert preuve.startswith("Aucune source ne publie les interventions du Sénat.")
     assert "data.senat.fr" in preuve
     assert "ni scrutin, ni compte rendu" in preuve
+
+
+@pytest.mark.lit_reference_committee("raw_data/groupes_reels.json")
+def test_la_preuve_de_senat_ser_ouvre_sur_sa_cloture():
+    """Arbitré séparément, et sur un autre premier fait.
+
+    Pour Senat:LR, ce qui était faux était l'ordre — la panne passait avant la
+    vraie raison. Pour Senat:SER la vraie raison est encore ailleurs : le
+    groupe est clos depuis le 13/07/2009, sa fiche publie 0 membre, et aucune
+    source n'y changerait rien. C'est aussi la seule formulation des trois
+    proposées qui ne mentionne pas le certificat TLS — un incident de 2026
+    sans effet sur un groupe clos en 2009.
+    """
+    ser = next(g for g in _suspendus() if g["groupe_id"] == "Senat:SER")
+
+    preuve = groupe_suspendu_depuis_config(ser).preuve
+
+    assert preuve.startswith("Ce groupe est clos depuis le 13/07/2009")
+    assert "certificat TLS" not in preuve.lower()

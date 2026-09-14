@@ -1416,7 +1416,7 @@
       "fichier": "groupe-Senat-SER.json",
       "extraction_suspendue": {
         "depuis": "2026-08-24",
-        "motif": "Même cause que Senat:LR — la panne était la clé de fetch ('senateurs', None) entière, pas un groupe, et #528 a depuis sorti le Sénat du périmètre éditorial. Ce groupe est de surcroît clos depuis le 13/07/2009 (periode.fin), donc sans composition à rafraîchir.",
+        "motif": "Ce groupe est clos depuis le 13/07/2009 : il n'a plus de composition à rafraîchir, quelle que soit la source. Aucune ne publie l'activité en séance du Sénat de toute façon — data.senat.fr, entré au corpus le 13/09/2026 (#885), porte les appartenances et rien d'autre. L'entrée demeure parce que la retirer supprimerait un fichier publié (groupe-Senat-SER.json), ce que audit_diff_profils bloque (#460/#470).",
         "references": [
           "#528",
           "#516",
@@ -1424,7 +1424,7 @@
           "run 32548486495 (22/08/2026)",
           "#511"
         ],
-        "condition_reprise": "Identique à Senat:LR — les deux entrées partagent la même décision éditoriale (#528) et se réactiveraient ensemble. Voir docs/decisions/retrait-senat-528.md §7."
+        "condition_reprise": "Sans objet pour ce groupe : clos le 13/07/2009 (periode.fin), il n'a pas de composition à reprendre. La décision éditoriale qu'il partageait avec Senat:LR a été tranchée par #885 le 13/09/2026 — le Sénat entre pour ses appartenances, pas pour son activité en séance — et cela ne rouvre rien ici. Voir docs/decisions/retrait-senat-528.md §7 et la condition (2), déclarée non remplie."
       }
     },
     {
