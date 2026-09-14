@@ -24,6 +24,22 @@ un re-téléchargement complet à chaque exécution.
 Licence données ParlTrack : ODbL v1.0 (Open Database License).
 Voir https://parltrack.org/dumps pour les informations de fraîcheur.
 
+## Les trois décisions à lire avant de toucher ce module
+
+Cinq le gouvernent (`docs/decisions-par-module.md`) ; ces trois-là suffisent à
+ne pas se tromper :
+
+- `docs/decisions/lecture-dumps-parltrack-683.md` — **le format**. Un dump est
+  un seul tableau JSON, séparateur en tête de ligne, et l'avoir lu comme du
+  NDJSON pendant toute la vie du module a produit des index de 2 octets en face
+  de 182 Mio de dumps, sans qu'une ligne d'erreur le dise.
+- `docs/decisions/deux-fabriques-textes-portes-europeens-901.md` — pourquoi
+  `build_stades_dossiers_index` existe à côté de `build_dossiers_index`, et ce
+  que leurs questions ont de différent.
+- `docs/decisions/stade-procedural-europeen-901.md` — pourquoi `stade_source`
+  est conservé **brut** par l'indexeur : la traduction vers la nomenclature
+  pivot est le travail du normaliseur.
+
 Usage (depuis la racine du dépôt) :
     from parltrack_dumps import get_dossiers_for_mep, get_amendments_for_mep
     dossiers = get_dossiers_for_mep(131580)
@@ -802,6 +818,71 @@ def get_votes_for_mep(
 ) -> list[dict[str, Any]]:
     """Les positions de vote en séance de ce député européen."""
     return build_votes_index(force_download, _perimetre(mep_id)).get(mep_id, [])
+
+
+# ---------------------------------------------------------------------------
+# Index des stades de dossier : référence de procédure → stade, tel que la
+# source l'écrit
+# ---------------------------------------------------------------------------
+
+
+def build_stades_dossiers_index(force_download: bool = False) -> dict[str, str]:
+    """`{reference: stage_reached}` pour tous les dossiers du dump.
+
+    ## Pourquoi cet index existe, alors que `build_dossiers_index` lit déjà ce dump
+
+    Les deux ne répondent pas à la même question. `build_dossiers_index` rend
+    « de quels dossiers cette personne est-elle rapporteure », et n'indexe donc
+    que ceux où elle l'est. Celui-ci rend « où en est ce dossier », pour une
+    référence quelconque — y compris celles que les **activités** citent
+    (`REPORT`, `MOTION`, `OPINION`), et dont la personne n'est pas rapporteure
+    au sens de `committees[].rapporteur`.
+
+    C'est ce qui manquait à `_make_texte_porte_activite` : elle publiait
+    `stade_procedural: None` en dur, et couvrait **371 des 383** textes portés
+    européens — 97 %. Le lot du stade (#901) n'avait corrigé que l'autre
+    fabrique, celle des dossiers rapporteur, soit 12 entrées.
+
+    L'index est **plat et minuscule** : deux chaînes par dossier, là où
+    `build_dossiers_index` garde six champs par entrée. Il n'est pas borné par
+    un périmètre de MEP — une référence est une référence.
+
+    Returns:
+        `{reference: stade tel que la source l'écrit}`. Une référence sans
+        `stage_reached` est **absente** plutôt que rendue avec `None` : la
+        distinguer d'une référence inconnue est ce qui permet au normaliseur de
+        publier le bon motif (§2 règle 5).
+    """
+    index_path = (
+        PARLTRACK_CACHE_DIR
+        / f"index_stades_dossiers-{_empreinte_perimetre(frozenset())}.json"
+    )
+    dump_path = ensure_dump(_DUMP_DOSSIERS, force_download)
+    if dump_path is None:
+        return {}
+    if index_path.is_file() and index_path.stat().st_mtime >= dump_path.stat().st_mtime:
+        try:
+            return json.loads(index_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            pass
+
+    index: dict[str, str] = {}
+    print("→ Indexation des stades de dossier ParlTrack…")
+    for dossier in _lire_dump(dump_path, _DUMP_DOSSIERS):
+        procedure = dossier.get("procedure")
+        if not isinstance(procedure, dict):
+            continue
+        reference = procedure.get("reference")
+        stade = procedure.get("stage_reached")
+        if reference and stade:
+            index[reference] = stade
+    try:
+        index_path.parent.mkdir(parents=True, exist_ok=True)
+        index_path.write_text(json.dumps(index, ensure_ascii=False), encoding="utf-8")
+        print(f"  ✓ Index stades sauvegardé : {index_path} ({len(index)} dossiers)")
+    except OSError:
+        pass
+    return index
 
 
 def get_activities_for_mep(

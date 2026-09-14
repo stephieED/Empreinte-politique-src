@@ -512,14 +512,22 @@ def test_une_proposition_de_resolution_est_un_texte_porte():
         "date": "2024-09-16", "reference": "B10-0040/2024", "legislature": 10,
         "source_url": "https://www.europarl.europa.eu/doceo/document/B-10-2024-0040_EN.html",
     }]}
+    # `build_stades_dossiers_index` lirait le cache RÉEL du poste (#721) : une
+    # activité portée déclenche désormais sa construction, pour résoudre le
+    # stade du dossier visé (#901). L'index vide suffit ici — cette activité ne
+    # vise aucun dossier, et l'entrée doit le déclarer.
     with patch("normalize_parltrack_dumps.get_dossiers_for_mep", return_value=[]), \
          patch("normalize_parltrack_dumps.get_amendments_for_mep", return_value=[]), \
          patch("normalize_parltrack_dumps.get_votes_for_mep", return_value=[]), \
+         patch("normalize_parltrack_dumps.build_stades_dossiers_index", return_value={}), \
          patch("normalize_parltrack_dumps.get_activities_for_mep", return_value=activites):
         enrich_pivot_with_parltrack(profil, mep_id=131580)
 
     assert len(profil["textes_portes"]) == 1
     assert profil["textes_portes"][0]["role"] == "auteur_proposition_de_resolution"
+    assert profil["textes_portes"][0]["reference_dossier"] is None
+    assert profil["textes_portes"][0]["stade_procedural_non_resolu"] == {
+        "motif": "activite_sans_dossier"}
     assert profil["interventions"] == []
     assert validate_profil(profil) == []
 

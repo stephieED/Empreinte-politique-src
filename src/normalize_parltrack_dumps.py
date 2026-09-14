@@ -39,6 +39,7 @@ from avertissements import (
 from licences import LICENCE_PARLTRACK, appliquer_licence_donnees
 from schema_pivot import COLLECTE_SANS_VERBATIM_SOURCE
 from parltrack_dumps import (
+    build_stades_dossiers_index,
     get_activities_for_mep,
     get_amendments_for_mep,
     get_dossiers_for_mep,
@@ -211,11 +212,19 @@ def _make_texte_porte(dossier: dict[str, Any]) -> dict[str, Any]:
         Dict conforme au schéma `textes_portes[]`.
     """
     stade, stade_non_resolu = _stade_procedural_ue(dossier)
+    reference = dossier.get("reference") or None
     return {
         "titre": dossier.get("titre") or dossier.get("reference") or "",
         "institution": "parlement_europeen",
         "role": "rapporteur",
         "type_rapport": None,
+        # La référence de procédure que l'activité vise. Publiée sous le même
+        # nom que sur un vote (`scrutin_non_resolu.reference_dossier`) : c'est
+        # le même espace de références, et lui donner deux noms obligerait
+        # chaque consommateur à connaître le chemin qui a produit l'entrée.
+        # Sans elle, les 383 textes portés européens ne rejoignaient aucun
+        # index — besoin remonté par l'interface le 14/09/2026.
+        "reference_dossier": reference,
         "stade_procedural": stade,
         **({"stade_procedural_non_resolu": stade_non_resolu} if stade_non_resolu else {}),
         # #747 — ce chemin publiait une entrée qui ne disait RIEN du sort : ni
@@ -571,17 +580,67 @@ ROLE_PAR_ACTIVITE: dict[str, tuple[Optional[str], str]] = {
 }
 
 
-def _make_texte_porte_activite(activite: str, entree: dict[str, Any]) -> dict[str, Any]:
-    """Convertit une activité portée (résolution, rapport) en `textes_portes[]`."""
+def _reference_dossier_activite(entree: dict[str, Any]) -> Optional[str]:
+    """La référence de procédure qu'une activité vise, s'il y en a une.
+
+    La source la range sous `dossiers`, au pluriel et en liste — mesuré sur 144
+    des 146 entrées `REPORT` d'un échantillon de 300 MEP. La **première** est
+    retenue : une activité qui en vise plusieurs porte sur plusieurs dossiers,
+    et en choisir un est déjà une approximation, mais publier le stade du
+    premier reste plus juste que n'en publier aucun — et le cas est rare.
+    """
+    dossiers = entree.get("dossiers")
+    if isinstance(dossiers, list) and dossiers:
+        premier = dossiers[0]
+        return premier if isinstance(premier, str) and premier else None
+    if isinstance(dossiers, str) and dossiers:
+        return dossiers
+    return None
+
+
+def _make_texte_porte_activite(
+    activite: str,
+    entree: dict[str, Any],
+    stades_par_reference: Optional[dict[str, str]] = None,
+) -> dict[str, Any]:
+    """Convertit une activité portée (résolution, rapport) en `textes_portes[]`.
+
+    ## Le stade, et pourquoi il n'était pas là
+
+    Cette fabrique écrivait `stade_procedural: None` en dur. Le lot du stade
+    (#901) n'avait corrigé que l'**autre** fabrique — celle des dossiers dont la
+    personne est rapporteure — et le run du 14/09/2026 l'a montré : **12 des 383**
+    textes portés européens portaient un stade, 3 %. Les 371 autres viennent
+    d'ici.
+
+    La source donne pourtant de quoi le résoudre : une activité cite la
+    référence de procédure qu'elle vise, et `build_stades_dossiers_index` rend
+    le stade de n'importe quelle référence.
+
+    Trois cas, et chacun se déclare — mêmes motifs que l'autre fabrique, pour
+    qu'une fiche ne distingue pas deux textes selon le chemin qui les a produits :
+    `source_sans_stade` quand la source n'en publie pas, `stade_source_inconnu`
+    avec la valeur reçue quand la table ne la connaît pas, et
+    `activite_sans_dossier` quand l'activité ne vise aucune référence — il n'y a
+    alors rien à interroger.
+    """
     date, _ = _date_plausible(entree.get("date"))
     nature, role = ROLE_PAR_ACTIVITE[activite]
+    reference = _reference_dossier_activite(entree)
+    if reference is None:
+        stade, stade_non_resolu = None, {"motif": "activite_sans_dossier"}
+    else:
+        stade, stade_non_resolu = _stade_procedural_ue(
+            {"stade_source": (stades_par_reference or {}).get(reference)})
     return {
         "titre": entree.get("titre") or "",
         "institution": "parlement_europeen",
         "nature_texte": nature,
         "role": role,
         "type_rapport": None,
-        "stade_procedural": None,
+        "reference_dossier": reference,
+        "stade_procedural": stade,
+        **({"stade_procedural_non_resolu": stade_non_resolu} if stade_non_resolu else {}),
         "sort": None,
         "sort_non_resolu": {"motif": "source_sans_sort"},
         "date_min": date,
@@ -754,11 +813,18 @@ def enrich_pivot_with_parltrack(
         profil["interventions"] = []
     profil["interventions"].extend(nouvelles_interv)
 
+    # L'index des stades n'est lu qu'une fois, et seulement si une activité
+    # portée existe : le construire pour un profil qui n'en a aucune coûterait
+    # un parcours de dump pour rien.
+    stades_par_reference: Optional[dict[str, str]] = None
+    if any(a in ROLE_PAR_ACTIVITE for a in activites):
+        stades_par_reference = build_stades_dossiers_index(force_download)
+
     for activite, entrees in sorted(activites.items()):
         if activite not in ROLE_PAR_ACTIVITE:
             continue
         for brut in entrees:
-            entree = _make_texte_porte_activite(activite, brut)
+            entree = _make_texte_porte_activite(activite, brut, stades_par_reference)
             cle = _tp_key(entree)
             if cle not in existing_tp_keys:
                 existing_tp_keys.add(cle)
