@@ -61,6 +61,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from json_io import ecrire_profil_json  # noqa: E402
 from purge_marqueur_regards_citoyens import (  # noqa: E402
+    CLE_JOURNAL_BRUT,
     TYPES_RETIRES,
     purger_brut,
     purger_pivot,
@@ -68,6 +69,7 @@ from purge_marqueur_regards_citoyens import (  # noqa: E402
 from retrait_heritage_senat import (  # noqa: E402
     mandats_apparies_remplaces,
     mandats_bruts_apparies_remplaces,
+    mandats_senatoriaux_orphelins,
 )
 
 DEFAULT_PIVOT_DIR = Path("pivot_data/profiles")
@@ -81,16 +83,77 @@ def porte_le_marqueur(profil: dict[str, Any]) -> bool:
                for s in (profil.get("sources") or []))
 
 
-def appartenances_heritees_restantes(profil: dict[str, Any]) -> list[dict[str, Any]]:
-    """Les appartenances **non estampillées** encore publiées sur ce profil.
+def porte_la_cle_brute(brut: dict[str, Any]) -> bool:
+    """True si le brut porte encore la clé de journal `nosdeputes`.
 
-    C'est la mesure qui autorise — ou refuse — le retrait du marqueur. Elle
-    porte sur `mandats[]` seulement : les votes, interventions et amendements de
-    ces deux profils ne portent aucune trace de Regards Citoyens, mesuré le
-    13/09/2026 par un parcours récursif des deux couches, clés de dict comprises.
+    Le marqueur a deux formes et une seule se voit d'un parcours de **valeurs** :
+    l'entrée `sources[]` au pivot, et cette **clé de dictionnaire** au brut. La
+    seconde est celle qu'un `grep` sur les valeurs manque — le piège payé quatre
+    fois en instruisant #885.
     """
-    return [m for m in (profil.get("mandats") or [])
-            if isinstance(m, dict) and not m.get("categorie_source")]
+    journal = (brut.get("meta") or {}).get("synchro_sources")
+    return isinstance(journal, dict) and CLE_JOURNAL_BRUT in journal
+
+
+#: Les champs que la garde ne compte pas, et ils ne sont pas exclus pour la
+#: même raison.
+#:
+#: `sources` et `synchro_sources` **sont** le marqueur : les compter rendrait la
+#: garde circulaire, le marqueur se retiendrait lui-même.
+#:
+#: `couverture` est autre chose — un champ **dérivé**, recomposé à chaque run
+#: par `couverture_profil.deriver`, et dont les `preuve` sont des **phrases qui
+#: décrivent** la collecte. Celle de `bruno-retailleau` raconte un certificat
+#: TLS expiré sur `archive.nossenateurs.fr` ; elle cite un domaine, elle ne
+#: publie aucune donnée qui en vienne. Une donnée résiduelle et une phrase qui
+#: la décrit ne se retirent pas par le même geste, et l'attribution (§2 règle 2)
+#: n'est due que pour la première.
+_CHEMINS_DU_MARQUEUR = ("sources", "synchro_sources", "couverture")
+
+
+def traces_regards_citoyens(document: dict[str, Any]) -> list[str]:
+    """Les chemins de champ portant encore une trace de Regards Citoyens.
+
+    ## Pourquoi un parcours, et non l'absence de `categorie_source`
+
+    La première version de cette garde listait les appartenances **non
+    estampillées**, et refusait le retrait tant qu'il en restait. C'est trop
+    large, et `jean-luc-melenchon` le montre : ses 18 entrées sans
+    `categorie_source` sont des mandats de **député** — « Commission des
+    affaires étrangères », 2017-2022 — qui ne doivent rien à Regards Citoyens.
+    Une estampille absente veut dire « personne n'a établi cette catégorie »
+    (#718), jamais « cela vient de NosDéputés ».
+
+    #890 avait tranché sur la bonne mesure : un parcours **récursif**, **clés de
+    dict comprises**, de ce que le document porte réellement. C'est celle-là que
+    la garde reprend — la même que celle qui a servi à compter les traces
+    restantes, pour que la décision et le constat ne divergent pas.
+
+    Les deux champs qui **sont** le marqueur sont exclus : les compter rendrait
+    la garde circulaire.
+
+    Returns:
+        Les chemins de champ, un par trace. Vide quand le marqueur ne couvre
+        plus rien — la condition de son retrait (§2 règle 2).
+    """
+    trouves: list[str] = []
+
+    def parcourir(noeud: Any, chemin: str) -> None:
+        if isinstance(noeud, dict):
+            for cle, valeur in noeud.items():
+                if cle in _CHEMINS_DU_MARQUEUR:
+                    continue
+                if isinstance(cle, str) and any(m in cle.lower() for m in TYPES_RETIRES):
+                    trouves.append(f"{chemin}.{cle}")
+                parcourir(valeur, f"{chemin}.{cle}")
+        elif isinstance(noeud, list):
+            for element in noeud:
+                parcourir(element, f"{chemin}[]")
+        elif isinstance(noeud, str) and any(m in noeud.lower() for m in TYPES_RETIRES):
+            trouves.append(chemin)
+
+    parcourir(document, "")
+    return trouves
 
 
 def traiter(
@@ -101,6 +164,7 @@ def traiter(
     """Applique les deux retraits sur un profil. Rend le compte rendu."""
     rendu: dict[str, Any] = {
         "slug": slug,
+        "orphelins": 0,
         "mandats_pivot": 0,
         "mandats_brut": 0,
         "marqueur_retire": False,
@@ -108,6 +172,16 @@ def traiter(
         "licence_avant": None,
         "licence_apres": None,
     }
+
+    # D'ABORD les orphelins : ce sont d'anciennes formes d'entrées que la
+    # collecte publie désormais autrement, et les laisser fausserait la garde
+    # ci-dessous — une appartenance héritée dont le remplaçant coexiste avec sa
+    # propre version périmée resterait retenue par un doublon.
+    if brut is not None:
+        orphelins = mandats_senatoriaux_orphelins(pivot, brut)
+        if orphelins:
+            pivot["mandats"] = [m for m in pivot["mandats"] if m not in orphelins]
+            rendu["orphelins"] = len(orphelins)
 
     remplaces = mandats_apparies_remplaces(pivot)
     if remplaces:
@@ -121,9 +195,21 @@ def traiter(
             rendu["mandats_brut"] = len(remplaces_bruts)
 
     # La garde : le marqueur ne part que s'il ne couvre plus rien.
-    restantes = appartenances_heritees_restantes(pivot)
+    #
+    # Elle ne se prononce que sur un profil qui porte effectivement un marqueur.
+    # Sans ce test, le rendu annonçait « marqueur RETENU par 18 appartenances »
+    # sur `jean-luc-melenchon`, qui n'en porte aucun côté pivot : ses 18 entrées
+    # non estampillées sont des mandats de **député**, sans rapport avec
+    # Regards Citoyens. Un rapport qui nomme un marqueur inexistant fait
+    # chercher un défaut là où il n'y en a pas.
+    if not (porte_le_marqueur(pivot) or (brut is not None and porte_la_cle_brute(brut))):
+        return rendu
+
+    restantes = traces_regards_citoyens(pivot)
+    if brut is not None:
+        restantes += [f"brut{c}" for c in traces_regards_citoyens(brut)]
     if restantes:
-        rendu["marqueur_retenu_par"] = [m.get("label") for m in restantes]
+        rendu["marqueur_retenu_par"] = restantes
         return rendu
 
     if porte_le_marqueur(pivot):
@@ -158,12 +244,13 @@ def retirer(
         brut = _charger(chemin_brut)
 
         rendu = traiter(slug, pivot, brut)
-        if not (rendu["mandats_pivot"] or rendu["mandats_brut"] or rendu["marqueur_retire"]):
+        if not (rendu["orphelins"] or rendu["mandats_pivot"]
+                or rendu["mandats_brut"] or rendu["marqueur_retire"]):
             continue
         rendus.append(rendu)
         if dry_run:
             continue
-        if rendu["mandats_pivot"] or rendu["marqueur_retire"]:
+        if rendu["orphelins"] or rendu["mandats_pivot"] or rendu["marqueur_retire"]:
             ecrire_profil_json(chemin_pivot, pivot)
         if brut is not None and (rendu["mandats_brut"] or rendu["marqueur_retire"]):
             ecrire_profil_json(chemin_brut, brut)
@@ -188,6 +275,8 @@ def main(argv: Optional[list[str]] = None) -> int:
         return 0
     for r in rendus:
         print(f"\n{r['slug']}")
+        if r["orphelins"]:
+            print(f"  entrées sénatoriales périmées retirées : {r['orphelins']}")
         print(f"  appartenances retirées : {r['mandats_pivot']} au pivot, "
               f"{r['mandats_brut']} au brut")
         if r["marqueur_retire"]:
