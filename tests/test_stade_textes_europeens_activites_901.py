@@ -10,6 +10,19 @@ Deux fabriques, une seule corrigée — la même erreur que sur les motifs de
 suspension le même jour, où `GroupeSuspendu.preuve` avait été traitée et
 `groupes_config.resume_suspension` oubliée. **Chercher où un champ est jeté ne
 suffit pas : il faut chercher tous les endroits où l'objet est fabriqué.**
+
+## Ce que ce fichier ne pouvait pas voir, et qui a coûté un second run
+
+Corriger la seconde fabrique n'a rien changé au corpus : le run suivant a publié
+**12 stades sur 383**, le même chiffre. Ces tests-ci passaient pourtant — parce
+qu'ils appellent les fabriques sur des entrées **que le test construit**, avec
+`dossiers` dedans. Or la chaîne réelle ne leur remet jamais ce champ :
+`build_activities_index` le jetait à la projection, une étape plus haut.
+
+Ils vérifient donc que les fabriques savent lire un champ qu'elles ne reçoivent
+pas. C'est utile, et ce n'est pas suffisant : la chaîne de bout en bout est
+tenue par `tests/test_projection_activites_conserve_dossiers_901.py`, qui part
+d'un dump et ne fabrique aucune entrée intermédiaire.
 """
 
 import sys
@@ -39,7 +52,11 @@ def _activite(**extra):
 # --------------------------------------------------------------------------
 
 def test_la_reference_se_lit_dans_dossiers_au_pluriel():
-    """144 des 146 entrées `REPORT` d'un échantillon de 300 MEP la portent."""
+    """Mesuré le 14/09/2026 sur les 4 585 fiches du dump : 9 593 `REPORT` sur 9 935.
+
+    L'entrée est fabriquée ici : ce test dit que la fonction sait lire le champ,
+    pas qu'elle le reçoit. Ce second point est ailleurs (voir l'en-tête).
+    """
     assert _reference_dossier_activite(_activite()) == "1995/2236(COS)"
 
 

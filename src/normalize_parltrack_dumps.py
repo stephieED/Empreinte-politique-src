@@ -583,11 +583,29 @@ ROLE_PAR_ACTIVITE: dict[str, tuple[Optional[str], str]] = {
 def _reference_dossier_activite(entree: dict[str, Any]) -> Optional[str]:
     """La référence de procédure qu'une activité vise, s'il y en a une.
 
-    La source la range sous `dossiers`, au pluriel et en liste — mesuré sur 144
-    des 146 entrées `REPORT` d'un échantillon de 300 MEP. La **première** est
-    retenue : une activité qui en vise plusieurs porte sur plusieurs dossiers,
-    et en choisir un est déjà une approximation, mais publier le stade du
-    premier reste plus juste que n'en publier aucun — et le cas est rare.
+    La source la range sous `dossiers`, au pluriel et en liste. La **première**
+    est retenue : une activité qui en vise plusieurs porte sur plusieurs
+    dossiers, et en choisir un est déjà une approximation, mais publier le stade
+    du premier reste plus juste que n'en publier aucun — et le cas est rare.
+
+    ## `entree` n'est pas l'entrée du dump, et c'est ce qui a coûté un run
+
+    Cette fonction a été écrite sur une mesure du **dump** — 144 des 146 entrées
+    `REPORT` d'un échantillon de 300 MEP portaient `dossiers`. La mesure était
+    juste ; elle portait sur le mauvais objet. Ce que la fonction reçoit vient
+    de `build_activities_index`, qui **projette** chaque entrée sur six clés, et
+    `dossiers` n'en faisait pas partie. Résultat mesuré sur le run `34853965676`
+    (14/09/2026) : `activite_sans_dossier` sur **371 des 371** entrées de cette
+    fabrique, soit 100 % — un taux unanime est un symptôme de projection, pas
+    une propriété de la source.
+
+    Ce que la source porte vraiment, mesuré le 14/09/2026 sur les 4 585 fiches
+    MEP du dump `ep_mep_activities` (population : toutes, pas les 7 candidats
+    déclarés à identifiant européen) : `REPORT` 9 593 / 9 935 (96,6 %),
+    `MOTION` 44 684 / 60 362 (74,0 %), `COMPARL` 542 / 4 937 (11,0 %),
+    `IMOTION` 1 / 3 862. Une absence reste donc un cas fréquent et légitime sur
+    deux des quatre types — `activite_sans_dossier` ne disparaîtra pas, il
+    cessera d'être unanime.
     """
     dossiers = entree.get("dossiers")
     if isinstance(dossiers, list) and dossiers:
