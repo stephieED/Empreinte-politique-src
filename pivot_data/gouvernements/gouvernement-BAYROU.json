@@ -1032,12 +1032,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605991",
-      "synchro_le": "2026-09-13T21:39:40+0000"
+      "synchro_le": "2026-09-14T11:50:20+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795050",
-      "synchro_le": "2026-09-13T21:39:20+0000"
+      "synchro_le": "2026-09-14T11:49:47+0000"
     },
     {
       "type": "assemblee_nationale",
@@ -1047,33 +1047,23 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795958",
-      "synchro_le": "2026-09-13T21:39:22+0000"
-    },
-    {
-      "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/bruno-retailleau",
-      "synchro_le": "2026-08-20T18:55:03+0000"
-    },
-    {
-      "type": "nossenateurs",
-      "url": "https://archive.nossenateurs.fr/bruno-retailleau",
-      "synchro_le": "2026-08-20T18:55:03+0000"
+      "synchro_le": "2026-09-14T11:50:02+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2538",
-      "synchro_le": "2026-09-13T21:18:22+0000"
+      "synchro_le": "2026-09-14T11:26:29+0000"
     },
     {
       "type": "senat",
       "url": "https://data.senat.fr/",
-      "synchro_le": "2026-09-13T21:10:39+0000",
+      "synchro_le": "2026-09-14T11:07:27+0000",
       "licence": "Licence Ouverte / Open Licence (Sénat) — data.senat.fr"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720480",
-      "synchro_le": "2026-09-13T21:45:49+0000"
+      "synchro_le": "2026-09-14T11:54:48+0000"
     },
     {
       "type": "assemblee_nationale",
@@ -1093,22 +1083,22 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605782",
-      "synchro_le": "2026-09-13T21:40:33+0000"
+      "synchro_le": "2026-09-14T11:51:20+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720878",
-      "synchro_le": "2026-09-13T21:46:26+0000"
+      "synchro_le": "2026-09-14T11:55:23+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267622",
-      "synchro_le": "2026-09-13T21:40:13+0000"
+      "synchro_le": "2026-09-14T11:50:37+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795884",
-      "synchro_le": "2026-09-13T21:39:14+0000"
+      "synchro_le": "2026-09-14T11:49:47+0000"
     },
     {
       "type": "assemblee_nationale",
@@ -1118,7 +1108,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721418",
-      "synchro_le": "2026-09-13T21:40:21+0000"
+      "synchro_le": "2026-09-14T11:50:45+0000"
     },
     {
       "type": "assemblee_nationale",
@@ -1128,18 +1118,18 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA608016",
-      "synchro_le": "2026-09-13T21:46:10+0000"
+      "synchro_le": "2026-09-14T11:55:05+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794038",
-      "synchro_le": "2026-09-13T21:40:00+0000"
+      "synchro_le": "2026-09-14T11:50:25+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-13T22:15:27+0000",
-    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + Licence Ouverte / Open Licence (Sénat) — data.senat.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
+    "genere_le": "2026-09-14T12:24:57+0000",
+    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + Licence Ouverte / Open Licence (Sénat) — data.senat.fr",
     "warnings": []
   }
 }

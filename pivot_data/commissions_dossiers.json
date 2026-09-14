@@ -1,6 +1,6 @@
 {
   "schema_version": "commissions-dossiers-v1",
-  "genere_le": "2026-09-13T22:11:39+0000",
+  "genere_le": "2026-09-14T12:20:20+0000",
   "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr",
   "commissions": {
     "DLR5L15N42264": {
@@ -36166,6 +36166,12 @@
       "type": "COMPER"
     },
     "DLR5L17N54840": {
+      "organe_ref": "PO59051",
+      "sigle": "Lois",
+      "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+      "type": "COMPER"
+    },
+    "DLR5L17N54849": {
       "organe_ref": "PO59051",
       "sigle": "Lois",
       "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
