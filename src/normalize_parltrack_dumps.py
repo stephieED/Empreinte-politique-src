@@ -144,6 +144,63 @@ def _role_signataire(amendment: dict[str, Any], nom_profil: Optional[str]) -> Op
     return "auteur_principal" if premier == _normaliser_nom(nom_profil) else "cosignataire"
 
 
+#: `procedure.stage_reached` → la valeur pivot, une par une (#901).
+#:
+#: Le sens est conservé mot pour mot, jamais rapproché d'un stade français : la
+#: table est plate et explicite pour qu'une lecture suffise à vérifier qu'aucune
+#: ligne n'invente. Une valeur que la source ajouterait un jour n'est pas
+#: devinée — elle ressort `stade_procedural: null` avec son motif, ce qui est un
+#: fait déclaré et non un trou (§2 règle 5).
+STADE_UE_PAR_LIBELLE_SOURCE: dict[str, str] = {
+    "Procedure completed": "ue_procedure_achevee",
+    "Procedure completed - delegated act enters into force":
+        "ue_procedure_achevee_acte_delegue_en_vigueur",
+    "Procedure completed - delegated act rejected":
+        "ue_procedure_achevee_acte_delegue_rejete",
+    "Procedure completed, awaiting publication in Official Journal":
+        "ue_procedure_achevee_attente_publication_jo",
+    "Procedure lapsed or withdrawn": "ue_procedure_caduque_ou_retiree",
+    "Procedure rejected": "ue_procedure_rejetee",
+    "Preparatory phase in Parliament": "ue_phase_preparatoire_parlement",
+    "Awaiting committee decision": "ue_attente_decision_commission",
+    "Awaiting final decision": "ue_attente_decision_finale",
+    "Awaiting Parliament's position in 1st reading":
+        "ue_attente_position_parlement_1re_lecture",
+    "Awaiting Parliament 1st reading / single reading / budget 1st stage":
+        "ue_attente_parlement_1re_lecture",
+    "Awaiting Parliament 2nd reading": "ue_attente_parlement_2e_lecture",
+    "Awaiting Parliament's vote": "ue_attente_vote_parlement",
+    "Awaiting plenary debate/vote": "ue_attente_debat_vote_pleniere",
+    "Awaiting Council's 1st reading position":
+        "ue_attente_position_conseil_1re_lecture",
+    "Awaiting Council decision, 2nd reading":
+        "ue_attente_decision_conseil_2e_lecture",
+}
+
+
+def _stade_procedural_ue(dossier: dict[str, Any]) -> tuple[Optional[str], Optional[dict[str, Any]]]:
+    """Le stade pivot d'un dossier européen, et le motif quand il n'y en a pas.
+
+    Trois cas, et chacun se déclare :
+
+      - la source publie un libellé connu → la valeur pivot ;
+      - elle n'en publie aucun → `source_sans_stade`. C'est **14,4 %** des
+        dossiers du dump, mesuré le 13/09/2026 : une absence de la source, pas
+        une nôtre ;
+      - elle en publie un que la table ne connaît pas → `stade_source_inconnu`,
+        **avec le libellé reçu**. Deviner reviendrait à ranger un fait sous une
+        étiquette choisie par ressemblance ; échouer ferait tomber un run entier
+        sur un libellé ajouté en amont.
+    """
+    brut = dossier.get("stade_source")
+    if not brut:
+        return None, {"motif": "source_sans_stade"}
+    connu = STADE_UE_PAR_LIBELLE_SOURCE.get(brut)
+    if connu:
+        return connu, None
+    return None, {"motif": "stade_source_inconnu", "valeur_source": brut}
+
+
 def _make_texte_porte(dossier: dict[str, Any]) -> dict[str, Any]:
     """Convertit un enregistrement dossier ParlTrack en entrée pivot `textes_portes`.
 
@@ -153,12 +210,14 @@ def _make_texte_porte(dossier: dict[str, Any]) -> dict[str, Any]:
     Returns:
         Dict conforme au schéma `textes_portes[]`.
     """
+    stade, stade_non_resolu = _stade_procedural_ue(dossier)
     return {
         "titre": dossier.get("titre") or dossier.get("reference") or "",
         "institution": "parlement_europeen",
         "role": "rapporteur",
         "type_rapport": None,
-        "stade_procedural": None,
+        "stade_procedural": stade,
+        **({"stade_procedural_non_resolu": stade_non_resolu} if stade_non_resolu else {}),
         # #747 — ce chemin publiait une entrée qui ne disait RIEN du sort : ni
         # le champ, ni le motif de son absence. #743 n'avait instruit que le
         # chemin AN, et le contrôle du couple ne voyait pas le cas parce qu'il
