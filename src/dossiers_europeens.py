@@ -80,6 +80,74 @@ def identifiant(reference: str) -> str:
     return f"{PREFIXE_ID}:{reference}"
 
 
+#: Ce qui, dans `committees[].type`, désigne une commission saisie **au fond**.
+#: La source emploie quatre libellés qui le contiennent — « Responsible
+#: Committee », « Former Responsible Committee », « Joint Responsible
+#: Committee », « Former Joint Committee Responsible » — contre « Committee
+#: Opinion » et ses variantes pour une saisine pour avis.
+MARQUEUR_AU_FOND = "responsible"
+
+#: Le champ que la source renseigne vraiment. `responsible: true` existe aussi,
+#: et c'est un piège : il n'est renseigné que sur **521 des 18 242** entrées
+#: (2,9 %), là où `type` l'est sur 97 %. S'y fier aurait rendu une commission
+#: au fond pour 1,2 % des dossiers au lieu de 97,7 %.
+CHAMP_TYPE = "type"
+
+
+def _sigles_et_noms(commission: dict[str, Any]) -> list[tuple[str, Optional[str]]]:
+    """Les couples `(sigle, nom)` d'une entrée `committees[]`.
+
+    Une saisine **conjointe** porte plusieurs commissions, et la source le dit
+    en mettant des **listes** dans `committee` et `committee_full` : 36 des 402
+    entrées au fond de notre population. Les aplatir ici plutôt que de publier
+    une liste dans un champ scalaire évite à chaque consommateur de gérer les
+    deux formes.
+    """
+    sigles = commission.get("committee")
+    noms = commission.get("committee_full")
+    if isinstance(sigles, str):
+        sigles, noms = [sigles], [noms if isinstance(noms, str) else None]
+    if not isinstance(sigles, list):
+        return []
+    if not isinstance(noms, list):
+        noms = [None] * len(sigles)
+    couples = []
+    for rang, sigle in enumerate(sigles):
+        if isinstance(sigle, str) and sigle:
+            nom = noms[rang] if rang < len(noms) else None
+            couples.append((sigle, nom if isinstance(nom, str) and nom else None))
+    return couples
+
+
+def commissions_au_fond(dossier: dict[str, Any]) -> list[dict[str, Any]]:
+    """Les commissions saisies au fond d'un dossier, une entrée par sigle.
+
+    C'est le fait équivalent, côté européen, à la commission saisie au fond d'un
+    dossier de l'Assemblée — ce que l'interface appelle la « matière » d'un vote
+    (`commissions_dossiers.json`, #328). Besoin remonté le 14/09/2026 : aucun
+    objet européen n'en portait, et c'est ce qui bloquait deux figures.
+
+    Mesuré sur les 355 dossiers de cet index : **347 en portent au moins une**
+    (97,7 %) — 299 une seule, 41 deux, 7 trois.
+
+    **Le libellé de type est conservé tel quel.** La source distingue quatre
+    états — saisine au fond, ancienne saisine, saisine conjointe, ancienne
+    saisine conjointe — et les fondre publierait une compétence qu'elle
+    sépare. Traduire le sigle ou le nom ne serait pas mieux : « JURI » et
+    « Legal Affairs » sont ce que le Parlement publie.
+    """
+    entrees: list[dict[str, Any]] = []
+    for commission in dossier.get("committees") or []:
+        if not isinstance(commission, dict):
+            continue
+        type_source = commission.get(CHAMP_TYPE)
+        if not isinstance(type_source, str) or MARQUEUR_AU_FOND not in type_source.lower():
+            continue
+        for sigle, nom in _sigles_et_noms(commission):
+            entrees.append({"sigle": sigle, "nom": nom, "type_source": type_source})
+    return entrees
+
+
 def references_visees(profils_dir: Path) -> set[str]:
     """Les `texte_vise` européens que les profils publiés citent.
 
@@ -145,6 +213,7 @@ def construire(
             "titre": procedure.get("title") or None,
             "type_procedure": procedure.get("type") or None,
             "stade_procedural": stade,
+            "commissions_au_fond": commissions_au_fond(dossier),
             "source_url": (dossier.get("meta") or {}).get("source")
             or f"https://parltrack.org/dossier/{reference}",
         }
