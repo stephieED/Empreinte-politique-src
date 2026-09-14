@@ -131,7 +131,8 @@ tests/         La suite pytest
 
 Un profil pivot ne se lit **plus seul** : ses votes et ses amendements ne sont
 que des renvois (`{scrutin_id, position}`, `{amendement_id, role_signataire}`)
-vers les deux index partagés. Pourquoi, et ce que ça a fait gagner :
+vers les index partagés — deux pour l'Assemblée, deux pour le Parlement européen
+depuis #901. Pourquoi, et ce que ça a fait gagner :
 [`docs/data-architecture.md`](docs/data-architecture.md).
 
 ## Où aller pour le reste
@@ -160,8 +161,8 @@ où ils se lisaient comme des faits sur la personne affichée (#328).
 
 - **Groupes** : seuls les groupes déclarés dans
   `raw_data/groupes_reels.json` sont produits, pas tous ceux qui existent — une
-  fiche par groupe **et par législature** (30 au 11/09/2026), que l'interface
-  publie en **une page par lignée** : 13 pages, la suite des fiches d'un même
+  fiche par groupe **et par législature** (31 au 14/09/2026), que l'interface
+  publie en **une page par lignée** : 14 pages, la suite des fiches d'un même
   groupe (#329, #836). Les **5 groupes de la XVIIe** y sont
   entrés le 01/09/2026 (#700) ; leurs fiches paraissent au premier run qui
   suit, et couvriront **305 des 461** membres, les autres n'ayant pas encore de
@@ -195,26 +196,28 @@ où ils se lisaient comme des faits sur la personne affichée (#328).
   remplie**, pas contournée, et les fiches de groupe sénatorial publient toujours
   0 vote de cohésion. La chambre `senateurs` du roster reste suspendue.
   → [`docs/decisions/reouverture-partielle-senat-885.md`](docs/decisions/reouverture-partielle-senat-885.md)
-- **Parlement européen** : les cinq listes sont publiées (ParlTrack), mais les
-  interventions et textes antérieurs au 22/11/2016 portent la date de leur
-  republication par ParlTrack, pas celle de la séance : #858.
+- **Parlement européen** : collecté via ParlTrack et le portail officiel, et lu
+  comme une **institution à part entière** sur la fiche depuis #328 — **7 des 32
+  candidats déclarés** y ont siégé, et pour certains c'est **tout** leur mandat
+  parlementaire. Les cinq listes sont publiées : 11 013 votes, 7 303 amendements,
+  383 textes portés, 5 329 interventions. Trois limites déclarées :
+  les interventions et textes antérieurs au 22/11/2016 portent la date de leur
+  **republication** par ParlTrack, pas celle de la séance (#858) ; aucun dump ne
+  porte le **sort** d'un amendement ni l'issue d'un dossier ; et la section « Où
+  il s'est écarté des siens » n'a aucune fiche de groupe européenne à quoi se
+  comparer.
+  → [`docs/decisions/institution-dimension-de-la-fiche-328.md`](docs/decisions/institution-dimension-de-la-fiche-328.md),
+  [`docs/sources/parltrack-et-europarl.md`](docs/sources/parltrack-et-europarl.md)
 - **Interventions** : Syceron est la seule source depuis #529, et sa résolution
   d'identifiants d'acteur nus reste livrée inactive (#510) — une collecte
   fraîche ne rend donc que les questions officielles. Les prises de parole déjà
   publiées sont conservées par la fusion additive.
-- **Maires, portefeuille ministériel hors AN** : hors périmètre, investigués et
-  écartés. → [`docs/decisions/hors-perimetre.md`](docs/decisions/hors-perimetre.md)
-- **Parlement européen** : collecté depuis #683 via Parltrack, et **lu comme une
-  institution à part entière sur la fiche** depuis #328 — 6 des 30 candidats
-  publiés y ont siégé, et pour trois d'entre eux c'est **tout** leur mandat
-  parlementaire. Deux limites connues, déclarées et non comblées : les
-  **405 textes portés européens** n'ont pas de stade procédural, donc aucun ne
-  franchit le seuil de publication (voir `ROADMAP.md`), et la section « Où il
-  s'est écarté des siens » n'a aucune fiche de groupe européenne à quoi se
-  comparer. La ligne « textes européens : hors périmètre » qui figurait ici
-  décrivait l'API officielle du Parlement, abandonnée pour son coût, et non le
-  matériau lui-même.
-  → [`docs/decisions/institution-dimension-de-la-fiche-328.md`](docs/decisions/institution-dimension-de-la-fiche-328.md)
+- **Mandats locaux** : aucun n'est publié — ni maire, ni conseiller municipal,
+  régional ou départemental. Ce n'était pas un refus éditorial mais une absence
+  de source ; le Répertoire national des élus en est une, et **10 des 32
+  candidats déclarés** y sont appariés avec certitude (#922, non priorisé).
+  Le **portefeuille ministériel hors AN** reste, lui, hors périmètre.
+  → [`docs/decisions/hors-perimetre.md`](docs/decisions/hors-perimetre.md)
 - **Biais de couverture** : un ancien parlementaire laisse des traces bien plus
   riches qu'un candidat qui ne l'a jamais été.
 
@@ -224,7 +227,7 @@ où ils se lisaient comme des faits sur la personne affichée (#328).
 pytest -q
 ```
 
-La suite tourne en une dizaine de secondes et s'exécute sur chaque pull request
+La suite tourne en un peu plus d'une minute (**5 041 tests**, 79 s au 14/09/2026) et s'exécute sur chaque pull request
 et chaque push sur `main` (`.github/workflows/tests.yml`). Elle est **découplée
 du corpus vivant** : aucun test ne lit `pivot_data/` ni `raw_data/profiles/`,
 aucun n'écrit sous l'un des deux, aucun ne sort sur le réseau (#473). Le job CI
