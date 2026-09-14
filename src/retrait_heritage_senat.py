@@ -44,11 +44,71 @@ from __future__ import annotations
 from typing import Any, Optional
 
 from licences import MOTIFS_URL_REGARDS_CITOYENS
+from normalize_senat import CATEGORIE_SOURCE, normalize_mandats
 from senat_opendata import periodes_se_recouvrent
 
 #: Les types de source qui **prétendent** venir de Regards Citoyens. Une entrée
 #: de ce type dont l'URL n'en vient pas est une provenance fausse.
 TYPES_REGARDS_CITOYENS = frozenset({"nosdeputes", "nossenateurs"})
+
+
+def _cle_appartenance(mandat: dict[str, Any]) -> tuple[Any, ...]:
+    """Ce qui identifie une appartenance sénatoriale publiée.
+
+    Le libellé en fait partie — c'est ce qui rend le retrait ci-dessous
+    nécessaire, et c'est aussi ce qui le rend sûr : deux entrées de même période
+    et de même catégorie sous deux noms différents sont deux entrées distinctes
+    pour la fusion, donc deux lignes à l'écran.
+    """
+    return (mandat.get("label"), mandat.get("debut"),
+            mandat.get("fin"), mandat.get("categorie"))
+
+
+def mandats_senatoriaux_orphelins(
+    profil: dict[str, Any],
+    brut: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Les appartenances sénatoriales publiées que la collecte ne produit plus.
+
+    ## Pourquoi elles existent
+
+    La fusion des profils est **additive** : une entrée dont le libellé change
+    n'en remplace pas une, elle s'ajoute à côté. #912 a corrigé la colonne lue —
+    `Culture` est devenu « Commission de la culture, de l'éducation, de la
+    communication et du sport » — et le run du 13/09/2026 a donc publié les deux.
+    Mesuré sur le commit de données `d2a56641a` : **126 entrées sénatoriales sur
+    `bruno-retailleau` pour 101 collectées**, 40 pour 32 sur
+    `jean-luc-melenchon`. Trente-trois doublons, à l'écran.
+
+    ## Le critère, et pourquoi il passe par la normalisation
+
+    Le bloc `mandat_senatorial` du brut porte ce que la collecte a rendu au
+    dernier run : les deux couches se contrôlent l'une l'autre (#729), et aucun
+    export n'a besoin d'être retéléchargé pour trancher.
+
+    Mais **le brut ne se compare pas au pivot tel quel** : `normalize_senat`
+    transforme le libellé — « Groupe UMP » y devient « Groupe UMP (rattaché) ».
+    Comparer les deux directement désignait une entrée **légitime** comme
+    orpheline. Le brut est donc passé par la normalisation avant comparaison,
+    ce qui reproduit exactement ce que la chaîne publie.
+
+    Vérification que le critère porte : sur les deux profils, **aucune** entrée
+    normalisée n'est absente du pivot. La correspondance est exacte dans l'autre
+    sens, ce qui distingue « le pivot en porte trop » de « les deux divergent ».
+
+    Rend la liste sans rien retirer, comme les autres fonctions de ce module.
+    """
+    bloc = brut.get("mandat_senatorial") or {}
+    collectes = bloc.get("mandats_senatoriaux")
+    if not collectes:
+        # Rien de collecté : on ne peut pas distinguer « plus produit » de
+        # « pas encore collecté », et le second ne justifie aucun retrait.
+        return []
+    attendues = {_cle_appartenance(m) for m in normalize_mandats(collectes)}
+    return [m for m in (profil.get("mandats") or [])
+            if isinstance(m, dict)
+            and m.get("categorie_source") == CATEGORIE_SOURCE
+            and _cle_appartenance(m) not in attendues]
 
 
 def source_ment_sur_sa_provenance(source: dict[str, Any]) -> bool:

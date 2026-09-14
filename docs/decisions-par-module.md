@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 319 décisions
+gouverne sans avoir à fouiller les 320 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -56,6 +56,7 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 | `src/lignee_profile.py` | 1 |
 | `src/mandats_anterieurs.py` | 1 |
 | `src/normalize_europarl.py` | 1 |
+| `src/normalize_senat.py` | 1 |
 | `src/purge_interventions_heritees.py` | 1 |
 | `src/retrait_heritage_senat.py` | 1 |
 | `src/scrutins_dossiers_an.py` | 1 |
@@ -904,6 +905,14 @@ Le mentionnent sans le gouverner : [`investigation-sources-ue`](decisions/invest
 | [Un marqueur de provenance sans donnée derrière lui n'est plus une traçabilité, c'est une inexactitude (#890) (2026-09-13)](decisions/retrait-marqueur-regards-citoyens-deputes-890.md) | `_SOURCE_TYPE_PROFIL_FR` |
 
 Le mentionnent sans le gouverner : [`civilite-et-pcs-insee-659`](decisions/civilite-et-pcs-insee-659.md), [`collecte-interventions-reduite-au-theme-657`](decisions/collecte-interventions-reduite-au-theme-657.md), [`collecte-vs-publie-545`](decisions/collecte-vs-publie-545.md), [`corroboration-chambres-publiees-486`](decisions/corroboration-chambres-publiees-486.md), [`creneau-de-seance-nest-pas-un-sujet-710`](decisions/creneau-de-seance-nest-pas-un-sujet-710.md), [`identite-profils-539`](decisions/identite-profils-539.md), [`licence-lot-6-530`](decisions/licence-lot-6-530.md), [`provenance-par-champ-603`](decisions/provenance-par-champ-603.md), [`purge-textes-portes-roster-747`](decisions/purge-textes-portes-roster-747.md), [`qualification-perdue-a-la-fusion-639`](decisions/qualification-perdue-a-la-fusion-639.md), [`qualification-textes-portes-689`](decisions/qualification-textes-portes-689.md), [`retrait-nosdeputes-529`](decisions/retrait-nosdeputes-529.md).
+
+## `src/normalize_senat.py`
+
+1 décision(s) le gouvernent ; le module en cite 0.
+
+| Décision | Nomme |
+| --- | --- |
+| [Un libellé corrigé ne remplace pas l'ancien, il s'ajoute — et le dernier marqueur part enfin (#908, suite de #912) (2026-09-14)](decisions/fusion-additive-et-libelle-corrige-912.md) | `normalize_mandats` |
 
 ## `src/parltrack_dumps.py`
 

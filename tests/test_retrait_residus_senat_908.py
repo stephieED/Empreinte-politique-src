@@ -23,6 +23,7 @@ from retrait_heritage_senat import (  # noqa: E402
     _labels_publies,
     mandats_apparies_remplaces,
     mandats_bruts_apparies_remplaces,
+    mandats_senatoriaux_orphelins,
 )
 from retrait_residus_senat_908 import traiter  # noqa: E402
 
@@ -135,23 +136,62 @@ def _profil_complet(mandats, sources=None):
             "meta": {"licence_donnees": "à recomposer"}}
 
 
-def test_le_marqueur_reste_tant_qu_une_appartenance_heritee_subsiste():
-    """§2 règle 2 : l'attribution est due tant que la donnée est publiée. C'est
-    le cas mesuré sur le corpus avant régénération — 7 des 8 entrées partent,
-    la huitième attend que #912 publie son remplaçant."""
+def test_le_marqueur_reste_tant_qu_une_donnee_en_derive():
+    """§2 règle 2 : l'attribution est due tant que la donnée est publiée.
+
+    La garde porte sur un parcours **récursif** de ce que le document contient,
+    clés de dict comprises — pas sur l'absence de `categorie_source`. La
+    première version faisait l'inverse, et le test ci-dessous dit pourquoi.
+    """
     profil = _profil_complet([
         _herite("Groupe Chrétiens d'Orient", "groupe_amitie"),
-        _herite("Commission de la culture, de l'éducation et de la communication"),
         _senatorial("Chrétiens d'Orient", "autre"),
     ])
+    profil["interventions"] = [{"source_url": "https://www.nosdeputes.fr/x/2020"}]
 
     rendu = traiter("x", profil, None)
 
     assert rendu["mandats_pivot"] == 1
     assert rendu["marqueur_retire"] is False
-    assert rendu["marqueur_retenu_par"] == [
-        "Commission de la culture, de l'éducation et de la communication"]
+    assert rendu["marqueur_retenu_par"] == [".interventions[].source_url"]
     assert any(s["type"] == "nossenateurs" for s in profil["sources"])
+
+
+def test_des_mandats_non_estampilles_ne_retiennent_pas_le_marqueur():
+    """Le défaut de la première garde, et il bloquait un retrait légitime.
+
+    Elle listait les appartenances **non estampillées** et refusait le retrait
+    tant qu'il en restait. `jean-luc-melenchon` en porte 18 — « Commission des
+    affaires étrangères », 2017-2022 — qui sont des mandats de **député**, sans
+    aucun rapport avec Regards Citoyens. Une estampille absente veut dire
+    « personne n'a établi cette catégorie » (#718), jamais « cela en vient ».
+    """
+    profil = _profil_complet([
+        _herite("Commission des affaires étrangères"),
+        _senatorial("Chrétiens d'Orient", "autre"),
+    ])
+
+    rendu = traiter("x", profil, None)
+
+    assert rendu["marqueur_retire"] is True
+    assert rendu["marqueur_retenu_par"] == []
+
+
+def test_une_phrase_de_couverture_ne_retient_pas_le_marqueur():
+    """La donnée d'un côté, la phrase qui la décrit de l'autre.
+
+    `couverture[].preuve` est un champ **dérivé**, recomposé à chaque run, et
+    celle de `bruno-retailleau` raconte un certificat TLS expiré sur
+    `archive.nossenateurs.fr`. Elle cite un domaine ; elle ne publie aucune
+    donnée qui en vienne, et l'attribution n'est due que pour la donnée.
+    """
+    profil = _profil_complet([_senatorial("Chrétiens d'Orient", "autre")])
+    profil["couverture"] = {"interventions": [
+        {"etat": "non_collecte", "preuve": "certificat TLS expiré sur archive.nossenateurs.fr"}]}
+
+    rendu = traiter("x", profil, None)
+
+    assert rendu["marqueur_retire"] is True
 
 
 def test_le_marqueur_part_quand_plus_rien_ne_le_retient():
@@ -195,3 +235,68 @@ def test_la_table_couvre_les_huit_entrees_heritees_mesurees():
 @pytest.mark.parametrize("hérité, sénatorial", sorted(APPARIEMENTS_HERITES.items()))
 def test_chaque_ligne_nomme_un_remplacant_non_vide(hérité, sénatorial):
     assert hérité and sénatorial
+
+
+# --------------------------------------------------------------------------
+# Les entrées périmées, que la fusion additive a laissées à côté des neuves
+# --------------------------------------------------------------------------
+
+def _brut_senatorial(entrees):
+    return {"mandats": [], "mandat_senatorial": {"mandats_senatoriaux": entrees}}
+
+
+def test_une_entree_que_la_collecte_ne_produit_plus_est_orpheline():
+    """Le défaut que #912 a créé dans la donnée, sans en créer dans le code.
+
+    La fusion des profils est additive : un libellé corrigé n'en remplace pas
+    un, il s'ajoute. Le run du 13/09/2026 a publié « Culture » ET « Commission
+    de la culture… » pour la même période — 126 entrées sénatoriales sur
+    `bruno-retailleau` pour 101 collectées.
+    """
+    perimee = _senatorial("Culture", "commission", "2023-10-04", "2024-01-17")
+    courante = _senatorial("Commission de la culture, de l'éducation et de la communication",
+                           "commission", "2023-10-04", "2024-01-17")
+    profil = {"mandats": [perimee, courante]}
+    brut = _brut_senatorial([
+        {"famille": "commission", "label": "Commission de la culture, de l'éducation et de la communication",
+         "debut": "2023-10-04", "fin": "2024-01-17"},
+    ])
+
+    assert mandats_senatoriaux_orphelins(profil, brut) == [perimee]
+
+
+def test_le_brut_est_compare_APRES_normalisation():
+    """Sans cela, le critère désignait une entrée légitime comme orpheline.
+
+    `normalize_senat` transforme le libellé : « Groupe UMP » y devient « Groupe
+    UMP (rattaché) ». Comparer le brut au pivot tel quel proposait donc au
+    retrait l'appartenance de `bruno-retailleau` au groupe UMP, 2011-2012 — un
+    fait que la source publie.
+    """
+    publiee = _senatorial("Groupe UMP (rattaché)", "groupe_politique", "2011-10-01", "2012-11-06")
+    brut = _brut_senatorial([
+        {"famille": "groupe_politique", "label": "Groupe UMP", "organe_code": "UMP",
+         "debut": "2011-10-01", "fin": "2012-11-06",
+         "type_appartenance": "Rattaché", "type_appartenance_code": "R"},
+    ])
+
+    assert mandats_senatoriaux_orphelins({"mandats": [publiee]}, brut) == []
+
+
+def test_sans_collecte_senatoriale_rien_n_est_propose():
+    """« Plus produit » et « pas encore collecté » ne se distinguent pas quand
+    le bloc est vide, et seul le premier justifie un retrait (§2 règle 5)."""
+    publiee = _senatorial("Culture", "commission")
+
+    assert mandats_senatoriaux_orphelins({"mandats": [publiee]}, _brut_senatorial([])) == []
+    assert mandats_senatoriaux_orphelins({"mandats": [publiee]}, {"mandats": []}) == []
+
+
+def test_une_entree_non_senatoriale_n_est_jamais_orpheline():
+    """La comparaison ne vaut que pour ce que la collecte sénatoriale produit."""
+    an = {"label": "Commission des affaires étrangères", "categorie": "commission",
+          "categorie_source": "an", "debut": "2017-06-29", "fin": "2019-01-29"}
+    brut = _brut_senatorial([{"famille": "commission", "label": "Culture",
+                              "debut": "2023-10-04", "fin": None}])
+
+    assert mandats_senatoriaux_orphelins({"mandats": [an]}, brut) == []
