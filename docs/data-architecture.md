@@ -1,9 +1,10 @@
-# Ce que devient la donnée — les huit sorties de `pivot_data/`
+# Ce que devient la donnée — les neuf sorties de `pivot_data/`
 
 Ce fichier décrit le **flux** : les sources, les fichiers, les schémas, la
-volumétrie, et ce que le web lit. Il couvre les huit sorties de `pivot_data/` —
+volumétrie, et ce que le web lit. Il couvre les neuf sorties de `pivot_data/` —
 `profiles`, `groupes`, `lignees`, `gouvernements`, `scrutins.json`,
-`scrutins_europeens.json`, `amendements/`, `commissions_dossiers.json`.
+`scrutins_europeens.json`, `dossiers_europeens.json`, `amendements/`,
+`commissions_dossiers.json`.
 `partis/` en est sortie avec #906, `scrutins_europeens.json` y est entré avec #901.
 
 Trois voisins, et ce qui les sépare :
@@ -444,6 +445,7 @@ fusion indexées par `docs/technical_decisions.md`.
 | `pivot_data/gouvernements/` | `gouvernement_roster.py` + `gouvernement_textes.py` → `gouvernement_profile.py` | `src/schema_gouvernement.py` | **10** fiches, < 1 Mo |
 | `pivot_data/scrutins.json` | index partagé, ci-dessus | `scrutins-v1` | **17 748** scrutins, 9 Mo (~10,2 Mo une fois la qualification de #639 régénérée) |
 | `pivot_data/scrutins_europeens.json` | `scrutins_europeens.py` (dump ParlTrack `ep_votes`) | `scrutins-europeens-v1` | **5 571** scrutins, 3,8 Mo (mesuré 14/09/2026) — ceux que les 7 profils européens citent, sur les 44 648 du dump. Porte les **effectifs** pour/contre/abstention et leur ventilation par groupe politique, jamais de liste nominative ni de `sort` déduit (#901) |
+| `pivot_data/dossiers_europeens.json` | `dossiers_europeens.py` (dump ParlTrack `ep_dossiers`) | `dossiers-europeens-v1` | **355** dossiers, 125 Ko (mesuré 14/09/2026) — les références que les amendements européens visent, sur 367 ; référence → titre, type de procédure, stade. Les 12 absentes sont de 2024-2025, le dump des dossiers étant plus ancien que celui des amendements (#901) |
 | `pivot_data/amendements/` | index partagé, ci-dessus | `amendements-v1` + `amendements-cosignatures-v1` | **484 132** amendements distincts, 259 Mo (index + compagnons) |
 | `pivot_data/commissions_dossiers.json` | `build_commissions_dossiers.py` (#328) | `commissions-dossiers-v1` | **6 024** dossiers renvoyés en commission au fond (mesuré 01/09/2026 sur les archives XV/XVI/XVII), 1,2 Mo — **produit et versionné depuis le commit de données `5de11422`** (02/09/2026). Consommé par `generate_gouvernement_profiles.py` (`--commissions-dossiers`), qui en tire `textes[].commission_saisie_au_fond` (#689) |
 | `pivot_data/scrutins_dossiers.json` | `build_scrutins_dossiers.py` (#758) | `scrutins-dossiers-v1` | **715** scrutins rattachés à **561** dossiers (mesuré 07/09/2026 sur les archives XV/XVI/XVII), 72 ko. Deux tables : `scrutins` (`clé de scrutin → uid de dossier`) et `dossiers` (`uid → {statut, sort_49_3}`). **Un scrutin AN ne nomme pas le texte qu'il tranche** — `objet.referenceLegislative` est nul sur 0/18 311 scrutins bruts —, le lien n'existe qu'en sens inverse dans `actesLegislatifs[].voteRefs`. Couvre **423 des 697 textes en dernière lecture (61 %)**, dont 412 avec une commission par jointure dans `commissions_dossiers.json`. Les 39 % restants sont une absence déclarée, jamais comblée par ressemblance de titre |

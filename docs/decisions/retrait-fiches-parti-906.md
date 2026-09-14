@@ -43,7 +43,11 @@ En mesurant, deux choses sont apparues sur `tags_thematiques_agreges`, et **elle
 | --- | ---: | ---: | ---: | ---: |
 | fiches portant `poids_relatif` | 12/29 | **29/31** | **13/14** | 0/10 |
 
-`groupes` et `lignees` sont **publiés**. Par ailleurs, **184 tags distincts** des fiches de parti étaient des intitulés de textes plutôt que des thèmes — « projet de loi de financement de la sécurité sociale pour 2026 », « accompagnement des malades et de la fin de vie **(suite)** », la marque d'un compte rendu de séance — là où `AGENTS.md` §6 annonce **8 catégories**.
+`groupes` et `lignees` sont **publiés**.
+
+> **Corrigé le 14/09/2026.** Ce paragraphe affirmait aussi que **184 tags distincts** des fiches de parti étaient « des intitulés de textes plutôt que des thèmes, là où `AGENTS.md` §6 annonce 8 catégories ». **C'est faux, et la citation l'était aussi.** §6 dit mot pour mot l'inverse : « `tags_thematiques[]` — the **titles of the sitting items** spoken under (`theme_officiel`), deduplicated per profile; **never a closed list of categories** ». Un intitulé de texte est donc un tag **conforme** : « projet de loi de financement de la sécurité sociale pour 2026 » est exactement ce que la règle décrit.
+>
+> L'erreur venait de la copie d'`AGENTS.md` chargée en contexte au début de la session — le même fichier par symlink, mais antérieure à une modification — citée sans relire le disque. Elle a été relayée dans un commentaire de #906 et dans un message à la session interface, qui l'a attrapée en remesurant. **Une règle se relit là où elle vit**, pas dans la copie qu'on croit avoir.
 
 C'est le périmètre de **#876**, et ce lot n'y touche pas : supprimer les fiches de parti n'aurait rien réglé, puisque le défaut vit surtout dans les fiches que l'interface publie. Consigné pour que la mesure ne soit pas refaite.
 
