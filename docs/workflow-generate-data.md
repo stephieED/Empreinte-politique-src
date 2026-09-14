@@ -731,6 +731,55 @@ Le commit ne part que si `check_quality_gate.py` sort en 0, et le push suit la
 §6.
 
 
+### Ce que `merge-and-pivot` ne produit plus : les fiches de parti (#906)
+
+Le job portait une étape « Générer les profils de parti », retirée le
+14/09/2026 avec `src/parti_profile.py`, `src/schema_parti.py` et les 29 fiches.
+
+**La raison n'est pas le poids** — 192 Ko. Aucune ligne de `web/UI_finale` ne les
+lisait, `sync-data.mjs` ne les copiait pas, et il n'y a jamais eu d'onglet Partis,
+pas même dans `web/old/v7`. Surtout, **25 des 29 fiches n'agrégeaient qu'un seul
+candidat déclaré**, et le seul parti qui en avait davantage était dédoublé —
+`Parti socialiste` et `Parti Socialiste (PS)`, séparés par une majuscule, faute
+d'une normalisation de `parti_nom` que rien n'imposait.
+
+`check_quality_gate.py` perd son `--partis-dir` et `garde_fou_blobs.py` son entrée
+de `REPERTOIRES_SURVEILLES` : les deux lisaient ce répertoire **parce qu'il
+existait**, pas parce qu'ils en avaient besoin.
+
+**Ce qui n'a pas bougé** : `identite.parti` et le champ `parti` des profils, qui
+sont publiés et lus. Une fiche de parti et l'étiquette partisane d'une personne
+sont deux choses.
+
+### Les deux index européens, dans `merge-and-pivot` (#901)
+
+Deux étapes, ajoutées le 14/09/2026, entre les passes pivot et la génération des
+fiches de groupe. Elles **ne collectent rien** : les dumps ParlTrack sont déjà en
+cache, déposés par `extract-parltrack`.
+
+| Étape | Produit | Volumétrie au 14/09/2026 |
+|---|---|---|
+| `src/scrutins_europeens.py` | `pivot_data/scrutins_europeens.json` | **5 571** scrutins, 3,8 Mo |
+| `src/dossiers_europeens.py` | `pivot_data/dossiers_europeens.json` | **355** dossiers, 168 Ko |
+
+**Pourquoi après les passes pivot, et pas avant.** Leur périmètre est *ce que les
+profils publiés citent* — les `numero_scrutin` des votes pour le premier, les
+`texte_vise` des amendements pour le second. Les construire avant indexerait le
+corpus d'hier. C'est le même choix que `pivot_data/scrutins.json` côté Assemblée :
+l'index suit le corpus, il ne le précède pas.
+
+**Aucune tolérance.** Un dump indisponible fait échouer l'étape
+(`DumpVotesIndisponible`, `DumpDossiersIndisponible`) plutôt que d'écrire un index
+vide — qui se lirait comme « aucun scrutin européen », la confusion de #510. Une
+référence citée mais absente du dump ne produit **aucune entrée** : elle est
+comptée et dite sur la sortie d'erreur, jamais fabriquée.
+
+**Ce qu'ils portent, et ce qu'ils refusent.** Les scrutins portent les effectifs
+pour / contre / abstention **ventilés par groupe politique**, jamais de liste
+nominative ni de `sort` déduit des totaux — le Parlement vote aussi à la majorité
+qualifiée, et le dump ne dit pas quelle règle s'appliquait. Les dossiers portent
+titre, type de procédure, stade et **commissions saisies au fond** (341 sur 355).
+
 ### `extract-senat` — les appartenances sénatoriales (#885)
 
 **Ce qu'il fait.** Télécharge `export_sens.zip` depuis `data.senat.fr`, le
