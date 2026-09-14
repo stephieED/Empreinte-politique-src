@@ -221,6 +221,17 @@ européen que les profils publiés citent, avec les effectifs pour / contre /
 abstention et leur ventilation par groupe politique. Lit le dump `ep_votes`
 déjà en cache ; `--force-download` le rafraîchit.
 
+### L'index des dossiers européens
+
+```bash
+python3 src/dossiers_europeens.py --profils-dir pivot_data/profiles \
+    --out pivot_data/dossiers_europeens.json
+```
+
+Produit : `pivot_data/dossiers_europeens.json` — référence de procédure →
+intitulé, type et stade, pour les dossiers que les amendements européens
+visent. C'est ce qui donne un titre lisible derrière « 2021/0136(COD) ».
+
 ### La table des commissions saisies au fond
 
 ```bash
