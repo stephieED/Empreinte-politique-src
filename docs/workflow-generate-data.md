@@ -7,9 +7,9 @@ formulaire de lancement, le push, et la relance automatique. Ce que devient la
 **pourquoi** de chacune est un fichier de `docs/decisions/`.
 
 Ce fichier existe pour être lu **avant** d'ouvrir
-`.github/workflows/generate-data.yml`, qui fait ~3 200 lignes.
+`.github/workflows/generate-data.yml`, qui fait plus de 4 000 lignes.
 
-## 1. Les neuf jobs, dans l'ordre
+## 1. Les jobs, dans l'ordre
 
 | Job | `needs:` | Consomme | Produit |
 |---|---|---|---|
@@ -21,14 +21,17 @@ Ce fichier existe pour être lu **avant** d'ouvrir
 | `prepare-roster-matrix` | — | `raw_data/groupes_reels.json` | `raw_data/roster_candidats.json` → artifact `roster-candidats`, et la matrice roster |
 | `extract-an` | `extract-amendements-an`, `prepare-an-matrix` | AN open data, Syceron, l'index amendements | un artifact `raw-profiles-an-<slug>` par shard, cache `public-data-cache-an-<semaine>[-interv-<empreinte>]` |
 | `extract-roster-groupes` | les quatre `extract-*` + `prepare-roster-matrix` | l'artifact `roster-candidats`, les mêmes sources | un artifact `raw-profiles-roster-groupes-<shard>` par shard |
-| `merge-and-pivot` | `extract-an`, `extract-ue-officiel`, `extract-parltrack`, `extract-roster-groupes` | tous les artifacts ci-dessus | le contrôle du transport, la fusion, les deux passes pivot, les quatre contrôles, le commit et le push |
+| `extract-senat` | — | `export_sens.zip` de `data.senat.fr` (#885) | artifact `raw-profiles-senat`, cache `public-data-cache-senat-<date>` |
+| `merge-and-pivot` | `extract-an`, `extract-ue-officiel`, `extract-parltrack`, `extract-roster-groupes`, `extract-senat` | tous les artifacts ci-dessus | le contrôle du transport, la fusion, les deux passes pivot, les quatre contrôles, le commit et le push |
 
-Cinq jobs n'ont aucun `needs:` et démarrent ensemble (`rafraichir-candidats` en fait partie depuis #757 ; `prepare-an-matrix` l'attend désormais). Le **chemin critique réel,
+Six jobs n'ont aucun `needs:` et démarrent ensemble (`rafraichir-candidats` en fait
+partie depuis #757, `extract-senat` depuis #885 ; `prepare-an-matrix` attend le
+premier). Le **chemin critique réel,
 ce sont les deux matrices en série** (`extract-an` en `max-parallel: 1`, puis la
 matrice roster en `max-parallel: 4`), pas le nombre de jobs.
 
 `extract-an`, `extract-ue-officiel`, `extract-parltrack`,
-`extract-amendements-an` et `extract-roster-groupes` portent
+`extract-amendements-an`, `extract-roster-groupes` et `extract-senat` portent
 `continue-on-error: true` : leur échec ne bloque pas `merge-and-pivot`, qui
 fusionne ce qui a réussi. Les deux jobs avals portent en plus
 `if: ${{ !cancelled() }}` — `continue-on-error` transforme un *échec* en
@@ -84,12 +87,6 @@ sans être normalisé par l'autre ne fait échouer aucune étape.
 #### `prepare-an-matrix`
 
 Lit `raw_data/candidats.json`, en tire la liste des slugs résolvables et la
-**Son checkout porte une liste blanche (#674).** Il ne lit que
-`raw_data/candidats.json`, et son `timeout-minutes: 5` ne survit pas au
-checkout complet : le run `33414042623` l'a vu tué à 5 min 00, donc matrice
-jamais publiée, donc `extract-an` **skippé** alors qu'il venait d'être réparé.
-La règle vaut pour tout job au budget serré, et un test la fait respecter.
-
 publie comme matrice d'`extract-an` — **un shard par candidat du périmètre**. Il
 ne collecte rien. Le périmètre vient de `src/perimetre_candidats.py`, partagé
 avec `generate_all_profiles` : un candidat à `statut: decline` **n'a pas de
@@ -98,6 +95,12 @@ shard**, sa fiche restant publiée telle quelle, et il est **nommé**
 16 shards (ils s'exécutent en série, donc 16 shards = 16 fois le timeout d'un
 shard), et le décompte chiffré des interventions qu'un run
 `existing_profiles=overwrite` sans `collect_interventions` effacerait.
+
+**Son checkout porte une liste blanche (#674).** Il ne lit que
+`raw_data/candidats.json`, et son `timeout-minutes: 5` ne survit pas au
+checkout complet : le run `33414042623` l'a vu tué à 5 min 00, donc matrice
+jamais publiée, donc `extract-an` **skippé** alors qu'il venait d'être réparé.
+La règle vaut pour tout job au budget serré, et un test la fait respecter.
 
 **Consomme** l'artifact `candidats-a-jour`, et à défaut le
 `raw_data/candidats.json` de son checkout — un artifact absent est **nommé**
@@ -406,13 +409,30 @@ précédent vient d'écrire, jamais du réseau, donc APRÈS lui et insensibles �
 code 2 ; `continue-on-error`, même arbitrage que le step gouvernement, la §4c du
 portail hard-failant sur une fiche absente ou invalide ; **104 s et 1 453 Mio de
 RSS** mesurés pour les 10 lignées), profils
-de gouvernement ; `check_quality_gate. Une seconde étape marche **le même arbre sur les mêmes archives** pour publier le **rattachement des scrutins à leur dossier** (`build_scrutins_dossiers.py`, #758) — un scrutin AN ne nomme pas le texte qu'il tranche, et sans cette table la section « Ce qu'il a voté » ne peut dire ni sur quoi porte un texte voté ni ce qu'il est devenu. Non bloquante et additive comme la première ; le `git add` du push la protège par un test d'existence, l'étape étant `continue-on-error`.
-
-**Et une étape amont, dans les trois jobs qui cachent ces archives** (`rafraichir_dossiers_actifs.py`, #762) : elle reprend la seule législature **encore vivante** quand la clé hebdomadaire n'a pas été touchée (`cache-hit != 'true'`). Sans elle, le `restore-keys` de préfixe ramenait le répertoire de la semaine d'avant et rien n'était jamais retéléchargé — la rotation se désamorçait elle-même, comme dans #749. Les législatures dissoutes ne sont jamais reprises : 23 Mo hebdomadaires pour un contenu identique. L'étape est aussi gardée par `!inputs.cold_start`, le `rm -rf .cache` du démarrage à froid la suivant dans deux des trois jobs.py` ; les **quatre contrôles** de la §8 ;
+de gouvernement ; `check_quality_gate.py` ; les **quatre contrôles** de la §8 ;
 la vérification que `src/` et `raw_data/*.json` n'ont pas bougé sur la branche
 pendant le run ; le commit et le push ; **le signal disant si ce commit
 déclenchera `tests.yml`** (#685, §6) ; la fenêtre de rétention de l'historique
 de données ; le déclenchement de `deploy-pages.yml`.
+
+**Deux tables se dérivent des mêmes archives de dossiers**, l'une après l'autre.
+Après la table des commissions saisies au fond, une seconde étape marche **le
+même arbre sur les mêmes archives** pour publier le **rattachement des scrutins à
+leur dossier** (`build_scrutins_dossiers.py`, #758) — un scrutin AN ne nomme pas
+le texte qu'il tranche, et sans cette table la section « Ce qu'il a voté » ne peut
+dire ni sur quoi porte un texte voté ni ce qu'il est devenu. Non bloquante et
+additive comme la première ; le `git add` du push la protège par un test
+d'existence, l'étape étant `continue-on-error`.
+
+**Et une étape amont, dans les trois jobs qui cachent ces archives**
+(`rafraichir_dossiers_actifs.py`, #762) : elle reprend la seule législature
+**encore vivante** quand la clé hebdomadaire n'a pas été touchée (`cache-hit !=
+'true'`). Sans elle, le `restore-keys` de préfixe ramenait le répertoire de la
+semaine d'avant et rien n'était jamais retéléchargé — la rotation se désamorçait
+elle-même, comme dans #749. Les législatures dissoutes ne sont jamais reprises :
+23 Mo hebdomadaires pour un contenu identique. L'étape est aussi gardée par
+`!inputs.cold_start`, le `rm -rf .cache` du démarrage à froid la suivant dans
+deux des trois jobs.
 
 **Consomme** tous les artifacts ci-dessus — mais **aucun** pour la ligne de
 base : il checkoute le dépôt, et la fusion ne réécrit que les slugs présents
@@ -506,6 +526,10 @@ la plus proche :
 | `public-data-cache-dossiers-<semaine>` | `.cache/dossiers_an` | `extract-an`, `merge-and-pivot` | `extract-roster-groupes` (`restore`) |
 | `public-data-cache-ue-<semaine>` | `.cache/europarl` | `extract-ue-officiel` | — |
 | `public-data-cache-parltrack-<semaine>` | `.cache/parltrack` | `extract-parltrack` | — |
+| `public-data-cache-senat-<date>` | `.cache/senat` | `extract-senat` | — |
+
+La clé sénatoriale est au **jour**, et non à la semaine comme les quatre autres :
+`data.senat.fr` régénère son export chaque nuit (#885).
 
 **La règle du producteur-écrivain** : un job n'écrit jamais une clé pour un
 répertoire qu'il ne remplit pas. `actions/cache` saute la sauvegarde post-job
@@ -552,13 +576,16 @@ ne pas budgéter un run à partir d'elles.
 
 | Job | `timeout-minutes` |
 |---|---|
+| `rafraichir-candidats` | 10 |
 | `prepare-an-matrix` | 5 |
 | `extract-an` (par shard) | 5, ou 10 si `collect_interventions` |
 | `extract-ue-officiel` | 60 |
 | `extract-parltrack` | 30 (= `env.PARLTRACK_TIMEOUT_MINUTES`) |
 | `extract-amendements-an` | 30 |
-| `prepare-roster-matrix` | 15 |
+| `prepare-roster-matrix` | 20 |
 | `extract-roster-groupes` (par shard) | 60 |
+| `extract-senat` | 15 |
+| `merge-and-pivot` | 120 (60 jusqu'à #827, voir plus bas) |
 
 Mesures utiles : un shard roster ≈ **200 s**, dont ~130 s de frais fixes (~110 s
 de `actions/checkout` seul — le dépôt porte les profils) et ~65 s d'extraction
@@ -597,21 +624,32 @@ Un push par clé de déploiement **émet un événement `push`**, là où le
 `GITHUB_TOKEN` n'en émet aucun : c'est cette bascule qui décide si `tests.yml` et
 `deploy-pages.yml` voient passer le commit de données.
 
-**Aujourd'hui elle n'a pas lieu, et c'est mesuré (#685).** Le dépôt n'a **aucune**
-clé de déploiement et le secret `DATA_PUSH_SSH_KEY` n'existe pas : `ssh-key` vaut
-la chaîne vide, `actions/checkout` retombe sur le `GITHUB_TOKEN` en HTTPS, et
-**0 des 15** commits de données arrivés sur `main` depuis que `tests.yml` existe
-ne porte de run de la suite. Le refus **bruyant** annoncé sur secret absent ne
-parle que sur un `GH013`, lequel suppose le check requis — jamais rétabli non
-plus : les deux omissions se couvrent l'une l'autre. Le déclenchement explicite
-de `deploy-pages.yml` par `gh workflow run` (#416) est ce qui empêche cette
-absence de coûter la publication du site.
+**Elle a lieu depuis le 01/09/2026, et c'est mesuré.** Les trois gestes que #685
+attendait ont été faits, et ils tiennent ensemble : le secret
+`DATA_PUSH_SSH_KEY` existe (créé le 01/09/2026 à 11 h 52), sa clé de déploiement
+`data-push (#508)` est en **écriture**, et le check requis `Suite complète` est
+posé sur `main` avec `DeployKey` en `bypass_actors`. Le push émet donc un
+événement `push` : vérifié le 14/09/2026 sur le commit de données `3e9e9c138`,
+qui porte une `Suite complète` **réussie**.
+
+**Ce que cette page disait avant, et pourquoi elle le disait.** Pendant tout
+#685, le dépôt n'avait aucune clé, `ssh-key` valait la chaîne vide,
+`actions/checkout` retombait sur le `GITHUB_TOKEN` en HTTPS, et **0 des 15**
+commits de données arrivés sur `main` depuis que `tests.yml` existe ne portait
+de run de la suite. Le refus **bruyant** annoncé sur secret absent ne parlait que
+sur un `GH013`, lequel suppose le check requis — absent lui aussi : les deux
+omissions se couvraient l'une l'autre. C'est la forme du défaut qu'il faut
+retenir, pas son état : **un silence peut être produit par deux garde-fous qui
+s'annulent**, et le seul témoin est la mesure. Le déclenchement explicite de
+`deploy-pages.yml` par `gh workflow run` (#416) reste en place, et c'est lui qui
+avait empêché cette absence de coûter la publication du site.
 
 Le dernier step du job **mesure** donc `git remote get-url origin` après un push
 abouti et dit, en annotation et dans le résumé du job, si `tests.yml` tournera —
-non bloquant, parce que les trois gestes qui répareraient le mécanisme (clé,
-secret, check requis) vivent hors du dépôt. La garantie revient avec eux, et pas
-en réécrivant cette page. Voir
+non bloquant, parce que les trois gestes qui portent le mécanisme (clé, secret,
+check requis) vivent hors du dépôt et peuvent en repartir sans qu'un test le
+voie. Ce step reste le témoin : c'est lui, pas cette page, qui dit l'état d'un
+run donné. Voir
 `docs/decisions/push-donnees-cle-de-deploiement-508.md` et
 `docs/decisions/identite-du-push-et-declenchement-des-tests-685.md`.
 

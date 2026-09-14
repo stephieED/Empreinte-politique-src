@@ -22,7 +22,7 @@ Trois voisins, et ce qui les sépare :
   est une règle qu'on manque ;
 - **le pourquoi** vit dans `docs/decisions/`, un fichier par décision, indexé
   par `docs/technical_decisions.md` ;
-- **ce que fait un run** — les neuf jobs, le formulaire, les caches, les
+- **ce que fait un run** — les jobs, le formulaire, les caches, les
   artifacts, les budgets, le push, la relance automatique — vit dans
   [`workflow-generate-data.md`](./workflow-generate-data.md). Ce fichier-ci n'en
   redit rien : il décrit ce qui est écrit, pas comment le run l'écrit.
@@ -61,12 +61,18 @@ les recherche :
   `sources[].type`, l'attribution ODbL due aux champs déjà publiés (#530), et les
   interventions déjà collectées, qu'aucune régénération ne retire.
   → `docs/decisions/retrait-nosdeputes-529.md`
-- **Le Sénat est hors périmètre (#528)**, décision **éditoriale** : le job
-  `extract-senat` est retiré, `candidate_profile.build_profile` n'accepte plus
-  que `chambre="deputes"`, et les deux fiches `groupe-Senat-*.json` déjà publiées
-  restent en place, gelées. Un certificat renouvelé ne rouvre rien : la reprise
-  exige les trois conditions écrites au §7 de la décision.
-  → `docs/decisions/retrait-senat-528.md`
+- **L'ACTIVITÉ sénatoriale est hors périmètre (#528), les APPARTENANCES sont
+  revenues (#885)** — et la nuance est tout le sujet. #528 a retiré le job
+  `extract-senat` et fermé `candidate_profile.build_profile` à
+  `chambre="deputes"`, qui l'est toujours. #885 a **rouvert un job du même nom,
+  par une autre porte** : `data.senat.fr`, lu par `src/senat_opendata.py`, qui
+  écrit le seul bloc `mandat_senatorial` dans les profils bruts des candidats
+  déclarés appariés — jamais un profil sénatorial complet.
+  **Ce que le Sénat ne rend toujours pas** : ni scrutins, ni comptes rendus. La
+  condition 2 du §7 de #528 est **déclarée non remplie**, pas contournée, et les
+  deux fiches `groupe-Senat-*.json` restent gelées à 0 cohésion — rouvrir leur
+  génération publierait une fiche dont le cœur serait vide.
+  → `docs/decisions/retrait-senat-528.md`, et l'issue #885
 
 ## Le flux
 
@@ -112,8 +118,7 @@ graph TD
     PIV --> GRP["group_profile.py<br/>(via generate_group_profiles.py)"]
     GRPC --> GRP
     ROSTB["roster du run<br/>group_roster.py — zéro fetch en CI (#518)"] --> GRP
-    PIV --> PAR["parti_profile.py"]
-    CAND --> PAR
+    GRP --> LIG["lignee_profile.py<br/>(via generate_lignee_profiles.py, #836)"]
     PIV --> GVR["gouvernement_roster.py<br/>(aucun réseau — mandats des pivots locaux)"]
     SAN --> GVT["gouvernement_textes.py<br/>dump Dossiers_Legislatifs.json.zip"]
     GVR --> GVP["gouvernement_profile.py<br/>(via generate_gouvernement_profiles.py)"]
@@ -121,12 +126,13 @@ graph TD
     GOUC --> GVP
 
     GRP --> OGR["pivot_data/groupes/groupe-*.json<br/>schema_groupe.py"]
+    LIG --> OLI["pivot_data/lignees/*.json<br/>schema_lignee.py"]
     GVP --> OGO["pivot_data/gouvernements/gouvernement-*.json<br/>schema_gouvernement.py"]
 
     %% ── GATE ────────────────────────────────────────────────
     PIV --> QG["check_quality_gate.py<br/>seul gate bloquant, avant le commit"]
     OGR --> QG
-    OPA --> QG
+    OLI --> QG
     OGO --> QG
     SCR --> QG
     AMD --> QG
@@ -154,11 +160,13 @@ source éditoriale prime.
 → [`docs/decisions/provenance-pivot.md`](./decisions/provenance-pivot.md)
 
 En CI, la voie roster-driven est un job dédié, `extract-roster-groupes`, distinct
-d'`extract-an`/`extract-ue-officiel` et fixé au **mode d'extraction léger**
-(`--skip-dossiers-legislatifs`, #357). Ses interventions suivent
-`collect_interventions` depuis #657, sous une forme **réduite au thème** —
-`tags_thematiques` en dérive intégralement, et le motif d'origine (« aucun
-agrégat ne les consomme ») était faux.
+d'`extract-an`/`extract-ue-officiel` et longtemps fixé au **mode d'extraction
+léger** (`--skip-dossiers-legislatifs`, #357). **Les deux axes de ce mode sont
+passés sous le formulaire** : les interventions suivent `collect_interventions`
+depuis #657, sous une forme **réduite au thème**, et les dossiers législatifs
+suivent `collect_dossiers_legislatifs` depuis #817. Les deux étaient posés en dur
+au même motif — « aucun agrégat de groupe ne les consomme » — et il était faux
+les deux fois : `tags_thematiques` dérive intégralement des interventions.
 → [`docs/decisions/collecte-interventions-reduite-au-theme-657.md`](./decisions/collecte-interventions-reduite-au-theme-657.md)
 → [`extract-roster-groupes.md`](./extract-roster-groupes.md)
 
@@ -350,7 +358,7 @@ est celle-là, pas le corpus d'aujourd'hui :
 | `amendements[]` dans les profils | 1 342,4 Mo | 73,8 Mo de mapping |
 | index partagé (méta) | — | 54,4 Mo |
 | index partagé (cosignatures) | — | 75,7 Mo |
-| **total** | **1 342,4 Mo** | **203,8 Mo (−84,8 %)** |
+| **total** | **1 342,4 Mo** | **203,9 Mo (−84,8 %)** |
 
 Le même index de scrutins sert les profils **et** les groupes : les 4 104
 scrutins des groupes sont tous inclus dans les 17 422 des profils. Un fichier
@@ -444,7 +452,7 @@ horodatage de fraîcheur qui n'a pas de raison de bouger.
 → `docs/decisions/collecte-vide-necrase-jamais.md`, et les autres entrées de
 fusion indexées par `docs/technical_decisions.md`.
 
-## Les huit sorties publiées
+## Les sorties publiées
 
 | Sortie | Produite par | Schéma | Volumétrie au 30/08/2026 |
 |---|---|---|---|
@@ -454,7 +462,7 @@ fusion indexées par `docs/technical_decisions.md`.
 | `pivot_data/gouvernements/` | `gouvernement_roster.py` + `gouvernement_textes.py` → `gouvernement_profile.py` | `src/schema_gouvernement.py` | **10** fiches, < 1 Mo |
 | `pivot_data/scrutins.json` | index partagé, ci-dessus | `scrutins-v1` | **17 748** scrutins, 9 Mo (~10,2 Mo une fois la qualification de #639 régénérée) |
 | `pivot_data/scrutins_europeens.json` | `scrutins_europeens.py` (dump ParlTrack `ep_votes`) | `scrutins-europeens-v1` | **5 571** scrutins, 3,8 Mo (mesuré 14/09/2026) — ceux que les 7 profils européens citent, sur les 44 648 du dump. Porte les **effectifs** pour/contre/abstention et leur ventilation par groupe politique, jamais de liste nominative ni de `sort` déduit (#901) |
-| `pivot_data/dossiers_europeens.json` | `dossiers_europeens.py` (dump ParlTrack `ep_dossiers`) | `dossiers-europeens-v1` | **355** dossiers, 125 Ko (mesuré 14/09/2026) — les références que les amendements européens visent, sur 367 ; référence → titre, type de procédure, stade, **commissions saisies au fond** (341 dossiers sur 355, 24 sigles — le fait équivalent à la commission au fond d'un dossier AN, #328). Les 12 absentes sont de 2024-2025, le dump des dossiers étant plus ancien que celui des amendements (#901) |
+| `pivot_data/dossiers_europeens.json` | `dossiers_europeens.py` (dump ParlTrack `ep_dossiers`) | `dossiers-europeens-v1` | **355** dossiers, 168 Kio (mesuré 14/09/2026) — les références que les amendements européens visent, sur 367 ; référence → titre, type de procédure, stade, **commissions saisies au fond** (341 dossiers sur 355, 24 sigles — le fait équivalent à la commission au fond d'un dossier AN, #328). Les 12 absentes sont de 2024-2025, le dump des dossiers étant plus ancien que celui des amendements (#901) |
 | `pivot_data/amendements/` | index partagé, ci-dessus | `amendements-v1` + `amendements-cosignatures-v1` | **484 132** amendements distincts, 259 Mo (index + compagnons) |
 | `pivot_data/commissions_dossiers.json` | `build_commissions_dossiers.py` (#328) | `commissions-dossiers-v1` | **6 024** dossiers renvoyés en commission au fond (mesuré 01/09/2026 sur les archives XV/XVI/XVII), 1,2 Mo — **produit et versionné depuis le commit de données `5de11422`** (02/09/2026). Consommé par `generate_gouvernement_profiles.py` (`--commissions-dossiers`), qui en tire `textes[].commission_saisie_au_fond` (#689) |
 | `pivot_data/scrutins_dossiers.json` | `build_scrutins_dossiers.py` (#758) | `scrutins-dossiers-v1` | **715** scrutins rattachés à **561** dossiers (mesuré 07/09/2026 sur les archives XV/XVI/XVII), 72 ko. Deux tables : `scrutins` (`clé de scrutin → uid de dossier`) et `dossiers` (`uid → {statut, sort_49_3}`). **Un scrutin AN ne nomme pas le texte qu'il tranche** — `objet.referenceLegislative` est nul sur 0/18 311 scrutins bruts —, le lien n'existe qu'en sens inverse dans `actesLegislatifs[].voteRefs`. Couvre **423 des 697 textes en dernière lecture (61 %)**, dont 412 avec une commission par jointure dans `commissions_dossiers.json`. Les 39 % restants sont une absence déclarée, jamais comblée par ressemblance de titre |
@@ -796,7 +804,7 @@ et pourrait laisser croire à une couverture bicamérale complète.
 `docs/decisions/hors-perimetre.md`
 
 Un `docs/pipeline-gouvernement.md` séparé avait été proposé en #214 puis laissé
-en suspens : cette section le rend inutile — un seul fichier décrit les six
+en suspens : cette section le rend inutile — un seul fichier décrit toutes les
 sorties.
 
 ## Du pivot au web (`web/UI_finale`)
@@ -845,7 +853,7 @@ graph TD
   (#328). `scripts/couverture-corpus.mjs` lit `pivot_data/` au build et écrit
   32 Ko : ce que le dépôt porte, rangé par institution → liste → champ, avec les
   bornes déclarées et, par liste, les fiches où elle manque. Elle ne crée aucun
-  fait — elle compte ce que les sept sorties portent déjà. En faire une sortie de
+  fait — elle compte ce que les sorties de `pivot_data/` portent déjà. En faire une sortie de
   `pivot_data/` ajouterait un job, un cache et un budget CI pour un fichier que
   seule l'interface lit ; même raisonnement que la projection de lignée (#329).
   Depuis le 11/09/2026 il porte le **Parlement européen comme institution** à
