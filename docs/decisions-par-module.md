@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 329 décisions
+gouverne sans avoir à fouiller les 330 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -48,6 +48,7 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 | `src/gouvernement_profile.py` | 2 |
 | `src/build_amendements_index.py` | 1 |
 | `src/candidate_profile_ue.py` | 1 |
+| `src/collecte_mandats_locaux.py` | 1 |
 | `src/dossiers_europeens.py` | 1 |
 | `src/europarl_documents.py` | 1 |
 | `src/generate_lignee_profiles.py` | 1 |
@@ -423,6 +424,14 @@ Le mentionnent sans le gouverner : [`reduction-nommee-collecte-vs-publie-888`](d
 | [Seuil de couverture de groupe (`--groupe-min-members`) : conservé faute de chiffres réels à pleine échelle (2026-08-12)](decisions/seuil-couverture-groupe.md) | `_report_groupes` |
 
 Le mentionnent sans le gouverner : [`absences-publiees-comme-faits-556-558-560`](decisions/absences-publiees-comme-faits-556-558-560.md), [`audit-599-projection-blocs-lus-628`](decisions/audit-599-projection-blocs-lus-628.md), [`audit-plages-temporelles`](decisions/audit-plages-temporelles.md), [`chambres-profil-derivees`](decisions/chambres-profil-derivees.md), [`corroboration-chambres-publiees-486`](decisions/corroboration-chambres-publiees-486.md), [`couverture-dossiers-hors-couverture-vs-zero`](decisions/couverture-dossiers-hors-couverture-vs-zero.md), [`deux-chambres-interrogees`](decisions/deux-chambres-interrogees.md), [`fiches-groupe-17e-legislature-700`](decisions/fiches-groupe-17e-legislature-700.md), [`gouvernement-doc-cloture`](decisions/gouvernement-doc-cloture.md), [`gouvernement-profile-rattachement`](decisions/gouvernement-profile-rattachement.md), [`identifiants-groupes-et-successions-multiples-815`](decisions/identifiants-groupes-et-successions-multiples-815.md), [`mode-extraction-leger-roster`](decisions/mode-extraction-leger-roster.md), [`oom-reconstruction-amendements-figees`](decisions/oom-reconstruction-amendements-figees.md), [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`populations-profils-portees-par-les-outils-630`](decisions/populations-profils-portees-par-les-outils-630.md), [`retrait-fiches-parti-906`](decisions/retrait-fiches-parti-906.md), [`retry-generate-data-preemption`](decisions/retry-generate-data-preemption.md), [`slug-fabrique-membre-de-roster-708`](decisions/slug-fabrique-membre-de-roster-708.md), [`test-adosse-au-corpus-vivant`](decisions/test-adosse-au-corpus-vivant.md).
+
+## `src/collecte_mandats_locaux.py`
+
+1 décision(s) le gouvernent ; le module en cite 0.
+
+| Décision | Nomme |
+| --- | --- |
+| [La correspondance slug ↔ acteur AN devient un artefact committé (#525, lot 2 de l'épic « une seule source AN ») (2026-08-26)](decisions/correspondance-acteurs-an-525.md) | `etat_civil` |
 
 ## `src/commissions_dossiers_an.py`
 
@@ -1041,6 +1050,10 @@ Le mentionnent sans le gouverner : [`purge-doublons-herites-729`](decisions/purg
 | --- | --- |
 | [Le dernier marqueur Regards Citoyens part quand il ne couvre plus rien, et pas avant (#908) (2026-09-13)](decisions/retrait-residus-senat-908.md) | `mandats_electifs_remplaces` |
 
+## `src/rne_opendata.py`
+
+Le mentionnent sans le gouverner : [`collecte-mandats-locaux-rne-922`](decisions/collecte-mandats-locaux-rne-922.md).
+
 ## `src/schema_gouvernement.py`
 
 11 décision(s) le gouvernent ; le module en cite 1.
@@ -1079,7 +1092,7 @@ Le mentionnent sans le gouverner : [`audit-champs-deplaces-726`](decisions/audit
 
 ## `src/schema_pivot.py`
 
-44 décision(s) le gouvernent ; le module en cite 5.
+45 décision(s) le gouvernent ; le module en cite 5.
 
 | Décision | Nomme |
 | --- | --- |
@@ -1089,6 +1102,7 @@ Le mentionnent sans le gouverner : [`audit-champs-deplaces-726`](decisions/audit
 | [`chambres` au niveau profil : une liste dérivée, et `chambre` qui n'en est plus que le premier élément (#493) (2026-08-20)](decisions/chambres-profil-derivees.md) | `ChambresDerivees`, `KNOWN_CHAMBRES`, `ORDRE_CHAMBRES`, `appliquer_chambres`, `deriver_chambres`, `validate_profil` |
 | [La civilité et la nomenclature PCS de l'INSEE traversaient le pipeline sans y laisser de trace (#659) (2026-08-31)](decisions/civilite-et-pcs-insee-659.md) | `CHAMPS_IDENTITE_TEXTE_LIBRE`, `validate_profil` |
 | [La collecte d'interventions des membres de roster est réduite au thème (#657) (2026-08-31)](decisions/collecte-interventions-reduite-au-theme-657.md) | `KNOWN_COLLECTES_INTERVENTION` |
+| [Collecter les mandats locaux : une catégorie à part, et une fin qu'on n'invente pas (#922) (2026-09-15)](decisions/collecte-mandats-locaux-rne-922.md) | `KNOWN_CATEGORIES`, `KNOWN_CATEGORIE_SOURCES`, `appliquer_chambres` |
 | [Les consommateurs de `chambre` migrés vers `chambres`, et le garde-fou qui datera son retrait (#494) (2026-08-20)](decisions/consommateurs-chambres-migres.md) | `appliquer_chambres`, `deriver_chambres`, `lire_chambres` |
 | [La corroboration porte sur les chambres publiées, pas sur la complétude des mandats — et la condition de retrait de `chambre` devient atteignable (#486) (2026-08-30)](decisions/corroboration-chambres-publiees-486.md) | `ChambresDerivees`, `ORDRE_CHAMBRES`, `deriver_chambres`, `lire_chambres` |
 | [La couverture se remplace à la maille où #539 la publie, et un cas non tranchable se déclare (#602) (2026-08-30)](decisions/couverture-remplacee-par-liste-602.md) | `LISTES_COUVERTES`, `valider_couverture` |
@@ -1175,10 +1189,11 @@ Le mentionnent sans le gouverner : [`normalisation-votes`](decisions/normalisati
 
 ## `src/senat_opendata.py`
 
-1 décision(s) le gouvernent ; le module en cite 1.
+2 décision(s) le gouvernent ; le module en cite 1.
 
 | Décision | Nomme |
 | --- | --- |
+| [Collecter les mandats locaux : une catégorie à part, et une fin qu'on n'invente pas (#922) (2026-09-15)](decisions/collecte-mandats-locaux-rne-922.md) | `TABLES_REFUSEES` |
 | [Le libellé d'un organe sénatorial se lit sur la colonne complète, pas sur l'abrégée (#912) (2026-09-13)](decisions/libelles-senat-colonne-complete-912.md) | `reparer_mojibake` |
 
 ## `src/syceron_debates.py`

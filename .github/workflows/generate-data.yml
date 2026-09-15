@@ -2565,8 +2565,47 @@ jobs:
           path: _publish/profiles/
           if-no-files-found: warn
 
+  extract-mandats-locaux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: ./.github/actions/bootstrap-extraction
+
+      # PAS DE CACHE, et c'est un choix (#922). Ce job ne télécharge aucun
+      # fichier : il interroge `tabular-api.data.gouv.fr`, qui filtre côté
+      # serveur — ~160 requêtes ciblées contre 76 Mo de CSV. Il n'y a donc rien
+      # à mettre en cache, et une clé hebdomadaire ferait servir un répertoire
+      # vide en croyant servir des données.
+      #
+      # Le `rid` de chaque fichier est résolu par le catalogue à chaque run : il
+      # CHANGE à chaque publication trimestrielle, et le coder en dur ferait
+      # collecter un corpus figé au jour où quelqu'un l'a copié.
+      - name: Collecte des mandats locaux (Répertoire national des élus)
+        run: |
+          python3 src/collecte_mandats_locaux.py \
+            --manifest-out _publish/manifeste-mandats-locaux.txt \
+            --apply
+
+      # #450 — UN ARTIFACT = LA CONTRIBUTION D'UN JOB.
+      - uses: ./.github/actions/publish-written-profiles
+        if: always()
+        with:
+          manifest: _publish/manifeste-mandats-locaux.txt
+
+      - name: Upload artifact profils bruts (mandats locaux)
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: raw-profiles-mandats-locaux
+          path: _publish/profiles/
+          if-no-files-found: warn
+
   merge-and-pivot:
-    needs: [extract-an, extract-ue-officiel, extract-parltrack, extract-roster-groupes, extract-senat]
+    needs: [extract-an, extract-ue-officiel, extract-parltrack, extract-roster-groupes, extract-senat, extract-mandats-locaux]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     # 60 → 120 (#827). Le job tournait en 28 min ; la PREMIÈRE interrogation du
@@ -2735,6 +2774,17 @@ jobs:
           name: raw-profiles-senat
           path: _artifacts/senat
 
+      # #922 — même régime : optionnel, vers son propre répertoire. Le bloc
+      # `mandats_locaux` déclare toujours son `appariement`, y compris quand il
+      # ne porte aucun mandat : une fiche doit pouvoir distinguer « relu, aucun
+      # mandat » de « personne n'a encore regardé ».
+      - name: Download artifact profils bruts mandats locaux (optionnel)
+        uses: actions/download-artifact@v7
+        continue-on-error: true
+        with:
+          name: raw-profiles-mandats-locaux
+          path: _artifacts/mandats-locaux
+
       - name: Download artifact ParlTrack (optionnel)
         uses: actions/download-artifact@v7
         continue-on-error: true
@@ -2838,10 +2888,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: python3 src/verifier_transport_artifacts.py
 
-      - name: Fusion des profils bruts (AN + UE + roster)
+      - name: Fusion des profils bruts (AN + UE + roster + Sénat + locaux)
         run: |
           python3 src/merge_profile.py \
             --dirs _artifacts/an _artifacts/ue _artifacts/roster _artifacts/senat \
+                   _artifacts/mandats-locaux \
             --out raw_data/profiles
 
       # ── Pivot + enrichissement ParlTrack ──────────────────────────────────

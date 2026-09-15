@@ -67,7 +67,14 @@ def test_le_vocabulaire_nomme_les_referentiels_et_rien_d_autre():
     # tables de types, et c'est donc un référentiel au même titre que les deux
     # premiers. Le gel se **retourne**, il ne se supprime pas — c'est lui qui
     # empêche une valeur inventée d'entrer sans que personne ne l'ait voulue.
-    assert KNOWN_CATEGORIE_SOURCES == frozenset({"an", "europarl", "senat"})
+    #
+    # #922 ajoute « rne » : le Répertoire national des élus classe lui aussi ses
+    # propres entrées — un fichier par type de mandat, et le type est le fichier.
+    # Ce test a fait exactement son travail le 15/09/2026 : la valeur a été
+    # ajoutée au schéma, et il a refusé de passer tant que personne ne l'avait
+    # inscrite ICI. C'est ce refus qui distingue un vocabulaire fermé d'une
+    # liste qui s'allonge toute seule.
+    assert KNOWN_CATEGORIE_SOURCES == frozenset({"an", "europarl", "senat", "rne"})
 
 
 def test_la_cle_absente_est_licite():

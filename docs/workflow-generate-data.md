@@ -22,16 +22,18 @@ Ce fichier existe pour être lu **avant** d'ouvrir
 | `extract-an` | `extract-amendements-an`, `prepare-an-matrix` | AN open data, Syceron, l'index amendements | un artifact `raw-profiles-an-<slug>` par shard, cache `public-data-cache-an-<semaine>[-interv-<empreinte>]` |
 | `extract-roster-groupes` | les quatre `extract-*` + `prepare-roster-matrix` | l'artifact `roster-candidats`, les mêmes sources | un artifact `raw-profiles-roster-groupes-<shard>` par shard |
 | `extract-senat` | — | `export_sens.zip` de `data.senat.fr` (#885) | artifact `raw-profiles-senat`, cache `public-data-cache-senat-<date>` |
+| `extract-mandats-locaux` | — | le Répertoire national des élus et les sortants 2026, par `tabular-api.data.gouv.fr` (#922) | artifact `raw-profiles-mandats-locaux`, **aucun cache** |
 | `merge-and-pivot` | `extract-an`, `extract-ue-officiel`, `extract-parltrack`, `extract-roster-groupes`, `extract-senat` | tous les artifacts ci-dessus | le contrôle du transport, la fusion, les deux passes pivot, les quatre contrôles, le commit et le push |
 
-Six jobs n'ont aucun `needs:` et démarrent ensemble (`rafraichir-candidats` en fait
-partie depuis #757, `extract-senat` depuis #885 ; `prepare-an-matrix` attend le
-premier). Le **chemin critique réel,
+Sept jobs n'ont aucun `needs:` et démarrent ensemble (`rafraichir-candidats` en
+fait partie depuis #757, `extract-senat` depuis #885, `extract-mandats-locaux`
+depuis #922 ; `prepare-an-matrix` attend le premier). Le **chemin critique réel,
 ce sont les deux matrices en série** (`extract-an` en `max-parallel: 1`, puis la
 matrice roster en `max-parallel: 4`), pas le nombre de jobs.
 
 `extract-an`, `extract-ue-officiel`, `extract-parltrack`,
-`extract-amendements-an`, `extract-roster-groupes` et `extract-senat` portent
+`extract-amendements-an`, `extract-roster-groupes`, `extract-senat` et
+`extract-mandats-locaux` portent
 `continue-on-error: true` : leur échec ne bloque pas `merge-and-pivot`, qui
 fusionne ce qui a réussi. Les deux jobs avals portent en plus
 `if: ${{ !cancelled() }}` — `continue-on-error` transforme un *échec* en
@@ -585,6 +587,7 @@ ne pas budgéter un run à partir d'elles.
 | `prepare-roster-matrix` | 20 |
 | `extract-roster-groupes` (par shard) | 60 |
 | `extract-senat` | 15 |
+| `extract-mandats-locaux` | 20 |
 | `merge-and-pivot` | 120 (60 jusqu'à #827, voir plus bas) |
 
 Mesures utiles : un shard roster ≈ **200 s**, dont ~130 s de frais fixes (~110 s
@@ -817,6 +820,37 @@ pour / contre / abstention **ventilés par groupe politique**, jamais de liste
 nominative ni de `sort` déduit des totaux — le Parlement vote aussi à la majorité
 qualifiée, et le dump ne dit pas quelle règle s'appliquait. Les dossiers portent
 titre, type de procédure, stade et **commissions saisies au fond** (341 sur 355).
+
+### `extract-mandats-locaux` — le versant local d'un parcours (#922)
+
+**Ce qu'il fait.** Interroge le Répertoire national des élus et le fichier des
+sortants 2020-2026 par `tabular-api.data.gouv.fr`, et écrit le bloc
+`mandats_locaux` dans les profils bruts des **candidats déclarés**. Un membre de
+roster n'en reçoit pas : ~750 membres × 9 fichiers pour une donnée qu'aucune page
+n'affiche.
+
+**Pourquoi aucun cache.** Ce job ne télécharge rien — il pose ~160 requêtes
+filtrées côté serveur, contre 76 Mo de CSV. Il n'y a donc rien à mettre en
+cache, et une clé hebdomadaire ferait servir un répertoire vide en croyant
+servir des données. Le `rid` de chaque fichier est **résolu par le catalogue à
+chaque run** : il change à chaque publication trimestrielle.
+
+**Ce qu'il déclare toujours.** Le bloc porte `appariement`, en vocabulaire
+fermé, même quand il ne contient aucun mandat — `date_naissance`,
+`table_relue`, `ecarte`, `aucun_mandat_trouve`, `non_relu`. Les deux derniers se
+ressemblent et ne se confondent pas : l'un est un constat, l'autre un aveu.
+Publier l'un pour l'autre ferait dire à une fiche « cette personne n'a pas de
+mandat local » alors que nous ne le savons pas (§2 règle 5).
+
+**Sa borne.** `borne_couverture` vaut 2020 et voyage dans chaque bloc, plutôt que
+de vivre seulement dans un document : une fiche doit pouvoir dire, sans rien
+aller chercher, que rien avant cette date n'a pu être vérifié.
+
+**Ses refus.** `continue-on-error` comme `extract-senat`. Les trois fichiers du
+RNE portant des mandats que nous collectons déjà — députés, sénateurs,
+représentants au PE — sont refusés **à la lecture** : un filtre à l'affichage
+laisserait la donnée dans `raw_data/`, où la fusion additive la garderait
+indéfiniment (#729).
 
 ### `extract-senat` — les appartenances sénatoriales (#885)
 

@@ -889,7 +889,7 @@ KNOWN_POSITIONS: frozenset[str] = frozenset({
 #: `_TYPE_ORGANE_TO_CATEGORIE` — ou des deux chemins qui lisent la même archive
 #: (`mandat_electif`, `groupe_politique`/`fonction_gouvernementale`).
 #: `europarl` : la catégorie vient du Parlement européen.
-KNOWN_CATEGORIE_SOURCES: frozenset[str] = frozenset({"an", "europarl", "senat"})
+KNOWN_CATEGORIE_SOURCES: frozenset[str] = frozenset({"an", "europarl", "senat", "rne"})
 
 #: #863 — la **nature de l'organe telle que la source la classe**, quand elle la
 #: classe. `categorie` répond à « comment le pivot le range » ; ce champ répond à
@@ -922,6 +922,14 @@ KNOWN_CATEGORIES: frozenset[str] = frozenset({
     "mandat_electif", "commission", "groupe_amitie", "groupe_politique",
     "extra_parlementaire", "fonction_gouvernementale", "autre",
     "commission_enquete", "mission_information", "groupe_etudes", "delegation",
+    # #922 — un mandat LOCAL (municipal, départemental, régional, communautaire).
+    # Volontairement distinct de `mandat_electif`, qui n'est pas qu'une
+    # étiquette : `appliquer_chambres` en dérive `chambres[]`, et compte les
+    # `mandat_electif` SANS chambre comme un défaut de collecte (#492). Y verser
+    # un conseiller régional ferait sonner cette garde à tort — un conseil
+    # régional n'est pas une chambre parlementaire, et n'a pas vocation à
+    # apparaître dans `chambres[]`.
+    "mandat_local",
 })
 
 # Position dans l'hémicycle (majorité/opposition/minoritaire/gouvernement).
