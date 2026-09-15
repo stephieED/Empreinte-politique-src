@@ -23,7 +23,29 @@ import { REFUS_FICHE_GROUPE } from '../utils/groupe';
  * « Ce que cette fiche ne dit pas » : la règle de forme 2 veut la limite sur
  * la fiche, le paragraphe ici.
  */
+/* ── LE PLAN SUIT LES TYPES DE FICHE (#328) ──────────────────────────────────
+ *
+ * Quinze sections se suivaient à plat, et l'appartenance de chacune se devinait
+ * au préfixe « Groupes : » — ou pas du tout. Elles sont désormais rangées sous
+ * quatre familles, dans l'ordre des onglets de la navigation.
+ *
+ * DEUX CHOSES QUE LE RANGEMENT A RÉVÉLÉES, et qu'il ne faut pas défaire :
+ *
+ * 1. La fiche de gouvernement n'a AUCUNE section de méthode, alors que
+ *    `GovernmentProfile.jsx` publie trois blocs. Sa famille est donc vide et le
+ *    déclare. Supprimer cette famille rendrait le trou invisible sans le
+ *    combler (§2 règle 5) : le lecteur chercherait sans savoir pourquoi il ne
+ *    trouve pas.
+ * 2. « Ce qu'on n'a pas pu lire » s'affiche sur la fiche candidat ET sur la
+ *    fiche de lignée. La ranger sous l'une des deux serait faux — d'où la
+ *    quatrième famille, qui n'était pas dans la demande initiale.
+ *
+ * Le préfixe « Groupes : » disparaît des cinq titres concernés : sous un titre
+ * de famille il se répétait, et un titre qui se répète cesse d'être lu.
+ * Les `id` ne bougent PAS : ce sont des ancres visées depuis les fiches.
+ */
 const SECTIONS = [
+  { famille: 'Fiche candidat' },
   {
     id: 'fonctions',
     heading: 'Fonctions exercées',
@@ -298,8 +320,40 @@ const SECTIONS = [
     ),
   },
   {
+    heading: 'Ordre des catégories',
+    body: (
+      <>
+        <p>
+          <code>position_dans_hemicycle</code> n'est utilisée que lorsqu'elle possède une source primaire
+          (<code>source_url</code>). Elle permet de répartir les textes portés et les amendements d'un
+          candidat en trois lots : <strong>Majorité</strong>, <strong>Opposition</strong> et{' '}
+          <strong>Non distingué</strong> (éléments à cheval sur les deux périodes, ou dont la date ne
+          correspond à aucune période sourcée).
+        </p>
+        <p>
+          Sur le profil d'un candidat, l'onglet « Textes » affiche cette répartition sous forme de barres de
+          comparaison (nombre de textes portés et d'amendements par catégorie). Le lot « Non distingué » est
+          toujours affiché séparément, même à zéro : l'absence de donnée sourcée reste visible, conformément
+          à la règle 6. Cette répartition n'est pour l'instant présentée que sur les profils candidat, pas
+          sur les profils de groupe.
+        </p>
+      </>
+    ),
+  },
+  {
+    heading: 'Responsabilités',
+    body: (
+      <p>
+        Les responsabilités sont dédupliquées par intitulé. Les fonctions de présidence ou de rapport
+        peuvent servir à ordonner le détail, mais ce classement interne n'est jamais publié comme total ou
+        score.
+      </p>
+    ),
+  },
+  { famille: 'Fiche de groupe parlementaire' },
+  {
     id: 'lignee',
-    heading: 'Groupes : une fiche par lignée',
+    heading: 'Une fiche par lignée',
     body: (
       <>
         <p>
@@ -328,7 +382,7 @@ const SECTIONS = [
   },
   {
     id: 'paroles',
-    heading: 'Groupes : sur quoi ils ont pris la parole',
+    heading: 'Sur quoi ils ont pris la parole',
     body: (
       <>
         <p>
@@ -343,7 +397,7 @@ const SECTIONS = [
   },
   {
     id: 'depots',
-    heading: 'Groupes : ce qu’ils ont proposé',
+    heading: 'Ce qu’ils ont proposé',
     body: (
       <>
         <p>
@@ -375,7 +429,7 @@ const SECTIONS = [
   },
   {
     id: 'cohesion',
-    heading: 'Groupes : ce qu’ils ont voté',
+    heading: 'Ce qu’ils ont voté',
     body: (
       <>
         <p>
@@ -399,7 +453,7 @@ const SECTIONS = [
   },
   {
     id: 'convergences',
-    heading: 'Groupes : avec qui ils votent',
+    heading: 'Avec qui ils votent',
     body: (
       <>
         <p>
@@ -421,36 +475,17 @@ const SECTIONS = [
     ),
   },
   {
-    heading: 'Ordre des catégories',
-    body: (
-      <>
-        <p>
-          <code>position_dans_hemicycle</code> n'est utilisée que lorsqu'elle possède une source primaire
-          (<code>source_url</code>). Elle permet de répartir les textes portés et les amendements d'un
-          candidat en trois lots : <strong>Majorité</strong>, <strong>Opposition</strong> et{' '}
-          <strong>Non distingué</strong> (éléments à cheval sur les deux périodes, ou dont la date ne
-          correspond à aucune période sourcée).
-        </p>
-        <p>
-          Sur le profil d'un candidat, l'onglet « Textes » affiche cette répartition sous forme de barres de
-          comparaison (nombre de textes portés et d'amendements par catégorie). Le lot « Non distingué » est
-          toujours affiché séparément, même à zéro : l'absence de donnée sourcée reste visible, conformément
-          à la règle 6. Cette répartition n'est pour l'instant présentée que sur les profils candidat, pas
-          sur les profils de groupe.
-        </p>
-      </>
-    ),
-  },
-  {
-    heading: 'Responsabilités',
-    body: (
+    famille: 'Fiche de gouvernement',
+    note: (
       <p>
-        Les responsabilités sont dédupliquées par intitulé. Les fonctions de présidence ou de rapport
-        peuvent servir à ordonner le détail, mais ce classement interne n'est jamais publié comme total ou
-        score.
+        Aucune section de méthode ne décrit encore cette fiche, alors qu'elle publie trois blocs :
+        les comptages de textes portés par statut, les textes suivis et les membres du gouvernement.
+        C'est un manque de cette page, pas une absence de règle — les règles de traçabilité et de
+        non-notation s'y appliquent comme partout ailleurs.
       </p>
     ),
   },
+  { famille: 'Ce qui vaut pour toutes les fiches' },
   {
     id: 'couverture',
     heading: 'Ce qu\u2019on n\u2019a pas pu lire',

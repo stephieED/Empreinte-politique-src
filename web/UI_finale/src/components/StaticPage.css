@@ -71,6 +71,42 @@
   margin-top: 20px;
 }
 
+/* ── Le titre de famille (#328) ──────────────────────────────────────────────
+ *
+ * Il RANGE les cartes qui le suivent, il n'en est pas une : ni fond, ni ombre,
+ * ni rayon — sinon deux objets de même apparence porteraient deux niveaux de
+ * lecture. Le filet sous le titre est ce qui le rattache au bloc, et la marge
+ * haute est ce qui l'en détache du bloc précédent.
+ *
+ * `margin-top` compense le `gap: 14px` du conteneur : 26px d'écart réel au-
+ * dessus, 14px en dessous, pour que le titre appartienne visuellement à ce qui
+ * suit. Un titre à équidistance des deux blocs n'appartient à aucun. */
+.static-famille {
+  margin: 12px 2px 0;
+}
+
+.static-famille:first-child {
+  margin-top: 0;
+}
+
+.static-famille h2 {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border-strong);
+}
+
+/* La famille VIDE : la fiche de gouvernement n'a pas de méthode publiée, et la
+   page le dit plutôt que de laisser un titre sans suite. */
+.static-famille p {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 10px 0 0;
+}
+
 .static-card {
   border-radius: 18px;
   background: var(--card);

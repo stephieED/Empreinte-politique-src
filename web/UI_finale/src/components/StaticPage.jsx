@@ -26,15 +26,32 @@ export default function StaticPage({ eyebrow, title, tagline, updated, sections 
           {updated && <p className="static-updated">{updated}</p>}
 
           <div className="static-sections">
-            {sections.map((section) => (
-              // `id` optionnel : il rend une section ATTEIGNABLE depuis une
-              // fiche (`/methodologie#votes`). Sans lui, un renvoi posé sous une
-              // figure dépose le lecteur en haut d'une page de dix sections.
-              <section className="static-card" key={section.heading} id={section.id}>
-                <h2>{section.heading}</h2>
-                {section.body}
-              </section>
-            ))}
+            {sections.map((section) =>
+              /* UNE ENTRÉE `famille` N'EST PAS UNE SECTION, c'est le titre du
+                 groupe qui suit (#328). Le tableau reste PLAT : les ancres
+                 (`/methodologie#votes`) ne bougent pas, et une page qui ne
+                 déclare aucune famille — les mentions légales — se rend
+                 exactement comme avant.
+
+                 Une famille peut être VIDE et porter un `note` : la fiche de
+                 gouvernement n'a aucune section de méthode, et le dire est
+                 préférable à un lecteur qui cherche sans savoir pourquoi il ne
+                 trouve pas (§2 règle 5). */
+              section.famille ? (
+                <div className="static-famille" key={`famille-${section.famille}`}>
+                  <h2>{section.famille}</h2>
+                  {section.note}
+                </div>
+              ) : (
+                // `id` optionnel : il rend une section ATTEIGNABLE depuis une
+                // fiche (`/methodologie#votes`). Sans lui, un renvoi posé sous une
+                // figure dépose le lecteur en haut d'une page de dix sections.
+                <section className="static-card" key={section.heading} id={section.id}>
+                  <h2>{section.heading}</h2>
+                  {section.body}
+                </section>
+              ),
+            )}
           </div>
         </main>
         <PiedDeSite />
