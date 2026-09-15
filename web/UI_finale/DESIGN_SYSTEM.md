@@ -49,7 +49,8 @@ Trois formes, verified dans `src/components/Brand.jsx`/`Brand.css` et cotées da
 | Européen `--pe` | `#003399` | Le Parlement européen — **Pantone Reflex Blue de l'emblème**, la seule couleur officielle des quatre qui soit réutilisable |
 | Gouvernemental `--gouv` | `#85510D` | Le gouvernement sur la fiche |
 | Parlementaire `--parl` | `#803060` | L'Assemblée sur la fiche |
-| Sénatorial `--senat` | `#9A958D` | **Pas de teinte propre** : l'encre des absences. La sarcelle `#169E9E` lui est **réservée** pour le jour où sa collecte sera rebranchée (11/09/2026) |
+| Sénatorial `--fc-senat` | `#169E9E` | **Sarcelle, posée le 15/09/2026** — la collecte est rebranchée pour les appartenances (#885), et le Sénat prend sa ligne dans la frise. Retenue **malgré** le critère de famille : 67° du bleu de l'Union, sous le seuil de 72°. Ce qui l'a emporté : sous daltonisme, **Europe/Sénat est la paire la plus séparée des six** — ΔE 33,0 en protanopie, 29,7 en deutéranopie, 29,5 en tritanopie, quand Assemblée/Gouvernement tombe à 10,4 et Assemblée/Europe à 11,2. L'ajouter ne dégrade rien. Les 67° disent « elles se lisent comme parentes » ; chaque institution portant son titre au-dessus de ses lignes, la parenté n'induit pas de hiérarchie |
+| Sans teinte propre `--senat` | `#9A958D` | L'encre de ce qui n'a **aucune source** : les mandats locaux, dont #922 a livré le job et le champ sans qu'aucun run les ait écrits. C'est le rôle que le gris tenait pour le Sénat, et qu'il garde pour eux |
 | Données collectées de `/couverture` | `--fc-an` `#803060` · `--fc-gouv` `#85510D` · `--fc-pe` `#003399` | **Une seule catégorie, dans la teinte de son institution** — les valeurs de la fiche candidat. Les trois teintes de population (`--pop-cand`, `--pop-gouv`, `--pop-grp`) sont retirées le 11/09/2026 : le bleu ardoise des candidats se lisait comme le bleu de l'Union |
 
 Chacune porte sa rampe de quatre valeurs — `--x`, `--x-wash`, `--x-pale`, `--x-line` —, en clair

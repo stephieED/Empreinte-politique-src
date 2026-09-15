@@ -7,6 +7,18 @@
   --fc-an: #803060;
   --fc-gouv: #85510d;
   --fc-pe: #003399;
+  /* SARCELLE DU SÉNAT — retenue le 15/09/2026, et RETENUE MALGRÉ un critère.
+     `DESIGN_SYSTEM.md` §2 demande 72° d'écart de teinte entre institutions de
+     même rang ; la sarcelle est à 67° du bleu de l'Union. Ce qui a emporté la
+     décision est la mesure qui compte pour un lecteur : sous daltonisme, la
+     paire Europe/Sénat est LA PLUS SÉPARÉE des six — ΔE 33,0 en protanopie,
+     29,7 en deutéranopie, 29,5 en tritanopie, quand Assemblée/Gouvernement
+     tombe à 10,4 et Assemblée/Europe à 11,2. Ajouter le Sénat ne dégrade rien.
+     Les 67° disent « elles se lisent comme parentes » ; chaque institution
+     portant son titre en capitales au-dessus de ses lignes, la parenté
+     n'induit pas de hiérarchie. Ne pas la retirer au nom du seul critère : il
+     a été pesé. */
+  --fc-senat: #169E9E;
   --fc-rule: #e7e4df;
   --fc-rule-fin: #f0eeeb;
   --fc-hachure: #eae6e0;
@@ -153,6 +165,24 @@
 .fc-groupe--AN { --fc-inst: var(--fc-an); }
 .fc-groupe--gouvernement { --fc-inst: var(--fc-gouv); }
 .fc-groupe--PE { --fc-inst: var(--fc-pe); }
+.fc-groupe--Senat { --fc-inst: var(--fc-senat); }
+
+/* LE SEGMENT CONTINUE AVANT L'AXE. Le Sénat porte un mandat depuis octobre
+   1986, quatorze ans avant `AXE_DEBUT`. Un bord arrondi collé au zéro dirait
+   « commence en 2000 » — l'erreur exacte que #940 vient de corriger sur la
+   borne de l'Assemblée. Le bord perd son arrondi et porte un liseré : le trait
+   est sectionné, pas terminé. */
+.fc-seg--tronque {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-left: 3px solid var(--card);
+  box-shadow: inset 3px 0 0 rgba(0, 0, 0, 0.28);
+}
+
+/* Le nom d'une liste sans chevron : aligné sur celles qui en ont un. */
+.fc-nom-nu {
+  padding-left: 14px;
+}
 
 /* CE QUE LA SOURCE NE DONNE PAS — hachure discrète, sans contour : c'est un
    fait sur l'institution, immuable, et rien ne se joue là. */
@@ -261,11 +291,29 @@
   margin-right: 6px;
 }
 
+/* Quatre teintes depuis #885 : la clé montre CE QUI EST À L'ÉCRAN, et le Sénat
+   y est une institution comme les trois autres. */
 .fc-cle--collecte {
-  width: 33px;
-  background: linear-gradient(90deg, var(--fc-an) 0 33.4%, var(--fc-gouv) 33.4% 66.7%, var(--fc-pe) 66.7%);
+  width: 44px;
+  background: linear-gradient(
+    90deg,
+    var(--fc-an) 0 25%,
+    var(--fc-gouv) 25% 50%,
+    var(--fc-pe) 50% 75%,
+    var(--fc-senat) 75%
+  );
 }
 
+/* LE JAUNE N'EST PLUS EMPLOYÉ, et sa clé est retirée de la légende (#885,
+   15/09/2026). Il ne servait qu'au Sénat, et il y était FAUX depuis que ses
+   appartenances sont collectées : il dit « nous ne l'avons pas fait », quand
+   aucune des 93 tables de l'export sénatorial ne porte de scrutin, de compte
+   rendu, d'amendement ni de texte. Une légende décrit ce qui est à l'écran ;
+   une clé sans occurrence se lit comme un élément qu'on n'a pas su trouver.
+
+   La RÈGLE, elle, reste : un trou de NOTRE fait se dit en jaune, un fait sur la
+   source en hachure. Le style est gardé pour le jour où le premier cas
+   réapparaît — il revient alors avec sa clé, ce qui est une ligne de code. */
 .fc-cle--nonc {
   background: repeating-linear-gradient(45deg, var(--accent) 0 5px, #fbffd6 5px 10px);
   box-shadow: inset 0 0 0 1.5px #a9c400;

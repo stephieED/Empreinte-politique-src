@@ -110,12 +110,25 @@ def test_le_build_produit_la_couverture(generateur: str) -> None:
 
 
 def test_les_origines_se_superposent_dans_un_seul_rail(frise: str) -> None:
-    """Un rail contient N couches ; il n'existe pas de rail par origine."""
-    assert frise.count('className="fc-rail"') == 1, (
-        "un seul point de construction du rail : le dupliquer par origine est "
-        "exactement la pente que la figure refuse"
-    )
+    """Un rail contient N couches ; il n'existe pas de rail par origine.
+
+    LE COMPTE A ÉTÉ REMPLACÉ PAR L'INTENTION le 15/09/2026. Ce test exigeait
+    UNE seule occurrence de ``className="fc-rail"``, ce qui tenait tant que le
+    composant n'avait qu'une façon de dessiner un rail. #885 en ajoute une
+    seconde, qui n'est pas une origine : une liste que la SOURCE ne publie pas
+    — les quatre listes sénatoriales — porte une hachure pleine et aucune
+    couche. Compter les occurrences interdisait ce cas sans rapport avec la
+    règle qu'il protège.
+
+    Ce qui est vérifié reste donc : les couches d'une même piste se superposent,
+    et aucun rail n'est construit DANS la boucle des origines.
+    """
     assert "couches.map" in frise
+    boucle = re.search(r"couches\.map\(\(c\) => \((.*?)\n      \)\)", frise, re.DOTALL)
+    assert boucle, "la boucle des couches a changé de forme — relire avant d'adapter"
+    assert 'className="fc-rail"' not in boucle.group(1), (
+        "un rail construit par origine est exactement la pente que la figure refuse"
+    )
     feuille = FRISE_CSS.read_text(encoding="utf-8")
     # Une seule encre depuis le 11/09/2026 (frise-couverture-donnees-collectees-328) :
     # la fiche d'origine n'est plus une teinte, donc plus de mélange à voir.
@@ -309,8 +322,27 @@ def test_le_parlement_europeen_a_ses_listes_et_ne_deplace_pas_la_borne_de_l_asse
 
 
 def test_le_parlement_europeen_n_est_plus_une_ligne_non_collectee(frise: str) -> None:
+    """Une institution dont le dépôt porte les listes vit dans la hiérarchie.
+
+    ARBITRAGE RENVERSÉ LE 15/09/2026, et ce test en garde la mémoire. Il
+    exigeait ``cle: 'Senat'`` dans `SANS_ACTIVITE`, au motif que « le Sénat
+    garde sa ligne — mandat publié, activité hors périmètre ». C'était vrai
+    tant que #528 le tenait dehors.
+
+    #885 collecte ses appartenances : 133 sur 2 candidats déclarés. Il rejoint
+    donc la hiérarchie avec ses cinq listes, comme le Parlement européen l'a
+    fait le 11/09. Sa ligne d'avant portait « 7 · 2 candidats » — les sept
+    mandats électifs seuls, les 126 organes n'étant comptés nulle part.
+
+    Les mandats locaux restent, eux, dans `SANS_ACTIVITE` : #922 a livré le job
+    et le champ de schéma, aucun run ne les a écrits.
+    """
     assert "cle: 'PE'" not in frise, "le Parlement européen a ses listes : il vit dans la hiérarchie"
-    assert "cle: 'Senat'" in frise, "le Sénat garde sa ligne — mandat publié, activité hors périmètre"
+    assert "cle: 'Senat'" not in frise, (
+        "le Sénat a ses cinq listes dans la hiérarchie depuis #885 — l'y remettre "
+        "en ligne unique recompterait 7 mandats sur 133"
+    )
+    assert "cle: 'local'" in frise, "les mandats locaux n'ont encore aucune donnée"
 
 
 # ── Règle 4 : deux absences, deux colonnes ──────────────────────────────────

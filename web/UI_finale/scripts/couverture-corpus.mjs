@@ -31,27 +31,29 @@ export function iso(valeur) {
   return null;
 }
 
-const moisSuivant = (m) => {
-  const a = Number(m.slice(0, 4));
-  const mm = Number(m.slice(5, 7));
-  return mm === 12 ? `${a + 1}-01` : `${a}-${String(mm + 1).padStart(2, '0')}`;
-};
-
-/* LA TRANCHE EST LE MOIS, ET LES MOIS CONSÉCUTIFS FUSIONNENT.
+/* DEUX DATES, PAS DES TRANCHES (#328, 15/09/2026).
  *
- * Un segment par entrée donnerait 172 241 segments pour les seuls amendements —
- * illisible, et faux : l'œil y verrait une densité qui n'est que du crénelage.
- * Un segment par mois PORTEUR dit la seule chose vraie à cette échelle : ce
- * mois-là, le corpus porte quelque chose. Les blancs entre deux tranches sont
- * des mois sans rien — souvent des mois sans séance, et la page le dit. */
-export function tranchesMensuelles(dates) {
-  const mois = [...new Set([...dates].filter(Boolean).map((d) => d.slice(0, 7)))].sort();
-  const out = [];
-  for (const m of mois) {
-    if (out.length && moisSuivant(out[out.length - 1][1]) === m) out[out.length - 1][1] = m;
-    else out.push([m, m]);
-  }
-  return out.map(([a, b]) => [`${a}-01`, `${b}-28`]);
+ * Cette fonction rendait un segment par MOIS PORTEUR, les mois consécutifs
+ * fusionnés — jusqu'à 78 segments pour les seuls mandats de l'Assemblée. Elle
+ * répondait à la mauvaise question.
+ *
+ * Les blancs entre deux tranches ne disaient rien de la SOURCE : ils disaient
+ * les mois où aucun de nos candidats déclarés n'était en fonction là. Mesuré le
+ * 15/09/2026 : 73 mois sans aucun texte porté à l'Assemblée, 34 mois sans
+ * mandat, 32 mois sans intervention européenne. Sur une page qui s'appelle
+ * « Ce que le dépôt porte, et depuis quand », ces trous se lisent comme des
+ * lacunes de collecte — l'inverse exact de ce qu'ils sont.
+ *
+ * L'étendue répond à la question posée : de quand à quand le dépôt porte-t-il
+ * quelque chose. Deux dates, rien à fusionner, rien qui se recalcule au
+ * prochain run — la robustesse était l'autre motif du changement.
+ *
+ * `null` quand aucune date n'est exploitable : un champ à zéro ne porte PAS un
+ * segment de largeur nulle, qui se rendrait en trait fantôme. */
+export function etendue(dates) {
+  const jours = [...dates].filter(Boolean).map((d) => d.slice(0, 7)).sort();
+  if (!jours.length) return null;
+  return [`${jours[0]}-01`, `${jours[jours.length - 1]}-28`];
 }
 
 /* ── Lecture du pivot ───────────────────────────────────────────────────── */
@@ -122,6 +124,17 @@ const PE = 'parlement_europeen';
  * republication ParlTrack du 22/11/2016 pour tout ce qui précède (#858), pas celles
  * des séances. */
 const BORNES_BASSES_PE = { votes: '2004-09-15', amendements: '2008-02-01' };
+
+/* Les titres des cinq listes métier, pour les institutions qui n'en portent
+ * aucune entrée : une ligne vide doit être NOMMÉE comme les autres, sinon le
+ * lecteur ne sait pas ce qui manque. */
+const TITRE_LISTE = {
+  mandats: 'Mandats et appartenances',
+  votes: 'Votes et scrutins',
+  amendements: 'Amendements',
+  textes_portes: 'Textes portés',
+  interventions: 'Interventions',
+};
 const HORS_ASSEMBLEE = new Set(['Senat', 'PE']);
 export const estMandatEuropeen = (m) => m?.chambre === 'PE' || m?.categorie_source === 'europarl';
 
@@ -164,7 +177,7 @@ const couche = (pop, titre, entrees, dateDe) => ({
   pop,
   titre,
   total: entrees.length,
-  periodes: tranchesMensuelles(entrees.map(dateDe)),
+  etendue: etendue(entrees.map(dateDe)),
 });
 
 /** Un champ = une ligne dépliée, quelles que soient les fiches qui le portent.
@@ -184,7 +197,7 @@ const apport = (pop, origine, entrees, predicat, dateDe) => {
     origine,
     n: retenues.length,
     total: entrees.length,
-    periodes: tranchesMensuelles(retenues.map(dateDe)),
+    etendue: etendue(retenues.map(dateDe)),
   };
 };
 
@@ -228,6 +241,7 @@ export function construireCouverture({ repoRoot, slugsPublies = null }) {
   const mandatsAN = mandats.filter(estMandatAssemblee);
   const mandatsGouv = mandats.filter(estMandatGouvernemental);
   const mandatsPE = mandats.filter(estMandatEuropeen);
+  const mandatsSenat = mandats.filter(estMandatSenatorial);
   const textes = candidats.flatMap((d) => d.textes_portes || []);
   const textesMinistre = textes.filter(estTexteMinisteriel);
   const textesPE = textes.filter(estTexteEuropeen);
@@ -569,6 +583,51 @@ export function construireCouverture({ repoRoot, slugsPublies = null }) {
         },
       ],
     },
+    /* LE SÉNAT EST UNE INSTITUTION, pas une ligne à part (#885, 15/09/2026).
+     *
+     * Il portait un rail unique en JAUNE — « données non collectées » —, et
+     * c'était vrai tant que #528 le tenait hors périmètre : le trou était de
+     * notre côté. Depuis #885 les appartenances sont collectées, et les quatre
+     * autres listes ne sont pas absentes par notre fait : `src/senat_opendata.py`
+     * lit 24 des 93 tables du dump, et AUCUNE ne porte de scrutin, de compte
+     * rendu, d'amendement ni de texte. Les trois tables refusées à l'entrée
+     * sont de la présence et des procurations (§2 règle 3) — elles ne
+     * nourrissent aucune de nos cinq listes, donc leur refus ne creuse rien ici.
+     *
+     * Les quatre listes sortent donc en `nonPublie`, la hachure : un fait sur la
+     * source. Le jaune aurait dit « nous ne l'avons pas fait », et ce serait un
+     * fait faux sur nous. */
+    {
+      cle: 'Senat',
+      titre: 'Sénat',
+      pistes: [
+        {
+          cle: 'mandats',
+          titre: 'Mandats et appartenances',
+          borne: null,
+          couches: [couche('cand', CAND, mandatsSenat, dMandat)],
+          champs: [
+            champ('avec une date de début ou d’entrée', [
+              apport('cand', CAND, mandatsSenat, (m) => iso(m.debut), dMandat),
+            ]),
+            champ('avec un lien vers la source', [
+              apport('cand', CAND, mandatsSenat, (m) => m.source_url, dMandat),
+            ]),
+            champ('avec une date de fin ou de sortie', [
+              apport('cand', CAND, mandatsSenat, (m) => iso(m.fin), dMandat),
+            ]),
+          ],
+        },
+        ...['votes', 'amendements', 'textes_portes', 'interventions'].map((cle) => ({
+          cle,
+          titre: TITRE_LISTE[cle],
+          borne: null,
+          nonPublie: 'aucune des 93 tables de l’export sénatorial ne porte cette liste',
+          couches: [],
+          champs: [],
+        })),
+      ],
+    },
   ];
 
   return {
@@ -708,10 +767,7 @@ function accueil(hierarchie, bornes, candidats) {
     let hachure = null;
     let toutesBornees = true;
     for (const p of inst.pistes) {
-      const premiere = p.couches.reduce(
-        (m, c) => c.periodes.reduce((n, x) => plusTot(n, x[0]), m),
-        null,
-      );
+      const premiere = p.couches.reduce((m, c) => plusTot(m, c.etendue?.[0] ?? null), null);
       const borne = 'borne' in p ? p.borne : bornes[p.cle];
       const fin = borne ? plusTot(borne, premiere) : null;
       if (!fin) toutesBornees = false;
