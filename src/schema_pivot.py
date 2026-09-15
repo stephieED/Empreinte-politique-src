@@ -101,6 +101,24 @@ Format d'un profil pivot v1 :
                                              # circulait comptait les 191 marqueurs `xsi:nil`
                                              # comme des présences (#556).
     },
+    "mandats_locaux_couverture": {           # #922 — CE QUE L'APPARIEMENT AU RÉPERTOIRE
+                                             # NATIONAL A DONNÉ, publié même quand aucun mandat
+                                             # n'en est sorti. `appariement` est fermé :
+                                             # date_naissance / table_relue / ecarte /
+                                             # aucun_mandat_trouve / non_relu. Les deux derniers
+                                             # se ressemblent et ne se confondent jamais — l'un
+                                             # est un constat, l'autre un aveu.
+                                             # PAS dans `couverture` : sa nomenclature est fermée
+                                             # sur cinq listes métier, et les mandats locaux
+                                             # vivent dans `mandats[]` avec les autres.
+                                             # `borne_couverture` (2020) voyage ici plutôt que
+                                             # dans un document : une fiche doit pouvoir dire,
+                                             # sans rien aller chercher, que rien avant cette
+                                             # date n'a pu être vérifié.
+        "appariement": "date_naissance",
+        "borne_couverture": "2020",
+        "synchro_le": "2026-09-15T12:00:00+0200",
+    },
     "couverture": {                          # #539 — POURQUOI une liste est vide. Indexé par
                                              # liste métier (LISTES_COUVERTES), chaque liste
                                              # portant AU MOINS UNE entrée : aucun défaut

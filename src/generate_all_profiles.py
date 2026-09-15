@@ -927,6 +927,25 @@ def _normaliser_en_pivot(
             # scalaire, et que l'oubli du recalcul reconduirait ici.
             appliquer_chambres(pivot_profile)
 
+    # #922 — LES MANDATS LOCAUX, versés comme les deux blocs ci-dessus.
+    #
+    # Le run 34953770692 a écrit le bloc dans les 32 profils bruts, et ZÉRO
+    # mandat n'a atteint le pivot : collecter n'est pas publier, et rien ne le
+    # disait. Quatrième fois cette semaine que le motif se répète — la donnée
+    # arrive, une étape de projection la laisse tomber sans rien dire.
+    #
+    # Deux différences avec le Sénat, et elles sont voulues :
+    #
+    # - `chambres` n'est PAS recalculée. Un conseil régional n'est pas une
+    #   chambre parlementaire, et la catégorie `mandat_local` est justement là
+    #   pour que `appliquer_chambres` ne les voie pas (#492 compte les
+    #   `mandat_electif` sans chambre comme un défaut de collecte) ;
+    # - le bloc est versé MÊME VIDE quant aux mandats, parce que ce qu'il porte
+    #   d'abord est son `appariement` : « relu, aucun mandat » et « personne n'a
+    #   regardé » sont deux faits différents, et c'est `couverture` qui les
+    #   publiera, pas `mandats[]`.
+    _verser_mandats_locaux(profile, pivot_profile)
+
     if pivot_profile is None:
         return None
 
@@ -2145,3 +2164,32 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+def _verser_mandats_locaux(
+    profile: dict, pivot_profile: Optional[dict]
+) -> None:
+    """Verse le bloc `mandats_locaux` du brut dans le pivot (#922).
+
+    Nommée plutôt qu'inline pour être testable : le run 34953770692 a écrit le
+    bloc dans les 32 profils bruts, et zéro mandat n'a atteint le pivot. Un
+    versement qu'aucun test ne peut appeler est un versement qu'on croit fait.
+    """
+    bloc_local = (profile or {}).get("mandats_locaux")
+    if not bloc_local or pivot_profile is None:
+        return
+    mandats = bloc_local.get("mandats") or []
+    if mandats:
+        pivot_profile.setdefault("mandats", []).extend(mandats)
+    # Publié MÊME sans mandat : ce que le bloc porte d'abord est son
+    # `appariement`. « Relu, aucun mandat » et « personne n'a regardé » sont
+    # deux faits différents, et aucun des deux ne se lit dans une liste vide.
+    #
+    # `chambres` n'est PAS recalculée : un conseil régional n'est pas une
+    # chambre parlementaire, et la catégorie `mandat_local` existe justement
+    # pour qu'`appliquer_chambres` ne les voie pas (#492).
+    pivot_profile["mandats_locaux_couverture"] = {
+        "appariement": bloc_local.get("appariement"),
+        "borne_couverture": bloc_local.get("borne_couverture"),
+        "synchro_le": bloc_local.get("synchro_le"),
+    }

@@ -245,3 +245,59 @@ def test_un_profil_sans_brut_est_compte_jamais_fabrique(corpus):
 
     assert rapport["sans_brut"] == ["un-inconnu"]
     assert not (raw_dir / "un-inconnu.json").exists()
+
+
+# --------------------------------------------------------------------------
+# Le versement au pivot — collecter n'est pas publier
+# --------------------------------------------------------------------------
+
+def test_le_bloc_brut_doit_atteindre_le_pivot():
+    """Le run 34953770692 a écrit le bloc dans les 32 profils bruts, et ZÉRO
+    mandat n'a atteint le pivot.
+
+    Quatrième fois de la semaine que le motif se répète : la donnée arrive, une
+    étape de projection la laisse tomber sans rien dire. Ce test-ci tient le
+    contrat côté données ; `generate_all_profiles` tient le versement.
+    """
+    from generate_all_profiles import _verser_mandats_locaux
+
+    pivot = {"mandats": [], "id": "x"}
+    brut = {"mandats_locaux": {
+        "appariement": "date_naissance", "borne_couverture": "2020",
+        "synchro_le": "2026-09-15T12:00:00+0200",
+        "mandats": [{"label": "Cannes", "categorie": "mandat_local"}]}}
+
+    _verser_mandats_locaux(brut, pivot)
+
+    assert [m["label"] for m in pivot["mandats"]] == ["Cannes"]
+    assert pivot["mandats_locaux_couverture"]["appariement"] == "date_naissance"
+    assert pivot["mandats_locaux_couverture"]["borne_couverture"] == "2020"
+
+
+def test_un_appariement_sans_mandat_publie_quand_meme_sa_couverture():
+    """« Relu, aucun mandat » et « personne n'a regardé » sont deux faits, et
+    aucun des deux ne se lit dans une liste vide."""
+    from generate_all_profiles import _verser_mandats_locaux
+
+    pivot = {"mandats": [], "id": "x"}
+    _verser_mandats_locaux(
+        {"mandats_locaux": {"appariement": "non_relu",
+                            "borne_couverture": "2020", "mandats": []}}, pivot)
+
+    assert pivot["mandats"] == []
+    assert pivot["mandats_locaux_couverture"]["appariement"] == "non_relu"
+
+
+def test_les_mandats_locaux_ne_touchent_pas_les_chambres():
+    """Un conseil régional n'est pas une chambre parlementaire — c'est toute la
+    raison d'être de la catégorie `mandat_local` (#492)."""
+    from generate_all_profiles import _verser_mandats_locaux
+    from schema_pivot import appliquer_chambres
+
+    pivot = {"mandats": [], "id": "x", "chambres": [], "chambre": None}
+    _verser_mandats_locaux(
+        {"mandats_locaux": {"appariement": "date_naissance", "mandats": [
+            {"label": "Hauts-De-France", "categorie": "mandat_local"}]}}, pivot)
+    appliquer_chambres(pivot)
+
+    assert pivot["chambres"] == []
