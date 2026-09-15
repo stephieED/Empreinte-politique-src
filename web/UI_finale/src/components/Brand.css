@@ -18,6 +18,13 @@
   display: flex;
   align-items: center;
   padding-inline: 40px;
+  /* LA HAUTEUR AUSSI EST PORTÉE ICI (15/09/2026). Même défaut que la gouttière,
+     dans l'autre axe : les 12px de retrait haut de `.explorer-bars` ne valaient
+     que dans l'explorateur. Mesuré à 1440px — le logo tombait à y = 84 sur les
+     fiches candidat, groupe et gouvernement, et à y = 72 sur les quatre autres
+     pages. La fiche candidat est la référence, `.explorer-bars` annule donc la
+     sienne pour cette rangée. */
+  margin-top: 12px;
   height: 80px;
   border-bottom: 1px solid var(--border);
   text-decoration: none;
