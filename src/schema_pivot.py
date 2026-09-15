@@ -1234,6 +1234,16 @@ KNOWN_MOTIFS_MANDAT_ANTERIEUR_NON_RESOLU: frozenset[str] = frozenset({"source_pr
 #: Motif d'un `mandats_anterieurs` publié `null` sur une fiche de candidat.
 KNOWN_MOTIFS_MANDATS_ANTERIEURS_NON_RESOLUS: frozenset[str] = frozenset({"non_relu"})
 
+#: Comment une ABSENCE de mandat antérieur a été constatée (#860). Une liste
+#: vide affirme « aucun mandat avant le 19/06/2002 » : §2 règle 2 veut savoir
+#: sur quoi. Les deux valeurs ne se valent pas et ne se remplacent pas —
+#: `lecture_fiche_sycomore` est une lecture de la source primaire par le
+#: pipeline, reproductible ; `relecture_humaine` est une signature, que rien
+#: d'automatique ne pose à la place de quelqu'un.
+KNOWN_METHODES_CONSTAT_ANTERIEUR: frozenset[str] = frozenset(
+    {"lecture_fiche_sycomore", "relecture_humaine"}
+)
+
 
 def valider_mandats_anterieurs(profil: dict[str, Any]) -> list[str]:
     """`mandats_anterieurs` (#860) : une liste relue, ou `null` avec son motif."""
@@ -1252,6 +1262,33 @@ def valider_mandats_anterieurs(profil: dict[str, Any]) -> list[str]:
         return ["'mandats_anterieurs' doit être une liste ou null."]
     if non_resolu is not None:
         errors.append("'mandats_anterieurs_non_resolu' présent sur une liste relue.")
+    # Une liste VIDE affirme « aucun mandat avant le 19/06/2002 » : c'est un
+    # fait publié, et il porte sa source comme les autres (§2 règle 2). Une
+    # liste pleine, elle, la porte ligne par ligne — le constat y serait un
+    # second endroit pour le même fait.
+    constat = profil.get("mandats_anterieurs_constat")
+    if not valeur:
+        if not isinstance(constat, dict):
+            errors.append(
+                "'mandats_anterieurs' est une liste vide sans "
+                "'mandats_anterieurs_constat' : une absence constatée dit sur quoi "
+                "elle se fonde (§2 règle 2)."
+            )
+        else:
+            if not str(constat.get("source_url") or "").startswith("https://"):
+                errors.append("'mandats_anterieurs_constat.source_url' absente ou non https.")
+            if constat.get("methode") not in KNOWN_METHODES_CONSTAT_ANTERIEUR:
+                errors.append(
+                    f"'mandats_anterieurs_constat.methode' {constat.get('methode')!r} hors "
+                    f"de {sorted(KNOWN_METHODES_CONSTAT_ANTERIEUR)}."
+                )
+            if not constat.get("constate_le"):
+                errors.append("'mandats_anterieurs_constat.constate_le' absent.")
+    elif constat is not None:
+        errors.append(
+            "'mandats_anterieurs_constat' présent sur une liste non vide — la "
+            "source vit alors sur chaque ligne."
+        )
     for i, m in enumerate(valeur):
         if not isinstance(m, dict):
             errors.append(f"mandats_anterieurs[{i}] : objet attendu."); continue
