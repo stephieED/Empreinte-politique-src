@@ -823,7 +823,8 @@ titre, type de procédure, stade et **commissions saisies au fond** (341 sur 355
 
 ### `extract-mandats-locaux` — le versant local d'un parcours (#922)
 
-**Ce qu'il fait.** Interroge le Répertoire national des élus et le fichier des
+**Ce qu'il fait** (`src/collecte_mandats_locaux.py`, qui lit `src/rne_opendata.py`).
+Interroge le Répertoire national des élus et le fichier des
 sortants 2020-2026 par `tabular-api.data.gouv.fr`, et écrit le bloc
 `mandats_locaux` dans les profils bruts des **candidats déclarés**. Un membre de
 roster n'en reçoit pas : ~750 membres × 9 fichiers pour une donnée qu'aucune page
@@ -854,13 +855,37 @@ indéfiniment (#729).
 
 ### `extract-senat` — les appartenances sénatoriales (#885)
 
-**Ce qu'il fait.** Télécharge `export_sens.zip` depuis `data.senat.fr`, le
+**Ce qu'il fait** (`src/collecte_senat.py`, qui lit `src/senat_opendata.py`).
+Télécharge `export_sens.zip` depuis `data.senat.fr`, le
 décompresse, et écrit le bloc `mandat_senatorial` dans les profils bruts des
 **candidats déclarés appariés** — 2 profils, 133 appartenances au 13/09/2026.
+
+**Les modules du lot, et ce que chacun fait.** Six fichiers, et le nom du job n'en
+désigne aucun — les chercher dans 4 000 lignes de YAML est ce qui a coûté une
+demi-heure le 15/09/2026 :
+
+| Module | Ce qu'il fait |
+| --- | --- |
+| `src/collecte_senat.py` | le script d'entrée du job : lit l'export, compose le bloc, écrit les profils du périmètre, tient le manifeste |
+| `src/senat_opendata.py` | la lecture de l'export PostgreSQL, et le **refus à l'entrée** des trois tables de présence individuelle (§2 règle 3) |
+| `src/appariement_senateurs.py` | **relie un profil publié à son matricule sénatorial** — la question qu'on se pose en premier quand un mandat n'apparaît pas sur une fiche |
+| `src/senat_mandats.py` | compose les appartenances d'une personne, datées, nommées à la date du mandat |
+| `src/normalize_senat.py` | traduit ces appartenances en mandats pivot ; appelée par `generate_all_profiles` |
+| `src/retrait_heritage_senat.py` | ce que la collecte sénatoriale **remplace** — un retrait nommé, la fusion étant additive |
+
+`src/retrait_residus_senat_908.py` n'appartient pas au job : c'est un retrait
+ponctuel, celui du dernier reste de Regards Citoyens (#908).
 
 **Ce qu'il consomme.** `raw_data/correspondance_acteurs_an.json`, dont le champ
 `identifiants.senat` porte le matricule ; `pivot_data/profiles/` pour lire la
 provenance, seule couche qui l'ait (#630).
+
+**Ce que `merge-and-pivot` en fait.** Il télécharge `raw-profiles-mandats-locaux`
+vers `_artifacts/mandats-locaux` — optionnel, comme les autres familles : si le job a
+échoué, la fusion additive garde ce que le run précédent a publié. Ce répertoire entre
+dans le `--dirs` de `merge_profile.py`, jamais dans `raw_data/profiles` directement : un
+artifact qui atterrit dans l'arbre court-circuite `merge_raw_dirs` et écrase les
+contributions des autres jobs (#450).
 
 **Ce qu'il produit.** L'artifact `raw-profiles-senat`, **scopé au manifeste**
 (#450) : uploader `raw_data/profiles/` entier réinjecterait la baseline
@@ -875,6 +900,11 @@ indisponible ne coûte pas le run, et la fusion additive garde ce que le run
 précédent a publié. Un export de moins d'1 Mo **échoue le step** : l'archive a
 déjà été servie vide, 444 octets et 0 table le 13/09/2026 à 03 h 33, avec un
 HTTP 200 et un `Content-Type: application/zip`.
+
+**Où ses mandats rejoignent le pivot.** `generate_all_profiles` verse le bloc par
+`normalize_senat.normalize_mandats`, puis **recalcule `chambres`** — sans ce recalcul,
+un profil AN + Sénat publierait `["AN"]` et effacerait la carrière sénatoriale (#493).
+Les mandats locaux du RNE, eux, ne touchent pas `chambres` : voir leur bloc plus haut.
 
 **Ce qu'il ne collecte pas.** L'activité en séance — le jeu ne porte ni
 scrutins ni comptes rendus (condition 2 du §7 de #528, **déclarée non
