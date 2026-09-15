@@ -249,3 +249,44 @@ def test_chaque_job_du_yaml_est_decrit_par_la_doc(job: str):
         f"Le job `{job}` est déclaré dans generate-data.yml et n'est nommé nulle "
         "part dans docs/workflow-generate-data.md. Lui donner son bloc en §1 : ce "
         "qu'il fait, ce qu'il consomme, ce qu'il produit, son script d'entrée.")
+
+
+# --------------------------------------------------------------------------
+# Une valeur ajoutée au schéma est dite quelque part
+# --------------------------------------------------------------------------
+
+#: Les vocabulaires dont une valeur neuve change ce qu'une fiche peut porter.
+#: Les autres `KNOWN_*` décrivent des détails internes, et les exiger tous
+#: rendrait la garde bruyante — une garde qui crie à tort finit désarmée.
+VOCABULAIRES_STRUCTURANTS = (
+    "KNOWN_CATEGORIES", "KNOWN_CHAMBRES", "KNOWN_CATEGORIE_SOURCES")
+
+
+@pytest.mark.parametrize("vocabulaire", VOCABULAIRES_STRUCTURANTS)
+def test_chaque_valeur_structurante_du_schema_est_documentee(vocabulaire: str):
+    """Demandé le 15/09/2026 : « lorsque le schéma est modifié, la doc
+    architecture doit être mise à jour ».
+
+    Le cas qui l'a motivé : `mandat_local` et `categorie_source: "rne"` sont
+    entrés dans le schéma avec #922, et aucune documentation ne les nommait —
+    ni pourquoi `mandat_local` n'est pas un `mandat_electif`, ce qui est
+    pourtant la seule question qu'on se pose en les voyant.
+
+    Une valeur ajoutée à un vocabulaire fermé change ce qu'une fiche peut
+    porter. Elle ne peut pas ne vivre que dans `src/schema_pivot.py`.
+    """
+    import sys
+    sys.path.insert(0, str(SRC))
+    import schema_pivot
+
+    valeurs = getattr(schema_pivot, vocabulaire)
+    docs = " ".join(
+        chemin.read_text(encoding="utf-8")
+        for chemin in list(DOCS.rglob("*.md")) + [RACINE / "AGENTS.md"]
+        if chemin.is_file())
+    absentes = sorted(v for v in valeurs if v not in docs)
+
+    assert not absentes, (
+        f"Ces valeurs de `{vocabulaire}` ne sont nommées dans aucune "
+        f"documentation : {absentes}. Une valeur ajoutée à un vocabulaire fermé "
+        "change ce qu'une fiche peut porter — voir AGENTS.md §8.")
