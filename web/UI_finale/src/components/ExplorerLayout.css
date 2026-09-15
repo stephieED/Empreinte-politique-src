@@ -21,6 +21,7 @@
    ailleurs — le défaut inverse de celui qu'on corrige. */
 .explorer-bars > .brand {
   margin-inline: -40px;
+  margin-top: 0;
 }
 
 /* `display: flex` l'emporte sur le `[hidden] { display: none }` de la feuille
