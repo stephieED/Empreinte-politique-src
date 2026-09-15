@@ -1,11 +1,33 @@
 # AGENTS.md - Instructions for AI agents
 
 Non-negotiable rules, schema conventions, validation constraints for every session.
-"Why" behind each decision: **one file per decision** under `docs/decisions/`,
-indexed newest-first by `docs/technical_decisions.md`. Write a new one, never
-edit that index in place — see Section 8.
-Every command the owner may have to type: `docs/commandes.md`.
-Front door, editorial line, coverage limits: `README.md`.
+
+## Where to look, by the question you actually have
+
+This file carries the rules. It does **not** carry the pipeline's detail, the
+volumetry, or the history — those live elsewhere, and looking for them here
+wastes a session. Sorted by the question, not by the filename:
+
+| Your question | Go to |
+| --- | --- |
+| « What may I never publish? » | **§2 below** — the eight editorial rules. Nothing overrides them |
+| « What rule governs this area? » — merge, CI, pre-commit guards, scope, interventions, quality gate | `docs/regles/`, one file per domain, indexed in §3 |
+| « **What governs this file I am about to change?** » | `docs/decisions-par-module.md` — *this module → these decisions*, generated |
+| « Why was it decided this way? » | `docs/decisions/<anchor>.md`, one file per decision, indexed newest-first by `docs/technical_decisions.md` |
+| « What does the data become? » — outputs, schemas, volumetry | `docs/data-architecture.md` |
+| « What does a run do? » — jobs, caches, artifacts, budgets, retry | `docs/workflow-generate-data.md` |
+| « What does this provider publish, and what are its traps? » | `docs/sources/<source>.md` — each states its own status in its header |
+| « What do I type? » | `docs/commandes.md` |
+| « What must I update before finishing? » | **§8 below** |
+| « What is this project, and what does it refuse to do? » | `README.md` — front door, editorial line, coverage limits |
+
+**A decision is never edited in place, and neither index is written by hand** —
+both are generated (§8).
+
+Two habits this table exists to prevent, both paid for on 15/09/2026: searching
+the shared checkout, which can be far behind — take a worktree and read there;
+and searching `src/` by hand for a mechanism, when `docs/decisions-par-module.md`
+names what governs it.
 
 ---
 

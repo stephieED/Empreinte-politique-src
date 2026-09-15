@@ -126,3 +126,48 @@ def test_chaque_fiche_declare_son_statut_en_tete():
         f"Ces fiches ne déclarent pas leur statut en tête : {manquants}. "
         "Sans lui, rien ne distingue une source interrogée à chaque run d'une "
         "source qu'on ne consulte plus depuis un an.")
+
+
+# --------------------------------------------------------------------------
+# La table d'orientation d'AGENTS.md
+# --------------------------------------------------------------------------
+
+AGENTS = RACINE / "AGENTS.md"
+
+#: Ce que la table doit savoir adresser. Chaque entrée est un besoin réel d'une
+#: session, et la cible qui y répond. Mesuré le 15/09/2026 sur cinq questions
+#: posées dans la journée : trois trouvaient leur réponse, deux non — « où est ce
+#: mécanisme dans le code » et « à quoi ressemble une table relue ».
+CIBLES_ATTENDUES = (
+    "docs/regles/",
+    "docs/decisions-par-module.md",
+    "docs/decisions/",
+    "docs/data-architecture.md",
+    "docs/workflow-generate-data.md",
+    "docs/sources/",
+    "docs/commandes.md",
+    "README.md",
+)
+
+
+@pytest.mark.parametrize("cible", CIBLES_ATTENDUES)
+def test_la_table_d_orientation_adresse_chaque_documentation(cible: str):
+    """Un agent doit trouver où chercher sans relire tout le dépôt.
+
+    Le contenu existait, dispersé entre trois endroits — l'en-tête, le tableau
+    des `docs/regles/` et les References — et aucun n'était rangé par BESOIN.
+    Résultat mesuré : une session a cherché un mécanisme à la main dans `src/`
+    alors que `docs/decisions-par-module.md` le nomme.
+    """
+    entete = AGENTS.read_text(encoding="utf-8").split("## 1. Product")[0]
+
+    assert cible in entete, (
+        f"La table d'orientation d'AGENTS.md n'adresse pas « {cible} ». "
+        "Un agent qui ne sait pas où chercher cherche dans le code.")
+
+
+def test_la_table_precede_les_regles():
+    """Elle sert en début de lot : après les règles, elle arrive trop tard."""
+    texte = AGENTS.read_text(encoding="utf-8")
+
+    assert texte.index("Where to look") < texte.index("## 1. Product")
