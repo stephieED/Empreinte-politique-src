@@ -11,7 +11,16 @@ import { loadCouverture } from '../../data';
  * (relecture du 11/09/2026). Pas de détail par liste : il vit sur /couverture.
  *
  * AUCUN CHIFFRE NI AUCUN NOM N'EST ÉCRIT ICI. Les bornes et les fiches nommées
- * viennent de `couverture.json` (`accueil`), calculé au build. */
+ * viennent de `couverture.json` (`accueil`), calculé au build.
+ *
+ * ET AUCUNE INSTITUTION N'EST ÉCRITE À LA MAIN NON PLUS. Une ligne « Sénat —
+ * non collecté » vivait ici en dur, sous le jaune, alors que la projection
+ * porte le Sénat depuis #885 : la page en affichait DEUX, une ligne datée de
+ * 1986 sans teinte — `--ca-senat` manquait — et une ligne jaune qui la
+ * démentait. Le jaune dit « nous ne l'avons pas collecté » ; il a quitté
+ * /couverture avec #948, et il quitte l'accueil pour la même raison. Ce qui
+ * reste en dur est ce que la projection ne porte pas : les mandats locaux, que
+ * #922 a livrés côté job sans qu'aucun run les ait écrits. */
 
 const AXE_DEBUT = 2000;
 const GRADUATIONS = [2000, 2005, 2010, 2015, 2020, 2025];
@@ -27,6 +36,12 @@ export default function CouvertureAccueil() {
     const a = Number(iso.slice(0, 4)) + (Number(iso.slice(5, 7)) - 1) / 12;
     return Math.min(100, Math.max(0, ((a - AXE_DEBUT) / (fin - AXE_DEBUT)) * 100));
   };
+  /* UN SEGMENT QUI COMMENCE AVANT L'AXE EST SECTIONNÉ, PAS TERMINÉ — le même
+   * liseré que la frise de /couverture (`fc-seg--tronque`, #948). Le Sénat porte
+   * un mandat depuis octobre 1986, quatorze ans avant `AXE_DEBUT` : un bord
+   * arrondi collé au zéro dirait « commence en 2000 ». */
+  const tronque = (iso) => Number(iso.slice(0, 4)) + (Number(iso.slice(5, 7)) - 1) / 12 < AXE_DEBUT;
+
   const fiches = (liste) => liste.map((p, i) => (
     <span key={p.id}>
       {i > 0 && ', '}
@@ -53,16 +68,14 @@ export default function CouvertureAccueil() {
             <span className="ca-nom">{i.titre}</span>
             <div className="ca-rail">
               {i.hachureJusqua && <span className="ca-hors" style={{ width: `${x(i.hachureJusqua)}%` }} />}
-              <span className={`ca-plein ca-plein--${i.cle}`} style={{ left: `${x(i.debut)}%` }} />
+              <span
+                className={`ca-plein ca-plein--${i.cle}${tronque(i.debut) ? ' ca-plein--tronque' : ''}`}
+                style={{ left: `${x(i.debut)}%` }}
+              />
             </div>
             <span className="ca-depuis">depuis {i.debut.slice(0, 4)}</span>
           </div>
         ))}
-        <div className="ca-ligne">
-          <span className="ca-nom">Sénat</span>
-          <div className="ca-rail"><span className="ca-nonc" /></div>
-          <span className="ca-depuis">non <small>collecté</small></span>
-        </div>
         <div className="ca-ligne">
           <span className="ca-nom">Mandats locaux</span>
           <div className="ca-rail"><span className="ca-hors" style={{ width: '100%' }} /></div>
@@ -71,7 +84,6 @@ export default function CouvertureAccueil() {
       </div>
       <p className="ca-legende">
         <span><i className="ca-cle ca-cle--collecte" />Données collectées</span>
-        <span><i className="ca-cle ca-cle--nonc" />Non collectées</span>
         <span><i className="ca-cle ca-cle--hors" />Non publiées par la source</span>
       </p>
       {(horsCouverture.anterieurs?.length > 0 || horsCouverture.senat.length > 0

@@ -455,3 +455,59 @@ def test_l_accueil_lit_la_projection_et_ne_montre_plus_de_fait_fictif() -> None:
     accueil = (SRC / "pages" / "LandingPage.jsx").read_text(encoding="utf-8")
     assert "<FactDemo" not in accueil and not (SRC / "components" / "landing" / "FactDemo.jsx").exists()
     assert "parcours politiques" in (SRC / "components" / "landing" / "Hero.jsx").read_text(encoding="utf-8")
+
+
+def test_la_frise_d_accueil_teinte_chaque_institution_et_n_en_ecrit_aucune(tmp_path: Path) -> None:
+    """La ligne « Sénat — non collecté » a vécu en dur dans `CouvertureAccueil`
+    pendant que la projection portait déjà le Sénat (#885) : l'accueil affichait
+    deux lignes Sénat, dont une sans teinte — `--ca-senat` n'existait pas — et
+    une jaune qui démentait l'autre. Le jaune dit « nous ne l'avons pas
+    collecté » ; il a quitté /couverture avec #948, il quitte l'accueil ici.
+
+    Une institution que la projection ajoute demain doit donc arriver teintée,
+    et une institution écrite à la main doit rougir. Les mandats locaux restent
+    la seule ligne en dur : aucun run n'a encore écrit ce que #922 collecte."""
+    import json
+    import shutil
+    import subprocess
+
+    if shutil.which("node") is None:
+        pytest.skip("node absent")
+    racine = _corpus_minimal(tmp_path)
+    script = f"""
+      const m = await import({json.dumps(GENERATEUR.as_uri())});
+      const c = m.construireCouverture({{ repoRoot: {json.dumps(str(racine))} }});
+      process.stdout.write(JSON.stringify(c.accueil.institutions.map((i) => [i.cle, i.titre])));
+    """
+    res = subprocess.run(["node", "--input-type=module", "-e", script],
+                         capture_output=True, text=True, check=False)
+    assert res.returncode == 0, res.stderr
+    institutions = json.loads(res.stdout)
+    assert institutions, "la projection ne porte aucune institution"
+
+    css = (SRC / "components" / "landing" / "landing.css").read_text(encoding="utf-8")
+    composant = _sans_commentaires(
+        (SRC / "components" / "landing" / "CouvertureAccueil.jsx").read_text(encoding="utf-8")
+    )
+    for cle, _titre in institutions:
+        assert f".ca-plein--{cle} " in css or f".ca-plein--{cle}{{" in css, (
+            f"l'institution {cle} n'a pas de teinte sur la frise de l'accueil"
+        )
+
+    # Les noms de lignes écrits en dur, et eux seuls : le reste vient de la
+    # projection. « Mandats locaux » y reste tant qu'aucun run ne les a écrits.
+    ecrits = set(re.findall(r'ca-nom">([^<{][^<]*)</span>', composant))
+    assert ecrits == {"Mandats locaux"}, (
+        f"lignes écrites à la main sur la frise de l'accueil : {sorted(ecrits)}"
+    )
+
+    # LE JAUNE PERD SON PORTEUR, PAS SON STYLE — même arbitrage que sur
+    # /couverture (#948, `test_le_jaune_ne_revient_pas_sans_sa_raison`) : une clé
+    # sans occurrence se lit comme un élément qu'on n'a pas su trouver, mais la
+    # règle tient — un trou de NOTRE fait se dit en jaune — et le prochain cas ne
+    # doit coûter qu'une ligne.
+    assert "ca-nonc" not in composant, (
+        "aucune ligne de l'accueil n'emploie plus le jaune : le Sénat est collecté"
+    )
+    assert ".ca-nonc" in css and ".ca-cle--nonc" in css, "le style reste, la règle aussi"
+    assert "ca-cle--hors" in composant, "la hachure, elle, a toujours son porteur"
