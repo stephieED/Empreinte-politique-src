@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 330 décisions
+gouverne sans avoir à fouiller les 331 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -537,7 +537,7 @@ Le mentionnent sans le gouverner : [`collecte-interventions-reduite-au-theme-657
 
 ## `src/generate_all_profiles.py`
 
-26 décision(s) le gouvernent ; le module en cite 3.
+27 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
@@ -549,6 +549,7 @@ Le mentionnent sans le gouverner : [`collecte-interventions-reduite-au-theme-657
 | [La chambre est un fait du mandat, pas du profil : `mandats[].chambre` estampillée à la collecte (#492) (2026-08-20)](decisions/chambre-par-mandat-electif.md) | `build_profile_any_chambre` |
 | [Un timeout ne peut plus écraser le roster, et rien de collecté ne reste non publié (#511) (2026-08-20)](decisions/collecte-non-publiee.md) | `build_minimal_profile`, `process_candidat` |
 | [Une exception n'est pas une preuve, et un défaut de notre code n'est pas une panne de l'Assemblée nationale (#562) (2026-08-28)](decisions/defaut-collecte-vs-panne-562.md) | `build_profile_any_chambre` |
+| [Une fonction définie après `if __name__ == "__main__"` n'existe pas pour le script (#922) (2026-09-15)](decisions/definition-apres-le-bloc-execution-922.md) | `_verser_mandats_locaux` |
 | [Un paramètre commandait ce qu'il ne nommait pas (#578) (2026-08-29)](decisions/deux-axes-formulaire-578.md) | `_select_candidats_couverture`, `process_candidat` |
 | [Le passé sénatorial est un fait de carrière, pas une donnée d'activité : bicaméral pour les candidats seulement (#488) (2026-08-20)](decisions/deux-chambres-interrogees.md) | `build_minimal_profile`, `build_profile_any_chambre`, `process_candidat` |
 | [Un amendement retrouve son dossier, et la clé qu'on lui avait retirée (#639, rang 3)](decisions/dossier-des-amendements-639.md) | `_rafraichir_index_amendements` |

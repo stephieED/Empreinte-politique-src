@@ -2162,10 +2162,6 @@ def main() -> None:
         print(f"    absent (fallback) : {len(parltrack_status.get('absent', []))}")
 
 
-if __name__ == "__main__":
-    main()
-
-
 def _verser_mandats_locaux(
     profile: dict, pivot_profile: Optional[dict]
 ) -> None:
@@ -2193,3 +2189,7 @@ def _verser_mandats_locaux(
         "borne_couverture": bloc_local.get("borne_couverture"),
         "synchro_le": bloc_local.get("synchro_le"),
     }
+
+
+if __name__ == "__main__":
+    main()
