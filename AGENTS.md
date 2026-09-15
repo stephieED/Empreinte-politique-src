@@ -181,6 +181,17 @@ Full details: `docs/decisions/licences.md`, `docs/decisions/licence-lot-6-530.md
 
 Before finishing a task, update only what actually changed — skip a file if nothing changed for it:
 
+**A source added, removed or changed is never one file.** Four move together, and
+each says something the others do not: `docs/sources/<source>.md` (what the
+provider publishes, and its traps), `docs/data-architecture.md` (what the data
+becomes), `docs/workflow-generate-data.md` (the job that fetches it), `README.md`
+(the reader's table, with its licence). `AGENTS.md` §7 carries the licence and
+the reuse constraint. Miss one and the source exists in some files and not in
+others — measured on #922, where the RNE reached §7, the architecture and the
+workflow, but neither `docs/sources/` nor the README.
+`tests/test_sources_documentees.py` fails on a source documented in one place and
+absent from another.
+
 | File | Update when |
 |---|---|
 | `AGENTS.md` | **A rule that governs everything** — editorial, reporting, what to ask. A rule that governs **one area** goes to `docs/regles/`, never here (#737). **Never a count that a run or a lot moves** — corpus sizes, profile populations, file inventories: here they are read as current long after they stopped being so. The figure lives in the decision that measured it, or in the tool that prints it. Rare edit; stay terse. |
