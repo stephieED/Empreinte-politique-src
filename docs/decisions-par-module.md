@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 331 décisions
+gouverne sans avoir à fouiller les 332 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -1196,6 +1196,8 @@ Le mentionnent sans le gouverner : [`normalisation-votes`](decisions/normalisati
 | --- | --- |
 | [Collecter les mandats locaux : une catégorie à part, et une fin qu'on n'invente pas (#922) (2026-09-15)](decisions/collecte-mandats-locaux-rne-922.md) | `TABLES_REFUSEES` |
 | [Le libellé d'un organe sénatorial se lit sur la colonne complète, pas sur l'abrégée (#912) (2026-09-13)](decisions/libelles-senat-colonne-complete-912.md) | `reparer_mojibake` |
+
+Le mentionnent sans le gouverner : [`frise-segments-pleins-et-senat-885`](decisions/frise-segments-pleins-et-senat-885.md).
 
 ## `src/syceron_debates.py`
 
