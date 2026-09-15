@@ -860,6 +860,22 @@ Télécharge `export_sens.zip` depuis `data.senat.fr`, le
 décompresse, et écrit le bloc `mandat_senatorial` dans les profils bruts des
 **candidats déclarés appariés** — 2 profils, 133 appartenances au 13/09/2026.
 
+**Les modules du lot, et ce que chacun fait.** Six fichiers, et le nom du job n'en
+désigne aucun — les chercher dans 4 000 lignes de YAML est ce qui a coûté une
+demi-heure le 15/09/2026 :
+
+| Module | Ce qu'il fait |
+| --- | --- |
+| `src/collecte_senat.py` | le script d'entrée du job : lit l'export, compose le bloc, écrit les profils du périmètre, tient le manifeste |
+| `src/senat_opendata.py` | la lecture de l'export PostgreSQL, et le **refus à l'entrée** des trois tables de présence individuelle (§2 règle 3) |
+| `src/appariement_senateurs.py` | **relie un profil publié à son matricule sénatorial** — la question qu'on se pose en premier quand un mandat n'apparaît pas sur une fiche |
+| `src/senat_mandats.py` | compose les appartenances d'une personne, datées, nommées à la date du mandat |
+| `src/normalize_senat.py` | traduit ces appartenances en mandats pivot ; appelée par `generate_all_profiles` |
+| `src/retrait_heritage_senat.py` | ce que la collecte sénatoriale **remplace** — un retrait nommé, la fusion étant additive |
+
+`src/retrait_residus_senat_908.py` n'appartient pas au job : c'est un retrait
+ponctuel, celui du dernier reste de Regards Citoyens (#908).
+
 **Ce qu'il consomme.** `raw_data/correspondance_acteurs_an.json`, dont le champ
 `identifiants.senat` porte le matricule ; `pivot_data/profiles/` pour lire la
 provenance, seule couche qui l'ait (#630).

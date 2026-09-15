@@ -171,3 +171,81 @@ def test_la_table_precede_les_regles():
     texte = AGENTS.read_text(encoding="utf-8")
 
     assert texte.index("Where to look") < texte.index("## 1. Product")
+
+
+# --------------------------------------------------------------------------
+# Les modules d'une source sont nommés quelque part
+# --------------------------------------------------------------------------
+
+SRC = RACINE / "src"
+DOCS = RACINE / "docs"
+
+#: Les modules qui collectent ou normalisent une source. Ils portent le nom de
+#: la source, et c'est ce qui les rend trouvables ici.
+MOTIFS_MODULES_DE_SOURCE = ("senat", "rne", "mandats_locaux", "parltrack", "europarl")
+
+
+def _modules_de_source() -> list[str]:
+    noms = []
+    for chemin in sorted(SRC.glob("*.py")):
+        nom = chemin.stem
+        if any(motif in nom for motif in MOTIFS_MODULES_DE_SOURCE):
+            noms.append(nom)
+    return noms
+
+
+@pytest.mark.parametrize("module", _modules_de_source())
+def test_chaque_module_de_source_est_nomme_dans_la_doc(module: str):
+    """Un module qu'aucune doc ne nomme se cherche dans le code.
+
+    Mesuré le 15/09/2026 sur le lot Sénat : **sept modules, un seul documenté**.
+    `appariement_senateurs.py` — qui relie un profil à son matricule, la question
+    qu'on se pose en premier quand un mandat n'apparaît pas sur une fiche — n'était
+    nommé ni dans une doc, ni dans une décision, donc pas même dans l'index
+    généré qui s'en nourrit.
+
+    C'est l'angle mort du garde-fou existant : `test_decisions_par_module` attrape
+    les modules gouvernés par cinq décisions ou plus qui n'en citent aucune ; ceux
+    qui n'en ont **zéro** passaient au travers.
+    """
+    cibles = list(DOCS.rglob("*.md")) + [RACINE / "README.md", RACINE / "AGENTS.md"]
+    trouve = any(
+        module in chemin.read_text(encoding="utf-8")
+        for chemin in cibles if chemin.is_file())
+
+    assert trouve, (
+        f"`src/{module}.py` n'est nommé dans aucune documentation. Un module de "
+        "collecte qu'on ne peut pas trouver oblige à ouvrir le YAML du workflow "
+        "ou à grepper `src/` — voir AGENTS.md §8, une source vit dans quatre "
+        "fichiers.")
+
+
+# --------------------------------------------------------------------------
+# Un job déclaré par le YAML est décrit par la doc du workflow
+# --------------------------------------------------------------------------
+
+WORKFLOW_YAML = RACINE / ".github" / "workflows" / "generate-data.yml"
+WORKFLOW_DOC = RACINE / "docs" / "workflow-generate-data.md"
+
+
+def _jobs_declares() -> list[str]:
+    texte = WORKFLOW_YAML.read_text(encoding="utf-8")
+    apres = texte.split("\njobs:", 1)[-1]
+    return re.findall(r"^  ([a-z][a-z0-9-]*):$", apres, re.MULTILINE)
+
+
+@pytest.mark.parametrize("job", _jobs_declares())
+def test_chaque_job_du_yaml_est_decrit_par_la_doc(job: str):
+    """Demandé par la propriétaire le 15/09/2026 : « à chaque fois qu'un job est
+    ajouté au workflow, il faut mettre à jour la doc workflow ».
+
+    L'instruction existait en §8 et n'était pas tenue : le doc a annoncé « les
+    neuf jobs » pendant que le YAML en déclarait onze, et le compte était faux à
+    deux endroits. Une instruction qu'aucun test ne tient se périme comme le
+    reste — celui-ci ne compte rien, il vérifie que chaque job **nommé par le
+    YAML** est nommé par la doc.
+    """
+    assert job in WORKFLOW_DOC.read_text(encoding="utf-8"), (
+        f"Le job `{job}` est déclaré dans generate-data.yml et n'est nommé nulle "
+        "part dans docs/workflow-generate-data.md. Lui donner son bloc en §1 : ce "
+        "qu'il fait, ce qu'il consomme, ce qu'il produit, son script d'entrée.")
