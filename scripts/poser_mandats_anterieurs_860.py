@@ -84,7 +84,11 @@ def _profils_publies(racine: Path) -> list[Path]:
 def poser(racine: Path, ecrire: bool) -> dict[str, Any]:
     """Repose le champ sur chaque profil publié ; rend le compte par état."""
     table = charger_table(racine / CHEMIN_TABLE)
-    rapport = {"profils": 0, "relus": 0, "non_relus": 0, "manquants": 0, "lignes": 0}
+    # Trois états, jamais deux (#860) : des mandats trouvés, une absence
+    # constatée avec sa source, personne n'a regardé. Compter les deux derniers
+    # ensemble est précisément ce que le constat existe pour empêcher.
+    rapport = {"profils": 0, "relus": 0, "constates": 0, "non_relus": 0,
+               "manquants": 0, "lignes": 0}
 
     for chemin in _profils_publies(racine):
         profil = json.loads(chemin.read_text(encoding="utf-8"))
@@ -98,6 +102,8 @@ def poser(racine: Path, ecrire: bool) -> dict[str, Any]:
         if isinstance(valeur, list) and valeur:
             rapport["relus"] += 1
             rapport["lignes"] += len(valeur)
+        elif isinstance(valeur, list):
+            rapport["constates"] += 1
         else:
             rapport["non_relus"] += 1
 
@@ -121,7 +127,8 @@ def main() -> int:
     rapport = poser(args.racine, ecrire=ecrire)
 
     print(f"  candidats déclarés : {rapport['profils']}")
-    print(f"  relus              : {rapport['relus']} ({rapport['lignes']} ligne(s) de mandat)")
+    print(f"  mandats trouvés    : {rapport['relus']} ({rapport['lignes']} ligne(s) de mandat)")
+    print(f"  absence constatée  : {rapport['constates']} (liste vide + `mandats_anterieurs_constat`)")
     print(f"  non relus          : {rapport['non_relus']} (`null` + motif `non_relu`)")
 
     if args.verifier:
