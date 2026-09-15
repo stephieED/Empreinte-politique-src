@@ -29,8 +29,16 @@ const GRADUATIONS = [2005, 2010, 2015, 2020, 2025];
  * conseil départemental ou régional, le dépôt n'en documente AUCUNE : ce n'est
  * pas une collecte en retard, c'est un trou de périmètre. Il prend donc la
  * hachure pâle de ce qu'on ne peut pas lire. */
+/* LE SÉNAT N'EST PLUS ICI (#885, 15/09/2026) : il a ses cinq listes dans
+ * `hierarchie`, comme les trois autres institutions. Il y portait un rail jaune
+ * et le compte « 7 · 2 candidats » — sept mandats électifs, quand le corpus en
+ * porte 133 : les 126 organes n'étaient comptés nulle part.
+ *
+ * Les mandats locaux restent : #922 a livré le job et le champ de schéma, aucun
+ * run ne les a encore écrits. La ligne le dira autrement le jour où ils
+ * arrivent — leur borne est 2020, et `mandats_locaux_couverture.appariement`
+ * distingue `aucun_mandat_trouve` d'un `non_relu`. */
 const SANS_ACTIVITE = [
-  { cle: 'Senat', titre: 'Sénat', quoi: 'Le mandat est publié, l’activité n’est pas collectée.' },
   { cle: 'local', titre: 'Mandats locaux', quoi: 'Aucune source identifiée : ni le mandat, ni l’activité.' },
 ];
 
@@ -73,7 +81,7 @@ export default function FriseCouverture({ couverture }) {
     if ('borne' in piste && !piste.borne) return null;
     const b = piste.borne ?? bornes[piste.cle];
     const mini = piste.couches.reduce(
-      (m, c) => c.periodes.reduce((n, x) => (!n || x[0] < n ? x[0] : n), m),
+      (m, c) => (c.etendue && (!m || c.etendue[0] < m) ? c.etendue[0] : m),
       null,
     );
     const d = !b ? mini : (!mini || b < mini ? b : mini);
@@ -93,12 +101,12 @@ export default function FriseCouverture({ couverture }) {
    * mérite une hachure, pas la fin de la piste toutes origines confondues. */
   const finDe = (piste, origine) => {
     const c = piste.couches.find((x) => x.titre === origine);
-    return c && c.periodes.length ? c.periodes[c.periodes.length - 1][1] : null;
+    return c?.etendue ? c.etendue[1] : null;
   };
 
-  const apresChamp = (periodes, finListe) => {
-    if (!periodes?.length || !finListe) return null;
-    const f = periodes[periodes.length - 1][1];
+  const apresChamp = (etendue, finListe) => {
+    if (!etendue || !finListe) return null;
+    const f = etendue[1];
     if (!f || enMois(finListe) - enMois(f) < MOIS_AVANT_QUEUE) return null;
     return (
       <span
@@ -109,19 +117,31 @@ export default function FriseCouverture({ couverture }) {
     );
   };
 
-  const barres = (periodes) =>
-    (periodes || []).map(([a, b]) => {
-      const g = posDate(a);
-      const h = posDate(b || collecteLe);
-      return (
-        <span
-          key={a}
-          className="fc-seg"
-          style={{ left: `${g}%`, width: `${Math.max(0.6, h - g)}%` }}
-          title={`${jour(a)} → ${jour(b || collecteLe)}`}
-        />
-      );
-    });
+  /* UN SEUL SEGMENT, DE LA PREMIÈRE À LA DERNIÈRE DONNÉE (#328, 15/09/2026).
+   *
+   * Il y en avait un par mois porteur. Les blancs entre eux ne parlaient pas de
+   * la source mais des mois où aucun candidat déclaré n'était en fonction là —
+   * jusqu'à 73 pour les textes portés de l'Assemblée —, et sur cette page ils se
+   * lisaient comme des lacunes de collecte.
+   *
+   * `fc-seg--tronque` quand la donnée commence AVANT l'axe : le Sénat porte un
+   * mandat depuis octobre 1986, quatorze ans avant `AXE_DEBUT`. Un bord arrondi
+   * collé au zéro dirait « commence en 2000 », et c'est l'erreur exacte que #940
+   * vient de corriger sur la borne de l'Assemblée. */
+  const barres = (etendue) => {
+    if (!etendue) return null;
+    const [a, b] = etendue;
+    const g = posDate(a);
+    const h = posDate(b || collecteLe);
+    const tronque = Number(a.slice(0, 4)) + (Number(a.slice(5, 7)) - 1) / 12 < AXE_DEBUT;
+    return (
+      <span
+        className={`fc-seg${tronque ? ' fc-seg--tronque' : ''}`}
+        style={{ left: `${g}%`, width: `${Math.max(0.6, h - g)}%` }}
+        title={`${jour(a)} → ${jour(b || collecteLe)}${tronque ? ` — commence avant ${AXE_DEBUT}` : ''}`}
+      />
+    );
+  };
 
   /* APRÈS LA DERNIÈRE PARUTION À LA SOURCE. Le Parlement européen déclare, liste
    * par liste, la date au-delà de laquelle sa source ne publie plus rien dans
@@ -149,8 +169,8 @@ export default function FriseCouverture({ couverture }) {
           className="fc-couche"
           title={c.origine || c.titre}
         >
-          {avecQueue ? apresChamp(c.periodes, finDe(piste, c.origine)) : null}
-          {barres(c.periodes)}
+          {avecQueue ? apresChamp(c.etendue, finDe(piste, c.origine)) : null}
+          {barres(c.etendue)}
         </div>
       ))}
     </div>
@@ -191,6 +211,20 @@ export default function FriseCouverture({ couverture }) {
                 const ouverte = ouvertes.has(cle);
                 return (
                   <div key={cle}>
+                    {/* LA SOURCE NE PORTE PAS CETTE LISTE (#885). Pas de
+                        chevron : il n'y a aucun champ à ouvrir, et un chevron
+                        qui n'ouvre rien se lit comme un défaut. La hachure dit
+                        « la source ne le publie pas » ; le jaune aurait dit
+                        « nous ne l'avons pas collecté », un fait faux sur nous. */}
+                    {piste.nonPublie ? (
+                      <div className="fc-piste fc-piste--liste">
+                        <div className="fc-nom"><span className="fc-nom-nu">{piste.titre}</span></div>
+                        <div className="fc-rail">
+                          <span className="fc-horssource" style={{ left: 0, right: 0 }} title={piste.nonPublie} />
+                        </div>
+                        <div className="fc-n"><span className="fc-aucune">non publié</span></div>
+                      </div>
+                    ) : (<>
                     <div className="fc-piste fc-piste--liste">
                       <div className="fc-nom">
                         <button
@@ -223,6 +257,7 @@ export default function FriseCouverture({ couverture }) {
                         </div>
                       ))}
                     </div>
+                    </>)}
                   </div>
                 );
               })}
@@ -268,7 +303,6 @@ export default function FriseCouverture({ couverture }) {
 
       <p className="fc-legende">
         <span><i className="fc-cle fc-cle--collecte" />Données collectées</span>
-        <span><i className="fc-cle fc-cle--nonc" />Données non collectées</span>
         <span><i className="fc-cle fc-cle--hors" />Données non publiées</span>
       </p>
     </div>
