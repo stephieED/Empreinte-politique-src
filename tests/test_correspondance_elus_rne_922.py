@@ -167,3 +167,31 @@ def test_le_piege_des_diacritiques_est_consigne(table):
     silencieux — d'où la trace dans la table.
     """
     assert "SILENCIEUSEMENT" in table["_meta"]["diacritiques"]
+
+
+def test_la_borne_de_couverture_est_declaree(table):
+    """#922, arbitré le 15/09/2026 : rien avant 2020, et l'absence se DIT.
+
+    Une fiche ne doit jamais laisser lire « cette personne n'avait pas de mandat
+    local avant 2020 ». Nathalie Arthaud a été conseillère municipale de
+    Vaulx-en-Velin, élue en 2008, et aucun jeu accessible ne le porte : publier
+    sans rien dire en ferait une personne sans parcours local (§2 règle 5).
+    """
+    meta = table["_meta"]
+
+    assert meta["borne_couverture"] == "2020"
+    assert "nous ne pouvons pas le savoir" in meta["borne"]
+
+
+def test_les_deux_raisons_d_ecarter_les_paliers_anterieurs_sont_distinguees(table):
+    """L'une peut tomber, l'autre non — les confondre ferait rouvrir la mauvaise.
+
+    Licence non établie (jeux complets 2014 et 2020) : réparable par le
+    producteur. Couverture au premier tour seul (jeux 2014 sous Licence
+    Ouverte) : définitive, le jeu ne changera plus.
+    """
+    borne = table["_meta"]["borne"]
+
+    assert "aucune licence" in borne
+    assert "premier tour" in borne
+    assert "La première raison tomberait" in borne
