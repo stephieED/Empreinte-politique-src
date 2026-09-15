@@ -262,3 +262,65 @@ def test_pivot_mandats_count():
 def test_pivot_profil_vide_ne_leve_pas():
     pivot = normalize_europarl({})
     assert isinstance(pivot, dict)
+
+
+# ---------------------------------------------------------------------------
+# #922 — l'identité d'un profil européen, et pourquoi elle manquait
+#
+# Ce normaliseur ne posait AUCUN bloc `identite`. La conséquence ne se voyait
+# pas dans le profil : elle se voyait dans l'appariement au Répertoire national
+# des élus, dont la clé praticable est (nom, prénom, date de naissance). Les
+# quatre candidats déclarés dont tout le parcours est européen — Bardella,
+# Philippot, Massard, Glucksmann — ressortaient « sans date de naissance »,
+# donc non appariables automatiquement, alors que le portail la publie et que
+# le profil BRUT la portait déjà sous `mandat_europeen.date_naissance`.
+#
+# Mesuré le 15/09/2026 sur `origin/main` : les quatre ont `identite` vide dans
+# `pivot_data/`, et `1995-09-13`, `1981-10-24`, `1978-08-24`, `1979-10-15` dans
+# `raw_data/`. La donnée était collectée, elle s'arrêtait à la normalisation.
+# ---------------------------------------------------------------------------
+
+def test_la_date_de_naissance_atteint_le_pivot():
+    profil = normalize_europarl(_raw_ue_profile({"date_naissance": "1995-09-13"}))
+
+    assert profil["identite"]["date_naissance"] == "1995-09-13"
+
+
+def test_le_lieu_de_naissance_est_recopie_verbatim():
+    """Le portail écrit parfois un lieu mal espacé — « Saint- Brieuc », mesuré
+    sur lydie-massard. Ce n'est pas corrigé : c'est ce que la source publie, et
+    le réparer supposerait de savoir où le mot se coupe."""
+    profil = normalize_europarl(_raw_ue_profile({"lieu_naissance": "Saint- Brieuc"}))
+
+    assert profil["identite"]["lieu_naissance"] == "Saint- Brieuc"
+
+
+def test_sans_etat_civil_aucun_bloc_identite_n_est_publie():
+    """Un bloc qui ne porterait que `source_url` dirait « on a cherché », pas
+    « voici qui c'est ». Même règle que `normalize_profil` (§2 règle 5)."""
+    profil = normalize_europarl(_raw_ue_profile())
+
+    assert "identite" not in profil or not profil["identite"]
+
+
+def test_une_date_absente_reste_nulle_jamais_vide():
+    """`null`, jamais `""` — AGENTS.md §4."""
+    profil = normalize_europarl(
+        _raw_ue_profile({"date_naissance": "", "lieu_naissance": "Drancy"}))
+
+    assert profil["identite"]["date_naissance"] is None
+    assert profil["identite"]["lieu_naissance"] == "Drancy"
+
+
+def test_l_identite_porte_sa_source():
+    profil = normalize_europarl(_raw_ue_profile({"date_naissance": "1979-10-15"}))
+
+    assert profil["identite"]["source_url"] == "https://www.europarl.europa.eu/meps/fr/1234"
+
+
+def test_le_profil_reste_valide_avec_son_identite():
+    profil = normalize_europarl(_raw_ue_profile({
+        "date_naissance": "1979-10-15", "lieu_naissance": "Boulogne-Billancourt"}))
+    profil["meta"].pop("avertissements", None)
+
+    assert validate_profil(profil) == []
