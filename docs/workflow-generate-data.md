@@ -862,6 +862,13 @@ décompresse, et écrit le bloc `mandat_senatorial` dans les profils bruts des
 `identifiants.senat` porte le matricule ; `pivot_data/profiles/` pour lire la
 provenance, seule couche qui l'ait (#630).
 
+**Ce que `merge-and-pivot` en fait.** Il télécharge `raw-profiles-mandats-locaux`
+vers `_artifacts/mandats-locaux` — optionnel, comme les autres familles : si le job a
+échoué, la fusion additive garde ce que le run précédent a publié. Ce répertoire entre
+dans le `--dirs` de `merge_profile.py`, jamais dans `raw_data/profiles` directement : un
+artifact qui atterrit dans l'arbre court-circuite `merge_raw_dirs` et écrase les
+contributions des autres jobs (#450).
+
 **Ce qu'il produit.** L'artifact `raw-profiles-senat`, **scopé au manifeste**
 (#450) : uploader `raw_data/profiles/` entier réinjecterait la baseline
 committée du checkout. Consommé par `merge-and-pivot` dans `_artifacts/senat`,
