@@ -596,6 +596,10 @@
   --ca-an: #803060;
   --ca-gouv: #85510d;
   --ca-pe: #003399;
+  /* La sarcelle du Sénat, identique à `--fc-senat` de la frise de /couverture
+     (#948) : deux figures qui disent la même chose ne se teintent pas
+     différemment d'une page à l'autre. */
+  --ca-senat: #169E9E;
   --ca-hachure: #e6e1da;
   margin-bottom: 18px;
   padding-bottom: 16px;
@@ -664,6 +668,31 @@
 .ca-plein--AN { background: var(--ca-an); }
 .ca-plein--gouvernement { background: var(--ca-gouv); }
 .ca-plein--PE { background: var(--ca-pe); }
+.ca-plein--Senat { background: var(--ca-senat); }
+
+/* LE SEGMENT CONTINUE AVANT L'AXE — repris verbatim de `.fc-seg--tronque`
+   (FriseCouverture.css) : le bord perd son arrondi et porte un liseré, le trait
+   est sectionné, pas terminé. */
+.ca-plein--tronque {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-left: 3px solid var(--card);
+  box-shadow: inset 3px 0 0 rgba(0, 0, 0, 0.28);
+}
+
+/* LE JAUNE RESTE DISPONIBLE, SANS PORTEUR. Aucune ligne de l'accueil ne dit
+   plus « nous ne l'avons pas collecté » depuis que le Sénat est collecté
+   (#885), et sa clé a quitté la légende — une clé sans occurrence se lit comme
+   un élément qu'on n'a pas su trouver. La règle, elle, tient : un trou de NOTRE
+   fait se dit en jaune, et le prochain le retrouvera ici. Même arbitrage que
+   `.fc-noncollecte` sur /couverture (#948). */
+.ca-nonc {
+  position: absolute;
+  inset: 0;
+  border-radius: 2px;
+  background: repeating-linear-gradient(45deg, var(--accent) 0 4px, #fbffd6 4px 8px);
+  box-shadow: inset 0 0 0 1.2px #a9c400;
+}
 
 .ca-hors {
   position: absolute;
@@ -673,13 +702,6 @@
   background: repeating-linear-gradient(45deg, var(--ca-hachure) 0 3px, transparent 3px 7px);
 }
 
-.ca-nonc {
-  position: absolute;
-  inset: 0;
-  border-radius: 2px;
-  background: repeating-linear-gradient(45deg, var(--accent) 0 4px, #fbffd6 4px 8px);
-  box-shadow: inset 0 0 0 1.2px #a9c400;
-}
 
 .ca-depuis {
   white-space: nowrap;
@@ -715,8 +737,9 @@
 }
 
 .ca-cle--collecte {
-  background: linear-gradient(90deg, var(--ca-an) 0 33.4%, var(--ca-gouv) 33.4% 66.7%, var(--ca-pe) 66.7%);
+  background: linear-gradient(90deg, var(--ca-an) 0 25%, var(--ca-gouv) 25% 50%, var(--ca-pe) 50% 75%, var(--ca-senat) 75%);
 }
+
 
 .ca-cle--nonc {
   background: repeating-linear-gradient(45deg, var(--accent) 0 4px, #fbffd6 4px 8px);
