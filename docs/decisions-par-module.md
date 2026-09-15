@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 328 décisions
+gouverne sans avoir à fouiller les 329 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -443,10 +443,11 @@ Le mentionnent sans le gouverner : [`civilite-et-pcs-insee-659`](decisions/civil
 
 ## `src/couverture_dossiers.py`
 
-7 décision(s) le gouvernent ; le module en cite 3.
+8 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
+| [Les mandats locaux commencent en 2020, et l'avant se déclare (#922) (2026-09-15)](decisions/borne-mandats-locaux-2020-922.md) | `borne_couverture_textes` |
 | [Couverture des dossiers : « hors couverture de la source » ≠ « réellement à zéro » (#399) (2026-08-18)](decisions/couverture-dossiers-hors-couverture-vs-zero.md) | `AN_DOSSIERS_ARCHIVES`, `LEGISLATURES_DEBUT`, `borne_couverture_textes`, `statut_couverture_textes` |
 | [Ce qu'une liste vide veut dire : les quatre états de couverture (#539) (2026-08-28)](decisions/couverture-listes-539.md) | `AN_DOSSIERS_ARCHIVES` |
 | [Un amendement retrouve son dossier, et la clé qu'on lui avait retirée (#639, rang 3)](decisions/dossier-des-amendements-639.md) | `AN_DOSSIERS_ARCHIVES` |
@@ -788,7 +789,7 @@ Le mentionnent sans le gouverner : [`contact-et-comptes-publics-328`](decisions/
 | --- | --- |
 | [Les mandats antérieurs à la couverture de l'Assemblée entrent par une table relue (#860)](decisions/mandats-anterieurs-couverture-860.md) | `appliquer_mandats_anterieurs`, `charger_table` |
 
-Le mentionnent sans le gouverner : [`accueil-borne-par-institution-328`](decisions/accueil-borne-par-institution-328.md), [`correspondance-elus-rne-relue-922`](decisions/correspondance-elus-rne-relue-922.md), [`mention-mandats-anterieurs-fiche-candidat-860`](decisions/mention-mandats-anterieurs-fiche-candidat-860.md), [`sediment-nosdeputes-839`](decisions/sediment-nosdeputes-839.md).
+Le mentionnent sans le gouverner : [`accueil-borne-par-institution-328`](decisions/accueil-borne-par-institution-328.md), [`borne-mandats-locaux-2020-922`](decisions/borne-mandats-locaux-2020-922.md), [`correspondance-elus-rne-relue-922`](decisions/correspondance-elus-rne-relue-922.md), [`mention-mandats-anterieurs-fiche-candidat-860`](decisions/mention-mandats-anterieurs-fiche-candidat-860.md), [`sediment-nosdeputes-839`](decisions/sediment-nosdeputes-839.md).
 
 ## `src/mep_profile.py`
 

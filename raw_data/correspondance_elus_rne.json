@@ -17,6 +17,8 @@
       "elus-assemblee-des-francais-de-letranger-afe"
     ],
     "hors_portee": "Le RNE ne porte que les mandats EN COURS. Un mandat achevé n'y est pas, et son absence ici n'en est pas la négation : Marine Tondelier a été conseillère municipale d'Hénin-Beaumont jusqu'en mars 2026, ce que seul le fichier des sortants 2020-2026 rend. Plus ancien encore, le mandat municipal de Nathalie Arthaud à Vaulx-en-Velin (élue en 2008) n'est porté par aucun jeu accessible.",
+    "borne_couverture": "2020",
+    "borne": "La couverture des mandats locaux commence en 2020, et rien avant n'est intégré (#922, arbitré le 15/09/2026). Deux jeux la portent, tous deux sous Licence Ouverte 2.0 : le RNE pour les mandats en cours, les sortants 2020-2026 pour la mandature précédente. Les paliers antérieurs sont écartés pour DEUX raisons distinctes — les jeux complets de 2014 et de 2020 ne déclarent aucune licence (§7 interdit de collecter ce qu'on ne peut pas attribuer), et les seuls jeux de 2014 sous Licence Ouverte ne couvrent que le premier tour. Une absence avant 2020 doit se DÉCLARER : une fiche ne dit jamais « pas de mandat local avant 2020 », elle dit que nous ne pouvons pas le savoir (§2 règle 5). La première raison tomberait si le producteur précisait sa licence ; la seconde ne tombera pas.",
     "licence": "Répertoire national des élus — Licence Ouverte 2.0 (Etalab), attribution seule. Les relectures s'appuient aussi sur fr.wikipedia.org (CC BY-SA 4.0), en FAITS seulement et jamais en prose reprise, comme pour raw_data/candidats.json (#753).",
     "verifie_le": "2026-09-14"
   },
