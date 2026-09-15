@@ -100,7 +100,12 @@ export const estParoleMinisterielle = (i) =>
  * Mesuré sur les 30 fiches de candidats publiées le 11/09/2026 : sans ces marqueurs, 160
  * mandats, 383 textes et 5 329 interventions européens étaient comptés sous
  * l'Assemblée, et les 11 013 votes et 7 303 amendements n'étaient nulle part.
- * Le Sénat garde sa ligne : le mandat publié, l'activité hors périmètre (#528). */
+ *
+ * LE SÉNAT N'A PAS DE LIGNE, et cette phrase disait le contraire jusqu'au
+ * 15/09/2026 : la hiérarchie n'en porte que trois — AN, gouvernement, PE. Ses
+ * mandats sortent de la piste Assemblée (voir `estMandatSenatorial` plus bas),
+ * mais ils ne sont encore affichés nulle part. Un manque déclaré, pas un
+ * arbitrage rendu. */
 const PE = 'parlement_europeen';
 
 /* LA BORNE BASSE DE LA SOURCE EUROPÉENNE, mesurée sur les dumps ParlTrack
@@ -119,8 +124,31 @@ const PE = 'parlement_europeen';
 const BORNES_BASSES_PE = { votes: '2004-09-15', amendements: '2008-02-01' };
 const HORS_ASSEMBLEE = new Set(['Senat', 'PE']);
 export const estMandatEuropeen = (m) => m?.chambre === 'PE' || m?.categorie_source === 'europarl';
+
+/* UNE CHAMBRE SE RECONNAÎT À DEUX MARQUEURS, JAMAIS À UN SEUL (#885).
+ *
+ * `chambre` n'est porté que par le mandat électif lui-même. Les organes —
+ * commissions, délégations, groupes d'amitié — n'en portent pas : leur seule
+ * marque est `categorie_source`. Le Parlement européen l'avait appris à ses
+ * dépens (180 organes sans `chambre`), et la ligne au-dessus teste donc ses
+ * deux marqueurs depuis le 11/09/2026 ; le Sénat, entré au corpus le
+ * 13/09/2026, n'avait jamais reçu le sien.
+ *
+ * Mesuré le 15/09/2026 sur les candidats déclarés : 133 mandats ont pour source
+ * `senat.fr`, dont **7 seulement** portent `chambre: "Senat"`. Les 126 autres —
+ * commissions et groupes d'amitié sénatoriaux — passaient le filtre par
+ * `chambre: null` et étaient comptés sous l'Assemblée : 126 sur 1 124, soit
+ * 11,2 % de cette ligne.
+ *
+ * Ne pas revenir à un test sur `chambre` seule : c'est la forme du défaut, pas
+ * un raccourci. */
+export const estMandatSenatorial = (m) => m?.chambre === 'Senat' || m?.categorie_source === 'senat';
+
 export const estMandatAssemblee = (m) =>
-  !estMandatGouvernemental(m) && !HORS_ASSEMBLEE.has(m?.chambre) && !estMandatEuropeen(m);
+  !estMandatGouvernemental(m)
+  && !HORS_ASSEMBLEE.has(m?.chambre)
+  && !estMandatSenatorial(m)
+  && !estMandatEuropeen(m);
 export const estVoteEuropeen = (v) => v?.scrutin_non_resolu?.institution === PE;
 export const estAmendementEuropeen = (a) => a?.amendement_non_resolu?.institution === PE;
 export const estTexteEuropeen = (t) => t?.institution === PE;

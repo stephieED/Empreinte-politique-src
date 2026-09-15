@@ -171,11 +171,66 @@ def test_les_trois_marqueurs_sont_des_champs_publies(generateur: str) -> None:
     assert "i.fonction" in generateur, "la qualité de l'orateur vient du compte rendu"
 
 
-def test_le_senat_et_le_parlement_europeen_sortent_de_la_piste_assemblee(generateur: str) -> None:
+def test_le_senat_et_le_parlement_europeen_sortent_de_la_piste_assemblee() -> None:
     """Ni l'un ni l'autre n'est de l'activité à l'Assemblée : les ranger sous
-    « Assemblée nationale » dirait une activité qui n'y a pas eu lieu."""
-    assert "const HORS_ASSEMBLEE = new Set(['Senat', 'PE'])" in generateur
-    assert "estMandatAssemblee" in generateur
+    « Assemblée nationale » dirait une activité qui n'y a pas eu lieu.
+
+    CE TEST A ÉTÉ RÉÉCRIT LE 15/09/2026, et il garde la mémoire de pourquoi.
+    Il vérifiait la chaîne ``const HORS_ASSEMBLEE = new Set(['Senat', 'PE'])``,
+    c'est-à-dire l'écriture d'alors — et il est resté vert pendant que 126
+    appartenances sénatoriales étaient comptées sous l'Assemblée. Le défaut
+    tenait à ce que ce ``Set`` ne teste que ``chambre``, que seul le mandat
+    électif porte : commissions, délégations et groupes d'amitié ont
+    ``chambre: null`` et ne se reconnaissent qu'à ``categorie_source``.
+
+    Il teste donc le COMPORTEMENT, sur les deux formes que le corpus porte
+    réellement. Une écriture qui retomberait sur ``chambre`` seule le fait
+    rougir ; une réécriture du filtre qui garde l'intention le laisse vert.
+    """
+    import json
+    import shutil
+    import subprocess
+
+    if shutil.which("node") is None:
+        pytest.skip("node absent")
+
+    script = f"""
+    const {{ estMandatAssemblee, estMandatSenatorial }} =
+      await import({json.dumps(GENERATEUR.as_uri())});
+    const cas = [
+      // Le mandat électif : il porte `chambre`.
+      [{{ categorie: 'mandat_electif', chambre: 'Senat', categorie_source: 'senat' }}, false],
+      // L'ORGANE sénatorial : `chambre` absente, seul `categorie_source` le dit.
+      [{{ categorie: 'commission', chambre: null, categorie_source: 'senat' }}, false],
+      [{{ categorie: 'groupe_amitie', chambre: null, categorie_source: 'senat' }}, false],
+      // Les mêmes deux formes côté européen, déjà couvertes depuis le 11/09/2026.
+      [{{ categorie: 'mandat_electif', chambre: 'PE', categorie_source: 'europarl' }}, false],
+      [{{ categorie: 'commission', chambre: null, categorie_source: 'europarl' }}, false],
+      // Et l'Assemblée, qui doit rester vraie dans ses deux formes.
+      [{{ categorie: 'mandat_electif', chambre: 'AN', categorie_source: 'an' }}, true],
+      [{{ categorie: 'commission', chambre: null, categorie_source: 'an' }}, true],
+    ];
+    const echecs = cas
+      .map(([m, attendu], i) => (estMandatAssemblee(m) === attendu ? null : i))
+      .filter((x) => x !== null);
+    const senatorial = [
+      estMandatSenatorial({{ chambre: 'Senat' }}),
+      estMandatSenatorial({{ chambre: null, categorie_source: 'senat' }}),
+      estMandatSenatorial({{ chambre: 'AN', categorie_source: 'an' }}),
+    ];
+    console.log(JSON.stringify({{ echecs, senatorial }}));
+    """
+    res = subprocess.run(
+        ["node", "--input-type=module", "-e", script],
+        capture_output=True, text=True, check=False,
+    )
+    assert res.returncode == 0, res.stderr
+    sortie = json.loads(res.stdout.strip().splitlines()[-1])
+    assert sortie["echecs"] == [], (
+        f"cas mal rattachés (index) : {sortie['echecs']} — un organe sans "
+        "`chambre` doit être reconnu par `categorie_source`"
+    )
+    assert sortie["senatorial"] == [True, True, False]
 
 
 def _corpus_minimal(tmp_path: Path) -> Path:
