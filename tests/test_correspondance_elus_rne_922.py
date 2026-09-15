@@ -29,9 +29,30 @@ sys.path.insert(0, str(RACINE / "src"))
 TABLE = RACINE / "raw_data" / "correspondance_elus_rne.json"
 VERDICTS = {"confirme", "ecarte", "aucun_mandat_trouve"}
 
+#: Ce fichier LIT une configuration committée, et le déclare (#791). Le garde-fou
+#: de `conftest.py` n'accepte cette déclaration que si le chemin est couvert par
+#: le `sparse-checkout` de `tests.yml` — sans quoi la CI ne le télécharge pas et
+#: le test ne tourne qu'en local, sur ce qu'un run a laissé.
+#:
+#: C'est exactement ce qui est arrivé : la suite passait dans le worktree, qui
+#: porte tout le dépôt, et la CI de la PR #939 tombait en `FileNotFoundError`.
+pytestmark = pytest.mark.lit_reference_committee("raw_data/correspondance_elus_rne.json")
 
-@pytest.fixture(scope="module")
+
+@pytest.fixture
 def table():
+    """Portée `function`, et c'est délibéré.
+
+    Le garde-fou de `conftest.py` qui surveille les lectures de `raw_data/` est
+    une fixture `autouse` de portée **function**. Une fixture de portée `module`
+    s'exécute AVANT lui — le fichier était donc lu hors surveillance, et le
+    marqueur `lit_reference_committee` ci-dessus n'était jamais consulté :
+    une déclaration décorative. Mesuré le 15/09/2026, en retirant le marqueur :
+    les 14 tests passaient quand même.
+
+    Relire 8 Kio quatorze fois ne coûte rien ; une déclaration qui ne mord pas,
+    si.
+    """
     return json.loads(TABLE.read_text(encoding="utf-8"))
 
 
