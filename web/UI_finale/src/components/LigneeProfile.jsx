@@ -688,7 +688,14 @@ function CeQuIlsOntPropose({ lignee }) {
               </div>
             )}
             <div className="lp-mat-tete">
-              <span className="lp-mat-titre">Par commission saisie au fond</span>
+              {/* « Par matière », et non « Par commission saisie au fond » (#328).
+                  L'expression est du jargon parlementaire : la propriétaire, qui
+                  connaît ce corpus mieux que quiconque, a demandé ce qu'elle
+                  voulait dire. « Matière » est le mot que le produit emploie
+                  partout ailleurs, et que la page de méthodologie définit
+                  désormais en français courant. Le terme officiel y survit une
+                  fois, comme passerelle vers le vocabulaire de la source. */}
+              <span className="lp-mat-titre">Par matière</span>
               <span className="lp-mat-totaux lp-num">
                 <b>{formatNumber(bloc.amendements)}</b> amendements · <b>{formatNumber(bloc.dossiers)}</b> dossiers ·{' '}
                 <b>{formatNumber(bloc.adoptes)}</b> adoptés
