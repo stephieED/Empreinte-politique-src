@@ -22,18 +22,33 @@
       rel="stylesheet"
     />
 
-    <title>Empreinte — Profil candidat</title>
-    <meta name="description" content="Données publiques agrégées sur les candidats et groupes parlementaires." />
+    <!-- UNE SEULE PAIRE TITRE/DESCRIPTION POUR TOUT LE SITE, et c'est assumé :
+         ce site est une SPA servie en statique, sans rendu serveur. Les robots
+         d'aperçu ne lisent que ce document-ci, jamais ce que React écrit
+         ensuite ; une variante par page demanderait un pré-rendu.
+         Le titre disait « Empreinte — Profil candidat » jusqu'au 15/09/2026 —
+         y compris en partageant l'accueil ou une fiche de gouvernement — et la
+         description ignorait les gouvernements, un onglet sur trois. -->
+    <title>Empreinte politique</title>
+    <meta name="description" content="Des faits sourcés, sans note ni classement — les parcours politiques par candidat, par groupe ou par gouvernement." />
 
     <!-- Open Graph / Twitter -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Empreinte — Profil candidat" />
-    <meta property="og:description" content="Données publiques agrégées sur les candidats et groupes parlementaires." />
-    <meta property="og:image" content="/brand/empreinte-open-graph-1200x630-light.png" />
+    <meta property="og:site_name" content="Empreinte politique" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:url" content="https://empreinte-politique.fr/" />
+    <meta property="og:title" content="Empreinte politique" />
+    <meta property="og:description" content="Des faits sourcés, sans note ni classement — les parcours politiques par candidat, par groupe ou par gouvernement." />
+    <!-- URL ABSOLUE, et pas par confort : Facebook et LinkedIn refusent une
+         `og:image` relative et rendent alors une carte sans visuel. -->
+    <meta property="og:image" content="https://empreinte-politique.fr/brand/empreinte-open-graph-1200x630-light.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Le logotype Empreinte politique sur fond sombre, et l'adresse empreinte-politique.fr." />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Empreinte — Profil candidat" />
-    <meta name="twitter:description" content="Données publiques agrégées sur les candidats et groupes parlementaires." />
-    <meta name="twitter:image" content="/brand/empreinte-open-graph-1200x630-light.png" />
+    <meta name="twitter:title" content="Empreinte politique" />
+    <meta name="twitter:description" content="Des faits sourcés, sans note ni classement — les parcours politiques par candidat, par groupe ou par gouvernement." />
+    <meta name="twitter:image" content="https://empreinte-politique.fr/brand/empreinte-open-graph-1200x630-light.png" />
   </head>
   <body>
     <div id="root"></div>

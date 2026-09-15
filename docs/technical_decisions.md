@@ -20,6 +20,7 @@ La version d'avant la découpe (30/08/2026, 18 404 lignes, 1 054 Ko) est figée 
 
 ---
 
+- `2026-09-15` <a id="borne-mandats-locaux-2020-922"></a>[Les mandats locaux commencent en 2020, et l'avant se déclare (#922)](decisions/borne-mandats-locaux-2020-922.md) — Deux jeux couvrent 2020 → aujourd'hui sous Licence Ouverte 2.0 :
 - `2026-09-15` <a id="collecte-mandats-locaux-rne-922"></a>[Collecter les mandats locaux : une catégorie à part, et une fin qu'on n'invente pas (#922)](decisions/collecte-mandats-locaux-rne-922.md) — `src/rne_opendata.py` lit les mandats locaux dans deux jeux sous
 - `2026-09-15` <a id="correspondance-elus-rne-relue-922"></a>[Apparier un candidat à un élu du RNE : par la date de naissance, sinon par relecture (#922)](decisions/correspondance-elus-rne-relue-922.md) — Le RNE n'expose aucun identifiant de personne. La clé praticable
 - `2026-09-15` <a id="titres-europeens-sans-boutons-901"></a>[Un titre européen perd ses boutons de téléchargement, et rien d'autre (#901)](decisions/titres-europeens-sans-boutons-901.md) — ParlTrack ne lit aucune base du Parlement européen : il recopie
