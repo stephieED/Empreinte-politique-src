@@ -1,11 +1,33 @@
 # AGENTS.md - Instructions for AI agents
 
 Non-negotiable rules, schema conventions, validation constraints for every session.
-"Why" behind each decision: **one file per decision** under `docs/decisions/`,
-indexed newest-first by `docs/technical_decisions.md`. Write a new one, never
-edit that index in place — see Section 8.
-Every command the owner may have to type: `docs/commandes.md`.
-Front door, editorial line, coverage limits: `README.md`.
+
+## Where to look, by the question you actually have
+
+This file carries the rules. It does **not** carry the pipeline's detail, the
+volumetry, or the history — those live elsewhere, and looking for them here
+wastes a session. Sorted by the question, not by the filename:
+
+| Your question | Go to |
+| --- | --- |
+| « What may I never publish? » | **§2 below** — the eight editorial rules. Nothing overrides them |
+| « What rule governs this area? » — merge, CI, pre-commit guards, scope, interventions, quality gate | `docs/regles/`, one file per domain, indexed in §3 |
+| « **What governs this file I am about to change?** » | `docs/decisions-par-module.md` — *this module → these decisions*, generated |
+| « Why was it decided this way? » | `docs/decisions/<anchor>.md`, one file per decision, indexed newest-first by `docs/technical_decisions.md` |
+| « What does the data become? » — outputs, schemas, volumetry | `docs/data-architecture.md` |
+| « What does a run do? » — jobs, caches, artifacts, budgets, retry | `docs/workflow-generate-data.md` |
+| « What does this provider publish, and what are its traps? » | `docs/sources/<source>.md` — each states its own status in its header |
+| « What do I type? » | `docs/commandes.md` |
+| « What must I update before finishing? » | **§8 below** |
+| « What is this project, and what does it refuse to do? » | `README.md` — front door, editorial line, coverage limits |
+
+**A decision is never edited in place, and neither index is written by hand** —
+both are generated (§8).
+
+Two habits this table exists to prevent, both paid for on 15/09/2026: searching
+the shared checkout, which can be far behind — take a worktree and read there;
+and searching `src/` by hand for a mechanism, when `docs/decisions-par-module.md`
+names what governs it.
 
 ---
 
@@ -47,10 +69,10 @@ Any schema/display change must preserve them:
 Three files carry what this section deliberately does not. **Why** a rule
 exists: one file per decision under `docs/decisions/`, indexed by
 `docs/technical_decisions.md`. **What the data becomes** — flow, files, schemas,
-volumetry: `docs/data-architecture.md` — the eight outputs of `pivot_data/`,
-rewritten from the code on 30/08/2026 (#606). **What a run does** — the nine
-jobs, caches, artifacts, budgets, the launch form, the push, the automatic
-retry: `docs/workflow-generate-data.md`. **The rules stay here**, because a rule
+volumetry: `docs/data-architecture.md` — what `pivot_data/` publishes, rewritten
+from the code on 30/08/2026 (#606). **What a run does** — the jobs, caches,
+artifacts, budgets, the launch form, the push, the automatic retry:
+`docs/workflow-generate-data.md`. **The rules stay here**, because a rule
 behind a link is a rule that gets missed.
 
 Public sources → `raw_data/profiles/<slug>.json` + per-legislature amendment
@@ -152,22 +174,18 @@ Full rationale: `web/old/v3/methodologie.html` — do not duplicate prose here.
 | French Wikipedia | Yes — the declared-candidate list only (#753) | CC BY-SA 4.0 | **Facts only** (names, party labels) into `raw_data/candidats.json`, never verbatim prose. It reaches no `sources[]`, so it moves no `meta.licence_donnees` |
 | Wikidata | **Yes since #757 — one property, `P4123`** (the AN actor id), to resolve a declared candidate's actor. **Not** for discovering candidates: `P3602` returns 1 person for the 2027 election against 30 declared (#753) | CC0 1.0 | No restriction |
 
-**"No French source is collected from Regards Citoyens any more" does not mean "the corpus
-is under Licence Ouverte" (#530).** Share-alike survives on two counts: Parltrack is a
-*live* source under ODbL, and the Regards Citoyens marker survives on the profiles whose
-data still needs it. **That second leg has shrunk, and the date is part of the
-evidence**: 475 of 476 published profiles carried it on 27/08/2026 (commit `74c77c2`);
-**21 of 1 196 do on 13/09/2026** (commit `636680618`), after #839 emptied the data and
-#890 retracted the marker from the 454 deputy profiles it no longer described. Those 21
-are the Sénat's, and #885 is what will settle them. **Re-measure before relying on either
-figure, never read one as today's corpus** (`docs/decisions/licence-lot-6-530.md`) — that
-is the very thing that makes a published sentence go false (#886).
-`merge_pivot_profile` unions `sources[]` by type, so additive regeneration never drops a
-marker **and a retraction has to be written**, at both layers
-(`docs/decisions/retrait-marqueur-regards-citoyens-deputes-890.md`); aggregates recompose
-instead, and follow on their own. Attribution stays due while the fields stay published
-(§2 rule 2), exactly as `docs/decisions/retrait-senat-528.md` §4 already ruled — and stops
-being due when they no longer are.
+**"No French source is collected from Regards Citoyens any more" does not mean "the
+corpus is under Licence Ouverte" (#530).** Share-alike survives on two counts: Parltrack
+is a *live* source under ODbL, and the Regards Citoyens marker survives on the profiles
+whose data still needs it. That second leg shrinks as retractions are written, and **its
+size is a measurement, never a constant: re-measure before relying on it, never read a
+published figure as today's corpus** (#886). `merge_pivot_profile` unions `sources[]` by
+type, so additive regeneration never drops a marker **and a retraction has to be
+written**, at both layers; aggregates recompose instead, and follow on their own.
+Attribution stays due while the fields stay published (§2 rule 2) — and stops being due
+when they no longer are.
+→ `docs/decisions/licence-lot-6-530.md`,
+  `docs/decisions/retrait-marqueur-regards-citoyens-deputes-890.md`
 
 `meta.licence_donnees` is therefore a **derived** field, never a constant: `src/licences.py`
 holds the four canonical labels and `appliquer_licence_donnees(profil)` recomposes the
@@ -184,6 +202,17 @@ Full details: `docs/decisions/licences.md`, `docs/decisions/licence-lot-6-530.md
 ## 8. End-of-task documentation upkeep
 
 Before finishing a task, update only what actually changed — skip a file if nothing changed for it:
+
+**A source added, removed or changed is never one file.** Four move together, and
+each says something the others do not: `docs/sources/<source>.md` (what the
+provider publishes, and its traps), `docs/data-architecture.md` (what the data
+becomes), `docs/workflow-generate-data.md` (the job that fetches it), `README.md`
+(the reader's table, with its licence). `AGENTS.md` §7 carries the licence and
+the reuse constraint. Miss one and the source exists in some files and not in
+others — measured on #922, where the RNE reached §7, the architecture and the
+workflow, but neither `docs/sources/` nor the README.
+`tests/test_sources_documentees.py` fails on a source documented in one place and
+absent from another.
 
 | File | Update when |
 |---|---|
@@ -326,20 +355,12 @@ When something does need deciding, five parts, in this order:
 ## References
 
 - `src/schema_pivot.py`, `schema_groupe.py`, `schema_parti.py`, `schema_gouvernement.py`: structure contracts.
-- **An audit is a consumer like any other, and nothing warns it that a field moved
-  (#726).** Two blocks of `audit_pipeline.py` read fields a schema decision had since
-  moved or dried up: `sources[].synchro_le` on `nosdeputes` entries, which #529 stopped
-  collecting while keeping them for the ODbL clause, and `cohesion_votes[].date`, which
-  #432 moved into `pivot_data/scrutins.json`. Hence `non_renseigne` split from
-  `format_invalide` (an absence is not a fault, §2 rule 5; a **non-string** value still
-  is), aggregated in the render while faults stay enumerated; and the date resolved
-  **where it lives**, through `scrutins_index.charger()`. A missing index is a
-  **declared** hole (`index_disponible: False`), and an **empty** index counts as missing
-  — `charger()` returns one on an absent file, and calling it available would read "the
-  file was missing" as "these groups have no ballot" (#510). The lesson is about the
-  tests: they supplied a `date` inside the entry, so they checked that the function read
-  a field the corpus does not carry. **A fixture describing the world as the code
-  imagines it cannot reveal that the world moved.**
+- **An audit is a consumer like any other, and nothing warns it that a field
+  moved (#726).** Before reading a field, check it is still where the schema puts
+  it. Two rules came out of it and hold everywhere: an absence is not a fault
+  (§2 rule 5), and **a fixture describing the world as the code imagines it
+  cannot reveal that the world moved** — the incident, the fields concerned and
+  the reasoning are in the decision.
   → `docs/decisions/audit-champs-deplaces-726.md`
 - `src/check_quality_gate.py`: the quality gate, one numbered block per concern —
   the list is the module's `main()` and the run summary, not this line, which
@@ -369,7 +390,7 @@ When something does need deciding, five parts, in this order:
   référentiel est celui de l'AN et le Sénat est hors périmètre (#528) — une
   absence de cause connue, à déclarer et non à combler. Ses volumes et son taux
   de résolution vivent dans `docs/data-architecture.md`, pas ici.
-- `docs/workflow-generate-data.md`: what a run does — the nine jobs one by one, the
+- `docs/workflow-generate-data.md`: what a run does — every job one by one, the
   form, caches, artifacts, budgets, push, automatic retry. **Start here for "what was
   that job again, and why like that".**
 - HATVP lobby-register: out of scope, and **there is no file for it** — this
