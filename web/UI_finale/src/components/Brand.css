@@ -6,10 +6,18 @@
    80px (58 / 80 ≈ 72 %) — ni collé aux bords, ni disproportionné. Aligné sur
    la même marge horizontale que le reste de la nav (aucun padding propre :
    hérite des 40px de .explorer-bars). Séparateur bas réutilisant le même
-   token de bordure que le reste de l'UI (cf. .vote-footer, .shelf-header). */
+   token de bordure que le reste de l'UI (cf. .vote-footer, .shelf-header).
+
+   LA GOUTTIÈRE EST PORTÉE ICI, PAS PAR LE CONTENEUR (15/09/2026). Elle était
+   héritée des 40px de `.explorer-bars`, ce qui ne valait QUE dans l'explorateur :
+   sur l'accueil, `/couverture`, la méthodologie et les mentions légales, le
+   logo est un frère du `<main>` et tombait donc à x = 0, collé au bord, quand
+   la fiche candidat le posait à x = 40. Mesuré au rendu sur les cinq pages.
+   `.explorer-bars` annule la sienne pour cette rangée — sinon 80px. */
 .brand {
   display: flex;
   align-items: center;
+  padding-inline: 40px;
   height: 80px;
   border-bottom: 1px solid var(--border);
   text-decoration: none;

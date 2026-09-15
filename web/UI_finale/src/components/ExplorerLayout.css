@@ -16,6 +16,13 @@
   padding: 12px 40px 10px;
 }
 
+/* Le logo porte sa propre gouttière depuis le 15/09/2026, pour être au même x
+   sur les cinq pages : sans cette annulation il serait à 80px ici, et à 40
+   ailleurs — le défaut inverse de celui qu'on corrige. */
+.explorer-bars > .brand {
+  margin-inline: -40px;
+}
+
 /* `display: flex` l'emporte sur le `[hidden] { display: none }` de la feuille
    de l'agent utilisateur : sans cette règle, l'attribut est bien posé et les
    barres restent affichées. Le défaut n'a été vu qu'en CAPTURE — une mesure qui
