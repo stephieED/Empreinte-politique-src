@@ -823,7 +823,8 @@ titre, type de procédure, stade et **commissions saisies au fond** (341 sur 355
 
 ### `extract-mandats-locaux` — le versant local d'un parcours (#922)
 
-**Ce qu'il fait.** Interroge le Répertoire national des élus et le fichier des
+**Ce qu'il fait** (`src/collecte_mandats_locaux.py`, qui lit `src/rne_opendata.py`).
+Interroge le Répertoire national des élus et le fichier des
 sortants 2020-2026 par `tabular-api.data.gouv.fr`, et écrit le bloc
 `mandats_locaux` dans les profils bruts des **candidats déclarés**. Un membre de
 roster n'en reçoit pas : ~750 membres × 9 fichiers pour une donnée qu'aucune page
@@ -854,7 +855,8 @@ indéfiniment (#729).
 
 ### `extract-senat` — les appartenances sénatoriales (#885)
 
-**Ce qu'il fait.** Télécharge `export_sens.zip` depuis `data.senat.fr`, le
+**Ce qu'il fait** (`src/collecte_senat.py`, qui lit `src/senat_opendata.py`).
+Télécharge `export_sens.zip` depuis `data.senat.fr`, le
 décompresse, et écrit le bloc `mandat_senatorial` dans les profils bruts des
 **candidats déclarés appariés** — 2 profils, 133 appartenances au 13/09/2026.
 
@@ -882,6 +884,11 @@ indisponible ne coûte pas le run, et la fusion additive garde ce que le run
 précédent a publié. Un export de moins d'1 Mo **échoue le step** : l'archive a
 déjà été servie vide, 444 octets et 0 table le 13/09/2026 à 03 h 33, avec un
 HTTP 200 et un `Content-Type: application/zip`.
+
+**Où ses mandats rejoignent le pivot.** `generate_all_profiles` verse le bloc par
+`normalize_senat.normalize_mandats`, puis **recalcule `chambres`** — sans ce recalcul,
+un profil AN + Sénat publierait `["AN"]` et effacerait la carrière sénatoriale (#493).
+Les mandats locaux du RNE, eux, ne touchent pas `chambres` : voir leur bloc plus haut.
 
 **Ce qu'il ne collecte pas.** L'activité en séance — le jeu ne porte ni
 scrutins ni comptes rendus (condition 2 du §7 de #528, **déclarée non
