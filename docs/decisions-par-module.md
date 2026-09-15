@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 326 décisions
+gouverne sans avoir à fouiller les 327 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -932,7 +932,7 @@ Le mentionnent sans le gouverner : [`civilite-et-pcs-insee-659`](decisions/civil
 
 ## `src/parltrack_dumps.py`
 
-6 décision(s) le gouvernent ; le module en cite 3.
+7 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
@@ -942,6 +942,7 @@ Le mentionnent sans le gouverner : [`civilite-et-pcs-insee-659`](decisions/civil
 | [Un profil de roster ne porte pas une liste que sa propre collecte déclare écartée — purge des 49 `textes_portes` résiduels (#747)](decisions/purge-textes-portes-roster-747.md) | `get_dossiers_for_mep` |
 | [Le stade d'un dossier européen se publie dans sa propre nomenclature, jamais traduit en stade français (#901) (2026-09-13)](decisions/stade-procedural-europeen-901.md) | `VERSION_SCHEMA_INDEX`, `_empreinte_perimetre`, `build_dossiers_index` |
 | [L'européen entre dans les listes que la fiche a déjà (#683, lot 2)](decisions/stockage-europeen-dans-les-listes-existantes-683.md) | `definir_perimetre_meps` |
+| [Un titre européen perd ses boutons de téléchargement, et rien d'autre (#901) (2026-09-15)](decisions/titres-europeens-sans-boutons-901.md) | `VERSION_SCHEMA_INDEX`, `build_activities_index`, `titre_sans_boutons` |
 
 Le mentionnent sans le gouverner : [`investigation-sources-ue`](decisions/investigation-sources-ue.md), [`mandats-officiels-an-369`](decisions/mandats-officiels-an-369.md).
 
