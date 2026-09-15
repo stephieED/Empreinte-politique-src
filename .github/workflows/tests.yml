@@ -94,6 +94,14 @@ jobs:
           # antérieurs à la couverture AN. `tests/test_mandats_anterieurs_860.py` en
           # vérifie la validité — une source primaire par ligne, rien après la borne
           # du 19/06/2002 —, et la déclare par `lit_reference_committee`. 5 Kio.
+          # `raw_data/correspondance_elus_rne.json` (#922) : la table relue qui
+          # apparie un candidat déclaré à un élu du Répertoire national, quand le
+          # corpus n'a pas sa date de naissance.
+          # `tests/test_correspondance_elus_rne_922.py` la lit en entier — verdicts,
+          # preuves, contrat de relevé. Hors liste, il tombe en `FileNotFoundError`
+          # et non en `skip` : c'est ce qui a fait échouer la CI de sa propre PR,
+          # alors que la suite passait dans le worktree, qui porte tout le dépôt.
+          # 8 Kio.
           # `AGENTS.md`, `README.md`, `ROADMAP.md`, `docs/` : lus par
           # `tests/test_index_decisions.py`, qui vérifie que toute décision citée
           # dans le dépôt existe bien sous `docs/decisions/` et que l'index les
@@ -108,6 +116,7 @@ jobs:
             ROADMAP.md
             docs
             raw_data/candidats.json
+            raw_data/correspondance_elus_rne.json
             raw_data/gouvernements_reels.json
             raw_data/groupes_reels.json
             raw_data/mandats_anterieurs.json
