@@ -214,6 +214,29 @@ def normalize_europarl(
     appliquer_licence_donnees(profil)
     profil["meta"]["genere_le"] = synchro_le
 
+    # --- Identité (#922) ----------------------------------------------------
+    #
+    # Ce normaliseur ne posait AUCUN bloc `identite`, et la conséquence ne se
+    # voyait pas ici : elle se voyait dans l'appariement au Répertoire national
+    # des élus, dont la clé praticable est (nom, prénom, date de naissance).
+    # Les quatre candidats déclarés dont tout le parcours est européen —
+    # Bardella, Philippot, Massard, Glucksmann — ressortaient « sans date de
+    # naissance », donc non appariables automatiquement, alors que le portail
+    # européen la publie et que le profil BRUT la portait déjà sous
+    # `mandat_europeen.date_naissance`. Elle s'arrêtait à la normalisation.
+    #
+    # Recopiés **verbatim**, et `null` quand la source ne donne rien (§2 règle 5).
+    # Le portail écrit parfois un lieu mal espacé — « Saint- Brieuc » — et ce
+    # n'est pas corrigé : c'est ce que la source publie, et le réparer
+    # supposerait de savoir où le mot se coupe.
+    identite_ue = {
+        "date_naissance": ue_profile.get("date_naissance") or None,
+        "lieu_naissance": ue_profile.get("lieu_naissance") or None,
+        "source_url": url_source,
+    }
+    if any(v for k, v in identite_ue.items() if k != "source_url"):
+        profil["identite"] = identite_ue
+
     mandats_europeens, doublons_source = dedupliquer_appartenances(
         ue_profile.get("mandats_europeens") or []
     )
