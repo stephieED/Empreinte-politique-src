@@ -1,7 +1,8 @@
 {
-  "name": "Empreinte",
+  "name": "Empreinte politique",
   "short_name": "Empreinte",
-  "description": "Données publiques agrégées sur les candidats et groupes parlementaires.",
+  "description": "Des faits sourcés, sans note ni classement — les parcours politiques par candidat, par groupe ou par gouvernement.",
+  "lang": "fr",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#F7F6F4",
@@ -10,12 +11,14 @@
     {
       "src": "/brand/empreinte-app-icon-192-light.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/brand/empreinte-app-icon-512-light.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
