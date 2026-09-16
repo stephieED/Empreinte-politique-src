@@ -11,15 +11,14 @@ import './NavigationSite.css';
  * Sous 720 px les quatre liens ne tiennent plus à côté du logo et du bouton
  * « Changer de fiche » : ils passent dans un menu.
  *
- * DEUX CIBLES SONT PROVISOIRES, tant que #951 n'a pas créé leurs pages :
- * « Sources » mène à /couverture, qui dit ce que le dépôt contient et depuis
- * quand ; « FAQ » mène aux questions fréquentes de l'accueil.
+ * UNE CIBLE EST PROVISOIRE, tant que #951 n'a pas créé sa page : « Sources »
+ * mène à /couverture, qui dit ce que le dépôt contient et depuis quand.
  */
 const PAGES = [
   { libelle: 'Explorateur', vers: '/candidats', racines: ['/candidats', '/groupes', '/gouvernements'] },
   { libelle: 'Méthodologie', vers: '/methodologie', racines: ['/methodologie'] },
   { libelle: 'Sources', vers: '/couverture', racines: ['/couverture'] },
-  { libelle: 'FAQ', vers: '/#faq', racines: [] },
+  { libelle: 'FAQ', vers: '/faq', racines: ['/faq'] },
 ];
 
 const estCourante = (page, pathname) =>

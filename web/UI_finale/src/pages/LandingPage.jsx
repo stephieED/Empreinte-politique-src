@@ -1,5 +1,3 @@
-import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
 import EnTeteSite from '../components/EnTeteSite';
 import PiedDeSite from '../components/PiedDeSite';
 import Hero from '../components/landing/Hero';
@@ -34,13 +32,6 @@ import '../components/landing/landing.css';
 // l'audit du 29/08, et « Sources & fraîcheur des données » remonte en tête de
 // la colonne de droite, avec la borne de chaque institution.
 export default function LandingPage() {
-  // « FAQ » dans la barre de l'explorateur mène ici, à #faq, tant que la page
-  // /faq n'existe pas (#951). Le routeur ne suit pas l'ancre de lui-même.
-  const { hash } = useLocation();
-  useEffect(() => {
-    if (hash) document.getElementById(hash.slice(1))?.scrollIntoView();
-  }, [hash]);
-
   return (
     <div className="app-shell">
       <div className="landing-page">

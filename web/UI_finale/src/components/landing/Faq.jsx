@@ -1,6 +1,7 @@
 import './landing.css';
 
-const QUESTIONS = [
+// Écrites une seule fois : la page /faq les lit ici (#951).
+export const QUESTIONS = [
   {
     question: 'Est-ce que c’est objectif ?',
     answer:
@@ -25,7 +26,7 @@ const QUESTIONS = [
 
 export default function Faq() {
   return (
-    <section className="landing-section" id="faq" aria-label="Questions fréquentes">
+    <section className="landing-section" aria-label="Questions fréquentes">
       <h2>Questions fréquentes</h2>
       <div className="landing-faq-list">
         {QUESTIONS.map(({ question, answer }) => (

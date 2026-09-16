@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import Brand from '../components/Brand';
+import EnTeteSite from '../components/EnTeteSite';
 import FriseCouverture from '../components/FriseCouverture';
 import PiedDeSite from '../components/PiedDeSite';
 import { useAsyncData } from '../hooks/useAsyncData';
@@ -32,11 +32,8 @@ export default function CoveragePage() {
   return (
     <div className="app-shell">
       <div className="static-page">
-        <Brand />
+        <EnTeteSite />
         <main className="static-main cv-main">
-          <p className="static-breadcrumb">
-            <Link to="/">← Retour à l'accueil</Link>
-          </p>
 
           <div className="static-banner">
             <span className="static-banner-tag">Vue d'ensemble</span>
