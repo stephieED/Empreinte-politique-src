@@ -154,6 +154,35 @@ function loadScrutinsDossiers() {
 }
 
 /**
+ * Les dossiers européens : référence de procédure → titre, type, stade et
+ * commission saisie au fond (#901). 355 entrées, 125 Ko.
+ *
+ * C'est la table de matière du versant européen — l'équivalent exact de
+ * `commissions_dossiers.json` côté Assemblée. Sans elle, la cascade européenne
+ * dessine ses rubans en « matière non établie » : elle ne devine rien depuis
+ * l'intitulé du texte (§2 règle 2).
+ *
+ * Indexée par `reference`, et non par un identifiant de dossier : c'est la clé
+ * que les textes portés et les amendements européens citent tous les deux
+ * (`2021/0136(COD)`).
+ *
+ * Non bloquant et mémoïsé, comme les autres index partagés.
+ */
+let dossiersEuropeensPromise = null;
+
+function loadDossiersEuropeens() {
+  if (!dossiersEuropeensPromise) {
+    dossiersEuropeensPromise = fetch('/data/dossiers_europeens.json')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => (d?.dossiers
+        ? Object.fromEntries(d.dossiers.map((x) => [x.reference, x]))
+        : null))
+      .catch(() => null);
+  }
+  return dossiersEuropeensPromise;
+}
+
+/**
  * Charge les seules législatures que le mapping du profil référence, et rend
  * `{ legislature: { id: amendement } }`.
  *
@@ -272,13 +301,15 @@ export async function getCandidateProfile(id) {
   const manifest = await loadManifest();
   const entry = manifest.candidates.find((c) => c.slug === id);
   if (!entry) return null;
-  const [pivot, scrutins, fichesGroupe, commissions, scrutinsDossiers] = await Promise.all([
-    fetchJson(`/data/profiles/${entry.slug}.pivot.json`),
-    loadScrutins(),
-    loadFichesGroupe(manifest, entry),
-    loadCommissionsDossiers(),
-    loadScrutinsDossiers(),
-  ]);
+  const [pivot, scrutins, fichesGroupe, commissions, scrutinsDossiers, dossiersEuropeens] =
+    await Promise.all([
+      fetchJson(`/data/profiles/${entry.slug}.pivot.json`),
+      loadScrutins(),
+      loadFichesGroupe(manifest, entry),
+      loadCommissionsDossiers(),
+      loadScrutinsDossiers(),
+      loadDossiersEuropeens(),
+    ]);
   if (!pivot) return null;
   // L'index des amendements se charge APRÈS le profil : ce sont les
   // identifiants du mapping qui disent quelles législatures aller chercher.
@@ -297,6 +328,7 @@ export async function getCandidateProfile(id) {
     // aucune fiche supplémentaire n'est téléchargée.
     manifest.gouvernements || [],
     ficheDuGroupeAffiche(manifest, entry, pivot),
+    dossiersEuropeens,
   );
   return avecSiglesDeSiege(view, manifest);
 }

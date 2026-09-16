@@ -1807,6 +1807,45 @@
 
 /* Ce qui restait en trois `cp-bloc` — la forme des GRANDS CHIFFRES — tient sous
    la légende de la cascade, à la taille d'une légende. */
+/* LE COMMUTATEUR DES DEUX VERSANTS (#901). Le jaune signal marque la
+   sélection — c'est son emploi posé par `DESIGN_SYSTEM.md` §3, celui de la
+   barre des candidats et des puces de position. Aucun état par la seule
+   graisse : `aria-pressed` porte l'état, la teinte le montre. */
+.cp-bascule {
+  display: inline-flex;
+  gap: 2px;
+  margin: 14px 0 2px;
+  padding: 3px;
+  border: 1px solid var(--border-strong, #e7e4df);
+  border-radius: 999px;
+  background: var(--bg);
+}
+
+.cp-bascule-bouton {
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 14px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cp-bascule-bouton b {
+  font-weight: 800;
+}
+
+.cp-bascule-bouton[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--ink);
+}
+
+.cp-bascule-bouton:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
 .cp-chute-mentions {
   margin: 10px 0 0;
   font-size: 12px;

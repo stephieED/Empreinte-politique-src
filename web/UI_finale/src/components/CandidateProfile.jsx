@@ -18,6 +18,7 @@ import { BadgeSource, ListeVide } from './Lecture';
 import { teinteMatiere } from '../utils/matiere';
 import { MATIERE_NON_ETABLIE } from '../utils/profilCandidat';
 import { Cascade, ListeCascade } from './CascadeTextes';
+import { disposerCascadeUE } from '../utils/cascadeTextes';
 import { Fragment, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LAST_READING_LABEL, formatNumber } from '../utils/lecture';
@@ -608,9 +609,32 @@ function Matieres({ chute, matiere, onMatiere }) {
  * pas perdu — `amendements.legislatures[].position` reste calculé, et la
  * remettre est une carte à écrire, pas une donnée à recollecter.
  */
+/* ── Le commutateur des textes portés (#901) ─────────────────────────────────
+ *
+ * DEUX VERSANTS, JAMAIS ADDITIONNÉS. Un texte porté à l'Assemblée et une
+ * proposition de résolution déposée au Parlement européen ne se comptent pas
+ * ensemble : les stades n'ont ni la même nomenclature ni la même échelle, et
+ * « 5 publiés » sur un total qui mêle les deux ne veut rien dire.
+ *
+ * LE COMMUTATEUR N'APPARAÎT QUE SI LES DEUX VERSANTS PORTENT QUELQUE CHOSE.
+ * Quatre des six fiches à mandat européen n'ont aucun texte français ; un
+ * bouton qui ne mène qu'à une liste vide est du mobilier, et la carte dit alors
+ * d'elle-même de quel parlement elle parle.
+ */
 function Propositions({ amendements, textes, causeAmendements, causeTextes, voix }) {
   const [matiere, setMatiere] = useState(null);
   const [selTexte, setSelTexte] = useState(null);
+  const europe = textes.europe || { total: 0, publies: 0, cascade: null };
+  const deuxVersants = textes.total > 0 && europe.total > 0;
+  const [versant, setVersant] = useState(textes.total > 0 ? 'fr' : 'ue');
+  // Une sélection est un intervalle de crans : elle ne veut rien dire sur
+  // l'autre échelle, et la garder ouvrirait une liste sans rapport.
+  const changerVersant = (v) => {
+    setVersant(v);
+    setSelTexte(null);
+  };
+  const ue = versant === 'ue' || (!deuxVersants && textes.total === 0);
+  const cascade = ue ? europe.cascade : textes.cascade;
   const choisirMatiere = (m) => setMatiere((a) => (a === m ? null : m));
   const dossiersDeLaMatiere = matiere
     ? (amendements.chute?.dossiersParMatiere?.[matiere] || [])
@@ -619,34 +643,75 @@ function Propositions({ amendements, textes, causeAmendements, causeTextes, voix
     : [];
   return (
     <>
-      {textes.total === 0 ? (
+      {textes.total === 0 && europe.total === 0 ? (
         <div className="cp-carte">
           <ListeVide cause={causeTextes} source="Textes portés comme auteur ou rapporteur" />
         </div>
       ) : (
         <div className="cp-carte cp-textes">
           <div className="cp-gouv-tete">
-            <span className="cp-gouv-nom">Les textes {voix.quil} a portés</span>
+            <span className="cp-gouv-nom">
+              Les textes {voix.quil} a portés
+              {!deuxVersants && ue ? ' au Parlement européen' : ''}
+            </span>
             <span className="cp-gouv-periode cp-num">
-              {formatNumber(textes.publies.length)} publiés · {formatNumber(textes.promulgues)}{' '}
-              promulgué{textes.promulgues > 1 ? 's' : ''}
+              {ue ? (
+                <>
+                  {formatNumber(europe.total)} textes portés ·{' '}
+                  {formatNumber(europe.publies)} à un stade publié
+                </>
+              ) : (
+                <>
+                  {formatNumber(textes.publies.length)} publiés ·{' '}
+                  {formatNumber(textes.promulgues)} promulgué{textes.promulgues > 1 ? 's' : ''}
+                </>
+              )}
             </span>
           </div>
-          {textes.cascade.total > 0 && (
+          {deuxVersants && (
+            <div className="cp-bascule" role="group" aria-label="Niveau des textes portés">
+              <button
+                aria-pressed={!ue}
+                className="cp-bascule-bouton"
+                onClick={() => changerVersant('fr')}
+                type="button"
+              >
+                Au niveau français <b className="cp-num">{formatNumber(textes.total)}</b>
+              </button>
+              <button
+                aria-pressed={ue}
+                className="cp-bascule-bouton"
+                onClick={() => changerVersant('ue')}
+                type="button"
+              >
+                Au niveau européen <b className="cp-num">{formatNumber(europe.total)}</b>
+              </button>
+            </div>
+          )}
+          {cascade && cascade.total > 0 && (
             <>
               <Cascade
-                cascade={textes.cascade}
+                cascade={cascade}
+                disposer={ue ? disposerCascadeUE : undefined}
                 onSelection={setSelTexte}
                 selection={selTexte}
               />
               <ListeCascade
-                cascade={textes.cascade}
+                cascade={cascade}
                 onRaz={() => setSelTexte(null)}
+                ordonnee={!ue}
                 selection={selTexte}
               />
             </>
           )}
-
+          {/* Ce que §6 ne publie pas est compté, jamais tu : un texte resté en
+              phase préparatoire n'est pas un texte absent (§2 règle 5). */}
+          {ue && europe.horsSeuil > 0 && (
+            <p className="cp-chute-mentions">
+              {formatNumber(europe.horsSeuil)} texte{europe.horsSeuil > 1 ? 's' : ''} en phase
+              préparatoire au Parlement, que la fiche ne publie pas.
+            </p>
+          )}
         </div>
       )}
 

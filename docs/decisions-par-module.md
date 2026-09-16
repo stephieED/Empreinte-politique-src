@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 354 décisions
+gouverne sans avoir à fouiller les 355 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -506,7 +506,7 @@ Le mentionnent sans le gouverner : [`domaines-eurovoc-familles-oeil-901`](decisi
 | [L'index européen ne lisait que les amendements, et 34 références ne résolvaient nulle part (#901) (2026-09-16)](decisions/index-europeen-lit-aussi-les-textes-portes-901.md) | `references_visees` |
 | [Les quatre saisines au fond européennes se distinguent, elles ne se fondent pas (#901) (2026-09-14)](decisions/trois-saisines-au-fond-europeennes-901.md) | `KNOWN_STATUTS_COMMISSION_AU_FOND`, `commissions_au_fond_non_resolu` |
 
-Le mentionnent sans le gouverner : [`domaines-eurovoc-familles-oeil-901`](decisions/domaines-eurovoc-familles-oeil-901.md), [`index-dossiers-europeens-901`](decisions/index-dossiers-europeens-901.md), [`matieres-eurovoc-documents-901`](decisions/matieres-eurovoc-documents-901.md).
+Le mentionnent sans le gouverner : [`cascade-europeenne-une-porte-901`](decisions/cascade-europeenne-une-porte-901.md), [`domaines-eurovoc-familles-oeil-901`](decisions/domaines-eurovoc-familles-oeil-901.md), [`index-dossiers-europeens-901`](decisions/index-dossiers-europeens-901.md), [`matieres-eurovoc-documents-901`](decisions/matieres-eurovoc-documents-901.md).
 
 ## `src/download_watchdog.py`
 
@@ -1128,12 +1128,13 @@ Le mentionnent sans le gouverner : [`audit-champs-deplaces-726`](decisions/audit
 
 ## `src/schema_pivot.py`
 
-46 décision(s) le gouvernent ; le module en cite 5.
+47 décision(s) le gouvernent ; le module en cite 5.
 
 | Décision | Nomme |
 | --- | --- |
 | [Trois absences publiées comme des faits (#556, #558, #560) (2026-08-29)](decisions/absences-publiees-comme-faits-556-558-560.md) | `validate_profil` |
 | [La cascade des textes portés entre dans l'UI, et la section s'aligne sur la maquette (#328), 06/09/2026](decisions/alignement-section-propose-ui-328.md) | `KNOWN_STADES_PROCEDURAUX` |
+| [La cascade des textes portés passe au versant européen : une porte, et la nomenclature de la source (#901) (2026-09-16)](decisions/cascade-europeenne-une-porte-901.md) | `STADES_UE_NON_PUBLIES` |
 | [Un mandat dit quel référentiel a établi sa catégorie, et l'absence n'accuse personne (#718) (2026-09-03)](decisions/categorie-source-des-mandats-718.md) | `KNOWN_CATEGORIE_SOURCES` |
 | [`chambres` au niveau profil : une liste dérivée, et `chambre` qui n'en est plus que le premier élément (#493) (2026-08-20)](decisions/chambres-profil-derivees.md) | `ChambresDerivees`, `KNOWN_CHAMBRES`, `ORDRE_CHAMBRES`, `appliquer_chambres`, `deriver_chambres`, `validate_profil` |
 | [La civilité et la nomenclature PCS de l'INSEE traversaient le pipeline sans y laisser de trace (#659) (2026-08-31)](decisions/civilite-et-pcs-insee-659.md) | `CHAMPS_IDENTITE_TEXTE_LIBRE`, `validate_profil` |
@@ -1191,7 +1192,7 @@ Le mentionnent sans le gouverner : [`gouvernement-premier-ministre-portefeuille`
 
 ## `src/scrutins_europeens.py`
 
-Le mentionnent sans le gouverner : [`index-scrutins-europeens-901`](decisions/index-scrutins-europeens-901.md), [`pas-d-ecarts-groupe-europeens-901`](decisions/pas-d-ecarts-groupe-europeens-901.md).
+Le mentionnent sans le gouverner : [`cascade-europeenne-une-porte-901`](decisions/cascade-europeenne-une-porte-901.md), [`index-scrutins-europeens-901`](decisions/index-scrutins-europeens-901.md), [`pas-d-ecarts-groupe-europeens-901`](decisions/pas-d-ecarts-groupe-europeens-901.md).
 
 ## `src/scrutins_index.py`
 

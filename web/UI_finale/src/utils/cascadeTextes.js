@@ -406,3 +406,200 @@ export function textesDeLaSelection(cascade, selection) {
       && rang(t.stadeCle) >= selection.lo && rang(t.stadeCle) <= selection.hi)
     .sort(tri);
 }
+
+/* ── LA CASCADE EUROPÉENNE : UNE SEULE PORTE, ET C'EST LA NOMENCLATURE ───────
+ *
+ * POURQUOI LA MISE EN PAGE CI-DESSUS NE PEUT PAS LA SERVIR. Elle suppose une
+ * ÉCHELLE : `atteint[i]` y est la somme des arrêts au-delà de `i`, parce qu'un
+ * texte promulgué a forcément été adopté, discuté, examiné. Les seize stades
+ * européens ne s'ordonnent pas — « procédure achevée » ne vient pas après
+ * « procédure rejetée », et une procédure rejetée est achevée elle aussi
+ * (`docs/sources/parltrack-et-europarl.md`). Empiler ces valeurs sur une
+ * échelle publierait un avancement que la source n'établit pas (§2 règle 2).
+ *
+ * D'où UN SEUL PALIER, et des issues parallèles : chaque texte va dans la
+ * barre de son stade, et aucun flux n'en traverse une autre. C'est la figure
+ * arbitrée par la propriétaire le 16/09/2026 (forme C de la maquette).
+ *
+ * LA BRANCHE BASSE EST « SANS DOSSIER RATTACHÉ », et ce n'est pas un stade en
+ * dessous des autres : 628 des 694 textes portés européens du corpus sont des
+ * propositions de résolution que la source ne rattache à AUCUN dossier — il
+ * n'y a donc rien à interroger sur leur avancement (`activite_sans_dossier`).
+ * Les compter sous la figure les ferait disparaître d'une fiche qui les porte :
+ * Florian Philippot en a 500 sur 502.
+ *
+ * CE QUE LA FONCTION PARTAGE AVEC SA VOISINE, et qui n'est pas négociable : la
+ * même forme de retour, donc le même composant ; `croise` et
+ * `textesDeLaSelection` inchangés, l'index dans `stades` servant de rang ; et
+ * la même hauteur, pour que le commutateur ne fasse pas sauter la page.
+ */
+export function disposerCascadeUE(cascade, largeur, teinteDe) {
+  const stades = cascade.stades || [];
+  if (!cascade.total || !(cascade.flux || []).length || !stades.length) return null;
+  /* TROIS CAUSES D'ABSENCE, DONC JUSQU'À TROIS BRANCHES BASSES. « La source se
+   * tait sur ce dossier », « il n'y a pas de dossier » et « le libellé nous est
+   * inconnu » sont trois faits différents ; la liste vient de `textesEuropeens`,
+   * qui les nomme (§2 règle 5). */
+  const basses = new Set(cascade.basses || []);
+
+  const mats = [...new Set(cascade.flux.map((x) => x[0]))];
+  const SEP = String.fromCharCode(0);
+  const valeur = new Map();
+  for (const [m, st, n] of cascade.flux) {
+    valeur.set(`${m}${SEP}${st}`, (valeur.get(`${m}${SEP}${st}`) || 0) + n);
+  }
+  const totalDuStade = (st) => cascade.flux
+    .filter((x) => x[1] === st)
+    .reduce((t, x) => t + x[2], 0);
+  const vifs = stades.filter((st) => totalDuStade(st) > 0);
+  if (!vifs.length) return null;
+
+  const nom = (st) => cascade.libelles?.[st] || LIBELLE_STADE[st] || st;
+  const W = Math.max(320, Math.round(largeur));
+  const etroit = estEtroit(W);
+  const H = etroit ? HAUTEUR.etroit : HAUTEUR.large;
+  const GOUT = etroit ? GOUTTIERE.etroit : GOUTTIERE.large;
+  /* La marge droite porte les intitulés — « 628 sans dossier rattaché » ne
+   * s'abrège pas en un mot, contrairement aux étapes françaises. Au-dessus de
+   * la barre en écran étroit, où cette marge coûterait la moitié de la figure. */
+  const largeurEtiquette = (st) => (String(totalDuStade(st)).length + 1 + nom(st).length) * CAR;
+  /* LA GOUTTIÈRE S'AJUSTE, PARCE QUE LES NOMS SONT PLUS LONGS. Les 172 px de
+   * la figure française sont taillés pour « Affaires sociales » ; côté
+   * européen, 11 des 24 commissions dépassent 25 signes — « Environment,
+   * Public Health and Food Safety » en fait 42. Au-delà de 200 px, ce sont les
+   * rubans qu'on écrase : ce qui ne tient pas est coupé et reste entier dans
+   * l'infobulle, comme sur la figure voisine. */
+  const nomsLarges = Math.max(...mats.map((m) => m.length)) * CAR + 16;
+  const MG = {
+    g: etroit ? GOUT : Math.max(GOUT, Math.min(200, nomsLarges)),
+    h: etroit ? 34 : 18,
+    b: 14,
+    d: etroit ? 12 : Math.min(230, Math.max(...vifs.map(largeurEtiquette)) + 16),
+  };
+
+  const g = sankey()
+    .nodeId((n) => n.name)
+    .nodeWidth(11)
+    .nodePadding(etroit ? 10 : 16)
+    .linkSort(null)
+    .nodeSort(null)
+    .nodeAlign(sankeyLeft)
+    .extent([[MG.g, MG.h], [W - MG.d, H - MG.b]])({
+      nodes: [...mats.map((m) => ({ name: m })), ...vifs.map((st) => ({ name: `issue:${st}` }))],
+      links: mats.flatMap((m) => vifs
+        .filter((st) => valeur.get(`${m}${SEP}${st}`))
+        .map((st) => ({
+          source: m, target: `issue:${st}`, value: valeur.get(`${m}${SEP}${st}`), mat: m, st,
+        }))),
+    });
+
+  const chemin = sankeyLinkHorizontal();
+  const rang = (st) => stades.indexOf(st);
+  const rubans = g.links.map((l, k) => ({
+    cle: `r${k}`,
+    d: chemin(l),
+    matiere: l.mat,
+    couleur: teinteDe(l.mat),
+    epaisseur: Math.max(l.width, 1),
+    sortie: basses.has(l.st),
+    lo: rang(l.st),
+    hi: rang(l.st),
+    valeur: l.value,
+    titre: `${l.mat}\n${l.value} texte${l.value > 1 ? 's' : ''} · ${nom(l.st)}`
+      + (basses.has(l.st) ? '\nAucun stade à interroger : la source ne rattache pas ces textes à un dossier' : ''),
+  }));
+
+  const barres = [];
+  const etiquettes = [];
+  for (const n of g.nodes) {
+    const st = n.name.startsWith('issue:') ? n.name.slice(6) : null;
+    if (st === null) {
+      barres.push({
+        cle: `m${n.name}`, etape: null, x: n.x0, y: n.y0, w: n.x1 - n.x0,
+        h: Math.max(n.y1 - n.y0, 1.2), matiere: n.name, lo: 0, hi: stades.length - 1,
+        sortie: false, couleur: teinteDe(n.name), rx: 1,
+        titre: `${n.name}\ntous ses textes portés`,
+      });
+      continue;
+    }
+    /* La barre d'issue est segmentée par matière, comme les portes françaises :
+     * les arrivées étant empilées par d3, les segments sont contigus et la
+     * barre se lit d'un seul tenant. Ils restent distincts pour l'infobulle. */
+    const sortie = basses.has(st);
+    for (const [k, l] of n.targetLinks.entries()) {
+      barres.push({
+        cle: `i${st}-${k}`, etape: rang(st), x: n.x0, y: l.y1 - l.width / 2,
+        w: n.x1 - n.x0, h: Math.max(l.width, 1.2), matiere: l.mat,
+        lo: rang(st), hi: rang(st), sortie, couleur: null,
+        titre: `${l.mat} · ${nom(st)}\n${l.value} texte${l.value > 1 ? 's' : ''}`,
+      });
+    }
+    etiquettes.push({
+      cle: `e${st}`,
+      x: etroit ? n.x0 : n.x1 + 8,
+      g: etroit ? n.x0 : n.x1 + 8,
+      large: largeurEtiquette(st),
+      finie: false,
+      sortie,
+      total: totalDuStade(st),
+      lib: nom(st),
+      lo: rang(st),
+      hi: rang(st),
+      y: etroit ? n.y0 - 7 : (n.y0 + n.y1) / 2 + 4,
+    });
+  }
+
+  /* LES NOMS DE MATIÈRE, comme sur la figure française : dans la gouttière,
+   * écartés d'au moins 14 px, avec un tirant dès que l'écartement déplace le
+   * nom de plus de trois pixels — sans lui, une étiquette poussée désigne la
+   * bande du voisin. */
+  const nomsMatiere = [];
+  const nMats = g.nodes.filter((n) => !n.name.startsWith('issue:')).sort((a, b) => a.y0 - b.y0);
+  if (!etroit && nMats.length) {
+    const ECART = 14;
+    const ys = nMats.map((n) => (n.y0 + n.y1) / 2);
+    for (let i = 1; i < ys.length; i += 1) ys[i] = Math.max(ys[i], ys[i - 1] + ECART);
+    ys[ys.length - 1] = Math.min(ys[ys.length - 1], H - MG.b);
+    for (let i = ys.length - 2; i >= 0; i -= 1) ys[i] = Math.min(ys[i], ys[i + 1] - ECART);
+    for (let i = 0; i < ys.length; i += 1) ys[i] = Math.max(ys[i], MG.h + i * ECART);
+    const maxCar = Math.max(8, Math.floor((MG.g - 14) / CAR));
+    nMats.forEach((n, i) => {
+      const cy = (n.y0 + n.y1) / 2;
+      nomsMatiere.push({
+        cle: `n${n.name}`,
+        nom: n.name,
+        court: n.name.length <= maxCar ? n.name : `${n.name.slice(0, maxCar - 1).trimEnd()}…`,
+        x: n.x0 - 10,
+        y: ys[i] + 4,
+        tirant: Math.abs(ys[i] - cy) > 3
+          ? `M${(n.x0 - 7).toFixed(1)},${ys[i].toFixed(1)} H${(n.x0 - 4).toFixed(1)} V${cy.toFixed(1)} H${n.x0.toFixed(1)}`
+          : null,
+      });
+    });
+  }
+
+  const y0 = etroit ? Math.min(0, ...etiquettes.map((e) => e.y - 11)) : 0;
+  return {
+    W,
+    H: Math.round(H + 10 - y0),
+    y0,
+    etroit,
+    rubans,
+    barres,
+    chiffres: [],
+    etiquettes,
+    nomsMatiere,
+    matieres: mats,
+    fin: stades.length - 1,
+    atteint: stades.map(totalDuStade),
+    arret: stades.map(totalDuStade),
+    mesures: {
+      recales: 0,
+      portes: 1,
+      rubansBas: rubans.filter((r) => r.sortie).length,
+      textesBas: [...basses].reduce((t, st) => t + totalDuStade(st), 0),
+      auBout: cascade.total - [...basses].reduce((t, st) => t + totalDuStade(st), 0),
+      derniereEtape: nom(vifs[vifs.length - 1]),
+    },
+  };
+}

@@ -98,6 +98,22 @@ if (existsSync(scrutinsDossiersPath)) {
   );
 }
 
+// --- dossiers_europeens.json (référence → titre, stade, commission au fond — #901) ---
+// Le pendant européen de `commissions_dossiers.json`. Sans lui, la cascade du
+// versant européen n'a pas de matière et les amendements européens n'ont pas de
+// dossier nommé : ni l'une ni l'autre ne se déduit d'un intitulé (§2 règle 1).
+const dossiersEuropeensPath = path.join(repoRoot, 'pivot_data', 'dossiers_europeens.json');
+if (existsSync(dossiersEuropeensPath)) {
+  cpSync(dossiersEuropeensPath, path.join(outDir, 'dossiers_europeens.json'));
+} else {
+  console.warn(
+    `sync-data : ${dossiersEuropeensPath} absent — la cascade européenne n'affichera `
+    + 'aucune matière (#901). Construire l\'index : '
+    + 'python3 src/dossiers_europeens.py --profils-dir pivot_data/profiles '
+    + '--out pivot_data/dossiers_europeens.json',
+  );
+}
+
 // --- candidats.json (roster brut : nom, parti, statut) ---
 cpSync(candidatsPath, path.join(outDir, 'candidats.json'));
 const candidats = JSON.parse(readFileSync(candidatsPath, 'utf-8')).candidats;

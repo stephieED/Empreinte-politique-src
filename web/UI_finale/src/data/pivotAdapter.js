@@ -271,6 +271,7 @@ export function buildCandidateView(
   scrutinsDossiers = null,
   tousLesGouvernements = null,
   ficheDuGroupe = null,
+  dossiersEuropeens = null,
 ) {
   const mandats = pivot.mandats || [];
   const votes = joinVotes(pivot.votes || [], scrutinsIndex);
@@ -297,12 +298,20 @@ export function buildCandidateView(
   const commissionDuDossier = (dossierId) =>
     (commissionsDossiers && dossierId && commissionsDossiers[dossierId]) || null;
 
+  /* Le même geste, côté européen : la référence de procédure d'un texte porté
+   * (`2021/0136(COD)`) résolue dans `pivot_data/dossiers_europeens.json` (#901).
+   * Table absente ou référence hors index — 34 des 43 que les textes portés
+   * citent au 16/09/2026, le dump des dossiers étant plus ancien que celui des
+   * activités — la matière reste non établie, jamais déduite de l'intitulé. */
+  const dossierEuropeen = (reference) =>
+    (dossiersEuropeens && reference && dossiersEuropeens[reference]) || null;
+
   const amendements = agregerAmendements(
     joinAmendements(pivot.amendements || [], amendementsIndex),
     positionALaDate,
     commissionDuDossier,
   );
-  const textes = textesPortes(pivot.textes_portes, commissionDuDossier);
+  const textes = textesPortes(pivot.textes_portes, commissionDuDossier, dossierEuropeen);
   const fonctions = fonctionsExercees(mandats);
   const qualite = regimeQualiteOrateur(interventions);
   const questions = directionQuestionsGouvernement(interventions, appartenances);
