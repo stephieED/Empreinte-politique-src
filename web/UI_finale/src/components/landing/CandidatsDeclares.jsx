@@ -11,8 +11,8 @@ import './landing.css';
  * choix dès l'arrivée, et c'est la seule forme où il ne duplique pas la barre
  * des pages du site.
  *
- * LA LISTE SE LIT DANS LE MANIFESTE, jamais écrite à la main, et LE NOMBRE AUSSI :
- * un candidat qui se déclare entre au run suivant, titre compris. L'ordre est
+ * LA LISTE SE LIT DANS LE MANIFESTE, jamais écrite à la main : un candidat qui
+ * se déclare entre au run suivant. L'ordre est
  * celui du manifeste, alphabétique — l'accueil ne retrie pas.
  *
  * Les pastilles sont celles de la barre de l'explorateur, grisé compris : une
@@ -20,13 +20,13 @@ import './landing.css';
  * gouvernement reste atteignable, et l'infobulle dit ce que le gris veut dire
  * (§2 règle 1 — un fait sur la fiche, jamais un rang). */
 export default function CandidatsDeclares() {
-  const { data: candidats, loading } = useAsyncData(getCandidatesList, []);
+  const { data: candidats } = useAsyncData(getCandidatesList, []);
 
   return (
     <section className="landing-section landing-candidats" aria-labelledby="landing-candidats-titre">
-      <h2 id="landing-candidats-titre">
-        {loading || !candidats ? 'Les candidats déclarés' : `Les ${candidats.length} candidats déclarés`}
-      </h2>
+      {/* SANS NOMBRE dans le titre (16/09/2026) : la liste se compte d'un coup
+          d'œil, et un nombre y vieillirait à chaque déclaration. */}
+      <h2 id="landing-candidats-titre">Les candidats déclarés</h2>
       <ul className="landing-candidats-liste">
         {(candidats || []).map((c) => (
           <li key={c.id}>

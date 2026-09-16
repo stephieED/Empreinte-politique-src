@@ -193,13 +193,14 @@ def test_la_methodologie_s_ouvre_sur_les_blocs_de_l_accueil() -> None:
 
 def test_l_accueil_est_le_hero_puis_les_candidats() -> None:
     """Forme C, arbitrée le 16/09/2026 : le Hero sans ses trois boutons, puis les
-    candidats déclarés lus dans le manifeste, nombre compris."""
+    candidats déclarés lus dans le manifeste."""
     accueil = _sans_commentaires(ACCUEIL.read_text(encoding="utf-8"))
     corps = accueil[accueil.index("<main"):accueil.index("</main>")]
     assert re.findall(r"<([A-Z][A-Za-z]+) />", corps) == ["Hero", "CandidatsDeclares"]
     hero = _sans_commentaires((UI / "src" / "components" / "landing" / "Hero.jsx").read_text(encoding="utf-8"))
     assert "landing-cta" not in hero and "Voir un profil" not in hero
     liste = (UI / "src" / "components" / "landing" / "CandidatsDeclares.jsx").read_text(encoding="utf-8")
-    assert "getCandidatesList" in liste and "candidats.length" in liste
+    assert "getCandidatesList" in liste
+    assert "Les candidats déclarés</h2>" in liste, "titre sans nombre, validé le 16/09/2026"
     assert "cb-chip--sans-mandat" in liste, "le grisé de la barre de l'explorateur, infobulle comprise"
     assert 'to="/groupes"' in liste and 'to="/gouvernements"' in liste
