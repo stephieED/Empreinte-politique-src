@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import sourcesConfig from '../../data/sources.config';
+import CartesSources from '../CartesSources';
 import CouvertureAccueil from './CouvertureAccueil';
 import './landing.css';
 
@@ -19,49 +19,7 @@ export default function SourcesFreshness() {
           la carrière précède les sources ne doit pas passer pour un candidat
           sans passé (relecture du 11/09/2026). */}
       <CouvertureAccueil />
-      <div className="sources-grid">
-        {sourcesConfig.map((source) => (
-          <details className="source-card" key={source.id}>
-            <summary className="source-card-summary">
-              <span className="source-card-name">{source.nom}</span>
-              {source.couverturePeriode && (
-                <span className="source-card-badge">Couverture limitée</span>
-              )}
-            </summary>
-            <div className="source-card-body">
-              <p className="source-card-row">
-                <span className="source-card-label">Cadence de mise à jour</span>
-                {source.cadenceMiseAJour}
-              </p>
-              <p className="source-card-row">
-                <span className="source-card-label">Contenu couvert</span>
-                {source.contenuCouvert}
-              </p>
-              <p className="source-card-row source-card-license">
-                <span className="source-card-label">Licence</span>
-                {source.licence}
-                <button
-                  type="button"
-                  className="source-license-info"
-                  aria-describedby={`${source.id}-licence-tooltip`}
-                  aria-label={`Ce qu'implique la licence ${source.licence} pour ${source.nom}`}
-                >
-                  ?
-                </button>
-                <span role="tooltip" id={`${source.id}-licence-tooltip`} className="source-license-tooltip">
-                  {source.implication}
-                </span>
-              </p>
-              {source.couverturePeriode && (
-                <p className="source-card-row">
-                  <span className="source-card-label">Période de couverture limitée</span>
-                  {source.couverturePeriode}
-                </p>
-              )}
-            </div>
-          </details>
-        ))}
-      </div>
+      <CartesSources />
       {/* « Voir la fraîcheur en détail » est retiré (relecture du 11/09/2026) :
           il menait à une fiche de candidat prise par défaut, où la fraîcheur
           n'est pas détaillée. */}
@@ -70,7 +28,7 @@ export default function SourcesFreshness() {
           fiches une liste manque. Elle a sa page — la répéter sur chacune des
           fiches disait 59 fois la même chose sans parler de personne. */}
       <p className="sources-freshness-cta">
-        <Link to="/couverture">Ce que contient ce corpus →</Link>
+        <Link to="/sources">Ce que contient ce corpus →</Link>
       </p>
     </section>
   );

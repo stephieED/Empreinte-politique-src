@@ -56,6 +56,7 @@ Le détail et le raisonnement : [`AGENTS.md`](AGENTS.md) §2 et §6.
 | Journal officiel ([Légifrance](https://www.legifrance.gouv.fr/)) | **Cité, pas collecté** : les fonctions gouvernementales antérieures au corpus, décret par décret (#860) | aucune — table relue | Licence Ouverte 2.0 (Etalab) — attribution |
 | [Répertoire national des élus](https://www.data.gouv.fr/datasets/repertoire-national-des-elus-1) + sortants 2026 | **Les mandats locaux** des candidats déclarés depuis #922 — municipaux, maires, départementaux, régionaux, communautaires. La couverture **commence en 2020** ; avant, l'absence est déclarée et jamais lue comme « aucun mandat ». La source ne publie **aucune date de fin** | à chaque run, par l'API tabulaire | Licence Ouverte 2.0 (Etalab) — attribution |
 | Wikipédia / Wikidata | Le suivi des candidatures déclarées | immédiate | CC BY-SA 4.0 / CC0 |
+| [Conseil constitutionnel](https://www.conseil-constitutionnel.fr/) | **À venir** : la liste officielle des candidats et les parrainages, qui remplaceront Wikipédia pour dire qui est candidat. La loi du 6/11/1962 (art. 3) fixe les bornes — parrainages publiés au moins deux fois par semaine jusqu'au 12/03/2027, liste au plus tard le 26/03/2027 ; aucune date n'est annoncée | — | non connue à ce jour |
 | NosDéputés / NosSénateurs | **Plus collectées** depuis #528/#529, mais des champs déjà publiés en dérivent | — | ODbL v1.0 — **partage à l'identique** |
 
 Le corpus **n'est pas** sous une licence unique, et avoir cessé de collecter
@@ -152,8 +153,8 @@ depuis #901. Pourquoi, et ce que ça a fait gagner :
 
 ## Ce que la couverture ne couvre pas encore
 
-Le site le publie, et pas seulement ce fichier : **[« Ce que contient ce corpus »](https://empreinte-politique.fr/#/couverture)**
-(`#/couverture`) montre, pour les trois populations publiées, ce que le dépôt
+Le site le publie, et pas seulement ce fichier : **[« Sources »](https://empreinte-politique.fr/#/sources)**
+(`#/sources`, anciennement `#/couverture`) montre, pour les trois populations publiées, ce que le dépôt
 porte et depuis quand, puis par liste les fiches où elle manque. **L'accueil en
 donne la version courte** — une borne par institution, et les candidats dont une
 partie des mandats est hors couverture, nommés (#328). Deux tiers des

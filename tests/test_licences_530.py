@@ -214,15 +214,21 @@ def test_les_mentions_legales_nannoncent_pas_un_corpus_sous_licence_unique():
     assert "ne rend donc pas" in page  # « … l'ensemble du corpus réutilisable sous simple attribution »
 
 
-def test_la_config_des_sources_garde_regards_citoyens_en_odbl():
-    """`sourcesConfig` alimente aussi le compteur « N sources publiques » de la
-    landing page : l'entrée reste, avec son ODbL, parce que des champs publiés
-    en dérivent encore."""
+def test_la_config_des_sources_ne_porte_plus_regards_citoyens():
+    """L'entrée est RETIRÉE le 16/09/2026, et c'est la condition de retrait de
+    §7 qui a joué : l'attribution est due tant que des champs publiés dérivent
+    de Regards Citoyens, et plus aucun ne l'est. Mesuré par Backend sur
+    `origin/main` `dc80a10cb` — parcours récursif de `pivot_data/`, clés et
+    valeurs : 0 profil sur 1 177, 0 `licence_donnees` qui la cite. Elle
+    alimentait le compteur « N sources publiques » de l'accueil et le schéma de
+    /sources ; la garder aurait fait publier une source dont rien ne vient.
+
+    Ce test ne dit PAS que le dépôt est vide de NosSénateurs : quatre fichiers
+    sénatoriaux gelés, que le site ne publie pas, en dérivent encore jusqu'au lot
+    backend qui les retire."""
     config = _texte(CONFIG_SOURCES)
-    bloc = config[config.index("id: 'nosdeputes-nossenateurs'"):config.index("id: 'assemblee-nationale-opendata'")]
-    assert "ODbL v1.0" in bloc
-    assert re.search(r"[Pp]lus collectée", bloc), "l'entrée doit dire qu'elle n'est plus collectée"
-    assert "attribution" in bloc.lower()
+    assert "id: 'nosdeputes-nossenateurs'" not in config
+    assert "NosDeputes" not in config and "NosSenateurs" not in config
 
 
 def test_la_config_des_sources_designe_l_an_comme_seule_source_de_l_activite():

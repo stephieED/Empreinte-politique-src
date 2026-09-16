@@ -1,4 +1,6 @@
-import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import SchemaSources from '../components/SchemaSources';
 import EnTeteSite from '../components/EnTeteSite';
 import FriseCouverture from '../components/FriseCouverture';
 import PiedDeSite from '../components/PiedDeSite';
@@ -28,6 +30,14 @@ const jour = (d) => (d ? d.split('-').reverse().join('.') : '');
 
 export default function CoveragePage() {
   const { data, loading, error } = useAsyncData(loadCouverture, []);
+  const { hash } = useLocation();
+
+  /* L'ANCRE ATTEND LES DONNÉES. Les renvois des fiches mènent à `#frise`, et la
+   * frise n'existe qu'une fois la couverture chargée : le routeur ne suit pas
+   * l'ancre de lui-même, et un saut au montage ne trouverait rien. */
+  useEffect(() => {
+    if (data && hash) document.getElementById(hash.slice(1))?.scrollIntoView();
+  }, [data, hash]);
 
   return (
     <div className="app-shell">
@@ -37,7 +47,7 @@ export default function CoveragePage() {
 
           <div className="static-banner">
             <span className="static-banner-tag">Vue d'ensemble</span>
-            <h1>Ce que contient ce corpus</h1>
+            <h1>Sources</h1>
             <p>Commun à toutes les fiches — candidats, gouvernements, groupes parlementaires.</p>
           </div>
 
@@ -55,6 +65,15 @@ export default function CoveragePage() {
                 candidats, {nb(data.reperes.gouvernements)} gouvernements, {nb(data.reperes.groupes)}{' '}
                 groupes. Collecte du {jour(data.collecteLe)}.
               </p>
+
+              {/* LES SOURCES D'ABORD (forme B, retenue le 16/09/2026) : d'où
+                  viennent les données, avant depuis quand. Le schéma dit ce que
+                  chaque source apporte, et chaque nœud porte sa licence et sa
+                  cadence : les cartes repliées n'y sont plus. */}
+              <section className="static-card cv-card" id="sources">
+                <h2>Les sources</h2>
+                <SchemaSources />
+              </section>
 
               <section className="static-card cv-card" id="frise">
                 <h2>Ce que le dépôt porte, et depuis quand</h2>

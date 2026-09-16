@@ -1062,7 +1062,7 @@ function CeQuOnNaPasPuLire({ lignee }) {
       critere="Les limites propres aux fiches de ces groupes, liste par liste."
       numero="6"
       renvois={[
-        { vers: '/couverture', texte: 'Ce que le dépôt porte, et depuis quand' },
+        { vers: '/sources#frise', texte: 'Ce que le dépôt porte, et depuis quand' },
         { vers: '/methodologie#couverture', texte: 'Pourquoi ces limites se déclarent au lieu de se combler' },
       ]}
       titre="Ce qu’on n’a pas pu lire"

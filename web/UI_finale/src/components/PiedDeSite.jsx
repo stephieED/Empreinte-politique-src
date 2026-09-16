@@ -64,7 +64,7 @@ export default function PiedDeSite() {
 
       <nav className="pds-colonne" aria-label="Pages du site">
         <span className="pds-titre">Le site</span>
-        <Link to="/couverture">Ce que contient ce corpus</Link>
+        <Link to="/sources">Sources</Link>
         <Link to="/methodologie">Méthodologie</Link>
         <Link to="/mentions-legales">Mentions légales</Link>
       </nav>

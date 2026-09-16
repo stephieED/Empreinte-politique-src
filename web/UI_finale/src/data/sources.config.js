@@ -12,20 +12,23 @@
 // leur est due tant qu'ils sont là (#530).
 
 export const sourcesConfig = [
+  // À VENIR (#951). La liste officielle des candidats n'est pas encore publiée :
+  // Wikipédia la remplace jusque-là. Les deux dates sont celles de la loi, jamais
+  // une annonce : aucune n'a été faite au 16/09/2026, et le site dédié n'existe
+  // pas encore. `aVenir` la retire du compte des sources de l'accueil.
   {
-    id: 'nosdeputes-nossenateurs',
-    nom: 'NosDeputes.fr / NosSenateurs.fr',
-    type: 'Source retirée — attribution toujours due',
+    id: 'conseil-constitutionnel',
+    aVenir: true,
+    nom: 'Conseil constitutionnel',
+    type: 'À venir — site dédié à l’élection de 2027, non ouvert au 16/09/2026',
     contenuCouvert:
-      "Champs déjà publiés qui en dérivent : des mandats et des éléments d'identité collectés avant 2026. Les prises de parole et les mots-clés qui en venaient ont été retirés du corpus en septembre 2026 ; aucune donnée publiée ne pointe plus vers nosdeputes.fr.",
+      "La liste officielle des candidats à l'élection présidentielle, et les parrainages validés. Elle remplacera Wikipédia pour dire qui est candidat.",
     cadenceMiseAJour:
-      "Plus collectée depuis août 2026 : NosSénateurs est sorti du périmètre (certificat expiré), et NosDéputés a été retiré du pipeline après une panne durable. Rien n'est plus rafraîchi depuis cette source. Les prises de parole qui en venaient ont été retirées en septembre 2026, après vérification une par une contre les comptes rendus de l'Assemblée ; les mandats et l'identité collectés avant 2026 restent publiés.",
-    licence: 'ODbL v1.0',
-    implication:
-      "Réutilisation possible, mais toute republication sous forme de jeu de données téléchargeable incluant ces champs doit être partagée sous la même licence (share-alike). L'attribution reste due tant que ces champs sont publiés.",
-    perimetre: ['AN', 'Senat'],
-    couverturePeriode:
-      "Identité et groupe (identite.groupe_sigle) figés sur les données pré-dissolution 2024 ; aucune donnée postérieure. Les mandats et votes servis aujourd'hui viennent de l'open data de l'Assemblée nationale.",
+      "À venir. Selon l'article 3 de la loi du 6 novembre 1962 : les parrainages sont rendus publics au moins deux fois par semaine, à mesure qu'ils arrivent et jusqu'au 12 mars 2027 à 18 h ; la liste des candidats est publiée au plus tard le 26 mars 2027, pour un premier tour le 18 avril 2027.",
+    licence: 'Non connue à ce jour',
+    implication: "Les conditions de réutilisation seront vérifiées à l'ouverture du site.",
+    perimetre: ['Suivi candidat'],
+    couverturePeriode: null,
   },
   {
     id: 'assemblee-nationale-opendata',
@@ -75,6 +78,31 @@ export const sourcesConfig = [
     implication: 'Réutilisation libre sous réserve de mention de la source (attribution uniquement).',
     perimetre: ['PE'],
     couverturePeriode: null,
+  },
+  {
+    id: 'eurovoc',
+    nom: 'EuroVoc (Office des publications de l’Union européenne)',
+    type: 'SPARQL',
+    contenuCouvert:
+      "Les noms français des matières européennes, quand le Parlement européen n'en donne que l'identifiant. Rien n'est classé ici : un identifiant sans nom est déclaré, jamais inventé.",
+    cadenceMiseAJour: 'À chaque exécution.',
+    licence: 'CC BY 4.0',
+    implication: "Réutilisation libre sous réserve d'attribution et d'indication des modifications.",
+    perimetre: ['PE'],
+    couverturePeriode: null,
+  },
+  {
+    id: 'repertoire-national-des-elus',
+    nom: 'Répertoire national des élus (data.gouv.fr)',
+    type: 'API tabulaire data.gouv.fr',
+    contenuCouvert:
+      "Les mandats locaux des candidats déclarés : conseils municipaux, mairies, conseils départementaux, régionaux et communautaires.",
+    cadenceMiseAJour: 'À chaque exécution.',
+    licence: 'Licence Ouverte 2.0 (Etalab)',
+    implication: 'Réutilisation libre sous réserve de mention de la source (attribution uniquement).',
+    perimetre: ['Local'],
+    couverturePeriode:
+      "Publiés à partir de 2020 seulement : avant cette date, l'absence d'un mandat local ne dit rien.",
   },
   // CITÉES, PAS COLLECTÉES (#860). Les mandats nationaux antérieurs à ce que
   // publie l'open data de l'Assemblée sont relus à la main, un par un, et

@@ -124,3 +124,9 @@
     padding-right: 20px;
   }
 }
+
+/* La rangée du logo est collée (#951) : une ancre (`/sources#frise`) poserait
+   le titre de la section sous elle. */
+.cv-card {
+  scroll-margin-top: 96px;
+}
