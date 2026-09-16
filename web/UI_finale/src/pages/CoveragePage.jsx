@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import CartesSources from '../components/CartesSources';
 import SchemaSources from '../components/SchemaSources';
 import EnTeteSite from '../components/EnTeteSite';
 import FriseCouverture from '../components/FriseCouverture';
@@ -69,12 +68,11 @@ export default function CoveragePage() {
 
               {/* LES SOURCES D'ABORD (forme B, retenue le 16/09/2026) : d'où
                   viennent les données, avant depuis quand. Le schéma dit ce que
-                  chaque source apporte ; les cartes, repliées, sa licence et sa
-                  cadence. */}
+                  chaque source apporte, et chaque nœud porte sa licence et sa
+                  cadence : les cartes repliées n'y sont plus. */}
               <section className="static-card cv-card" id="sources">
                 <h2>Les sources</h2>
                 <SchemaSources />
-                <CartesSources />
               </section>
 
               <section className="static-card cv-card" id="frise">

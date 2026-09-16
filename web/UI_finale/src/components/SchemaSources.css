@@ -143,11 +143,105 @@
   border: 1px solid var(--ss-retiree);
 }
 
-/* Les sources sont des liens : le curseur et la flèche le disent. */
+/* Une source se clique : un lien à la souris, un bouton au doigt. */
 .ss-source { cursor: pointer; }
-.ss-svg .ss-sortie { font-size: 12px; font-weight: 700; opacity: 0.7; }
-.ss-source--collectee .ss-sortie { fill: #fff; }
 .ss-source:hover .ss-pave { filter: brightness(1.12); }
 .ss-source--citee:hover .ss-pave,
 .ss-source--retiree:hover .ss-pave { fill: var(--bg); filter: none; }
 .ss-source:focus-visible .ss-pave { stroke: var(--ink); stroke-width: 2.5; }
+
+/* ── Les informations d'une source : infobulle (souris) ou bande (doigt) ── */
+.ss-scene {
+  position: relative;
+  width: 880px;
+}
+
+.ss-detail {
+  position: absolute;
+  z-index: 2;
+  box-sizing: border-box;
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  padding: 14px 18px 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.ss-detail-titre {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.ss-detail-liste {
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.ss-detail-liste dt {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ss-detail-liste dd {
+  margin: 0;
+}
+
+.ss-detail--bulle {
+  width: 360px;
+  pointer-events: none;
+  box-shadow: 0 10px 30px rgba(23, 20, 31, 0.14);
+}
+
+/* Dans la moitié basse, l'infobulle monte au lieu de descendre : sinon elle
+   sort du cadre, qui défile. */
+.ss-detail--haut {
+  transform: translateY(-100%);
+}
+
+/* La bande tient toute la largeur de la figure ; ses rubriques se rangent en
+   colonnes quand la place le permet. */
+.ss-detail--bande {
+  background: var(--bg);
+}
+
+.ss-detail--bande .ss-detail-liste {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px 22px;
+}
+
+.ss-detail-lien {
+  display: inline-block;
+  margin-top: 12px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.ss-detail-fermer {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid var(--border-strong);
+  background: var(--card);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 3px 11px;
+  cursor: pointer;
+}
+
+.ss-source--ouverte .ss-pave {
+  stroke: var(--ink) !important;
+  stroke-width: 2.5;
+}
+
+.ss-svg .ss-marque { font-size: 12px; font-weight: 700; opacity: 0.75; }
+.ss-source--collectee .ss-marque { fill: #fff; }

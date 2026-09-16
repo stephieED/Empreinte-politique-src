@@ -147,3 +147,15 @@ def test_aucun_lien_ne_mene_encore_a_couverture() -> None:
             continue
         source = chemin.read_text(encoding="utf-8")
         assert 'to="/couverture' not in source and "vers: '/couverture" not in source, chemin.name
+
+
+def test_les_noeuds_portent_les_infos_et_les_cartes_quittent_sources() -> None:
+    """Retenu le 16/09/2026 : infobulle à la souris, bande au doigt, choisies sur
+    le pointeur et jamais sur la largeur. Les cartes repliées ne sont plus
+    rendues sous le schéma."""
+    composant = (UI / "src" / "components" / "SchemaSources.jsx").read_text(encoding="utf-8")
+    assert "'(hover: hover) and (pointer: fine)'" in composant
+    assert "ss-detail--bulle" in composant and "ss-detail--bande" in composant
+    assert "import sourcesConfig from '../data/sources.config';" in composant
+    page = (UI / "src" / "pages" / "CoveragePage.jsx").read_text(encoding="utf-8")
+    assert "<SchemaSources />" in page and "CartesSources" not in page
