@@ -479,6 +479,24 @@ toutes les législatures de votes sont résolues, 1 sinon. À lancer avant de se
 fier à la clé : `numero_scrutin` repart à 1 à chaque législature.
 → `docs/decisions/resolution-legislature-votes.md`.
 
+### Un texte porté européen est-il publié deux fois ?
+
+```bash
+python3 scripts/purger_doublons_textes_europeens_901.py
+python3 scripts/purger_doublons_textes_europeens_901.py --ecrire
+```
+
+Sans `--ecrire`, **rien n'est modifié** : le script nomme les profils concernés
+et compte. Un texte européen n'a pas de `dossier_id` et était identifié par son
+titre ; #938 a nettoyé les titres, et 311 textes ont été publiés deux fois.
+La clé est corrigée — un texte européen est désormais identifié par son document
+`doceo` —, mais la fusion additive ne retire jamais ce qui est déjà publié.
+
+Le contrôle de perte **bloque** ensuite, et c'est voulu : 311 entrées de moins
+sur une liste stable. La perte se déclare (`--tolerer-pertes`, ou l'entrée
+« INTENDED REMOVAL » du formulaire), elle ne se contourne pas.
+→ `docs/decisions/doublons-textes-europeens-cle-doceo-901.md`.
+
 ### Une explication de vote est-elle publiée deux fois ?
 
 ```bash

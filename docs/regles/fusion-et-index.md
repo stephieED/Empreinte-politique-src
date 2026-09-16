@@ -158,6 +158,16 @@ les charger, ni à les faire grossir. -->
   (#432). **Before adding an `a or b` key, measure how much of the published corpus sits
   on each branch** — and a reprise nobody calls cleans nothing: this one was dead code for
   a whole remediation.
+- **A fallback key containing a title is hostage to that title (#901).** European
+  `textes_portes` have no `dossier_id`, so they all sat on the `(titre, date_min,
+  legislature)` fallback; #938 cleaned the titles and 311 texts were published twice
+  (Philippot 502 for 252). A European text is now keyed on its **`doceo` document**, read
+  from `source_url` **without its scheme** (625 `http://`, 56 `https://`). **Not on
+  `reference_dossier`**: it names a procedure, and several texts live in one — an opinion
+  and the rapporteur's dossier share it. **When a change rewrites a field that sits in a
+  fallback key, count the entries on that fallback first**: every one of them will come
+  back as new.
+  → `docs/decisions/doublons-textes-europeens-cle-doceo-901.md`
   → `docs/decisions/cle-fusion-textes-portes-668.md`
 - **An empty collection never overwrites a non-empty one (#465)** — per field, not per
   profile, even under `--no-merge`. Lifted only by `--autoriser-collecte-vide`, and the
