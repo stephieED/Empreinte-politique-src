@@ -13,14 +13,17 @@
  * d'AGENTS.md §7. Aucun chiffre : une figure qui compte vieillit au run suivant.
  *
  * `url` : la page que le pavé ouvre, dans un nouvel onglet (demandé le
- * 16/09/2026). La page d'accueil du jeu de données, jamais un fichier. NosDéputés
- * répond en erreur depuis sa panne durable (HTTP 500 au 16/09/2026) : le pavé
- * mène à Regards Citoyens, qui l'édite et à qui l'attribution est due.
+ * 16/09/2026). La page d'accueil du jeu de données, jamais un fichier.
+ *
+ * NOSDÉPUTÉS ET NOSSÉNATEURS NE SONT PLUS DANS LE SCHÉMA (16/09/2026). Mesuré par
+ * Backend sur `origin/main` `dc80a10cb`, parcours récursif de `pivot_data/` :
+ * aucune valeur publiée par le site n'en dérive, et aucun `licence_donnees` ne
+ * cite Regards Citoyens. Quatre fichiers sénatoriaux gelés en dérivent encore
+ * dans le dépôt, que le site ne publie pas : leur retrait est un lot backend.
  *
  * `statut` : `a-venir` (pas encore publiée ; dates de la loi, pas d'une
  * annonce), `collectee` (interrogée à chaque run), `citee` (relue à la main,
- * jamais interrogée), `retiree` (plus interrogée, des champs publiés en
- * dérivent encore). `teinte` : l'institution que la source sert, dans les
+ * jamais interrogée). `teinte` : l'institution que la source sert, dans les
  * teintes de la frise ; `candidat` pour les deux sources qui disent QUI est
  * candidat et ne servent aucune institution.
  */
@@ -36,8 +39,6 @@ export const SOURCES_SCHEMA = [
     url: 'https://www.wikidata.org/wiki/Property:P4123' },
   { id: 'an', nom: 'Assemblée nationale', teinte: 'an', statut: 'collectee', config: 'assemblee-nationale-opendata',
     url: 'https://data.assemblee-nationale.fr/' },
-  { id: 'nd', nom: 'NosDéputés · NosSénateurs', teinte: 'retiree', statut: 'retiree', config: 'nosdeputes-nossenateurs',
-    url: 'https://www.regardscitoyens.org/' },
   { id: 'sen', nom: 'Sénat', teinte: 'senat', statut: 'collectee', config: 'senat-opendata',
     url: 'https://data.senat.fr/' },
   { id: 'syc', nom: 'Sycomore', teinte: 'an', statut: 'citee', config: 'sycomore',
@@ -59,10 +60,10 @@ export const SOURCES_SCHEMA = [
 export const DONNEES_SCHEMA = [
   { id: 'candidats', nom: 'La liste des candidats déclarés', de: ['cc', 'wp'] },
   { id: 'identifiant', nom: 'Leur identifiant à l’Assemblée', de: ['wd'] },
-  { id: 'deputes', nom: 'Identité, mandats de député', de: ['an', 'nd'] },
+  { id: 'deputes', nom: 'Identité, mandats de député', de: ['an'] },
   { id: 'activite', nom: 'Votes, amendements, textes, paroles', de: ['an'] },
   { id: 'gouvernement', nom: 'Fonctions gouvernementales', de: ['an', 'jo'] },
-  { id: 'senat', nom: 'Mandats au Sénat', de: ['sen', 'nd'] },
+  { id: 'senat', nom: 'Mandats au Sénat', de: ['sen'] },
   { id: 'anterieurs', nom: 'Mandats antérieurs à 2002', de: ['syc', 'jo'] },
   { id: 'europeen', nom: 'Mandat européen', de: ['pe'] },
   { id: 'activite-ue', nom: 'Activité européenne, titres français', de: ['pt', 'pe'] },

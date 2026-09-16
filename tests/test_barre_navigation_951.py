@@ -135,7 +135,7 @@ def test_chaque_source_du_schema_ouvre_sa_page() -> None:
     bloc = schema[schema.index("export const SOURCES_SCHEMA") : schema.index("export const DONNEES_SCHEMA")]
     ids = re.findall(r"\{ id: '([a-z]+)',", bloc)
     urls = re.findall(r"url: '(https://[^']+)'", bloc)
-    assert len(urls) == len(ids) == 12
+    assert len(urls) == len(ids) == 11
     composant = (UI / "src" / "components" / "SchemaSources.jsx").read_text(encoding="utf-8")
     assert 'target="_blank"' in composant and 'rel="noopener noreferrer"' in composant
 
@@ -171,7 +171,7 @@ def test_la_source_a_venir_ouvre_la_liste_et_ne_compte_pas() -> None:
     assert ids[:2] == ["cc", "wp"]
     assert "statut: 'a-venir'" in bloc
     config = CONFIG.read_text(encoding="utf-8")
-    entree = config[config.index("id: 'conseil-constitutionnel'") : config.index("id: 'nosdeputes-nossenateurs'")]
+    entree = config[config.index("id: 'conseil-constitutionnel'") : config.index("id: 'assemblee-nationale-opendata'")]
     assert "aVenir: true" in entree
     assert "12 mars 2027 à 18 h" in entree and "26 mars 2027" in entree and "loi du 6 novembre 1962" in entree
     accueil = (UI / "src" / "components" / "landing" / "HowItWorks.jsx").read_text(encoding="utf-8")

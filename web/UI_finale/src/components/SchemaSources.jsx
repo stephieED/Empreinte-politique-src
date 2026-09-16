@@ -327,7 +327,6 @@ export default function SchemaSources() {
         <li><i className="ss-cle ss-cle--local" />Local</li>
         <li><i className="ss-cle ss-cle--candidat" />Qui est candidat</li>
         <li><i className="ss-cle ss-cle--citee" />Citée, relue à la main</li>
-        <li><i className="ss-cle ss-cle--retiree" />Plus interrogée</li>
       </ul>
     </div>
   );

@@ -31,21 +31,6 @@ export const sourcesConfig = [
     couverturePeriode: null,
   },
   {
-    id: 'nosdeputes-nossenateurs',
-    nom: 'NosDeputes.fr / NosSenateurs.fr',
-    type: 'Source retirée — attribution toujours due',
-    contenuCouvert:
-      "Champs déjà publiés qui en dérivent : des mandats et des éléments d'identité collectés avant 2026. Les prises de parole et les mots-clés qui en venaient ont été retirés du corpus en septembre 2026 ; aucune donnée publiée ne pointe plus vers nosdeputes.fr.",
-    cadenceMiseAJour:
-      "Plus collectée depuis août 2026 : NosSénateurs est sorti du périmètre (certificat expiré), et NosDéputés a été retiré du pipeline après une panne durable. Rien n'est plus rafraîchi depuis cette source. Les prises de parole qui en venaient ont été retirées en septembre 2026, après vérification une par une contre les comptes rendus de l'Assemblée ; les mandats et l'identité collectés avant 2026 restent publiés.",
-    licence: 'ODbL v1.0',
-    implication:
-      "Réutilisation possible, mais toute republication sous forme de jeu de données téléchargeable incluant ces champs doit être partagée sous la même licence (share-alike). L'attribution reste due tant que ces champs sont publiés.",
-    perimetre: ['AN', 'Senat'],
-    couverturePeriode:
-      "Identité et groupe (identite.groupe_sigle) figés sur les données pré-dissolution 2024 ; aucune donnée postérieure. Les mandats et votes servis aujourd'hui viennent de l'open data de l'Assemblée nationale.",
-  },
-  {
     id: 'assemblee-nationale-opendata',
     nom: 'data.assemblee-nationale.fr',
     type: 'Dumps ZIP (open data)',
