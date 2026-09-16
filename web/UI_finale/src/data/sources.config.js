@@ -139,15 +139,18 @@ export const sourcesConfig = [
     perimetre: ['Gouvernement'],
     couverturePeriode: null,
   },
+  // WIKIPÉDIA ET WIKIDATA disent QUI est candidat, rien d'autre (AGENTS.md §7,
+  // job `rafraichir-candidats`). Leurs textes disaient « suivi biographique
+  // complémentaire » et « citations verbatim » : faux, corrigés le 16/09/2026.
   {
     id: 'wikipedia-fr',
-    nom: 'French Wikipedia',
+    nom: 'Wikipédia',
     type: 'API MediaWiki REST',
-    contenuCouvert: 'Suivi biographique complémentaire des candidats.',
-    cadenceMiseAJour: 'Immédiate.',
+    contenuCouvert:
+      "La liste des candidats déclarés, lue dans l'article « Candidatures à l'élection présidentielle française de 2027 ». Seuls des faits en sont repris — un nom, une étiquette de parti —, jamais de texte.",
+    cadenceMiseAJour: 'À chaque exécution.',
     licence: 'CC BY-SA 4.0',
-    implication:
-      "Utilisable pour des citations verbatim uniquement (usage actuel du projet) ; toute réutilisation plus large doit être partagée sous la même licence (share-alike).",
+    implication: "Seuls des faits sont repris, sans reproduction du texte de l'article.",
     perimetre: ['Suivi candidat'],
     couverturePeriode: null,
   },
@@ -155,8 +158,9 @@ export const sourcesConfig = [
     id: 'wikidata',
     nom: 'Wikidata',
     type: 'SPARQL',
-    contenuCouvert: 'Suivi biographique complémentaire des candidats.',
-    cadenceMiseAJour: 'Immédiate.',
+    contenuCouvert:
+      "L'identifiant de chaque candidat déclaré à l'Assemblée nationale (propriété P4123), qui relie sa candidature à sa fiche.",
+    cadenceMiseAJour: 'À chaque exécution.',
     licence: 'CC0 1.0',
     implication: 'Domaine public : aucune restriction de réutilisation.',
     perimetre: ['Suivi candidat'],
