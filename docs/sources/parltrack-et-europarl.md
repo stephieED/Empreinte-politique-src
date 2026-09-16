@@ -13,13 +13,22 @@
 | Source | Producteur | Licence | Contrainte |
 | --- | --- | --- | --- |
 | `parltrack.org/dumps` | ParlTrack (association) | **ODbL v1.0** | **partage à l'identique** si un jeu dérivé est republié |
-| `data.europarl.europa.eu`, `www.europarl.europa.eu` | Parlement européen | EP Legal Notice | attribution |
+| `data.europarl.europa.eu` | Parlement européen | **CC BY 4.0** | attribution |
 
 La page Copyright de parltrack.org ne donne l'ODbL que pour les **dumps JSON**. Le CC BY-SA 3.0
 qu'on y lit couvre le HTML des pages, que ce pipeline ne télécharge jamais. `AGENTS.md` §7
 portait « CC0 / ODbL (mixed) » jusqu'à ce que [`licences`](../decisions/licences.md) le
 vérifie en direct — et `src/mep_profile.py` a inscrit « CC0 » quatre lots de plus, jusqu'à
 [#909](../decisions/licence-jamais-en-dur-909.md).
+
+Le portail `data.europarl.europa.eu` est sous **CC BY 4.0** : décision du Bureau du Parlement
+européen du 16/12/2024, [EUR-Lex C/2025/341](https://eur-lex.europa.eu/eli/C/2025/341/oj),
+article 4, et champ `info.license` de la documentation OpenAPI de l'API. Toutes nos requêtes
+européennes vont à ce portail. `www.europarl.europa.eu` n'est **jamais interrogé** : il est
+derrière un pare-feu anti-robot, et on n'y écrit que des liens. Son avis juridique
+(« © Union européenne – Source : Parlement européen ») ne vaudrait que si l'on reproduisait
+son contenu. Cette ligne a porté « EP Legal Notice » jusqu'à
+[#983](../decisions/licence-parlement-europeen-cc-by-983.md).
 
 ## Le format des dumps, et l'incident qu'il a causé
 
