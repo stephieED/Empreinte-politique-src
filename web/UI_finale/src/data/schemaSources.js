@@ -17,7 +17,8 @@
  * répond en erreur depuis sa panne durable (HTTP 500 au 16/09/2026) : le pavé
  * mène à Regards Citoyens, qui l'édite et à qui l'attribution est due.
  *
- * `statut` : `collectee` (interrogée à chaque run), `citee` (relue à la main,
+ * `statut` : `a-venir` (pas encore publiée ; dates de la loi, pas d'une
+ * annonce), `collectee` (interrogée à chaque run), `citee` (relue à la main,
  * jamais interrogée), `retiree` (plus interrogée, des champs publiés en
  * dérivent encore). `teinte` : l'institution que la source sert, dans les
  * teintes de la frise ; `candidat` pour les deux sources qui disent QUI est
@@ -25,6 +26,10 @@
  */
 
 export const SOURCES_SCHEMA = [
+  // EN TÊTE, et À VENIR : elle remplacera Wikipédia, qui la précède donc sur la
+  // même donnée. Sa place dit que la suivante est temporaire (16/09/2026).
+  { id: 'cc', nom: 'Conseil constitutionnel', teinte: 'candidat', statut: 'a-venir', config: 'conseil-constitutionnel',
+    url: 'https://www.conseil-constitutionnel.fr/' },
   { id: 'wp', nom: 'Wikipédia', teinte: 'candidat', statut: 'collectee', config: 'wikipedia-fr',
     url: 'https://fr.wikipedia.org/wiki/Candidatures_%C3%A0_l%27%C3%A9lection_pr%C3%A9sidentielle_fran%C3%A7aise_de_2027' },
   { id: 'wd', nom: 'Wikidata', teinte: 'candidat', statut: 'collectee', config: 'wikidata',
@@ -52,7 +57,7 @@ export const SOURCES_SCHEMA = [
 // L'ordre des lignes est celui des sources qu'elles reçoivent : il limite les
 // croisements de courbes, il ne classe rien.
 export const DONNEES_SCHEMA = [
-  { id: 'candidats', nom: 'La liste des candidats déclarés', de: ['wp'] },
+  { id: 'candidats', nom: 'La liste des candidats déclarés', de: ['cc', 'wp'] },
   { id: 'identifiant', nom: 'Leur identifiant à l’Assemblée', de: ['wd'] },
   { id: 'deputes', nom: 'Identité, mandats de député', de: ['an', 'nd'] },
   { id: 'activite', nom: 'Votes, amendements, textes, paroles', de: ['an'] },
@@ -66,7 +71,7 @@ export const DONNEES_SCHEMA = [
 ];
 
 export const FICHES_SCHEMA = [
-  { id: 'candidat', nom: 'Fiche candidat', de: DONNEES_SCHEMA.map((d) => d.id), ligne: 3 },
-  { id: 'groupe', nom: 'Fiche de groupe', de: ['deputes', 'activite'], ligne: 6 },
-  { id: 'gouv', nom: 'Fiche de gouvernement', de: ['gouvernement', 'activite'], ligne: 8 },
+  { id: 'candidat', nom: 'Fiche candidat', de: DONNEES_SCHEMA.map((d) => d.id), ligne: 4 },
+  { id: 'groupe', nom: 'Fiche de groupe', de: ['deputes', 'activite'], ligne: 7 },
+  { id: 'gouv', nom: 'Fiche de gouvernement', de: ['gouvernement', 'activite'], ligne: 9 },
 ];

@@ -135,7 +135,7 @@ def test_chaque_source_du_schema_ouvre_sa_page() -> None:
     bloc = schema[schema.index("export const SOURCES_SCHEMA") : schema.index("export const DONNEES_SCHEMA")]
     ids = re.findall(r"\{ id: '([a-z]+)',", bloc)
     urls = re.findall(r"url: '(https://[^']+)'", bloc)
-    assert len(urls) == len(ids) == 11
+    assert len(urls) == len(ids) == 12
     composant = (UI / "src" / "components" / "SchemaSources.jsx").read_text(encoding="utf-8")
     assert 'target="_blank"' in composant and 'rel="noopener noreferrer"' in composant
 
@@ -159,3 +159,20 @@ def test_les_noeuds_portent_les_infos_et_les_cartes_quittent_sources() -> None:
     assert "import sourcesConfig from '../data/sources.config';" in composant
     page = (UI / "src" / "pages" / "CoveragePage.jsx").read_text(encoding="utf-8")
     assert "<SchemaSources />" in page and "CartesSources" not in page
+
+
+def test_la_source_a_venir_ouvre_la_liste_et_ne_compte_pas() -> None:
+    """Le Conseil constitutionnel, en tête et à venir, avant Wikipédia qu'il
+    remplacera (16/09/2026). Ses dates sont celles de la loi, et l'accueil ne le
+    compte pas parmi les sources publiques."""
+    schema = SCHEMA.read_text(encoding="utf-8")
+    bloc = schema[schema.index("export const SOURCES_SCHEMA") : schema.index("export const DONNEES_SCHEMA")]
+    ids = re.findall(r"\{ id: '([a-z]+)',", bloc)
+    assert ids[:2] == ["cc", "wp"]
+    assert "statut: 'a-venir'" in bloc
+    config = CONFIG.read_text(encoding="utf-8")
+    entree = config[config.index("id: 'conseil-constitutionnel'") : config.index("id: 'nosdeputes-nossenateurs'")]
+    assert "aVenir: true" in entree
+    assert "12 mars 2027 à 18 h" in entree and "26 mars 2027" in entree and "loi du 6 novembre 1962" in entree
+    accueil = (UI / "src" / "components" / "landing" / "HowItWorks.jsx").read_text(encoding="utf-8")
+    assert "sourcesConfig.filter((s) => !s.aVenir).length" in accueil

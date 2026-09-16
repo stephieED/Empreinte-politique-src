@@ -56,6 +56,7 @@ Le détail et le raisonnement : [`AGENTS.md`](AGENTS.md) §2 et §6.
 | Journal officiel ([Légifrance](https://www.legifrance.gouv.fr/)) | **Cité, pas collecté** : les fonctions gouvernementales antérieures au corpus, décret par décret (#860) | aucune — table relue | Licence Ouverte 2.0 (Etalab) — attribution |
 | [Répertoire national des élus](https://www.data.gouv.fr/datasets/repertoire-national-des-elus-1) + sortants 2026 | **Les mandats locaux** des candidats déclarés depuis #922 — municipaux, maires, départementaux, régionaux, communautaires. La couverture **commence en 2020** ; avant, l'absence est déclarée et jamais lue comme « aucun mandat ». La source ne publie **aucune date de fin** | à chaque run, par l'API tabulaire | Licence Ouverte 2.0 (Etalab) — attribution |
 | Wikipédia / Wikidata | Le suivi des candidatures déclarées | immédiate | CC BY-SA 4.0 / CC0 |
+| [Conseil constitutionnel](https://www.conseil-constitutionnel.fr/) | **À venir** : la liste officielle des candidats et les parrainages, qui remplaceront Wikipédia pour dire qui est candidat. La loi du 6/11/1962 (art. 3) fixe les bornes — parrainages publiés au moins deux fois par semaine jusqu'au 12/03/2027, liste au plus tard le 26/03/2027 ; aucune date n'est annoncée | — | non connue à ce jour |
 | NosDéputés / NosSénateurs | **Plus collectées** depuis #528/#529, mais des champs déjà publiés en dérivent | — | ODbL v1.0 — **partage à l'identique** |
 
 Le corpus **n'est pas** sous une licence unique, et avoir cessé de collecter

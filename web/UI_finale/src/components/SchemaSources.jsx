@@ -319,6 +319,7 @@ export default function SchemaSources() {
       </div>
 
       <ul className="ss-legende">
+        <li><i className="ss-cle ss-cle--a-venir" />À venir</li>
         <li><i className="ss-cle ss-cle--an" />Assemblée</li>
         <li><i className="ss-cle ss-cle--senat" />Sénat</li>
         <li><i className="ss-cle ss-cle--pe" />Europe</li>

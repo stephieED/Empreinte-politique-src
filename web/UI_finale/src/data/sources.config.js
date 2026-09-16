@@ -12,6 +12,24 @@
 // leur est due tant qu'ils sont là (#530).
 
 export const sourcesConfig = [
+  // À VENIR (#951). La liste officielle des candidats n'est pas encore publiée :
+  // Wikipédia la remplace jusque-là. Les deux dates sont celles de la loi, jamais
+  // une annonce : aucune n'a été faite au 16/09/2026, et le site dédié n'existe
+  // pas encore. `aVenir` la retire du compte des sources de l'accueil.
+  {
+    id: 'conseil-constitutionnel',
+    aVenir: true,
+    nom: 'Conseil constitutionnel',
+    type: 'À venir — site dédié à l’élection de 2027, non ouvert au 16/09/2026',
+    contenuCouvert:
+      "La liste officielle des candidats à l'élection présidentielle, et les parrainages validés. Elle remplacera Wikipédia pour dire qui est candidat.",
+    cadenceMiseAJour:
+      "À venir. Selon l'article 3 de la loi du 6 novembre 1962 : les parrainages sont rendus publics au moins deux fois par semaine, à mesure qu'ils arrivent et jusqu'au 12 mars 2027 à 18 h ; la liste des candidats est publiée au plus tard le 26 mars 2027, pour un premier tour le 18 avril 2027.",
+    licence: 'Non connue à ce jour',
+    implication: "Les conditions de réutilisation seront vérifiées à l'ouverture du site.",
+    perimetre: ['Suivi candidat'],
+    couverturePeriode: null,
+  },
   {
     id: 'nosdeputes-nossenateurs',
     nom: 'NosDeputes.fr / NosSenateurs.fr',

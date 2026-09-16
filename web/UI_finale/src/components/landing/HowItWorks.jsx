@@ -50,7 +50,8 @@ const STEPS = [
   {
     id: 'sources',
     label: 'On part de sources ouvertes',
-    stat: `${sourcesConfig.length} sources publiques`,
+    // Une source à venir n'est pas encore une source (#951).
+    stat: `${sourcesConfig.filter((s) => !s.aVenir).length} sources publiques`,
     Icon: IconSources,
   },
   {

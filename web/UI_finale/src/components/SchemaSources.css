@@ -245,3 +245,15 @@
 
 .ss-svg .ss-marque { font-size: 12px; font-weight: 700; opacity: 0.75; }
 .ss-source--collectee .ss-marque { fill: #fff; }
+
+/* À VENIR (#951) : pointillé serré, texte adouci — la source n'existe pas
+   encore, et son trait ne mène à rien qui soit publié. */
+.ss-source--a-venir .ss-pave {
+  fill: var(--card);
+  stroke: var(--ss-candidat);
+  stroke-width: 1.5;
+  stroke-dasharray: 1.5 3;
+}
+.ss-svg .ss-source--a-venir text { font-weight: 700; fill: var(--muted); }
+.ss-lien--a-venir { stroke-dasharray: 1.5 4; stroke-linecap: round; }
+.ss-cle--a-venir { background: var(--card); border: 1.5px dotted var(--ink); }
