@@ -47,11 +47,14 @@ import { REFUS_FICHE_GROUPE } from '../utils/groupe';
  * Les `id` ne bougent PAS : ce sont des ancres visées depuis les fiches.
  */
 /* L'ADN DU PROJET, en tête de la méthode (#951). Texte écrit par la propriétaire
-   le 16/09/2026 : l'automatisation y est dite en toutes lettres. */
+   le 16/09/2026 : l'automatisation y est dite en toutes lettres. Deux affirmations
+   corrigées le même jour, parce qu'elles étaient fausses : « la source officielle »
+   (Wikipédia et ParlTrack n'en sont pas), et « la fiche le mentionne
+   explicitement » (aucune fiche n'affiche qu'un rapprochement a été relu). */
 const INTRODUCTION = [
   'Empreinte politique rassemble ce que les institutions publient sur les candidats à la présidentielle 2027 (mandats, votes, textes, prises de parole) et le donne à lire tel quel.',
-  "Tout est collecté et mis en forme automatiquement par un programme : aucun fait n'est écrit ni altéré à la main. Ce que vous lisez est ce que la source officielle publie, avec le lien direct pour le vérifier.",
-  'Seuls certains rapprochements de données sont validés par un humain, et la fiche le mentionne explicitement.',
+  "Tout est collecté et mis en forme automatiquement par un programme : aucun fait n'est écrit ni altéré à la main. Ce que vous lisez est ce que la source publie, avec le lien direct pour le vérifier.",
+  'Seuls certains rapprochements de données sont validés par un humain, et chacun cite sa source.',
   "Rien n'est noté, classé ni commenté.",
 ];
 
