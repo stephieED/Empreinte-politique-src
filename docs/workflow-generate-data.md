@@ -602,9 +602,13 @@ interrogation du portail européen qui l'exige : 1 320 requêtes à 0,6 s plus 1
 blocages de 60 s, soit **47 min mesurées** pour les 1 424 documents cités par
 les explications de vote. 28 + 47 = 75 : à 60 le job aurait été tué, et le retry
 automatique serait reparti pour un second échec. Les runs suivants retombent à
-~28 min, le cache `.cache/europarl` étant restauré **sous une clé fixe** — un
+~28 min, le cache `.cache/europarl` étant **restauré du run précédent** — un
 document du Parlement européen ne se périme pas, et faire expirer ce cache
-hebdomadairement ne rachèterait rien qu'une facture.
+hebdomadairement ne rachèterait rien qu'une facture. **La clé change à chaque run
+depuis #965** (`…-documents-v3-<run_id>`, repli par préfixe) : fixe, elle n'était
+jamais réécrite par `actions/cache`, et chaque run restaurait le cache de sa toute
+première sauvegarde — sans titre ni concepts
+(`docs/decisions/titre-francais-lu-dans-source-url-901.md`).
 
 La collecte des interventions se borne **elle-même** par
 `--budget-interventions-secondes` (240 s en CI, par candidat, partagé entre les
@@ -841,8 +845,13 @@ sortants 2020-2026 par `tabular-api.data.gouv.fr`, et écrit le bloc
 roster n'en reçoit pas : ~750 membres × 9 fichiers pour une donnée qu'aucune page
 n'affiche.
 
-**Pourquoi aucun cache.** Ce job ne télécharge rien — il pose ~160 requêtes
-filtrées côté serveur, contre 76 Mo de CSV. Il n'y a donc rien à mettre en
+**Pourquoi aucun cache.** Ce job ne télécharge rien — il pose des requêtes
+filtrées côté serveur, contre 76 Mo de CSV. **Leur nombre a doublé le 16/09/2026**
+(~24 par candidat au lieu de ~13) : chaque date de naissance est demandée sous
+deux formes, parce que le fichier des sortants a daté au XXIᵉ siècle les élus nés
+avant 1980, et que la seule date exacte perdait cinq mandats clos. Mesuré avant ce
+doublement : 7 min, sous un plafond de 20
+(`docs/decisions/sortants-annee-decalee-922.md`). Il n'y a donc rien à mettre en
 cache, et une clé hebdomadaire ferait servir un répertoire vide en croyant
 servir des données. Le `rid` de chaque fichier est **résolu par le catalogue à
 chaque run** : il change à chaque publication trimestrielle.

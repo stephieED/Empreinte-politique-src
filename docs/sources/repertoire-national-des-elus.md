@@ -59,7 +59,7 @@ inférence.
 la table relue `raw_data/correspondance_elus_rne.json` pour les candidats dont le
 corpus n'a pas la date de naissance.
 
-## Trois pièges, tous mesurés
+## Cinq pièges, tous mesurés
 
 **Les diacritiques sont incohérents.** « Edouard » sans accent et « Jérôme »
 avec, dans le même fichier. Apparier sur le prénom tel qu'écrit rendait Édouard
@@ -73,6 +73,22 @@ chaque publication : le re-mesurer, ne pas le citer.
 **Le même mandat est publié dans deux fichiers.** Un maire figure chez les
 conseillers municipaux avec la fonction « Maire », *et* chez les maires. La clé
 de déduplication est `(lieu, date de début)`, jamais le fichier d'origine.
+
+**Le fichier des sortants publie des naissances au XXIᵉ siècle.** Il donnait
+l'année sur deux chiffres ; convertie en ISO, une année basse a pris le mauvais
+siècle. Relevé le 16/09/2026 dans `mun2026-cm-sortants-20260227` : David Lisnard,
+né le 02/02/1969, y est né le **2069**-02-02 ; Édouard Philippe, le
+**2070**-11-28 ; Gabriel Attal, né en 1989, est correct. Interroger la seule date
+exacte ne rend **rien** — cinq mandats 2020-2026 de candidats déclarés
+disparaissaient ainsi sans erreur. Le seuil de bascule n'est pas publié : les deux
+formes sont demandées, et le nom est vérifié sur chaque ligne. Le jour où le
+producteur corrige le fichier, la forme décalée ne rend plus rien et la forme
+exacte prend le relais — rien à retirer.
+
+**Une date de naissance peut dépasser une page.** L'API rend 50 lignes par page au
+plus, et signale la suivante dans `links.next`. Relevé le 16/09/2026 : **49** élus
+sortants partagent une même date de naissance, à une ligne du plafond. Lire la
+seule première page perd en silence la personne en 51ᵉ position.
 
 ## Ce qui est hors de portée, et pourquoi
 
