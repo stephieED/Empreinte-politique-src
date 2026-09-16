@@ -3131,7 +3131,10 @@ jobs:
 
       # #901 — l'index des dossiers européens : référence de procédure →
       # intitulé. Même moment et même raison que l'index des scrutins juste
-      # au-dessus : son périmètre est ce que les amendements publiés visent.
+      # au-dessus : son périmètre est ce que les profils publiés citent — les
+      # `texte_vise` des amendements ET les `reference_dossier` des textes
+      # portés. La seconde source a été ajoutée le 16/09/2026 : sans elle, 34
+      # références citées par une fiche ne résolvaient nulle part.
       - name: Générer l'index des dossiers européens
         run: |
           python3 src/dossiers_europeens.py \

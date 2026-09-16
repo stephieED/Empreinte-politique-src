@@ -18,7 +18,9 @@ import pytest
 RACINE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RACINE / "src"))
 
-from dossiers_europeens import (  # noqa: E402
+from dossiers_europeens import (
+    matieres,
+    matieres_non_resolu,  # noqa: E402
     SCHEMA_VERSION,
     DumpDossiersIndisponible,
     construire,
@@ -69,6 +71,47 @@ def test_les_references_sont_lues_dans_amendement_non_resolu(tmp_path):
         json.dumps(_profil("2021/0136(COD)")), encoding="utf-8")
 
     assert references_visees(tmp_path) == {"2021/0136(COD)", "2017/2070(INI)"}
+
+
+def test_les_references_sont_aussi_lues_dans_les_textes_portes(tmp_path):
+    """La seconde source, et celle qui manquait (#901, 16/09/2026).
+
+    Un `textes_portes[]` européen publie `reference_dossier`, et l'index ne la
+    lisait pas : 34 références citées par une fiche — 54 occurrences — ne
+    résolvaient nulle part. Les 10 dossiers `RSP` qui y figuraient déjà y
+    étaient entrés par la bande, parce qu'un amendement les visait.
+    """
+    (tmp_path / "a.pivot.json").write_text(json.dumps({
+        "textes_portes": [
+            {"institution": "parlement_europeen", "reference_dossier": "2024/2698(RSP)"},
+            {"institution": "parlement_europeen", "reference_dossier": "2015/2652(RSP)"},
+        ],
+    }), encoding="utf-8")
+
+    assert references_visees(tmp_path) == {"2024/2698(RSP)", "2015/2652(RSP)"}
+
+
+def test_les_deux_sources_se_reunissent(tmp_path):
+    """Un amendement et un texte porté qui visent le même dossier : une entrée."""
+    profil = _profil("2021/0136(COD)")
+    profil["textes_portes"] = [
+        {"institution": "parlement_europeen", "reference_dossier": "2021/0136(COD)"},
+        {"institution": "parlement_europeen", "reference_dossier": "2024/2698(RSP)"},
+    ]
+    (tmp_path / "a.pivot.json").write_text(json.dumps(profil), encoding="utf-8")
+
+    assert references_visees(tmp_path) == {"2021/0136(COD)", "2024/2698(RSP)"}
+
+
+def test_un_texte_porte_francais_n_entre_pas_dans_le_perimetre(tmp_path):
+    """`institution` sépare les deux corpus, ici comme pour les amendements."""
+    (tmp_path / "x.pivot.json").write_text(json.dumps({"textes_portes": [
+        {"institution": None, "reference_dossier": "DLR5L17N47389"},
+        {"institution": "parlement_europeen", "reference_dossier": None},
+        {"institution": "parlement_europeen"},
+    ]}), encoding="utf-8")
+
+    assert references_visees(tmp_path) == set()
 
 
 def test_un_amendement_francais_n_entre_pas_dans_le_perimetre(tmp_path):
@@ -305,7 +348,9 @@ def test_un_dossier_sans_commission_rend_une_liste_vide(tmp_path):
 # commission est compétente aujourd'hui.
 # --------------------------------------------------------------------------
 
-from dossiers_europeens import (  # noqa: E402
+from dossiers_europeens import (
+    matieres,
+    matieres_non_resolu,  # noqa: E402
     KNOWN_STATUTS_COMMISSION_AU_FOND,
     commissions_au_fond_non_resolu,
 )
@@ -421,3 +466,67 @@ def test_le_motif_atteint_le_dossier_publie(tmp_path):
     assert entrees[0]["commissions_au_fond"] == []
     assert entrees[0]["commissions_au_fond_non_resolu"] == {
         "motif": "source_sans_commission_au_fond"}
+
+
+# --------------------------------------------------------------------------
+# Les matières OEIL — l'axe que la commission au fond ne couvre pas (#901)
+# --------------------------------------------------------------------------
+
+def test_la_matiere_est_lue_quand_la_source_donne_un_dict():
+    """La forme courante : 387 des 389 dossiers visés."""
+    assert matieres({"procedure": {"subject": {
+        "7.10.06": "Asylum, refugees, displaced persons",
+        "7.10.08": "Migration policy",
+    }}}) == [
+        {"code": "7.10.06", "libelle": "Asylum, refugees, displaced persons"},
+        {"code": "7.10.08", "libelle": "Migration policy"},
+    ]
+
+
+def test_la_matiere_est_lue_quand_la_source_donne_une_liste():
+    """L'autre forme, sur 2 dossiers : code et libellé COLLÉS dans une chaîne.
+
+    Un lecteur qui ne connaîtrait que le dict perdrait ces deux-là sans erreur
+    visible — c'est exactement le genre d'absence que personne ne mesure.
+    """
+    assert matieres({"procedure": {"subject": [
+        "2.10.01 Customs union, tax and duty-free, Community transit",
+        "6.20.03 Bilateral economic and trade agreements and relations",
+    ]}}) == [
+        {"code": "2.10.01", "libelle": "Customs union, tax and duty-free, Community transit"},
+        {"code": "6.20.03", "libelle": "Bilateral economic and trade agreements and relations"},
+    ]
+
+
+def test_les_matieres_sont_triees_par_code():
+    lu = matieres({"procedure": {"subject": {"8.20.01": "b", "3.30.06": "a"}}})
+    assert [m["code"] for m in lu] == ["3.30.06", "8.20.01"]
+
+
+def test_une_entree_sans_code_lisible_est_publiee_sans_code_plutot_que_perdue():
+    lu = matieres({"procedure": {"subject": ["Politique inclassable"]}})
+    assert lu == [{"code": "Politique inclassable", "libelle": None}]
+
+
+def test_un_dossier_sans_matiere_dit_pourquoi():
+    """Jamais une liste vide nue : une absence porte son motif (§2 règle 5)."""
+    assert matieres({"procedure": {}}) == []
+    assert matieres_non_resolu({"procedure": {}}, []) == {"motif": "source_sans_matiere"}
+    assert matieres_non_resolu({}, [{"code": "6", "libelle": "x"}]) is None
+
+
+def test_l_index_publie_les_matieres(tmp_path):
+    """Le champ atteint l'entrée d'index, pas seulement la fonction."""
+    (tmp_path / "a.pivot.json").write_text(json.dumps({"textes_portes": [
+        {"institution": "parlement_europeen", "reference_dossier": "2015/2833(RSP)"},
+    ]}), encoding="utf-8")
+    dump = _dump(tmp_path, [{
+        "procedure": {"reference": "2015/2833(RSP)", "title": "T",
+                      "type": "RSP - Resolutions on topical subjects",
+                      "stage_reached": "Procedure completed",
+                      "subject": {"7.10.08": "Migration policy"}},
+        "committees": [],
+    }])
+    entrees = construire(references_visees(tmp_path), dump_path=dump)
+    assert entrees[0]["matieres"] == [{"code": "7.10.08", "libelle": "Migration policy"}]
+    assert "matieres_non_resolu" not in entrees[0]
