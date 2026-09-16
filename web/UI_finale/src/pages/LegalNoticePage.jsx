@@ -113,31 +113,6 @@ const SECTIONS = [
           partage à l'identique.
         </p>
 
-        <h3>NosDéputés.fr et NosSénateurs.fr (Regards Citoyens)</h3>
-        <p>
-          Ces deux sources, projets de l'association Regards Citoyens, <strong>ne sont plus
-          interrogées</strong> : NosSénateurs.fr est sorti du périmètre du site en août 2026, et
-          NosDéputés.fr a été retiré du pipeline de collecte le même mois. Des mandats et des
-          éléments d'identité collectés avant 2026 en dérivent encore et restent publiés. Les prises
-          de parole qui en venaient ont été retirées du corpus en septembre 2026, vérifiées une par
-          une contre les comptes rendus de l'Assemblée, et les mots-clés dont dérivaient les tags
-          thématiques avec elles. L'attribution et les obligations de la{' '}
-          <strong>licence Open Database License (ODbL) v1.0</strong> leur restent donc dues :{' '}
-          <a href="https://opendatacommons.org/licenses/odbl/1-0/" target="_blank" rel="noopener noreferrer">
-            https://opendatacommons.org/licenses/odbl/1-0/
-          </a>
-        </p>
-        <p className="static-note">
-          Contient des informations issues de NosDéputés.fr et NosSénateurs.fr, par Regards Citoyens à
-          partir de l'Assemblée nationale (ou du Sénat) et du Journal Officiel, mises à disposition sous
-          licence ODbL.
-        </p>
-        <p className="static-note">
-          Chaque profil publie la liste des licences dont son contenu relève
-          (<code>meta.licence_donnees</code>) : cette mention y disparaît d'elle-même le jour où le
-          profil ne porte plus rien qui vienne de ces deux sources.
-        </p>
-
         <h3>Parltrack</h3>
         <p>
           Les données relatives aux député·es européen·nes (dossiers législatifs, votes, activités)
@@ -210,8 +185,7 @@ const SECTIONS = [
         <h3>Implication pour la réutilisation de nos propres données</h3>
         <p>
           Les jeux de données JSON produits et publiés par ce site combinent des contenus sous plusieurs
-          licences. <strong>Seuls les champs dérivés de sources sous ODbL (Parltrack, et NosDéputés.fr /
-          NosSénateurs.fr pour les champs déjà publiés qui en proviennent)</strong>{' '}
+          licences. <strong>Seuls les champs dérivés de Parltrack, sous ODbL,</strong>{' '}
           sont soumis à la clause de partage à l'identique de l'ODbL : toute republication d'un jeu de
           données dérivé téléchargeable incluant ces champs doit être mise à disposition sous une licence à
           clauses équivalentes. Les champs issus de l'Open Data de l'Assemblée nationale (Licence Ouverte /
@@ -220,10 +194,8 @@ const SECTIONS = [
           l'identique. Les champs issus de Wikidata (CC0) ne sont soumis à aucune restriction.
         </p>
         <p>
-          Le retrait de NosDéputés.fr et de NosSénateurs.fr de la collecte <strong>ne rend donc pas
-          l'ensemble du corpus réutilisable sous simple attribution</strong>, pour deux raisons
-          distinctes : Parltrack reste une source active sous ODbL, et des champs dérivés de Regards
-          Citoyens restent publiés. Pour savoir ce qui s'applique à un profil donné, lire son champ{' '}
+          L'ensemble du corpus <strong>n'est donc pas réutilisable sous simple attribution</strong> :
+          Parltrack reste une source active sous ODbL. Pour savoir ce qui s'applique à un profil donné, lire son champ{' '}
           <code>meta.licence_donnees</code>, qui énumère les licences dont ce profil relève. Dans tous les
           cas, la consultation du site lui-même (page HTML, « Produced Work » au sens de l'ODbL) reste
           couverte par la simple attribution ci-dessus.
@@ -238,7 +210,7 @@ export default function LegalNoticePage() {
     <StaticPage
       eyebrow="Empreinte politique"
       title="Mentions légales"
-      updated="Dernière mise à jour : 27 août 2026"
+      updated="Dernière mise à jour : 16 septembre 2026"
       sections={SECTIONS}
     />
   );

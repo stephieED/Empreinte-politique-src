@@ -167,7 +167,7 @@ Full rationale: `web/old/v3/methodologie.html` — do not duplicate prose here.
 | data.senat.fr | **Yes since #885 — memberships only.** The dataset carries no ballots and no floor records, so §7.2 of #528 stays **declared unmet**, not worked around. Three tables of individual attendance are refused at collection (§2 rule 3) | Licence Ouverte (`fr-lo`) | Attribution only — **no share-alike**, so a profile that gains Senate data does not enter the ODbL clause |
 | Parltrack (JSON dumps) | Yes | ODbL v1.0 | **Share-alike** if republished as downloadable dataset |
 | European Parliament (data.europarl.europa.eu, www.europarl.europa.eu) | Yes | EP Legal Notice (reuse policy, attribution-based) | Attribution only |
-| NosDeputes.fr / NosSenateurs.fr | **No** since #528/#529 — but published fields still derive from it | ODbL v1.0 | **Share-alike** if published as downloadable dataset |
+| NosDeputes.fr / NosSenateurs.fr | **No** since #528/#529 — and **no published field derives from it any more** since #976 (measured 16/09/2026): not cited on the site | ODbL v1.0 | None while nothing derives from it — attribution and share-alike return with the first field that does |
 | Sycomore (www2.assemblee-nationale.fr/sycomore) | **No — cited**: one row per deputy mandate older than AMO30's 19/06/2002 bound, hand-checked, in `raw_data/mandats_anterieurs.json` (#860) | © Assemblée nationale, all rights reserved | **Facts only** (office, dates) with a link to the page; nothing reproduced |
 | Journal officiel (Légifrance) | **No — cited**: one decree per government office older than the corpus, same table (#860) | Licence Ouverte 2.0 (Etalab) | Attribution only |
 | Répertoire national des élus + Municipales 2026 sortants (data.gouv.fr, `tabular-api`) | **Yes since #922 — local mandates only**, for declared candidates. Queried through the tabular API (~160 filtered requests), never downloaded (76 Mo). Coverage **starts in 2020**: the complete 2014 and 2020 datasets declare no licence, and the Licence Ouverte 2014 ones cover the first round only. An absence before that bound is **declared**, never read as « no local mandate ». The three files of mandates we already collect elsewhere — deputies, senators, MEPs — are refused at read time | Licence Ouverte 2.0 (Etalab) | Attribution only |
@@ -177,8 +177,9 @@ Full rationale: `web/old/v3/methodologie.html` — do not duplicate prose here.
 
 **"No French source is collected from Regards Citoyens any more" does not mean "the
 corpus is under Licence Ouverte" (#530).** Share-alike survives on two counts: Parltrack
-is a *live* source under ODbL, and the Regards Citoyens marker survives on the profiles
-whose data still needs it. That second leg shrinks as retractions are written, and **its
+is a *live* source under ODbL, and the Regards Citoyens marker survived on the profiles
+whose data still needed it. That second leg shrank as retractions were written, and was
+**measured empty after #976** (16/09/2026) — share-alike now rests on Parltrack alone. **Its
 size is a measurement, never a constant: re-measure before relying on it, never read a
 published figure as today's corpus** (#886). `merge_pivot_profile` unions `sources[]` by
 type, so additive regeneration never drops a marker **and a retraction has to be

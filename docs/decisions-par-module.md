@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 348 décisions
+gouverne sans avoir à fouiller les 349 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -234,7 +234,7 @@ Le mentionnent sans le gouverner : [`fenetre-historique-donnees`](decisions/fene
 | [Le sédiment se compte avant de se juger : sept familles, deux couches, aucun retrait (#839, lot A) (2026-09-12)](decisions/audit-sediment-inventaire-839.md) | `AVERTISSEMENTS_HERITES` |
 | [`meta.warnings[]` déclare son destinataire, dans un jumeau typé et aligné (#642) (2026-08-31)](decisions/destinataire-avertissements-642.md) | `AVERTISSEMENTS_HERITES`, `Avertissement`, `DESTINATAIRES_AVERTISSEMENT`, `PREFIXES_HERITES`, `avertissement`, `deriver_avertissements` |
 
-Le mentionnent sans le gouverner : [`amendements-zero-pas-de-hard-fail`](decisions/amendements-zero-pas-de-hard-fail.md), [`bloc-sans-fond-484`](decisions/bloc-sans-fond-484.md), [`constats-parltrack-perimes-683`](decisions/constats-parltrack-perimes-683.md), [`controle-perte-nomme-les-echanges-823`](decisions/controle-perte-nomme-les-echanges-823.md), [`couverture-dossiers-hors-couverture-vs-zero`](decisions/couverture-dossiers-hors-couverture-vs-zero.md), [`fiche-de-lignee-ui-329`](decisions/fiche-de-lignee-ui-329.md), [`liste-candidats-declares-753`](decisions/liste-candidats-declares-753.md), [`profil-de-groupe-lecture-329`](decisions/profil-de-groupe-lecture-329.md), [`residus-source-retiree-839`](decisions/residus-source-retiree-839.md), [`retrait-senat-528`](decisions/retrait-senat-528.md), [`union-warnings-extinction-600`](decisions/union-warnings-extinction-600.md), [`verification-bout-en-bout-legislatures-figees`](decisions/verification-bout-en-bout-legislatures-figees.md).
+Le mentionnent sans le gouverner : [`amendements-zero-pas-de-hard-fail`](decisions/amendements-zero-pas-de-hard-fail.md), [`bloc-sans-fond-484`](decisions/bloc-sans-fond-484.md), [`constats-parltrack-perimes-683`](decisions/constats-parltrack-perimes-683.md), [`controle-perte-nomme-les-echanges-823`](decisions/controle-perte-nomme-les-echanges-823.md), [`couverture-dossiers-hors-couverture-vs-zero`](decisions/couverture-dossiers-hors-couverture-vs-zero.md), [`fiche-de-lignee-ui-329`](decisions/fiche-de-lignee-ui-329.md), [`liste-candidats-declares-753`](decisions/liste-candidats-declares-753.md), [`mentions-legales-sans-regards-citoyens`](decisions/mentions-legales-sans-regards-citoyens.md), [`profil-de-groupe-lecture-329`](decisions/profil-de-groupe-lecture-329.md), [`residus-source-retiree-839`](decisions/residus-source-retiree-839.md), [`retrait-senat-528`](decisions/retrait-senat-528.md), [`union-warnings-extinction-600`](decisions/union-warnings-extinction-600.md), [`verification-bout-en-bout-legislatures-figees`](decisions/verification-bout-en-bout-legislatures-figees.md).
 
 ## `src/budget_collecte.py`
 
