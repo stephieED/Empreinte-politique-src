@@ -155,9 +155,8 @@ depuis #901. Pourquoi, et ce que ça a fait gagner :
 
 Le site le publie, et pas seulement ce fichier : **[« Sources »](https://empreinte-politique.fr/#/sources)**
 (`#/sources`, anciennement `#/couverture`) montre, pour les trois populations publiées, ce que le dépôt
-porte et depuis quand, puis par liste les fiches où elle manque. **L'accueil en
-donne la version courte** — une borne par institution, et les candidats dont une
-partie des mandats est hors couverture, nommés (#328). Deux tiers des
+porte et depuis quand, puis par liste les fiches où elle manque. L'accueil en
+donnait une version courte jusqu'à sa forme C (#951), qui l'a retirée. Deux tiers des
 limites de couverture étaient jusque-là recopiés à l'identique sous chaque fiche,
 où ils se lisaient comme des faits sur la personne affichée (#328).
 → [`docs/decisions/page-couverture-commune-328.md`](docs/decisions/page-couverture-commune-328.md)

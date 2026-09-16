@@ -130,3 +130,43 @@
 .cv-card {
   scroll-margin-top: 96px;
 }
+
+/* Les mandats hors couverture, sous la frise (#951) — le style de l'accueil. */
+.cv-hc {
+  margin-top: 16px;
+}
+
+.static-card .cv-hc-titre {
+  font-size: 12.5px;
+  font-weight: 800;
+  margin: 0 0 8px;
+}
+
+.cv-hc dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.cv-hc dt {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.cv-hc dd {
+  margin: 1px 0 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.cv-hc a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 3px;
+}
+
+.cv-hc a:hover {
+  text-decoration-color: currentcolor;
+}

@@ -155,3 +155,19 @@
   }
 }
 
+
+/* L'introduction d'une page statique (#951), sous la bannière. */
+.static-intro {
+  margin: 20px 2px 0;
+  max-width: 72ch;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.static-intro p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--ink);
+}

@@ -13,20 +13,6 @@
   gap: 14px;
 }
 
-.landing-columns {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
-  align-items: start;
-}
-
-.landing-column {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-
 .landing-section {
   border-radius: 18px;
   background: var(--card);
@@ -69,12 +55,6 @@
 .landing-hero p {
   font-size: 14px;
   color: rgba(255, 255, 255, 0.7);
-}
-
-.hero-ready {
-  margin-top: 26px;
-  padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .landing-hero h2 {
@@ -129,34 +109,6 @@
   margin-left: 16px;
 }
 
-.landing-cta-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 18px;
-}
-
-.landing-cta {
-  display: inline-block;
-  border-radius: 999px;
-  padding: 10px 20px;
-  font-size: 13px;
-  font-weight: 700;
-  text-decoration: none;
-  background: var(--accent);
-  color: var(--ink);
-}
-
-.landing-cta:hover {
-  text-decoration: underline;
-}
-
-.landing-cta:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-  text-decoration: underline;
-}
-
 .wontfind-list {
   display: flex;
   flex-direction: column;
@@ -209,161 +161,6 @@
   margin-top: 8px;
   margin-bottom: 0;
   margin-left: 16px;
-}
-
-.sources-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 12px;
-  margin-top: 4px;
-}
-
-.source-card {
-  border-radius: 14px;
-  background: var(--bg);
-  border: 1px solid #f0eeeb;
-  padding: 14px 16px;
-  transition: box-shadow 0.15s ease;
-}
-
-.source-card:hover,
-.source-card:focus-within {
-  box-shadow: 0 4px 14px rgba(20, 15, 40, 0.1);
-}
-
-/* <details> replié par défaut (retour utilisateur du 2026-08-15) : même
-   marqueur +/− que .landing-faq-item, adapté à un résumé multi-éléments
-   (nom + cadence + badge) plutôt qu'une simple question. */
-.source-card-summary {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  list-style: none;
-}
-
-.source-card-summary::-webkit-details-marker {
-  display: none;
-}
-
-.source-card-summary::before {
-  content: '+';
-  display: inline-block;
-  width: 16px;
-  color: var(--muted);
-  font-weight: 800;
-}
-
-.source-card[open] .source-card-summary::before {
-  content: '−';
-}
-
-.source-card-summary:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-.source-card-name {
-  font-size: 14px;
-  font-weight: 700;
-  margin: 0;
-}
-
-.source-card-body {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 10px;
-  margin-left: 16px;
-}
-
-.source-card-row {
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--ink);
-  margin: 0;
-}
-
-.source-card-badge {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  border-radius: 999px;
-  padding: 3px 10px;
-  background: var(--accent);
-  color: var(--ink);
-}
-
-.source-card-label {
-  display: block;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-  margin-bottom: 2px;
-}
-
-.source-card-license {
-  position: relative;
-}
-
-.source-license-info {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  margin-left: 6px;
-  border-radius: 50%;
-  border: 1px solid #e7e4df;
-  background: var(--card);
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1;
-  cursor: help;
-}
-
-.source-license-info:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-.source-license-tooltip {
-  position: absolute;
-  left: 0;
-  bottom: calc(100% + 8px);
-  z-index: 1;
-  width: max-content;
-  max-width: 260px;
-  border-radius: 10px;
-  background: var(--dark);
-  color: #ffffff;
-  font-size: 12px;
-  line-height: 1.5;
-  padding: 10px 12px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.15s ease;
-}
-
-.source-card-license:hover .source-license-tooltip,
-.source-card-license:focus-within .source-license-tooltip {
-  opacity: 1;
-}
-
-.sources-freshness-cta {
-  font-size: 13px;
-  color: var(--muted);
-  margin-top: 16px;
-}
-
-.sources-freshness-cta a {
-  color: var(--ink);
-  font-weight: 700;
 }
 
 .how-it-works-steps {
@@ -551,9 +348,8 @@
   }
 }
 
-/* Below this width, HowItWorks only has half of .landing-main to itself
-   (paired with SourcesFreshness) — its internal 4-column step grid needs the
-   same 2-column relief mobile already gets, or steps get too cramped. */
+/* Below this width, HowItWorks' internal 4-column step grid gets cramped:
+   it takes the same 2-column relief mobile already gets. */
 @media (max-width: 1180px) {
   .how-it-works-steps {
     grid-template-columns: repeat(2, 1fr);
@@ -563,10 +359,6 @@
 @media (max-width: 680px) {
   .landing-main {
     padding: 24px 20px 48px;
-  }
-
-  .landing-columns {
-    grid-template-columns: 1fr;
   }
 
   .landing-section {
@@ -588,191 +380,31 @@
   }
 }
 
-/* CE QUE NOUS LISONS, ET DEPUIS QUAND — une borne par institution, en tête de
-   « Sources & fraîcheur des données » (#328). Les teintes sont celles des
-   institutions sur les fiches et sur /couverture ; les deux absences gardent
-   leurs deux motifs, jamais confondus (DESIGN_SYSTEM §6 bis règle 7). */
-.ca {
-  --ca-an: #803060;
-  --ca-gouv: #85510d;
-  --ca-pe: #003399;
-  --ca-hachure: #e6e1da;
-  margin-bottom: 18px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border);
-}
-
-.landing-section .ca-tete {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 4px 12px;
-  font-size: 12.5px;
-  margin-bottom: 8px;
-}
-
-.ca-tete span {
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-}
-
-.ca-grille {
-  display: grid;
-  grid-template-columns: 124px minmax(0, 1fr) auto;
-  gap: 7px 12px;
-  align-items: center;
-}
-
-.ca-ligne {
-  display: contents;
-}
-
-.ca-axe {
-  position: relative;
-  height: 14px;
-  font-size: 10.5px;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-}
-
-.ca-axe span {
-  position: absolute;
-  transform: translateX(-50%);
-}
-
-.ca-nom {
-  font-size: 12.5px;
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.ca-rail {
-  position: relative;
-  height: 14px;
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.ca-plein {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  border-radius: 2px;
-}
-
-.ca-plein--AN { background: var(--ca-an); }
-.ca-plein--gouvernement { background: var(--ca-gouv); }
-.ca-plein--PE { background: var(--ca-pe); }
-
-.ca-hors {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  background: repeating-linear-gradient(45deg, var(--ca-hachure) 0 3px, transparent 3px 7px);
-}
-
-.ca-nonc {
-  position: absolute;
-  inset: 0;
-  border-radius: 2px;
-  background: repeating-linear-gradient(45deg, var(--accent) 0 4px, #fbffd6 4px 8px);
-  box-shadow: inset 0 0 0 1.2px #a9c400;
-}
-
-.ca-depuis {
-  white-space: nowrap;
-  font-size: 11.5px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.2;
-}
-
-.ca-depuis small {
-  display: block;
-  font-size: 10.5px;
-  font-weight: 500;
-  color: var(--muted);
-}
-
-.landing-section .ca-legende {
+/* ── Les candidats déclarés (#951, forme C) ── */
+.landing-candidats-liste {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 16px;
-  margin: 12px 0 0;
-  font-size: 11px;
-  color: var(--muted);
-}
-
-.ca-cle {
-  display: inline-block;
-  width: 18px;
-  height: 9px;
-  border-radius: 2px;
-  margin-right: 5px;
-  vertical-align: -1px;
-}
-
-.ca-cle--collecte {
-  background: linear-gradient(90deg, var(--ca-an) 0 33.4%, var(--ca-gouv) 33.4% 66.7%, var(--ca-pe) 66.7%);
-}
-
-.ca-cle--nonc {
-  background: repeating-linear-gradient(45deg, var(--accent) 0 4px, #fbffd6 4px 8px);
-  box-shadow: inset 0 0 0 1.2px #a9c400;
-}
-
-.ca-cle--hors {
-  background: repeating-linear-gradient(45deg, var(--ca-hachure) 0 3px, transparent 3px 7px);
-}
-
-.ca-hc {
-  margin-top: 14px;
-}
-
-.landing-section .ca-hc-titre {
-  font-size: 12.5px;
-  font-weight: 800;
-  margin-bottom: 8px;
-}
-
-.ca-hc dl {
-  display: grid;
   gap: 8px;
-  margin: 0;
 }
 
-.ca-hc dt {
-  font-size: 11.5px;
-  font-weight: 700;
+.landing-candidats-liste .cb-chip {
+  text-decoration: none;
+}
+
+.landing-candidats-liste .cb-chip:hover {
+  text-decoration: none;
+}
+
+.landing-section .landing-candidats-aussi {
+  margin-top: 16px;
+  font-size: 13px;
   color: var(--muted);
 }
 
-.ca-hc dd {
-  margin: 1px 0 0;
-  font-size: 12.5px;
-  line-height: 1.55;
-}
-
-.ca-hc a {
+.landing-candidats-aussi a {
   color: var(--ink);
-  text-decoration: underline;
-  text-decoration-color: var(--border-strong);
-  text-underline-offset: 3px;
-}
-
-.ca-hc a:hover {
-  text-decoration-color: currentcolor;
-}
-
-@media (max-width: 560px) {
-  .ca-grille {
-    grid-template-columns: 88px minmax(0, 1fr) auto;
-  }
-
-  /* Une graduation sur deux : six années sur 150 px se chevauchent. */
-  .ca-axe-mineure {
-    display: none;
-  }
+  font-weight: 600;
 }

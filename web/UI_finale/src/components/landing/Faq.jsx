@@ -1,6 +1,5 @@
-import './landing.css';
-
-// Écrites une seule fois : la page /faq les lit ici (#951).
+// Écrites une seule fois : la page /faq les lit ici (#951). L'accueil ne les
+// porte plus depuis sa forme C.
 export const QUESTIONS = [
   {
     question: 'Est-ce que c’est objectif ?',
@@ -23,19 +22,3 @@ export const QUESTIONS = [
       'Un scrutin manqué ne décrit ni le travail parlementaire ni ses motifs (commission, texte porté, absence justifiée…). Empreinte politique ne publie donc aucun taux individuel d’assiduité, de présence ou d’absence.',
   },
 ];
-
-export default function Faq() {
-  return (
-    <section className="landing-section" aria-label="Questions fréquentes">
-      <h2>Questions fréquentes</h2>
-      <div className="landing-faq-list">
-        {QUESTIONS.map(({ question, answer }) => (
-          <details className="landing-faq-item" key={question}>
-            <summary>{question}</summary>
-            <p>{answer}</p>
-          </details>
-        ))}
-      </div>
-    </section>
-  );
-}

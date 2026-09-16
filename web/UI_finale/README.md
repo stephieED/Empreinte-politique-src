@@ -100,8 +100,8 @@ src/
 │   ├── NavigationPeriodes    # Sélecteur de période, partagé par les sections
 │   ├── FriseCouverture       # Frise de /couverture, par institution
 │   ├── Lecture · ConstructionBanner · NotFoundProfile
-│   └── landing/              # Sections de l'accueil : Hero, HowItWorks, Faq,
-│                             #   SourcesFreshness, CouvertureAccueil, WhatYouWontFind
+│   └── landing/              # Hero et CandidatsDeclares (accueil, #951) ; HowItWorks,
+│                             #   WhatYouWontFind (tête de /methodologie) ; Faq (questions de /faq)
 ├── pages/                    # Pages routées
 │   ├── LandingPage           # L'accueil, hors explorateur
 │   ├── CandidateProfilePage · GroupProfilePage · GovernmentProfilePage

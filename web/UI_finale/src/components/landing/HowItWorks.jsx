@@ -52,12 +52,16 @@ const STEPS = [
     label: 'On part de sources ouvertes',
     // Une source à venir n'est pas encore une source (#951).
     stat: `${sourcesConfig.filter((s) => !s.aVenir).length} sources publiques`,
+    detail:
+      'Assemblée nationale, Sénat, Parlement européen, répertoire des élus : des données publiées par les institutions elles-mêmes, collectées automatiquement à chaque mise à jour.',
     Icon: IconSources,
   },
   {
     id: 'normalise',
     label: 'On normalise',
     stat: '1 schéma commun',
+    detail:
+      "Un programme range chaque source dans un même schéma, sans qu'aucun fait soit réécrit à la main. Seuls quelques rapprochements, comme l'identité d'un candidat ou ses mandats antérieurs à 2002, sont relus par une personne, et chacun cite sa source.",
     Icon: IconNormalize,
   },
   {

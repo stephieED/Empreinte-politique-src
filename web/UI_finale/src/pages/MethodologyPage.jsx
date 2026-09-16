@@ -1,4 +1,6 @@
 import StaticPage from '../components/StaticPage';
+import HowItWorks from '../components/landing/HowItWorks';
+import WhatYouWontFind from '../components/landing/WhatYouWontFind';
 import { LAST_READING_RULE, STATED_REFUSALS, WHOLE_TEXT_VOTE_BOUND } from '../utils/lecture';
 import { REFUS_FICHE_GROUPE } from '../utils/groupe';
 
@@ -44,7 +46,26 @@ import { REFUS_FICHE_GROUPE } from '../utils/groupe';
  * de famille il se répétait, et un titre qui se répète cesse d'être lu.
  * Les `id` ne bougent PAS : ce sont des ancres visées depuis les fiches.
  */
+/* L'ADN DU PROJET, en tête de la méthode (#951). Texte écrit par la propriétaire
+   le 16/09/2026 : l'automatisation y est dite en toutes lettres. Deux affirmations
+   corrigées le même jour, parce qu'elles étaient fausses : « la source officielle »
+   (Wikipédia et ParlTrack n'en sont pas), et « la fiche le mentionne
+   explicitement » (aucune fiche n'affiche qu'un rapprochement a été relu). */
+const INTRODUCTION = [
+  'Empreinte politique rassemble ce que les institutions publient sur les candidats à la présidentielle 2027 (mandats, votes, textes, prises de parole) et le donne à lire tel quel.',
+  "Tout est collecté et mis en forme automatiquement par un programme : aucun fait n'est écrit ni altéré à la main. Ce que vous lisez est ce que la source publie, avec le lien direct pour le vérifier.",
+  'Seuls certains rapprochements de données sont validés par un humain, et chacun cite sa source.',
+  "Rien n'est noté, classé ni commenté.",
+];
+
 const SECTIONS = [
+  /* EN TÊTE, AVANT LES FAMILLES (#951) : les deux blocs que l'accueil portait.
+     Ils disent la méthode en quatre étapes et ce que le site refuse de publier,
+     avant le détail fiche par fiche. Leur famille, « Les principes », est
+     retenue le 16/09/2026 : « Le concept » légende déjà l'illustration du Hero. */
+  { famille: 'Les principes' },
+  { id: 'comment-ca-marche', element: <HowItWorks key="comment" /> },
+  { id: 'ce-que-vous-ne-trouverez-pas', element: <WhatYouWontFind key="refus" /> },
   { famille: 'Fiche candidat' },
   {
     id: 'fonctions',
@@ -542,6 +563,7 @@ export default function MethodologyPage() {
       eyebrow="Empreinte politique"
       title="Méthode éditoriale"
       tagline="Des faits sourcés, sans note de performance."
+      intro={INTRODUCTION}
       sections={SECTIONS}
     />
   );
