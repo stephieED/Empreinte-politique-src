@@ -71,3 +71,37 @@ def test_l_accueil_et_l_explorateur_portent_la_meme_rangee() -> None:
         source = _sans_commentaires(page.read_text(encoding="utf-8"))
         assert "<EnTeteSite" in source, page.name
         assert "<Brand />" not in source, f"{page.name} : le logo vient de la rangée"
+
+
+# ── La page /faq ────────────────────────────────────────────────────────────
+
+APP = UI / "src" / "App.jsx"
+PAGE_FAQ = UI / "src" / "pages" / "FaqPage.jsx"
+PAGE_STATIQUE = UI / "src" / "components" / "StaticPage.jsx"
+COUVERTURE = UI / "src" / "pages" / "CoveragePage.jsx"
+
+
+def test_faq_mene_a_sa_page() -> None:
+    nav = _sans_commentaires(NAV.read_text(encoding="utf-8"))
+    assert "vers: '/faq'" in nav and "'/#faq'" not in nav
+    assert '<Route path="/faq" element={<FaqPage />} />' in APP.read_text(encoding="utf-8")
+
+
+def test_les_questions_ne_sont_ecrites_qu_une_fois() -> None:
+    """La page lit les questions de l'accueil ; elle ne les recopie pas."""
+    page = _sans_commentaires(PAGE_FAQ.read_text(encoding="utf-8"))
+    assert "import { QUESTIONS } from '../components/landing/Faq';" in page
+    assert "question:" not in page
+
+
+def test_la_faq_est_un_accordeon_premiere_question_ouverte() -> None:
+    """Forme B, retenue le 16/09/2026 entre trois maquettes."""
+    page = _sans_commentaires(PAGE_FAQ.read_text(encoding="utf-8"))
+    assert "<details" in page and "open={i === 0}" in page
+
+
+def test_les_pages_statiques_portent_la_rangee_et_plus_le_fil_d_ariane() -> None:
+    for page in (PAGE_STATIQUE, COUVERTURE):
+        source = _sans_commentaires(page.read_text(encoding="utf-8"))
+        assert "<EnTeteSite" in source, page.name
+        assert "Retour à l'accueil" not in source, page.name

@@ -1,6 +1,7 @@
 import './landing.css';
 
-const QUESTIONS = [
+// Écrites une seule fois : la page /faq les lit ici (#951).
+export const QUESTIONS = [
   {
     question: 'Est-ce que c’est objectif ?',
     answer:
@@ -9,7 +10,7 @@ const QUESTIONS = [
   {
     question: 'D’où viennent les données ?',
     answer:
-      'De sources publiques. Côté français, une seule est encore collectée : l’open data de l’Assemblée nationale (data.assemblee-nationale.fr, Licence Ouverte). S’y ajoutent l’open data du Parlement européen, les dumps ParlTrack (ODbL) et Wikidata. Des mandats et des éléments d’identité collectés avant 2026 proviennent de NosDéputés.fr et NosSénateurs.fr (Regards Citoyens, ODbL) : ces sources ne sont plus interrogées, ces champs restent publiés, et l’attribution leur reste due. Chaque profil indique ses sources et sa date de dernière synchronisation ; une donnée manquante est affichée comme manquante, jamais remplacée par un zéro.',
+      'De sources publiques, et d’abord des institutions elles-mêmes. Côté français : l’open data de l’Assemblée nationale (mandats, votes, textes, amendements, prises de parole) et celui du Sénat, dont le jeu de données ne porte que les appartenances, sans votes ni débats ; tous deux sous Licence Ouverte. Les mandats locaux viennent du Répertoire national des élus, à partir de 2020. Côté européen : l’open data du Parlement européen et les dumps ParlTrack (ODbL). Wikidata relie chaque candidat à sa fiche de l’Assemblée, et les mandats antérieurs à 2002 sont cités depuis Sycomore et le Journal officiel. Des mandats et des éléments d’identité collectés avant 2026 proviennent de NosDéputés.fr et NosSénateurs.fr (Regards Citoyens, ODbL) : ces sources ne sont plus interrogées, ces champs restent publiés, et l’attribution leur reste due. Chaque profil indique ses sources et sa date de dernière synchronisation ; une donnée manquante est affichée comme manquante, jamais remplacée par un zéro.',
   },
   {
     question: 'Pourquoi pas de notation ?',
@@ -25,7 +26,7 @@ const QUESTIONS = [
 
 export default function Faq() {
   return (
-    <section className="landing-section" id="faq" aria-label="Questions fréquentes">
+    <section className="landing-section" aria-label="Questions fréquentes">
       <h2>Questions fréquentes</h2>
       <div className="landing-faq-list">
         {QUESTIONS.map(({ question, answer }) => (
