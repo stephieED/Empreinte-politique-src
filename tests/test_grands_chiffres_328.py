@@ -291,23 +291,35 @@ def test_la_teinte_d_un_banc_est_declaree_une_seule_fois(feuille):
     seule fois, sur `.cp-main`, et tous leurs lecteurs les lisent (#328). Le
     test vérifie donc l'unicité, plus la coïncidence."""
     fiche = _corps(feuille, ".cp-main {", "\n}")
-    # Quatre institutions, trois teintes et une encre d'absence — le Sénat n'a
-    # pas de teinte propre, et la sarcelle #169E9E lui est réservée pour le jour
-    # où sa collecte sera rebranchée (docs/decisions/teintes-des-institutions-328.md).
-    teintes = {"--parl": "#803060", "--gouv": "#85510d", "--pe": "#003399", "--neutre": "#9a958d"}
+    # Quatre institutions, quatre teintes, et une encre d'absence.
+    #
+    # RÉÉCRIT LE 16/09/2026, ET CE QU'IL TENAIT. Il exigeait `--senat:
+    # var(--neutre)` : le Sénat n'avait pas de teinte propre, sa collecte étant
+    # hors périmètre (#528), et la sarcelle lui était réservée « pour le jour où
+    # elle serait rebranchée ». Ce jour est #885 — les appartenances sont
+    # collectées —, la sarcelle a été retenue le 15/09 sur /couverture, et la
+    # propriétaire l'a demandée sur la fiche le 16/09. Le gris passe aux mandats
+    # locaux, qui ne sont pas une institution (`frise-segments-pleins-et-senat-885`
+    # §4). La règle que le test protège ne change pas : chaque teinte déclarée
+    # une seule fois, et lue par tous.
+    teintes = {
+        "--parl": "#803060", "--gouv": "#85510d", "--pe": "#003399",
+        "--senat": "#169e9e", "--neutre": "#9a958d",
+    }
     for jeton, valeur in teintes.items():
         assert f"{jeton}: {valeur}" in fiche, f"`{jeton}` est déclaré sur la fiche"
         assert feuille.count(valeur) == 1, (
             f"`{valeur}` une seule fois : une seconde occurrence est une copie qui divergera"
         )
-    # Le Sénat ne porte pas une quatrième teinte : il POINTE sur l'encre des
-    # absences. Une valeur recopiée là ferait diverger les deux le jour où l'une
-    # bouge, et laisserait croire qu'il a une couleur à lui.
-    assert "--senat: var(--neutre)" in fiche, (
-        "le Sénat lit l'encre des absences, il n'a pas de teinte propre"
+    # Les mandats locaux POINTENT sur l'encre des absences, sans la recopier :
+    # une valeur recopiée divergerait le jour où l'une bouge.
+    assert "--local: var(--neutre)" in fiche, (
+        "les mandats locaux lisent l'encre des absences, sans la recopier"
     )
     for regle, jeton in [
         (".cp-fs--parlement {", "var(--parl)"),
+        (".cp-fs--senat {", "var(--senat)"),
+        (".cp-fs--local {", "var(--local)"),
         (".cp-fs--gouvernement {", "var(--gouv)"),
         (".cp-fonctions-bloc--parlement {", "var(--parl)"),
         (".cp-fonctions-bloc--gouvernement {", "var(--gouv)"),

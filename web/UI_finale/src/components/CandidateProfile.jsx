@@ -27,6 +27,7 @@ import EcartsGroupe from './EcartsGroupe';
 import {
   CAS_RIEN_A_MONTRER,
   INSTITUTION_GOUVERNEMENT,
+  INSTITUTION_LOCAL,
   INSTITUTION_MISSION,
   INSTITUTION_PARLEMENT,
   INSTITUTION_PE,
@@ -58,6 +59,14 @@ function annee(iso) {
 function periode(debut, fin, actif) {
   if (actif) return `depuis le ${jour(debut)}`;
   return `${jour(debut)} → ${jour(fin)}`;
+}
+
+/* La période d'un rôle du parcours. Un mandat local achevé n'a pas de date de
+ * fin publiée : sa borne est la date où la source l'atteste, et l'écrire comme
+ * une fin la ferait passer pour un fait (§2 règle 5). */
+function periodeDuRole(r) {
+  if (r.finNonPubliee) return `${jour(r.debut)} → fin non publiée`;
+  return periode(r.debut, r.fin, r.actif);
 }
 
 /*
@@ -150,6 +159,11 @@ function candidatesEtiquette(role) {
     return [portefeuille, role.role, court].filter(Boolean);
   }
   if (role.institution === INSTITUTION_MISSION) return [role.role];
+  // Un mandat local : la collectivité, puis la fonction — « Cannes » se lit
+  // dans un segment de trois mois, « Maire · Cannes » dans un plus long.
+  if (role.institution === INSTITUTION_LOCAL) {
+    return [role.detail && `${role.role} · ${role.detail}`, role.detail, role.role].filter(Boolean);
+  }
 
   // Un siège : LE SIGLE DU GROUPE ET LA PLACE DANS L'HÉMICYCLE, et rien d'autre
   // (maquette « En bref », 11/09/2026). La fonction se lit sur la couleur et la
@@ -215,12 +229,22 @@ const LEGENDE_FRISE = [
   { piste: INSTITUTION_GOUVERNEMENT, classe: 'cp-fs--gouvernement', label: 'Membre du gouvernement' },
   { piste: INSTITUTION_GOUVERNEMENT, classe: 'cp-fs--chef', label: 'Chef du gouvernement' },
   { piste: INSTITUTION_MISSION, classe: 'cp-fs--mission', label: 'Parlementaire en mission auprès d’un ministère' },
+  // L'ASTÉRISQUE RENVOIE AU PIED D'« EN BREF » : les mandats locaux ne sont
+  // publiés qu'à partir de 2020, et le répertoire ne porte que le mandat en
+  // cours. Sans le renvoi, un segment de six mois se lit comme une expérience
+  // de six mois (arbitré le 16/09/2026).
+  { piste: INSTITUTION_LOCAL, classe: 'cp-fs--local', label: 'Mandat local', renvoi: true },
 ];
 
 function Frise({ parcours }) {
   const { roles, nbLignes, bornes } = parcours;
   if (!roles.length || !bornes) return null;
-  const pistesPresentes = new Set(roles.map(pisteDuRole));
+  /* LA LÉGENDE LIT LES CLASSES DESSINÉES, PAS LES PISTES. « Membre du
+   * gouvernement » et « Chef du gouvernement » partagent la piste
+   * `gouvernement` : filtrer sur elle affichait « Chef du gouvernement » sur
+   * toute fiche de ministre, sans un seul segment jaune. Une entrée de légende
+   * n'a de sens que si sa teinte est à l'écran. */
+  const classesDessinees = new Set(roles.map(classeInstitution));
 
   const hauteurLigne = 100 / nbLignes;
 
@@ -265,7 +289,7 @@ function Frise({ parcours }) {
                 top: `${(r.ligne * hauteurLigne).toFixed(2)}%`,
                 height: `${hauteurLigne.toFixed(2)}%`,
               }}
-              title={`${r.role} — ${periode(r.debut, r.fin, r.actif)}`}
+              title={`${r.role}${r.detail ? ` · ${r.detail}` : ''} — ${periodeDuRole(r)}`}
             >
               {etiquetteSegment(r, largeur)}
             </span>
@@ -283,10 +307,16 @@ function Frise({ parcours }) {
 
       <div className="cp-legende">
         <div className="cp-legende-grille">
-          {LEGENDE_FRISE.filter((l) => pistesPresentes.has(l.piste)).map((l) => (
+          {LEGENDE_FRISE.filter((l) => classesDessinees.has(l.classe)).map((l) => (
             <span className="cp-legende-item" key={l.label}>
               <span className={`cp-legende-pave ${l.classe}`} />
-              {l.label}
+              {/* Le libellé et son renvoi dans UN SEUL élément : l'entrée de
+                  légende est un flex à `gap: 9px`, et un astérisque posé à côté
+                  du texte devenait un second enfant, écarté de neuf pixels. */}
+              <span>
+                {l.label}
+                {l.renvoi && <sup className="cp-legende-renvoi" aria-hidden="true">*</sup>}
+              </span>
             </span>
           ))}
         </div>
@@ -304,7 +334,7 @@ function Frise({ parcours }) {
         {roles.map((r) => (
           <li className="cp-role" key={r.numero}>
             <span className="cp-role-numero">{r.numero}</span>
-            <span className="cp-role-dates">{periode(r.debut, r.fin, r.actif)}</span>
+            <span className="cp-role-dates">{periodeDuRole(r)}</span>
             <span className="cp-role-intitule">
               <b>{r.role}</b>
               {/* La qualification du groupe est publiée PAR L'ASSEMBLÉE : la
@@ -1052,7 +1082,13 @@ function repliParDefaut(colonnes) {
 function GrandsChiffres({ chiffres, parcours }) {
   const { colonnes = [], lignes = [] } = chiffres || {};
   const [replies, setReplies] = useState(() => repliParDefaut(colonnes));
-  if (!chiffres || chiffres.cas === CAS_RIEN_A_MONTRER) return null;
+  /* UNE FICHE SANS AUCUN CHIFFRE PEUT AVOIR UN PARCOURS (#922). David Lisnard,
+   * Karim Bouamrane, Fabien Verdier et Marine Tondelier n'ont ni siège national
+   * ni fonction gouvernementale, mais des mandats locaux : le bloc se taisait
+   * entièrement, frise comprise. Il se rend désormais dès qu'il a une frise à
+   * montrer, et seul le tableau des chiffres reste absent. */
+  const sansChiffres = !chiffres || chiffres.cas === CAS_RIEN_A_MONTRER;
+  if (sansChiffres && !parcours?.roles?.length) return null;
   const ouvertes = colonnes.filter((c) => !replies.has(c));
   const basculer = (c) => setReplies((avant) => {
     const apres = new Set(avant);
@@ -1093,6 +1129,7 @@ function GrandsChiffres({ chiffres, parcours }) {
             La ligne elle-même a été réduite trois fois : le texte explicatif est
             un aveu d'échec, et si une phrase doit expliquer un chiffre, c'est la
             forme qui n'a pas fait son travail. */}
+        {!sansChiffres && (
         <details className="cp-pli">
           <summary className="cp-poignee">
             <i className="cp-poignee-plus" aria-hidden="true" />
@@ -1157,6 +1194,7 @@ function GrandsChiffres({ chiffres, parcours }) {
             ))}
           </div>
         </details>
+        )}
       </div>
 
       {/* LE PIED EST HORS DE LA CARTE, comme celui de toutes les sections :
@@ -1169,6 +1207,11 @@ function GrandsChiffres({ chiffres, parcours }) {
           seule phrase qui rattachait les trois postures à l'Assemblée plutôt
           qu'à nous (§2 règle 2) : la frise ne les porte plus, mais la liste des
           rôles les écrit toujours. */}
+      {parcours?.roles?.some((r) => r.institution === INSTITUTION_LOCAL) && (
+        <p className="cp-section-pied">
+          * Mandats locaux : données parcellaires, publiées seulement à partir de 2020.
+        </p>
+      )}
       <p className="cp-section-pied">
         <Link to="/methodologie#fonctions">Majorité, minorité et opposition, selon l’Assemblée →</Link>
       </p>
