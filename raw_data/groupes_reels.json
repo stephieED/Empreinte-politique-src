@@ -1382,52 +1382,6 @@
       "fichier": "groupe-AN-DR-17.json"
     },
     {
-      "roster_chambre": "senateurs",
-      "groupe_id": "Senat:LR",
-      "lignee_id": "Senat:LIGNEE:LR",
-      "groupe_sigle": "LR",
-      "groupe_nom": "Les Républicains",
-      "chambre": "Senat",
-      "legislature": null,
-      "fichier": "groupe-Senat-LR.json",
-      "extraction_suspendue": {
-        "depuis": "2026-08-24",
-        "motif": "Aucune source ne publie les interventions du Sénat. data.senat.fr, entré au corpus le 13/09/2026 (#885), porte les appartenances et rien d'autre : ni scrutin, ni compte rendu. L'extraction du roster par archive.nossenateurs.fr est suspendue depuis le 24/08/2026 (certificat TLS expiré) et ne sera pas reprise : NosSénateurs est hors périmètre depuis #528. L'entrée demeure parce que la retirer supprimerait un fichier publié (groupe-Senat-LR.json), ce que audit_diff_profils bloque (#460/#470).",
-        "references": [
-          "#528",
-          "#516",
-          "run 32463926808 (21/08/2026, 6 shards roster sur 8 en échec)",
-          "run 32548486495 (22/08/2026, 8 shards sur 8)",
-          "#511",
-          "#488",
-          "#501"
-        ],
-        "condition_reprise": "Décision éditoriale, PAS un état de source (#528). Un certificat valide sur archive.nossenateurs.fr ne rouvre plus rien. Les trois conditions de docs/decisions/retrait-senat-528.md §7 ont été tranchées une par une par #885, le 13/09/2026 : (1) une source établie et sondée — REMPLIE, data.senat.fr, Licence Ouverte ; (2) au moins un agrégat publiable, un cohesion_votes non nul ou des interventions rattachables — DÉCLARÉE NON REMPLIE, le jeu ne porte ni scrutins ni comptes rendus ; (3) la décision éditoriale reprise avec sa date — FAITE. La réouverture du Sénat est donc PARTIELLE et assumée telle : il entre pour ses appartenances, pas pour son activité. Cette entrée ne se rouvre que si la condition (2) change, c'est-à-dire si une source publie l'activité en séance du Sénat."
-      }
-    },
-    {
-      "roster_chambre": "senateurs",
-      "groupe_id": "Senat:SER",
-      "lignee_id": "Senat:LIGNEE:SER",
-      "groupe_sigle": "SER",
-      "groupe_nom": "Socialiste, Écologiste et Républicain",
-      "chambre": "Senat",
-      "legislature": null,
-      "fichier": "groupe-Senat-SER.json",
-      "extraction_suspendue": {
-        "depuis": "2026-08-24",
-        "motif": "Ce groupe est clos depuis le 13/07/2009 : il n'a plus de composition à rafraîchir, quelle que soit la source. Aucune ne publie l'activité en séance du Sénat de toute façon — data.senat.fr, entré au corpus le 13/09/2026 (#885), porte les appartenances et rien d'autre. L'entrée demeure parce que la retirer supprimerait un fichier publié (groupe-Senat-SER.json), ce que audit_diff_profils bloque (#460/#470).",
-        "references": [
-          "#528",
-          "#516",
-          "run 32463926808 (21/08/2026)",
-          "run 32548486495 (22/08/2026)",
-          "#511"
-        ],
-        "condition_reprise": "Sans objet pour ce groupe : clos le 13/07/2009 (periode.fin), il n'a pas de composition à reprendre. La décision éditoriale qu'il partageait avec Senat:LR a été tranchée par #885 le 13/09/2026 — le Sénat entre pour ses appartenances, pas pour son activité en séance — et cela ne rouvre rien ici. Voir docs/decisions/retrait-senat-528.md §7 et la condition (2), déclarée non remplie."
-      }
-    },
-    {
       "roster_chambre": "deputes",
       "groupe_id": "AN:ECOLO:16",
       "lignee_id": "AN:LIGNEE:ECOLO",
@@ -1673,20 +1627,6 @@
       "lignee_nom": "Écologie Démocratie Solidarité",
       "chambre": "AN",
       "fichier": "lignee-AN-EDS.json",
-      "verifie_le": "2026-09-11"
-    },
-    {
-      "lignee_id": "Senat:LIGNEE:LR",
-      "lignee_nom": "Les Républicains (Sénat)",
-      "chambre": "Senat",
-      "fichier": "lignee-Senat-LR.json",
-      "verifie_le": "2026-09-11"
-    },
-    {
-      "lignee_id": "Senat:LIGNEE:SER",
-      "lignee_nom": "Socialiste, Écologiste et Républicain (Sénat)",
-      "chambre": "Senat",
-      "fichier": "lignee-Senat-SER.json",
       "verifie_le": "2026-09-11"
     },
     {
