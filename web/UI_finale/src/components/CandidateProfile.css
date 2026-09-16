@@ -40,12 +40,12 @@
  * lisent comme une famille, donc comme une hiérarchie entre deux institutions de
  * même rang.
  *
- * Le Sénat sort donc du système de couleurs et prend l'encre des absences — sur
- * les deux fiches concernées il n'a ni vote, ni amendement, ni intervention, la
- * collecte étant hors périmètre (#528), et sa colonne est repliée d'entrée.
- * **Le jour où le Sénat est rebranché, il prend la sarcelle `#169E9E`** :
- * arbitrage rendu le 11/09/2026, teinte réservée d'avance pour qu'elle ne soit
- * pas prise par autre chose.
+ * LE SÉNAT A RETROUVÉ SA TEINTE, LA SARCELLE, LE 16/09/2026. Il avait pris
+ * l'encre des absences tant que sa collecte était hors périmètre (#528) ; ses
+ * appartenances sont collectées depuis #885, et la sarcelle réservée pour ce jour
+ * a été retenue malgré ses 67° d'écart au bleu de l'Union
+ * (`frise-segments-pleins-et-senat-885` §4). L'encre des absences passe aux
+ * mandats locaux, qui ne sont pas une institution.
  *
  * Mesuré au validateur de la compétence `dataviz` (OKLab) : ΔE 10,7 sous
  * protanopie, 21,0 en vision normale, 72° d'écart minimum entre les trois. Le
@@ -69,14 +69,21 @@
   --pe-wash: #e6ebf5;
   --pe-line: #bfcce6;
   --pe-pale: #d9e0f0;
-  /* L'ENCRE DES ABSENCES, déclarée une seule fois et lue par ses deux
-     consommateurs : les cellules que la collecte ne remplit pas, et le Sénat,
-     qui n'a pas de teinte propre. */
+  /* L'ENCRE DES ABSENCES, déclarée une seule fois : les cellules que la
+     collecte ne remplit pas, et les mandats locaux, qui ne sont pas une
+     institution (#922). Le gris leur passe du Sénat le 15/09/2026, avec son
+     sens (`frise-segments-pleins-et-senat-885` §4). */
   --neutre: #9a958d;
-  --senat: var(--neutre);
-  --senat-wash: #f5f4f4;
-  --senat-line: #e6e4e2;
-  --senat-pale: #f0efee;
+  --local: var(--neutre);
+  /* LA SARCELLE DU SÉNAT, réservée le 11/09/2026 « pour le jour où sa collecte
+     sera rebranchée » et retenue le 15/09 malgré ses 67° d'écart au bleu de
+     l'Union : sous daltonisme, Europe/Sénat est la paire la plus séparée des six
+     (ΔE 33,0 / 29,7 / 29,5). Les appartenances sont collectées depuis #885.
+     Texte en encre, jamais en blanc : 5,55:1 contre 3,27:1. */
+  --senat: #169e9e;
+  --senat-wash: #eff8f8;
+  --senat-line: #c7e8e8;
+  --senat-pale: #e3f3f3;
   /* La barre de sortie d'une porte de la cascade (#328). Hors rampe d'encre :
      elle ne marque aucune étape ATTEINTE, elle constate qu'aucun acte au-delà
      n'est enregistré à la date du corpus. Un gris, donc, et pas un cran. */
@@ -848,8 +855,8 @@
   color: #fff;
 }
 
+.cp-fs--local,
 .cp-fs--senat,
-.cp-fs--chef,
 .cp-fs--mission {
   color: var(--ink);
 }
@@ -866,12 +873,30 @@
   background: var(--pe);
 }
 
+.cp-fs--local {
+  background: var(--local);
+}
+
 .cp-fs--gouvernement {
   background: var(--gouv);
 }
 
+/* LE CHEF DU GOUVERNEMENT EST UN MEMBRE DU GOUVERNEMENT, ET LA TEINTE LE DIT.
+   Un aplat jaune en faisait une institution de plus ; il prend le brun du
+   gouvernement, quadrillé de jaune (arbitré sur maquette le 16/09/2026, maille
+   de 9 px, traits de 1,5 px).
+
+   Le contour jaune essayé d'abord ne se voyait pas : `--accent` est presque
+   aussi clair que le fond blanc, et 2 px de jaune sur un segment de huit mois
+   disparaissaient. Sur le brun, c'est le fond sombre qui donne son contraste au
+   jaune. La maille large plutôt que la fine : elle se lit sur un segment court,
+   et gêne moins un libellé blanc posé dessus. */
 .cp-fs--chef {
-  background: var(--accent);
+  background-color: var(--gouv);
+  background-image:
+    linear-gradient(to right, var(--accent) 1.5px, transparent 1.5px),
+    linear-gradient(to bottom, var(--accent) 1.5px, transparent 1.5px);
+  background-size: 9px 9px;
 }
 
 .cp-fs--mission {
@@ -918,6 +943,14 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
   gap: 9px 18px;
+}
+
+/* Le renvoi d'une entrée de légende vers le pied de section : collé au libellé,
+   sans décaler la ligne. */
+.cp-legende-renvoi {
+  margin-left: 1px;
+  font-size: 0.8em;
+  line-height: 0;
 }
 
 .cp-legende-item {

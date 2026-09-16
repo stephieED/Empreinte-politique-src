@@ -349,6 +349,17 @@ export const INSTITUTION_PARLEMENT = 'parlement';
 export const INSTITUTION_GOUVERNEMENT = 'gouvernement';
 export const INSTITUTION_MISSION = 'mission';
 
+/* LE MANDAT LOCAL N'EST PAS UNE INSTITUTION, MAIS IL A SA PISTE (#922).
+ *
+ * Le schéma le pose : les mandats locaux « vivent dans `mandats[]` avec les
+ * autres », sans chambre — un conseil régional n'entre pas dans `chambres[]`.
+ * Sur la frise, ils prennent pourtant une piste à eux, parce que le lecteur doit
+ * distinguer d'un coup d'œil une mairie d'un siège de député. Aucun des
+ * consommateurs du parcours ne la lit par erreur : tous filtrent explicitement
+ * sur `parlement` ou `gouvernement` (comparaison au groupe, périodes politiques,
+ * colonnes d'« En bref »). */
+export const INSTITUTION_LOCAL = 'local';
+
 /* LE SIÈGE PORTE SA CHAMBRE, ET LA CHAMBRE FAIT LA PISTE (#328).
  *
  * `institution` dit le BANC — on siège, on gouverne, on est en mission —, et
@@ -394,6 +405,19 @@ export const ORDRE_COLONNES = [
 ];
 
 const INTITULE_CHEF = /^premier ministre$/;
+
+const CATEGORIE_MANDAT_LOCAL = 'mandat_local';
+
+/* Le siège, quand la source ne publie aucune fonction : un conseiller municipal
+ * n'a pas d'autre titre. Les quatre types présents au corpus du 16/09/2026 ;
+ * un type absent de la table retombe sur « Mandat local », jamais sur un titre
+ * deviné. */
+const SIEGE_LOCAL = {
+  conseil_municipal: 'Conseiller(ère) municipal(e)',
+  conseil_communautaire: 'Conseiller(ère) communautaire',
+  conseil_departemental: 'Conseiller(ère) départemental(e)',
+  conseil_regional: 'Conseiller(ère) régional(e)',
+};
 
 export function rolesDuParcours(mandats) {
   const liste = mandats || [];
@@ -469,6 +493,45 @@ export function rolesDuParcours(mandats) {
       fin: borneFin(m),
       actif: Boolean(m.actif) || !m.fin,
       position: 'gouvernement',
+      sourceUrl: m.source_url ?? null,
+    });
+  }
+
+  /* LES MANDATS LOCAUX, TELS QUE LE RÉPERTOIRE LES PUBLIE (#922).
+   *
+   * LA DATE DE DÉBUT EST CELLE DU MANDAT EN COURS. Le répertoire national des
+   * élus ne publie que la mandature commencée — mars 2026 pour les communes —,
+   * et le fichier des sortants la précédente : un maire depuis vingt ans
+   * apparaît « depuis le 21 mars 2026 ». C'est vrai du mandat, pas de la
+   * personne, et rien avant 2020 n'est publié (`borne-mandats-locaux-2020-922`).
+   *
+   * LA FONCTION D'ABORD : « Maire » commence le jour où le conseil l'élit, pas le
+   * jour du scrutin municipal. Sans fonction publiée, le siège seul.
+   *
+   * AUCUNE DATE DE FIN N'EST PUBLIÉE. Un mandat en cours est ouvert. Un mandat
+   * du fichier des sortants est clos, sans date : son segment s'arrête au jour
+   * où la source l'atteste (`fin_non_resolue.constate_le`), et la liste datée
+   * écrit « fin non publiée ». `actif` se lit sur la source — le déduire de
+   * l'absence de fin, comme pour une fonction gouvernementale, rouvrirait un
+   * mandat que la source dit achevé. */
+  for (const m of liste) {
+    if (m.categorie !== CATEGORIE_MANDAT_LOCAL || !m.debut) continue;
+    const actif = Boolean(m.actif);
+    const finConstatee = !actif && !m.fin ? m.fin_non_resolue?.constate_le ?? null : null;
+    roles.push({
+      institution: INSTITUTION_LOCAL,
+      role: m.fonction || SIEGE_LOCAL[m.type_organe_source] || 'Mandat local',
+      detail: m.label || null,
+      debut: (m.fonction && m.debut_fonction) || m.debut,
+      // OUVERT se dit `FIN_OUVERTE`, comme pour tous les autres rôles : c'est
+      // la valeur que `positionSurAxe` rabat sur la fin de l'axe. Un `null` y
+      // vaut 0, et chaque mandat en cours se dessinait à la largeur minimale —
+      // la présidence de région de Bruno Retailleau, commencée en 2021, tenait
+      // sur la frise comme trois mois.
+      fin: m.fin || finConstatee || (actif ? FIN_OUVERTE : null),
+      actif,
+      finNonPubliee: !actif && !m.fin,
+      position: null,
       sourceUrl: m.source_url ?? null,
     });
   }
