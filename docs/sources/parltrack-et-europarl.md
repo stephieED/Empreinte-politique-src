@@ -85,6 +85,15 @@ la même chose :
 Et quand la saisine est **conjointe**, `committee` et `committee_full` sont des **listes**, pas
 des chaînes — 36 des 402 entrées au fond de notre population.
 
+**La matière : `procedure.subject`, sous deux formes.** Classification OEIL du dossier,
+renseignée sur **389 / 389** dossiers que nos profils citent, y compris les 40 résolutions
+d'actualité (`RSP`) — qu'aucune commission au fond ne couvre, puisqu'une RSP n'est jamais
+renvoyée en commission. Forme courante : un dict `{"6.20.03": "Bilateral economic…"}` (387
+dossiers) ; forme rare : une **liste de chaînes** où code et libellé sont collés,
+`"6.20.03 Bilateral economic…"` (2 dossiers). Lire la seule première perd les autres sans
+erreur. Code hiérarchique, 238 valeurs sur ce corpus : pas un vocabulaire fermé. Mesuré le
+16/09/2026 (#901).
+
 ### `ep_mep_activities` — les activités
 
 Une entrée `REPORT` porte `dossiers[]`, la référence de procédure visée, sur **144 des 146**
@@ -113,6 +122,32 @@ silence.
 
 **La datation ParlTrack au 22/11/2016** touche les interventions et textes européens : c'est le
 jour de republication du dump, pas celui de la séance. Suivi par #858, non résolu.
+
+## `data.europarl.europa.eu/api/v2/documents/{id}` — ce que la réponse porte, et comment elle se refuse
+
+Mesuré le 16/09/2026 (#901), sur 20 documents `doceo` tirés au hasard parmi les résolutions
+sans dossier, puis confirmé sur `RC-9-2024-0227` :
+
+| Champ | Présent | Ce qu'il porte |
+| --- | --- | --- |
+| `data.title_dcterms` | 20 / 20 | le titre en **22 à 23 langues** — `fr` sur 20, `en` sur 19. C'est la version officielle, pas une traduction |
+| `data.is_about` | 20 / 20 | 2 à 9 URI **EuroVoc** (`http://eurovoc.europa.eu/2155`) ; les libellés se résolvent ailleurs (`docs/sources/eurovoc.md`) |
+| `data.isAboutSubjectMatter` | 0 / 20 | codes lisibles (`PESC`…), seulement sur les documents récents : inutilisable comme axe |
+
+**`data` arrive en objet OU en liste d'un élément** : les deux se rencontrent. Un lecteur qui n'en
+connaît qu'une forme rend `None` sur l'autre sans erreur.
+
+**Le site public `www.europarl.europa.eu/doceo/…` ne se lit pas** : `HTTP 202`, zéro octet, défi
+anti-robot, pour une adresse vraie comme pour une inventée (#827). Tout passe par le portail.
+
+**Le portail ne refuse pas toujours poliment.** En #827, au-delà du débit toléré, il répondait
+`HTTP 429` + `Retry-After: 60`. Le 16/09/2026, après une trentaine de requêtes de mesure
+enchaînées en quelques minutes, `/documents/{id}` est devenu **muet** — 30 s puis timeout,
+trois essais —, alors que `/api/v2/` et `/meps` répondaient encore depuis la même machine, et
+que la même URL servie depuis un autre réseau rendait 200. Diagnostic : une limitation qui
+visait **notre adresse, sur cette ressource**. Deux conséquences dans le code : un disjoncteur
+après cinq silences (`MAX_ECHECS_CONSECUTIFS`), et aucune mesure en boucle depuis la machine
+de développement — vérifier un document isolé passe par un autre réseau.
 
 ## Ce que ces sources ne portent pas
 
