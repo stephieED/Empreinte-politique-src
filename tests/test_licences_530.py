@@ -193,10 +193,17 @@ def _texte(chemin: Path) -> str:
     return chemin.read_text(encoding="utf-8")
 
 
-def test_les_mentions_legales_nomment_encore_regards_citoyens():
-    """L'attribution sort quand la donnée sort, pas avant (#528 §4)."""
+def test_les_mentions_legales_ne_nomment_plus_regards_citoyens():
+    """L'attribution sort quand la donnée sort, pas avant (#528 §4) — et elle est
+    sortie. Mesuré le 16/09/2026 sur `origin/main` `966dd18a3`, après #976 :
+    aucune donnée de `pivot_data/` ni de `raw_data/` ne cite NosDéputés,
+    NosSénateurs ou Regards Citoyens, seulement du texte (29 avertissements de
+    fiches de groupe qui disent que la donnée n'en vient PAS), et aucun
+    `licence_donnees` ne les nomme. La section et sa formule d'attribution sont
+    retirées, avec l'accord de la propriétaire. L'ODbL reste, pour Parltrack."""
     page = _texte(PAGE_MENTIONS_LEGALES)
-    assert "NosDéputés.fr" in page and "NosSénateurs.fr" in page
+    assert "NosDéputés.fr" not in page and "NosSénateurs.fr" not in page
+    assert "Regards Citoyens" not in page
     assert "Open Database License (ODbL) v1.0" in page
 
 
@@ -211,7 +218,7 @@ def test_les_mentions_legales_nannoncent_pas_un_corpus_sous_licence_unique():
     """Le seul énoncé que ce lot devait rendre impossible."""
     page = _texte(PAGE_MENTIONS_LEGALES)
     assert "n'est donc pas couvert par une licence unique" in page
-    assert "ne rend donc pas" in page  # « … l'ensemble du corpus réutilisable sous simple attribution »
+    assert "n'est donc pas réutilisable sous simple attribution" in page
 
 
 def test_la_config_des_sources_ne_porte_plus_regards_citoyens():
