@@ -36,7 +36,7 @@ import sys
 RACINE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RACINE / "src"))
 
-from mandats_anterieurs import appliquer_mandats_anterieurs  # noqa: E402
+from mandats_anterieurs import appliquer_mandats_anterieurs, charger_table  # noqa: E402
 
 
 def _charger_script():
@@ -163,10 +163,14 @@ def test_verifier_ne_compte_pas_le_motif_absent_d_un_profil_relu(tmp_path):
 
 def test_la_reprise_pose_ce_que_le_pipeline_poserait(tmp_path):
     """La reprise avance la date, elle ne crée pas un second chemin."""
-    table = {"segolene-royal": [LIGNE]}
-    racine = _racine(tmp_path, [_profil("segolene-royal"), _profil("nathalie-arthaud")], table)
+    racine = _racine(tmp_path, [_profil("segolene-royal"), _profil("nathalie-arthaud")],
+                     {"segolene-royal": [LIGNE]})
     REPRISE.poser(racine, ecrire=True)
 
+    # `appliquer_mandats_anterieurs` consomme la table NORMALISÉE que rend
+    # `charger_table`, pas la forme du fichier : depuis #860 les deux diffèrent,
+    # une entrée sans mandat portant son constat.
+    table = charger_table(racine / "raw_data" / "mandats_anterieurs.json")
     for slug in ("segolene-royal", "nathalie-arthaud"):
         attendu = _profil(slug)
         appliquer_mandats_anterieurs(attendu, table)

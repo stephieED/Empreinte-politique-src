@@ -24,6 +24,17 @@ Un slug absent ne l'a pas été, et la fiche le dit — `mandats_anterieurs: nul
 et `mandats_anterieurs_non_resolu.motif = "non_relu"` —, parce qu'absent n'est
 pas « aucun » (AGENTS §2 règle 5).
 
+## Ce qu'une liste vide ne disait pas : sur quoi elle se fonde
+
+Une liste vide affirme quelque chose — « cette personne n'a exercé aucun mandat
+national avant le 19/06/2002 » — et §2 règle 2 veut qu'un fait publié renvoie à
+sa source primaire. Quand la liste porte des mandats, chaque ligne porte la
+sienne ; quand elle est vide, il n'y avait rien à montrer. Une entrée vide
+exige donc un `constat` : l'URL consultée, la date, et **la méthode** — qui a
+regardé. `lecture_fiche_sycomore` est une lecture de la source primaire par le
+pipeline, reproductible ; `relecture_humaine` est une signature, que rien
+d'automatique ne pose à la place de quelqu'un.
+
 ## Un champ dérivé, recalculé à l'écriture
 
 Comme `chambres` (#493) ou `meta.licence_donnees` (#530), le champ ne se
@@ -41,6 +52,7 @@ from typing import Any, Optional
 
 from schema_pivot import (
     KNOWN_INSTITUTIONS_ANTERIEURES,
+    KNOWN_METHODES_CONSTAT_ANTERIEUR,
     KNOWN_MOTIFS_MANDAT_ANTERIEUR_NON_RESOLU,
 )
 
@@ -103,8 +115,71 @@ def _valider_ligne(slug: str, i: int, ligne: Any) -> None:
         )
 
 
-def charger_table(chemin: Optional[Path] = None) -> dict[str, list[dict[str, Any]]]:
-    """`slug → lignes`, table validée. Lève plutôt que de rendre une table partielle."""
+def _valider_constat(slug: str, constat: Any) -> None:
+    """Un constat d'absence porte son URL, sa date et sa méthode — les trois."""
+    if not isinstance(constat, dict):
+        raise TableMandatsAnterieursInvalide(f"{slug} : 'constat' non-objet.")
+    url = constat.get("source_url")
+    if not url or not str(url).startswith("https://"):
+        raise TableMandatsAnterieursInvalide(
+            f"{slug} : constat.source_url doit être une URL https — une absence "
+            "constatée dit sur quoi elle se fonde (§2 règle 2)."
+        )
+    date = constat.get("constate_le")
+    if not date or not _DATE.match(str(date)):
+        raise TableMandatsAnterieursInvalide(
+            f"{slug} : constat.constate_le {date!r} absent ou non ISO."
+        )
+    methode = constat.get("methode")
+    if methode not in KNOWN_METHODES_CONSTAT_ANTERIEUR:
+        raise TableMandatsAnterieursInvalide(
+            f"{slug} : constat.methode {methode!r} hors de "
+            f"{sorted(KNOWN_METHODES_CONSTAT_ANTERIEUR)} — étendre le frozenset, "
+            "jamais le contourner."
+        )
+
+
+def _lire_entree(slug: str, valeur: Any) -> tuple[list[dict[str, Any]], Optional[dict]]:
+    """Rend `(mandats, constat)` pour une entrée de la table.
+
+    Deux formes vivent dans le fichier, et c'est voulu : une LISTE quand des
+    mandats ont été trouvés — chaque ligne porte alors sa propre source —, un
+    OBJET `{"mandats": [], "constat": {…}}` quand il n'y en a aucun, parce
+    qu'une liste vide n'a rien à quoi accrocher sa source.
+    """
+    if isinstance(valeur, list):
+        if not valeur:
+            raise TableMandatsAnterieursInvalide(
+                f"{slug} : liste vide sans constat. Une absence relue se déclare "
+                'en objet — {"mandats": [], "constat": {…}} — sinon rien ne dit '
+                "sur quelle source elle repose (§2 règle 2)."
+            )
+        return valeur, None
+    if not isinstance(valeur, dict):
+        raise TableMandatsAnterieursInvalide(
+            f"{slug} : liste ou objet attendu, {type(valeur).__name__} reçu."
+        )
+    mandats = valeur.get("mandats")
+    if not isinstance(mandats, list):
+        raise TableMandatsAnterieursInvalide(f"{slug} : 'mandats' absent ou non-liste.")
+    constat = valeur.get("constat")
+    if mandats and constat is not None:
+        raise TableMandatsAnterieursInvalide(
+            f"{slug} : 'constat' sur une liste non vide — la source vit alors sur "
+            "chaque ligne, et deux endroits pour un même fait finissent par diverger."
+        )
+    if not mandats:
+        _valider_constat(slug, constat)
+    return mandats, constat
+
+
+def charger_table(
+    chemin: Optional[Path] = None,
+) -> dict[str, dict[str, Any]]:
+    """`slug → {"mandats": [...], "constat": {...} | None}`, table validée.
+
+    Lève plutôt que de rendre une table partielle.
+    """
     chemin = Path(chemin) if chemin is not None else CHEMIN_TABLE
     try:
         document = json.loads(chemin.read_text(encoding="utf-8"))
@@ -115,19 +190,20 @@ def charger_table(chemin: Optional[Path] = None) -> dict[str, list[dict[str, Any
     candidats = document.get("candidats")
     if not isinstance(candidats, dict):
         raise TableMandatsAnterieursInvalide(f"{chemin} : 'candidats' absent ou non-objet.")
-    for slug, lignes in candidats.items():
-        if not isinstance(lignes, list):
-            raise TableMandatsAnterieursInvalide(f"{slug} : liste attendue.")
+    table: dict[str, dict[str, Any]] = {}
+    for slug, valeur in candidats.items():
+        lignes, constat = _lire_entree(slug, valeur)
         for i, ligne in enumerate(lignes):
             _valider_ligne(slug, i, ligne)
         debuts = [l["debut"] for l in lignes]
         if debuts != sorted(debuts):
             raise TableMandatsAnterieursInvalide(f"{slug} : lignes non triées par début.")
-    return candidats
+        table[slug] = {"mandats": lignes, "constat": constat}
+    return table
 
 
 def appliquer_mandats_anterieurs(
-    profil: dict[str, Any], table: dict[str, list[dict[str, Any]]]
+    profil: dict[str, Any], table: dict[str, dict[str, Any]]
 ) -> None:
     """Repose `mandats_anterieurs` sur un pivot de CANDIDAT DÉCLARÉ, depuis la table.
 
@@ -138,11 +214,20 @@ def appliquer_mandats_anterieurs(
     if (profil.get("meta") or {}).get("provenance") != "candidat_declare":
         profil.pop("mandats_anterieurs", None)
         profil.pop("mandats_anterieurs_non_resolu", None)
+        profil.pop("mandats_anterieurs_constat", None)
         return
     slug = profil.get("id")
-    if slug in table:
-        profil["mandats_anterieurs"] = [dict(ligne) for ligne in table[slug]]
-        profil.pop("mandats_anterieurs_non_resolu", None)
-    else:
+    entree = table.get(slug)
+    if entree is None:
         profil["mandats_anterieurs"] = None
         profil["mandats_anterieurs_non_resolu"] = {"motif": "non_relu"}
+        profil.pop("mandats_anterieurs_constat", None)
+        return
+    profil["mandats_anterieurs"] = [dict(ligne) for ligne in entree["mandats"]]
+    profil.pop("mandats_anterieurs_non_resolu", None)
+    # Le constat ne voyage QUE sur une liste vide : c'est là, et seulement là,
+    # que la fiche affirme une absence sans avoir de ligne pour la sourcer.
+    if entree.get("constat"):
+        profil["mandats_anterieurs_constat"] = dict(entree["constat"])
+    else:
+        profil.pop("mandats_anterieurs_constat", None)
