@@ -4,7 +4,7 @@
 
 `2026-09-16`
 
-> **En bref** — l'en-tête de l'explorateur posé par #324 **retirait les trois listes de la page** au-delà de 180 px de défilement ; la page raccourcissait de **385 px**, le navigateur ramenait le défilement **à 0**, les listes revenaient et la boucle reprenait — mesuré sur la fiche de Jérôme Guedj, défilement par pas de 40 px : à 200 px les listes partent, **22 ms plus tard le défilement est à 0**. La propriétaire l'a signalé : « l'affichage revient en haut puis reste instable ». Retenu sur maquette jouable, après cinq formes figées et deux mécaniques : **la rangée du logo reste collée** (80 px) et porte la barre des pages du site — *Explorateur · Méthodologie · Sources · FAQ*, dans le style discret de la forme B (gris, la page courante soulignée de jaune) — et « Changer de fiche » ; **les listes défilent avec la page**, et franchir leur bas ne change qu'une **visibilité**, celle du bouton, dont la place est réservée. **Sous 720 px les listes quittent la page** : elles y faisaient 1 277 px sur un 390 px de large, deux écrans avant la fiche ; le bandeau seul reste, et la fiche commence à ~200 px au lieu de 1 422. **La position se lit au défilement**, pas par un `IntersectionObserver`, qui ne signale qu'un franchissement : un saut direct passait les listes sans les croiser, et le bouton restait caché — trouvé sur maquette. Le bouton garde **sa largeur** quel que soit son libellé : ses liens voisins glissaient à chaque clic. **Alternative écartée** : la barre réduite en surimpression, qui rendait 24 px de plus à la fiche mais ajoutait un second en-tête. Le symbole mobile portait les traits blancs de la variante pour fond sombre : il ne montrait que le point jaune.
+> **En bref** — l'en-tête de l'explorateur posé par #324 **retirait les trois listes de la page** au-delà de 180 px de défilement ; la page raccourcissait de **385 px**, le navigateur ramenait le défilement **à 0**, les listes revenaient et la boucle reprenait — mesuré sur la fiche de Jérôme Guedj, défilement par pas de 40 px : à 200 px les listes partent, **22 ms plus tard le défilement est à 0**. La propriétaire l'a signalé : « l'affichage revient en haut puis reste instable ». Retenu sur maquette jouable, après cinq formes figées et deux mécaniques : **la rangée du logo reste collée** (80 px) et porte la barre des pages du site — *Explorateur · Méthodologie · Sources · FAQ*, dans le style discret de la forme B (gris, la page courante soulignée de jaune) — et « Changer de fiche » ; **les listes défilent avec la page**, et franchir leur bas ne change qu'une **visibilité**, celle du bouton, dont la place est réservée. **Sous 720 px les listes quittent la page** : elles y faisaient 1 277 px sur un 390 px de large, deux écrans avant la fiche ; le bandeau seul reste, et la fiche commence à ~200 px au lieu de 1 422. **La position se lit au défilement**, pas par un `IntersectionObserver`, qui ne signale qu'un franchissement : un saut direct passait les listes sans les croiser, et le bouton restait caché — trouvé sur maquette. Le bouton garde **sa largeur** quel que soit son libellé : ses liens voisins glissaient à chaque clic. **Alternative écartée** : la barre réduite en surimpression, qui rendait 24 px de plus à la fiche mais ajoutait un second en-tête. La rangée est **un composant, `EnTeteSite`**, que l'accueil porte aussi, comme la maquette de la forme C l'avait posé. Le symbole mobile portait les traits blancs de la variante pour fond sombre : il ne montrait que le point jaune.
 
 ## Le contexte
 
@@ -29,7 +29,7 @@ Le même lot devait poser la barre des pages du site sur les fiches (#951).
 
 ### 1. Une rangée collée, de hauteur fixe
 
-`.explorer-entete` est collée en haut et **ne change jamais de hauteur** : 80 px,
+`.entete-site` (`EnTeteSite.jsx`) est collée en haut et **ne change jamais de hauteur** : 80 px,
 56 px sous 480 px où le logo n'est plus que le symbole. Elle porte `Brand`,
 `NavigationSite` et le bouton « Changer de fiche ».
 
@@ -59,12 +59,21 @@ image. Un `IntersectionObserver` ne signale qu'un **franchissement** : sur la
 maquette, un saut direct à 2 600 px laissait le repère passer d'en dessous à
 au-dessus de l'écran sans l'avoir croisé, et le bouton restait caché.
 
-### 5. Deux cibles provisoires
+### 5. La même rangée sur l'accueil
+
+`EnTeteSite` porte le logo et les pages du site ; l'explorateur y ajoute « Changer
+de fiche » et son panneau. L'accueil la porte seule, sans page courante marquée,
+comme la maquette de l'accueil l'avait posée (forme C, arbitrée le 16/09/2026).
+Une seule rangée, pour qu'elle ne diverge pas d'une page à l'autre. La
+méthodologie, les mentions légales et la couverture la recevront avec la suite
+de #951.
+
+### 6. Deux cibles provisoires
 
 « Sources » mène à `/couverture`, « FAQ » à `/#faq` sur l'accueil, tant que #951
 n'a pas créé `/sources` et `/faq`.
 
-### 6. Le symbole pour fond clair
+### 7. Le symbole pour fond clair
 
 `public/brand/empreinte-symbol-light.svg` portait `stroke="#f7f6f4"`, les traits
 de la variante pour fond sombre : sur le fond clair, seul le point jaune restait

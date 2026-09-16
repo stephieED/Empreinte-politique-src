@@ -1,7 +1,6 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
-import Brand from './Brand';
-import NavigationSite from './NavigationSite';
+import EnTeteSite from './EnTeteSite';
 import GroupsBar from './GroupsBar';
 import GovernmentsBar from './GovernmentsBar';
 import CandidatesBar from './CandidatesBar';
@@ -89,27 +88,23 @@ export default function ExplorerLayout() {
     <GroupFilterProvider>
       <div className="app-shell">
         <div className="explorer-main">
-          <header className="explorer-entete" ref={enteteRef}>
-            <Brand />
-            <div className="explorer-entete-actions">
-              <NavigationSite />
-              <button
-                type="button"
-                className={`explorer-changer${listesPassees ? ' explorer-changer--visible' : ''}`}
-                aria-expanded={panneauOuvert}
-                aria-controls="explorer-panneau"
-                onClick={() => setPanneauOuvert((v) => !v)}
-              >
-                {/* Les deux libellés occupent la même case : le bouton garde sa
-                    largeur, et les liens à sa gauche ne bougent pas. */}
-                <span className="explorer-changer-libelle">
-                  Changer de fiche
-                </span>
-                <span className="explorer-changer-libelle">
-                  Masquer les listes
-                </span>
-              </button>
-            </div>
+          <EnTeteSite ref={enteteRef}>
+            <button
+              type="button"
+              className={`explorer-changer${listesPassees ? ' explorer-changer--visible' : ''}`}
+              aria-expanded={panneauOuvert}
+              aria-controls="explorer-panneau"
+              onClick={() => setPanneauOuvert((v) => !v)}
+            >
+              {/* Les deux libellés occupent la même case : le bouton garde sa
+                  largeur, et les liens à sa gauche ne bougent pas. */}
+              <span className="explorer-changer-libelle">
+                Changer de fiche
+              </span>
+              <span className="explorer-changer-libelle">
+                Masquer les listes
+              </span>
+            </button>
             <div id="explorer-panneau" className="explorer-panneau" hidden={!panneauOuvert}>
               {panneauOuvert && (
                 <>
@@ -119,7 +114,7 @@ export default function ExplorerLayout() {
                 </>
               )}
             </div>
-          </header>
+          </EnTeteSite>
 
           <div className="explorer-bars">
             <CandidatesBar />

@@ -98,9 +98,10 @@ def test_les_liens_sortants_lachent_la_main() -> None:
 def test_l_entete_colle_porte_la_marque() -> None:
     """« Empreinte » seul n'est pas la marque. Depuis #951 la rangée collée porte
     le logo lui-même, et le lecteur ne le perd plus de vue en défilant."""
-    source = EXPLORATEUR.read_text(encoding="utf-8")
-    bloc = source[source.index('<header className="explorer-entete"') :][:200]
+    entete = (EXPLORATEUR.parent / "EnTeteSite.jsx").read_text(encoding="utf-8")
+    bloc = entete[entete.index('<header className="entete-site"') :][:200]
     assert "<Brand />" in bloc
+    assert "<EnTeteSite" in EXPLORATEUR.read_text(encoding="utf-8")
 
 
 # ── §6 : ce qui cesse d'être répété, et ce qui cesse d'être affirmé ─────────

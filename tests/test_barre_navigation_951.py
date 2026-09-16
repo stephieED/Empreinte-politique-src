@@ -25,6 +25,8 @@ UI = RACINE / "web" / "UI_finale"
 NAV = UI / "src" / "components" / "NavigationSite.jsx"
 NAV_CSS = UI / "src" / "components" / "NavigationSite.css"
 SYMBOLE = UI / "public" / "brand" / "empreinte-symbol-light.svg"
+ACCUEIL = UI / "src" / "pages" / "LandingPage.jsx"
+EXPLORATEUR = UI / "src" / "components" / "ExplorerLayout.jsx"
 
 
 def _sans_commentaires(source: str) -> str:
@@ -61,3 +63,11 @@ def test_le_symbole_porte_des_traits_d_encre() -> None:
     svg = SYMBOLE.read_text(encoding="utf-8")
     traits = set(re.findall(r'stroke="(#[0-9a-fA-F]{6})"', svg))
     assert traits == {"#17141f"}, traits
+
+
+def test_l_accueil_et_l_explorateur_portent_la_meme_rangee() -> None:
+    """Une seule rangée, pour qu'elle ne diverge pas d'une page à l'autre."""
+    for page in (ACCUEIL, EXPLORATEUR):
+        source = _sans_commentaires(page.read_text(encoding="utf-8"))
+        assert "<EnTeteSite" in source, page.name
+        assert "<Brand />" not in source, f"{page.name} : le logo vient de la rangée"

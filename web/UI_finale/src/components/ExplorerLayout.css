@@ -6,39 +6,9 @@
   min-height: 100vh;
 }
 
-/* LA RANGÉE DU LOGO RESTE COLLÉE (#951). Elle porte le logo, les pages du site
-   et « Changer de fiche ». Sa hauteur ne change jamais : c'est ce qui rend le
-   défilement stable — l'en-tête de #324 retirait 385 px de la page en cours de
-   défilement, et le navigateur ramenait tout en haut. */
-.explorer-entete {
-  --entete-hauteur: 80px;
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  height: var(--entete-hauteur);
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding-right: 40px;
-  /* OPAQUE : la fiche défile dessous (#324, vérifié en capture). */
-  background: var(--bg);
-  border-bottom: 1px solid var(--border);
-}
-
-/* Le logo garde sa gouttière de 40 px et sa hauteur de 80 px (Brand.css) ; la
-   rangée porte le filet, le logo n'en porte pas un second. */
-.explorer-entete > .brand {
-  margin-top: 0;
-  border-bottom: 0;
-  flex: none;
-}
-
-.explorer-entete-actions {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 22px;
-}
+/* La rangée collée elle-même vit dans EnTeteSite.css (#951) : l'accueil la
+   porte aussi. Ce fichier ne garde que ce qui est propre à l'explorateur — le
+   bouton « Changer de fiche », le panneau et les listes dans la page. */
 
 /* LA PLACE DU BOUTON EST RÉSERVÉE. Il est invisible tant que les listes sont à
    l'écran, et apparaît sans rien décaler quand elles sont passées. */
@@ -123,15 +93,6 @@
    large : deux écrans avant la fiche. Elles ne s'ouvrent plus que dans le
    panneau, et le bouton est là dès l'arrivée. */
 @media (max-width: 720px) {
-  .explorer-entete {
-    padding-right: 16px;
-    gap: 8px;
-  }
-
-  .explorer-entete-actions {
-    gap: 8px;
-  }
-
   .explorer-bars {
     display: none;
   }
@@ -143,19 +104,6 @@
 
   .explorer-panneau {
     padding: 12px 16px 14px;
-  }
-}
-
-/* Sous 480 px le logo n'est plus que le symbole (Brand.css) : le lockup n'impose
-   plus ses 58 px, la rangée tombe à 56. */
-@media (max-width: 480px) {
-  .explorer-entete {
-    --entete-hauteur: 56px;
-  }
-
-  .explorer-entete > .brand {
-    height: 56px;
-    padding-inline: 16px;
   }
 }
 

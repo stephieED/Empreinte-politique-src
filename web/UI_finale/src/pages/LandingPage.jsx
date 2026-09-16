@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import Brand from '../components/Brand';
+import EnTeteSite from '../components/EnTeteSite';
 import PiedDeSite from '../components/PiedDeSite';
 import Hero from '../components/landing/Hero';
 import HowItWorks from '../components/landing/HowItWorks';
@@ -44,7 +44,7 @@ export default function LandingPage() {
   return (
     <div className="app-shell">
       <div className="landing-page">
-        <Brand />
+        <EnTeteSite />
         <main className="landing-main">
           <Hero />
           <div className="landing-columns">

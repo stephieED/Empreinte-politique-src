@@ -44,6 +44,7 @@ SRC = RACINE / "web" / "UI_finale" / "src"
 
 LAYOUT = SRC / "components" / "ExplorerLayout.jsx"
 LAYOUT_CSS = SRC / "components" / "ExplorerLayout.css"
+ENTETE_CSS = SRC / "components" / "EnTeteSite.css"
 SOMMAIRE = SRC / "components" / "SommaireSections.jsx"
 SOMMAIRE_CSS = SRC / "components" / "SommaireSections.css"
 FICHE = SRC / "components" / "CandidateProfile.jsx"
@@ -68,6 +69,11 @@ def layout_css() -> str:
 
 
 @pytest.fixture(scope="module")
+def entete_css() -> str:
+    return sans_commentaires(ENTETE_CSS.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="module")
 def sommaire() -> str:
     return sans_commentaires(SOMMAIRE.read_text(encoding="utf-8"))
 
@@ -79,14 +85,14 @@ def _bloc(css: str, selecteur: str) -> str:
     return css.split(f"{selecteur} {{")[1].split("}")[0]
 
 
-def test_les_barres_ne_sont_plus_collees(layout_css: str) -> None:
+def test_les_barres_ne_sont_plus_collees(layout_css: str, entete_css: str) -> None:
     """357 px collés sur tous les supports : c'est ce que #324 a corrigé.
 
     Depuis #951, seule la rangée du logo se colle. Les listes défilent avec la
     page, et ne reviennent que dans le panneau.
     """
     assert "position: sticky" not in _bloc(layout_css, ".explorer-bars")
-    entete = _bloc(layout_css, ".explorer-entete")
+    entete = _bloc(entete_css, ".entete-site")
     assert "position: sticky" in entete and "top: 0" in entete
 
 
@@ -132,14 +138,14 @@ def test_l_attribut_hidden_a_sa_regle_css(layout_css: str) -> None:
     assert "display: none" in _bloc(layout_css, ".explorer-panneau[hidden]")
 
 
-def test_l_entete_et_le_panneau_sont_opaques(layout_css: str) -> None:
+def test_l_entete_et_le_panneau_sont_opaques(layout_css: str, entete_css: str) -> None:
     """Un fond translucide laissait lire le contenu à travers les listes.
 
     Le flou d'arrière-plan est un raffinement qui ne survit pas partout ;
     l'opacité est un fait.
     """
-    for selecteur in (".explorer-entete", ".explorer-panneau"):
-        bloc = _bloc(layout_css, selecteur)
+    for css, selecteur in ((entete_css, ".entete-site"), (layout_css, ".explorer-panneau")):
+        bloc = _bloc(css, selecteur)
         fond = [l for l in bloc.splitlines() if l.strip().startswith("background")]
         assert fond, f"{selecteur} doit déclarer un fond"
         assert all("rgba(" not in l for l in fond), f"{selecteur} doit être opaque"
@@ -228,13 +234,13 @@ def test_la_section_lue_est_la_derniere_franchie(sommaire: str) -> None:
     assert "getBoundingClientRect().top <= SEUIL_LECTURE" in sommaire
 
 
-def test_l_ancre_prend_une_avance_sur_la_barre_collante(sommaire: str, layout_css: str) -> None:
+def test_l_ancre_prend_une_avance_sur_la_barre_collante(sommaire: str, entete_css: str) -> None:
     """Sans elle, la rangée collée recouvre le titre qu'on vient de demander.
 
     L'avance se règle sur la hauteur de la rangée : elle passait sous les 80 px
     de #951 quand elle était calée sur les 56 px de l'ancienne barre compacte.
     """
-    hauteur = int(re.search(r"--entete-hauteur: (\d+)px", layout_css).group(1))
+    hauteur = int(re.search(r"--entete-hauteur: (\d+)px", entete_css).group(1))
     avance = int(re.search(r"AVANCE_ANCRE = (\d+)", sommaire).group(1))
     seuil = int(re.search(r"SEUIL_LECTURE = (\d+)", sommaire).group(1))
     assert avance > hauteur and seuil > avance
