@@ -72,9 +72,13 @@ export const sourcesConfig = [
     id: 'parlement-europeen-opendata',
     nom: 'Parlement européen Open Data',
     type: 'API REST + pages MEP',
-    contenuCouvert: 'Données institutionnelles des eurodéputés (data.europarl.europa.eu, www.europarl.europa.eu).',
+    contenuCouvert:
+      'Les mandats des député·es européen·nes, et l’existence et le titre français des documents européens (data.europarl.europa.eu).',
     cadenceMiseAJour: 'En direct (récupérées à chaque exécution, pas de cache hebdomadaire).',
-    licence: 'EP Legal Notice (reuse policy, attribution-based)',
+    // UN SEUL LIBELLÉ, CC BY 4.0 (#983) : décision du Bureau du 16/12/2024, art. 4,
+    // et la licence que l'API du portail déclare. www.europarl.europa.eu n'est
+    // jamais interrogé, seulement lié.
+    licence: 'CC BY 4.0',
     implication: 'Réutilisation libre sous réserve de mention de la source (attribution uniquement).',
     perimetre: ['PE'],
     couverturePeriode: null,
