@@ -337,15 +337,16 @@ def test_le_parlement_europeen_n_est_plus_une_ligne_non_collectee(frise: str) ->
     fait le 11/09. Sa ligne d'avant portait « 7 · 2 candidats » — les sept
     mandats électifs seuls, les 126 organes n'étant comptés nulle part.
 
-    Les mandats locaux restent, eux, dans `SANS_ACTIVITE` : #922 a livré le job
-    et le champ de schéma, aucun run ne les a écrits.
+    Les mandats locaux restent, eux, dans `SANS_ACTIVITE` : ils ne sont pas une
+    institution, et n'ont qu'une liste. Depuis le 16/09/2026 leur ligne dessine
+    ce que le Répertoire national des élus publie, au lieu de « aucune source ».
     """
     assert "cle: 'PE'" not in frise, "le Parlement européen a ses listes : il vit dans la hiérarchie"
     assert "cle: 'Senat'" not in frise, (
         "le Sénat a ses cinq listes dans la hiérarchie depuis #885 — l'y remettre "
         "en ligne unique recompterait 7 mandats sur 133"
     )
-    assert "cle: 'local'" in frise, "les mandats locaux n'ont encore aucune donnée"
+    assert "cle: 'local'" in frise, "les mandats locaux gardent leur ligne unique"
 
 
 # ── Règle 4 : deux absences, deux colonnes ──────────────────────────────────
@@ -455,3 +456,35 @@ def test_l_accueil_ne_montre_plus_de_fait_fictif_ni_sa_frise() -> None:
     assert "<FactDemo" not in accueil and not (SRC / "components" / "landing" / "FactDemo.jsx").exists()
     assert not (SRC / "components" / "landing" / "CouvertureAccueil.jsx").exists()
     assert "parcours politiques" in (SRC / "components" / "landing" / "Hero.jsx").read_text(encoding="utf-8")
+
+
+def test_les_mandats_locaux_sont_comptes_avec_leur_borne(tmp_path: Path) -> None:
+    """La ligne « Mandats locaux » disait « aucune source » alors que les fiches
+    publiées en portaient 34 sur 14 candidats (16/09/2026). Le générateur les
+    compte, et leur borne vient de la donnée — jamais d'une année écrite ici."""
+    import json
+    import shutil
+    import subprocess
+
+    if shutil.which("node") is None:
+        pytest.skip("node absent")
+    racine = _corpus_minimal(tmp_path)
+    profils = racine / "pivot_data" / "profiles"
+    (profils / "l.pivot.json").write_text(json.dumps({
+        "id": "l", "nom": "Élue Locale", "meta": {"provenance": "candidat_declare"},
+        "mandats": [{"categorie": "mandat_local", "debut": "2020-06-28"}],
+        "mandats_locaux_couverture": {"appariement": "date_naissance", "borne_couverture": 2020},
+    }), encoding="utf-8")
+    script = f"""
+      const m = await import({json.dumps(GENERATEUR.as_uri())});
+      const c = m.construireCouverture({{ repoRoot: {json.dumps(str(racine))} }});
+      process.stdout.write(JSON.stringify(c.institutions.find((i) => i.cle === 'local') || null));
+    """
+    res = subprocess.run(["node", "--input-type=module", "-e", script],
+                         capture_output=True, text=True, check=False)
+    assert res.returncode == 0, res.stderr
+    local = json.loads(res.stdout)
+    assert local == {"cle": "local", "candidats": 1, "mandats": 1, "debut": "2020-06-28", "fin": None, "borne": "2020-01-01"}
+    frise = FRISE.read_text(encoding="utf-8")
+    assert "fc-seg fc-seg--${x.cle}" in frise and "aucune donnée publiée avant le" in frise
+    assert ".fc-seg--local" in FRISE_CSS.read_text(encoding="utf-8")

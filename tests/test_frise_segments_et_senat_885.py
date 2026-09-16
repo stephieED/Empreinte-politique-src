@@ -130,7 +130,7 @@ def test_le_senat_quitte_le_bloc_des_lignes_sans_activite(frise: str) -> None:
     sans = re.search(r"const SANS_ACTIVITE = \[(.*?)\];", frise, re.DOTALL)
     assert sans, "SANS_ACTIVITE a disparu ou changé de forme"
     assert "Senat" not in sans.group(1)
-    assert "local" in sans.group(1), "les mandats locaux n'ont encore aucune donnée (#922)"
+    assert "local" in sans.group(1), "les mandats locaux gardent leur ligne unique : ils ne sont pas une institution (#922)"
 
 
 # ── Le jaune ────────────────────────────────────────────────────────────────
@@ -158,7 +158,7 @@ def test_la_cle_des_donnees_collectees_montre_les_quatre_teintes() -> None:
     css = FRISE_CSS.read_text(encoding="utf-8")
     cle = css[css.index(".fc-cle--collecte"):]
     cle = cle[:cle.index("}")]
-    for teinte in ("--fc-an", "--fc-gouv", "--fc-pe", "--fc-senat"):
+    for teinte in ("--fc-an", "--fc-gouv", "--fc-pe", "--fc-senat", "--fc-local"):
         assert teinte in cle, f"{teinte} manque à la clé : elle montre ce qui est à l'écran"
 
 

@@ -815,9 +815,14 @@ function collecteLe(candidats) {
   return dates.length ? dates[dates.length - 1] : null;
 }
 
-/* OÙ NOS CANDIDATS ONT SIÉGÉ. Quatre institutions, une seule couverte. Le
- * mandat local n'y figure pas : le corpus n'en porte aucun, et une ligne vide
- * dirait « personne n'en a » là où la vérité est « aucune source n'en publie ». */
+/* OÙ NOS CANDIDATS ONT SIÉGÉ.
+ *
+ * LES MANDATS LOCAUX Y ENTRENT (#922, compté ici le 16/09/2026). Le Répertoire
+ * national des élus les verse dans `mandats[]` avec `categorie: "mandat_local"`
+ * et sans chambre ; la frise disait « aucune source » alors que les fiches
+ * publiées en portaient 34, sur 14 candidats (mesuré le 16/09/2026). Leur BORNE voyage avec la donnée, dans
+ * `mandats_locaux_couverture.borne_couverture` (une année) : avant elle, la
+ * source ne publie rien, et la frise le hachure. */
 function institutions(candidats) {
   const acc = new Map();
   const ajoute = (cle, slug, m) => {
@@ -830,14 +835,22 @@ function institutions(candidats) {
     const f = iso(m.fin);
     if (f && (!e.fin || f > e.fin)) e.fin = f;
   };
+  let borneLocale = null;
   for (const d of candidats) {
+    const annee = d.mandats_locaux_couverture?.borne_couverture;
+    if (annee && (!borneLocale || `${annee}-01-01` < borneLocale)) borneLocale = `${annee}-01-01`;
     for (const m of d.mandats || []) {
-      if (estMandatGouvernemental(m)) ajoute('gouvernement', d.id, m);
+      if (m.categorie === 'mandat_local') ajoute('local', d.id, m);
+      else if (estMandatGouvernemental(m)) ajoute('gouvernement', d.id, m);
       else if (m.chambre && m.chambre !== 'AN') ajoute(m.chambre, d.id, m);
       else if (m.categorie === 'mandat_electif') ajoute('AN', d.id, m);
     }
   }
-  return [...acc.values()].map((e) => ({ ...e, candidats: e.candidats.size }));
+  return [...acc.values()].map((e) => ({
+    ...e,
+    candidats: e.candidats.size,
+    ...(e.cle === 'local' ? { borne: borneLocale } : {}),
+  }));
 }
 
 /* CE QUI MANQUE, ET SUR QUELLES FICHES.
