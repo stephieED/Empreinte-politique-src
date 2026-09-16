@@ -58,6 +58,7 @@ CLI (fusion de répertoires d'extraction parallèles) :
 """
 
 import json
+import re
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -1698,7 +1699,50 @@ def _pivot_texte_key(t: dict[str, Any]) -> Key:
     dossier_id = t.get("dossier_id")
     if dossier_id:
         return ("dossier_id", dossier_id)
+    doceo = _document_doceo(t)
+    if doceo:
+        return ("doceo", doceo)
     return _repli_texte_key(t)
+
+
+#: Le nom d'un document du Parlement européen dans son adresse publique :
+#: `…/doceo/document/B-8-2015-0293_EN.html` → `B-8-2015-0293`. Le schéma n'est
+#: pas lu — 625 `source_url` du corpus sont en `http://` et 56 en `https://`
+#: (mesuré le 16/09/2026), et une clé qui les distinguerait rejouerait la bascule
+#: de #668 le jour où la collecte changera de forme.
+_DOCEO = re.compile(r"doceo/document/([A-Z]+-\d+-\d{4}-\d{4})")
+
+
+def _document_doceo(t: dict[str, Any]) -> Optional[str]:
+    """L'identité d'un texte porté EUROPÉEN : le document qu'il est (#901).
+
+    **Le défaut que cette branche corrige, mesuré le 16/09/2026** : 311 textes
+    portés européens publiés deux fois dans le même profil — Philippot 250,
+    Le Pen 57, Mélenchon 4. Un texte européen n'a pas de `dossier_id` : il était
+    donc keyé sur le **repli**, qui contient le titre. #938 a retiré des titres
+    les libellés des boutons de téléchargement (« … PDF (181 KB) DOC (45 KB) »),
+    le repli a changé, et chaque texte est revenu comme une entrée neuve à côté
+    de l'ancienne. C'est exactement l'« alternative écartée » que la docstring
+    de `_pivot_texte_key` décrit : une identité otage de son libellé.
+
+    Le document `doceo` est un identifiant, pas un libellé : `B-8-2015-0293`
+    désigne un document déposé et un seul. Mesuré sur les 694 entrées
+    européennes publiées : 681 en portent un, et **aucun** n'est partagé par deux
+    textes réellement différents d'un même profil.
+
+    **Pourquoi pas `reference_dossier`**, qui existait déjà : elle désigne une
+    PROCÉDURE, et plusieurs textes vivent dans la même. Chez Emmanuel Maurel,
+    l'avis (« OPINION on the role of EU development policy… », sans URL) et la
+    fiche du dossier dont il est rapporteur (URL OEIL) partagent `2023/2031(INI)`
+    — une clé sur la référence en aurait supprimé un.
+
+    Les 13 entrées sans document `doceo` (fiches OEIL, avis sans lien) gardent
+    leur clé : rien ne change pour elles.
+    """
+    if t.get("institution") != "parlement_europeen":
+        return None
+    m = _DOCEO.search(t.get("source_url") or "")
+    return m.group(1) if m else None
 
 
 def _acteur_du_socle(profils_dir: Path, slug: str) -> Optional[str]:
