@@ -86277,8 +86277,8 @@
           "membre_id": "liliana-tanguy",
           "nom": "Liliana Tanguy",
           "fonction": "Membre",
-          "debut": "2025-02-12",
-          "fin": "2025-02-12",
+          "debut": "2026-09-16",
+          "fin": null,
           "actif": false
         },
         {
@@ -88947,8 +88947,8 @@
           "membre_id": "benjamin-dirx",
           "nom": "Benjamin Dirx",
           "fonction": "Membre",
-          "debut": "2026-05-12",
-          "fin": "2026-05-13",
+          "debut": "2026-09-16",
+          "fin": null,
           "actif": false
         },
         {
@@ -90239,8 +90239,8 @@
           "membre_id": "nicolas-metzdorf",
           "nom": "Nicolas Metzdorf",
           "fonction": "Membre",
-          "debut": "2026-06-17",
-          "fin": "2026-06-17",
+          "debut": "2026-09-16",
+          "fin": null,
           "actif": false
         },
         {
@@ -90337,6 +90337,1042 @@
           "fonction": "Membre",
           "debut": "2023-02-01",
           "fin": "2023-08-31",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission",
+      "label": "Commission des affaires étrangères",
+      "nb_membres_a_la_date_de_reference": 21,
+      "nb_membres_cumul_historique": 128,
+      "effectif_reference": 196,
+      "par_fonction": {
+        "membre": 128
+      },
+      "membres": [
+        {
+          "membre_id": "jean-carles-grelier",
+          "nom": "Jean-Carles Grelier",
+          "fonction": "Membre",
+          "debut": "2023-04-04",
+          "fin": "2023-04-04",
+          "actif": false
+        },
+        {
+          "membre_id": "joel-giraud",
+          "nom": "Joël Giraud",
+          "fonction": "Membre",
+          "debut": "2023-11-04",
+          "fin": "2023-11-04",
+          "actif": false
+        },
+        {
+          "membre_id": "eric-woerth",
+          "nom": "Éric Woerth",
+          "fonction": "Membre",
+          "debut": "2023-06-01",
+          "fin": "2024-06-09",
+          "actif": true
+        },
+        {
+          "membre_id": "olivier-dussopt",
+          "nom": "Olivier Dussopt",
+          "fonction": "Membre",
+          "debut": "2022-07-01",
+          "fin": "2022-07-22",
+          "actif": false
+        },
+        {
+          "membre_id": "jacqueline-maquet",
+          "nom": "Jacqueline Maquet",
+          "fonction": "Membre",
+          "debut": "2017-06-29",
+          "fin": "2019-09-30",
+          "actif": false
+        },
+        {
+          "membre_id": "franck-riester",
+          "nom": "Franck Riester",
+          "fonction": "Membre",
+          "debut": "2026-04-09",
+          "fin": "2026-04-16",
+          "actif": false
+        },
+        {
+          "membre_id": "constance-le-grip",
+          "nom": "Constance Le Grip",
+          "fonction": "Membre",
+          "debut": "2026-07-22",
+          "fin": null,
+          "actif": false
+        },
+        {
+          "membre_id": "damien-abad",
+          "nom": "Damien Abad",
+          "fonction": "membre",
+          "debut": "2022-07-01",
+          "fin": "2023-09-01",
+          "actif": false
+        },
+        {
+          "membre_id": "eric-alauzet",
+          "nom": "Éric Alauzet",
+          "fonction": "Membre",
+          "debut": "2023-04-04",
+          "fin": "2023-04-05",
+          "actif": false
+        },
+        {
+          "membre_id": "florent-boudie",
+          "nom": "Florent Boudié",
+          "fonction": "Membre",
+          "debut": "2023-07-05",
+          "fin": "2023-07-05",
+          "actif": false
+        },
+        {
+          "membre_id": "patrick-vignal",
+          "nom": "Patrick Vignal",
+          "fonction": "Membre",
+          "debut": "2024-01-31",
+          "fin": "2024-06-09",
+          "actif": true
+        },
+        {
+          "membre_id": "sophie-errante",
+          "nom": "Sophie Errante",
+          "fonction": "membre",
+          "debut": "2023-11-29",
+          "fin": "2023-11-30",
+          "actif": false
+        },
+        {
+          "membre_id": "gerald-darmanin",
+          "nom": "Gérald Darmanin",
+          "fonction": "Membre",
+          "debut": "2024-09-21",
+          "fin": "2025-01-23",
+          "actif": false
+        },
+        {
+          "membre_id": "barbara-pompili",
+          "nom": "Barbara Pompili",
+          "fonction": "Membre",
+          "debut": "2022-09-15",
+          "fin": "2023-09-24",
+          "actif": false
+        },
+        {
+          "membre_id": "olivier-veran",
+          "nom": "Olivier Véran",
+          "fonction": "Membre",
+          "debut": "2024-02-13",
+          "fin": "2024-06-09",
+          "actif": true
+        },
+        {
+          "membre_id": "stella-dupont",
+          "nom": "Stella Dupont",
+          "fonction": "Membre",
+          "debut": "2024-10-05",
+          "fin": "2025-09-30",
+          "actif": false
+        },
+        {
+          "membre_id": "brigitte-klinkert",
+          "nom": "Brigitte Klinkert",
+          "fonction": "Membre",
+          "debut": "2022-06-30",
+          "fin": "2024-06-09",
+          "actif": true
+        },
+        {
+          "membre_id": "stephane-mazars",
+          "nom": "Stéphane Mazars",
+          "fonction": "Membre",
+          "debut": "2026-03-28",
+          "fin": "2026-03-30",
+          "actif": false
+        },
+        {
+          "membre_id": "vincent-ledoux",
+          "nom": "Vincent Ledoux",
+          "fonction": "Membre",
+          "debut": "2023-11-08",
+          "fin": "2024-06-09",
+          "actif": true
+        },
+        {
+          "membre_id": "elisabeth-borne",
+          "nom": "Élisabeth Borne",
+          "fonction": "Membre",
+          "debut": "2024-02-13",
+          "fin": "2024-06-09",
+          "actif": true
+        },
+        {
+          "membre_id": "sylvain-maillard",
+          "nom": "Sylvain Maillard",
+          "fonction": "Membre",
+          "debut": "2024-05-07",
+          "fin": "2024-05-07",
+          "actif": false
+        },
+        {
+          "membre_id": "olga-givernet",
+          "nom": "Olga Givernet",
+          "fonction": "Membre",
+          "debut": "2023-10-18",
+          "fin": "2024-03-05",
+          "actif": false
+        },
+        {
+          "membre_id": "pascale-boyer",
+          "nom": "Pascale Boyer",
+          "fonction": "Membre",
+          "debut": "2022-10-12",
+          "fin": "2022-10-12",
+          "actif": false
+        },
+        {
+          "membre_id": "anne-laurence-petel",
+          "nom": "Anne-Laurence Petel",
+          "fonction": "Membre",
+          "debut": "2024-02-14",
+          "fin": "2024-02-14",
+          "actif": false
+        },
+        {
+          "membre_id": "bertrand-bouyx",
+          "nom": "Bertrand Bouyx",
+          "fonction": "Membre",
+          "debut": "2024-02-27",
+          "fin": "2024-06-09",
+          "actif": false
+        },
+        {
+          "membre_id": "jean-philippe-ardouin",
+          "nom": "Jean-Philippe Ardouin",
+          "fonction": "membre",
+          "debut": "2024-03-27",
+          "fin": "2024-03-29",
+          "actif": false
+        },
+        {
+          "membre_id": "raphael-gerard",
+          "nom": "Raphaël Gérard",
+          "fonction": "Membre",
+          "debut": "2024-05-22",
+          "fin": "2024-05-22",
+          "actif": false
+        },
+        {
+          "membre_id": "didier-martin",
+          "nom": "Didier Martin",
+          "fonction": "Membre",
+          "debut": "2023-10-17",
+          "fin": "2023-10-17",
+          "actif": false
+        },
+        {
+          "membre_id": "didier-paris",
+          "nom": "Didier Paris",
+          "fonction": "Membre",
+          "debut": "2023-11-18",
+          "fin": "2023-11-20",
+          "actif": false
+        },
+        {
+          "membre_id": "herve-berville",
+          "nom": "Hervé Berville",
+          "fonction": "Membre",
+          "debut": "2025-07-09",
+          "fin": "2026-08-04",
+          "actif": false
+        },
+        {
+          "membre_id": "mireille-clapot",
+          "nom": "Mireille Clapot",
+          "fonction": "Membre",
+          "debut": "2022-08-04",
+          "fin": "2024-06-09",
+          "actif": true
+        },
+        {
+          "membre_id": "graziella-melchior",
+          "nom": "Graziella Melchior",
+          "fonction": "Membre",
+          "debut": "2023-06-20",
+          "fin": "2023-06-21",
+          "actif": false
+        },
+        {
+          "membre_id": "guillaume-kasbarian",
+          "nom": "Guillaume Kasbarian",
+          "fonction": "Membre",
+          "debut": "2026-07-21",
+          "fin": "2026-07-21",
+          "actif": false
+        },
+        {
+          "membre_id": "annaig-le-meur",
+          "nom": "Annaïg Le Meur",
+          "fonction": "Membre",
+          "debut": "2022-06-30",
+          "fin": "2022-06-30",
+          "actif": false
+        },
+        {
+          "membre_id": "didier-le-gac",
+          "nom": "Didier Le Gac",
+          "fonction": "Membre",
+          "debut": "2024-01-17",
+          "fin": "2024-01-17",
+          "actif": false
+        },
+        {
+          "membre_id": "liliana-tanguy",
+          "nom": "Liliana Tanguy",
+          "fonction": "Membre",
+          "debut": "2024-05-15",
+          "fin": "2024-06-09",
+          "actif": true
+        },
+        {
+          "membre_id": "eric-poulliat",
+          "nom": "Éric Poulliat",
+          "fonction": "Membre",
+          "debut": "2023-11-25",
+          "fin": "2023-11-27",
+          "actif": false
+        },
+        {
+          "membre_id": "berangere-couillard",
+          "nom": "Bérangère Couillard",
+          "fonction": "Membre",
+          "debut": "2022-06-30",
+          "fin": "2022-06-30",
+          "actif": false
+        },
+        {
+          "membre_id": "sophie-panonacle",
+          "nom": "Sophie Panonacle",
+          "fonction": "membre",
+          "debut": "2024-03-07",
+          "fin": "2024-03-08",
+          "actif": false
+        },
+        {
+          "membre_id": "pascal-lavergne",
+          "nom": "Pascal Lavergne",
+          "fonction": "Membre",
+          "debut": "2018-11-20",
+          "fin": "2019-05-24",
+          "actif": false
+        },
+        {
+          "membre_id": "philippe-sorez",
+          "nom": "Philippe Sorez",
+          "fonction": "Membre",
+          "debut": "2023-05-03",
+          "fin": "2023-05-03",
+          "actif": false
+        },
+        {
+          "membre_id": "christine-le-nabour",
+          "nom": "Christine Le Nabour",
+          "fonction": "Membre",
+          "debut": "2025-04-09",
+          "fin": "2025-04-11",
+          "actif": false
+        },
+        {
+          "membre_id": "daniel-labaronne",
+          "nom": "Daniel Labaronne",
+          "fonction": "Membre",
+          "debut": "2026-01-10",
+          "fin": "2026-01-12",
+          "actif": false
+        },
+        {
+          "membre_id": "caroline-abadie",
+          "nom": "Caroline Abadie",
+          "fonction": "membre",
+          "debut": "2023-02-28",
+          "fin": "2023-03-02",
+          "actif": false
+        },
+        {
+          "membre_id": "mounir-belhamiti",
+          "nom": "Mounir Belhamiti",
+          "fonction": "Membre",
+          "debut": "2023-11-22",
+          "fin": "2023-11-22",
+          "actif": false
+        },
+        {
+          "membre_id": "lionel-causse",
+          "nom": "Lionel Causse",
+          "fonction": "Membre",
+          "debut": "2023-05-10",
+          "fin": "2023-05-10",
+          "actif": false
+        },
+        {
+          "membre_id": "huguette-tiegna",
+          "nom": "Huguette Tiegna",
+          "fonction": "Membre",
+          "debut": "2022-11-15",
+          "fin": "2022-11-16",
+          "actif": false
+        },
+        {
+          "membre_id": "stephanie-rist",
+          "nom": "Stéphanie Rist",
+          "fonction": "Membre",
+          "debut": "2026-02-11",
+          "fin": "2026-02-11",
+          "actif": false
+        },
+        {
+          "membre_id": "caroline-janvier",
+          "nom": "Caroline Janvier",
+          "fonction": "Membre",
+          "debut": "2024-06-05",
+          "fin": "2024-06-05",
+          "actif": false
+        },
+        {
+          "membre_id": "laetitia-saint-paul",
+          "nom": "Laetitia Saint-Paul",
+          "fonction": "Membre",
+          "debut": "2024-05-22",
+          "fin": "2024-06-09",
+          "actif": true
+        },
+        {
+          "membre_id": "denis-masseglia",
+          "nom": "Denis Masséglia",
+          "fonction": "Membre",
+          "debut": "2026-04-08",
+          "fin": "2026-04-08",
+          "actif": false
+        },
+        {
+          "membre_id": "nicole-dubre-chirat",
+          "nom": "Nicole Dubré-Chirat",
+          "fonction": "Membre",
+          "debut": "2023-05-31",
+          "fin": "2023-06-05",
+          "actif": false
+        },
+        {
+          "membre_id": "philippe-guillemard",
+          "nom": "Philippe Guillemard",
+          "fonction": "Membre",
+          "debut": "2023-03-08",
+          "fin": "2024-02-11",
+          "actif": false
+        },
+        {
+          "membre_id": "eric-girardin",
+          "nom": "Éric Girardin",
+          "fonction": "Membre",
+          "debut": "2022-07-20",
+          "fin": "2022-07-20",
+          "actif": false
+        },
+        {
+          "membre_id": "nicole-le-peih",
+          "nom": "Nicole Le Peih",
+          "fonction": "Membre",
+          "debut": "2017-06-29",
+          "fin": "2022-06-21",
+          "actif": false
+        },
+        {
+          "membre_id": "jean-michel-jacques",
+          "nom": "Jean-Michel Jacques",
+          "fonction": "Membre",
+          "debut": "2024-03-27",
+          "fin": "2024-03-27",
+          "actif": false
+        },
+        {
+          "membre_id": "ludovic-mendes",
+          "nom": "Ludovic Mendes",
+          "fonction": "Membre",
+          "debut": "2026-01-20",
+          "fin": "2026-01-20",
+          "actif": false
+        },
+        {
+          "membre_id": "brigitte-liso",
+          "nom": "Brigitte Liso",
+          "fonction": "Membre",
+          "debut": "2024-01-24",
+          "fin": "2024-01-24",
+          "actif": false
+        },
+        {
+          "membre_id": "charlotte-parmentier-lecocq",
+          "nom": "Charlotte Parmentier-Lecocq",
+          "fonction": "Membre",
+          "debut": "2026-03-27",
+          "fin": null,
+          "actif": false
+        },
+        {
+          "membre_id": "bruno-studer",
+          "nom": "Bruno Studer",
+          "fonction": "Membre",
+          "debut": "2023-05-12",
+          "fin": "2023-05-12",
+          "actif": false
+        },
+        {
+          "membre_id": "frederic-descrozaille",
+          "nom": "Frédéric Descrozaille",
+          "fonction": "membre",
+          "debut": "2023-03-02",
+          "fin": "2023-03-03",
+          "actif": false
+        },
+        {
+          "membre_id": "cecile-rilhac",
+          "nom": "Cécile Rilhac",
+          "fonction": "Membre",
+          "debut": "2024-05-29",
+          "fin": "2024-05-29",
+          "actif": false
+        },
+        {
+          "membre_id": "amelia-lakrafi",
+          "nom": "Amélia Lakrafi",
+          "fonction": "Membre",
+          "debut": "2024-05-30",
+          "fin": "2024-06-09",
+          "actif": true
+        },
+        {
+          "membre_id": "anne-genetet",
+          "nom": "Anne Genetet",
+          "fonction": "Membre",
+          "debut": "2025-05-03",
+          "fin": "2025-05-05",
+          "actif": false
+        },
+        {
+          "membre_id": "philippe-dunoyer",
+          "nom": "Philippe Dunoyer",
+          "fonction": "Membre",
+          "debut": "2024-04-10",
+          "fin": "2024-04-10",
+          "actif": false
+        },
+        {
+          "membre_id": "roland-lescure",
+          "nom": "Roland Lescure",
+          "fonction": "Membre",
+          "debut": "2025-10-18",
+          "fin": "2025-10-20",
+          "actif": false
+        },
+        {
+          "membre_id": "alexandre-holroyd",
+          "nom": "Alexandre Holroyd",
+          "fonction": "Membre",
+          "debut": "2020-01-21",
+          "fin": "2020-07-24",
+          "actif": false
+        },
+        {
+          "membre_id": "pieyre-alexandre-anglade",
+          "nom": "Pieyre-Alexandre Anglade",
+          "fonction": "membre",
+          "debut": "2023-09-01",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "stephane-vojetta",
+          "nom": "Stéphane Vojetta",
+          "fonction": "Membre",
+          "debut": "2024-12-11",
+          "fin": "2024-12-11",
+          "actif": false
+        },
+        {
+          "membre_id": "guillaume-gouffier-cha",
+          "nom": "Guillaume Gouffier Valente",
+          "fonction": "membre",
+          "debut": "2024-03-13",
+          "fin": "2024-03-14",
+          "actif": false
+        },
+        {
+          "membre_id": "xavier-roseren",
+          "nom": "Xavier Roseren",
+          "fonction": "Membre",
+          "debut": "2026-04-04",
+          "fin": "2026-04-07",
+          "actif": false
+        },
+        {
+          "membre_id": "david-valence",
+          "nom": "David Valence",
+          "fonction": "Membre",
+          "debut": "2024-03-07",
+          "fin": "2024-03-07",
+          "actif": false
+        },
+        {
+          "membre_id": "stanislas-guerini",
+          "nom": "Stanislas Guerini",
+          "fonction": "Membre",
+          "debut": "2022-06-30",
+          "fin": "2022-07-22",
+          "actif": false
+        },
+        {
+          "membre_id": "xavier-batut",
+          "nom": "Xavier Batut",
+          "fonction": "Membre",
+          "debut": "2023-08-30",
+          "fin": "2024-01-17",
+          "actif": false
+        },
+        {
+          "membre_id": "michele-peyron",
+          "nom": "Michèle Peyron",
+          "fonction": "Membre",
+          "debut": "2023-12-06",
+          "fin": "2023-12-06",
+          "actif": false
+        },
+        {
+          "membre_id": "hadrien-ghomi",
+          "nom": "Hadrien Ghomi",
+          "fonction": "Membre",
+          "debut": "2024-06-06",
+          "fin": "2024-06-09",
+          "actif": true
+        },
+        {
+          "membre_id": "olivia-gregoire",
+          "nom": "Olivia Grégoire",
+          "fonction": "Membre",
+          "debut": "2025-03-04",
+          "fin": "2025-03-04",
+          "actif": false
+        },
+        {
+          "membre_id": "fanta-berete",
+          "nom": "Fanta Berete",
+          "fonction": "Membre",
+          "debut": "2022-12-14",
+          "fin": "2022-12-14",
+          "actif": false
+        },
+        {
+          "membre_id": "beatrice-piron",
+          "nom": "Béatrice Piron",
+          "fonction": "Membre",
+          "debut": "2024-05-30",
+          "fin": "2024-06-09",
+          "actif": true
+        },
+        {
+          "membre_id": "marie-lebec",
+          "nom": "Marie Lebec",
+          "fonction": "Membre",
+          "debut": "2024-01-17",
+          "fin": "2024-01-17",
+          "actif": false
+        },
+        {
+          "membre_id": "marie-guevenoux",
+          "nom": "Marie Guévenoux",
+          "fonction": "Membre",
+          "debut": "2022-11-01",
+          "fin": "2022-11-03",
+          "actif": false
+        },
+        {
+          "membre_id": "yael-braun-pivet",
+          "nom": "Yaël Braun-Pivet",
+          "fonction": "Membre",
+          "debut": "2026-09-16",
+          "fin": null,
+          "actif": false
+        },
+        {
+          "membre_id": "natalia-pouzyreff",
+          "nom": "Natalia Pouzyreff",
+          "fonction": "Membre",
+          "debut": "2025-07-08",
+          "fin": "2025-07-08",
+          "actif": false
+        },
+        {
+          "membre_id": "annie-vidal",
+          "nom": "Annie Vidal",
+          "fonction": "Membre",
+          "debut": "2022-12-14",
+          "fin": "2022-12-14",
+          "actif": false
+        },
+        {
+          "membre_id": "jean-marie-fievet",
+          "nom": "Jean-Marie Fiévet",
+          "fonction": "Membre",
+          "debut": "2022-08-03",
+          "fin": "2022-08-03",
+          "actif": false
+        },
+        {
+          "membre_id": "gabriel-attal",
+          "nom": "Gabriel Attal",
+          "fonction": "Membre",
+          "debut": "2026-04-28",
+          "fin": null,
+          "actif": false
+        },
+        {
+          "membre_id": "marie-pierre-rixain",
+          "nom": "Marie-Pierre Rixain",
+          "fonction": "Membre",
+          "debut": "2024-10-09",
+          "fin": "2024-10-10",
+          "actif": false
+        },
+        {
+          "membre_id": "thomas-gassilloud",
+          "nom": "Thomas Gassilloud",
+          "fonction": "Membre",
+          "debut": "2024-10-09",
+          "fin": "2024-10-10",
+          "actif": false
+        },
+        {
+          "membre_id": "benjamin-dirx",
+          "nom": "Benjamin Dirx",
+          "fonction": "Membre",
+          "debut": "2017-06-29",
+          "fin": "2018-09-29",
+          "actif": false
+        },
+        {
+          "membre_id": "mikaele-seo",
+          "nom": "Mikaele Seo",
+          "fonction": "Membre",
+          "debut": "2026-04-21",
+          "fin": "2026-04-23",
+          "actif": false
+        },
+        {
+          "membre_id": "laurence-heydel-grillere",
+          "nom": "Laurence Heydel Grillere",
+          "fonction": "Membre",
+          "debut": "2022-07-24",
+          "fin": "2022-11-21",
+          "actif": false
+        },
+        {
+          "membre_id": "lionel-vuibert",
+          "nom": "Lionel Vuibert",
+          "fonction": "Membre",
+          "debut": "2023-11-21",
+          "fin": "2024-06-09",
+          "actif": true
+        },
+        {
+          "membre_id": "jean-francois-rousset",
+          "nom": "Jean-François Rousset",
+          "fonction": "Membre",
+          "debut": "2025-03-04",
+          "fin": "2025-03-04",
+          "actif": false
+        },
+        {
+          "membre_id": "sabrina-agresti-roubache",
+          "nom": "Sabrina Roubache",
+          "fonction": "membre",
+          "debut": "2023-06-22",
+          "fin": "2023-06-23",
+          "actif": false
+        },
+        {
+          "membre_id": "didier-parakian",
+          "nom": "Didier Parakian",
+          "fonction": "Membre",
+          "debut": "2023-09-01",
+          "fin": "2024-06-09",
+          "actif": true
+        },
+        {
+          "membre_id": "freddy-sertin",
+          "nom": "Freddy Sertin",
+          "fonction": "Membre",
+          "debut": "2024-02-09",
+          "fin": "2024-02-09",
+          "actif": false
+        },
+        {
+          "membre_id": "benoit-bordat",
+          "nom": "Benoît Bordat",
+          "fonction": "Membre",
+          "debut": "2022-09-14",
+          "fin": "2022-09-14",
+          "actif": false
+        },
+        {
+          "membre_id": "chantal-bouloux",
+          "nom": "Chantal Bouloux",
+          "fonction": "Membre",
+          "debut": "2024-01-27",
+          "fin": "2024-01-30",
+          "actif": false
+        },
+        {
+          "membre_id": "nicolas-pacquot",
+          "nom": "Nicolas Pacquot",
+          "fonction": "Membre",
+          "debut": "2023-03-22",
+          "fin": "2023-03-22",
+          "actif": false
+        },
+        {
+          "membre_id": "thomas-cazenave",
+          "nom": "Thomas Cazenave",
+          "fonction": "Membre",
+          "debut": "2024-07-20",
+          "fin": "2024-07-25",
+          "actif": false
+        },
+        {
+          "membre_id": "servane-hugues",
+          "nom": "Servane Hugues",
+          "fonction": "Membre",
+          "debut": "2023-09-19",
+          "fin": "2023-09-19",
+          "actif": false
+        },
+        {
+          "membre_id": "christophe-marion",
+          "nom": "Christophe Marion",
+          "fonction": "Membre",
+          "debut": "2024-05-14",
+          "fin": "2024-05-15",
+          "actif": false
+        },
+        {
+          "membre_id": "lysiane-metayer",
+          "nom": "Lysiane Métayer",
+          "fonction": "Membre",
+          "debut": "2022-08-03",
+          "fin": "2022-08-03",
+          "actif": false
+        },
+        {
+          "membre_id": "philippe-fait",
+          "nom": "Philippe Fait",
+          "fonction": "Membre",
+          "debut": "2025-06-17",
+          "fin": "2025-09-30",
+          "actif": false
+        },
+        {
+          "membre_id": "charles-sitzenstuhl",
+          "nom": "Charles Sitzenstuhl",
+          "fonction": "Membre",
+          "debut": "2025-02-12",
+          "fin": "2025-02-12",
+          "actif": false
+        },
+        {
+          "membre_id": "sarah-tanzilli",
+          "nom": "Sarah Tanzilli",
+          "fonction": "Membre",
+          "debut": "2024-03-12",
+          "fin": "2024-03-12",
+          "actif": false
+        },
+        {
+          "membre_id": "julie-delpech",
+          "nom": "Julie Delpech",
+          "fonction": "Membre",
+          "debut": "2023-07-06",
+          "fin": "2024-06-09",
+          "actif": true
+        },
+        {
+          "membre_id": "caroline-yadan",
+          "nom": "Caroline Yadan",
+          "fonction": "Membre",
+          "debut": "2026-01-14",
+          "fin": "2026-01-14",
+          "actif": false
+        },
+        {
+          "membre_id": "astrid-panosyan-bouvet",
+          "nom": "Astrid Panosyan-Bouvet",
+          "fonction": "Membre",
+          "debut": "2024-10-11",
+          "fin": "2024-10-21",
+          "actif": false
+        },
+        {
+          "membre_id": "clara-chassaniol",
+          "nom": "Clara Chassaniol",
+          "fonction": "Membre",
+          "debut": "2022-09-14",
+          "fin": "2022-09-14",
+          "actif": false
+        },
+        {
+          "membre_id": "nicolas-metzdorf",
+          "nom": "Nicolas Metzdorf",
+          "fonction": "Membre",
+          "debut": "2024-05-16",
+          "fin": "2024-06-09",
+          "actif": true
+        },
+        {
+          "membre_id": "christopher-weissberg",
+          "nom": "Christopher Weissberg",
+          "fonction": "Membre",
+          "debut": "2026-06-18",
+          "fin": null,
+          "actif": false
+        },
+        {
+          "membre_id": "eleonore-caroit",
+          "nom": "Eléonore Caroit",
+          "fonction": "Membre",
+          "debut": "2023-11-30",
+          "fin": "2024-06-09",
+          "actif": true
+        },
+        {
+          "membre_id": "mathieu-lefevre",
+          "nom": "Mathieu Lefèvre",
+          "fonction": "Membre",
+          "debut": "2025-11-05",
+          "fin": "2025-11-05",
+          "actif": false
+        },
+        {
+          "membre_id": "emilie-chandler",
+          "nom": "Émilie Chandler",
+          "fonction": "membre",
+          "debut": "2024-04-10",
+          "fin": "2024-04-12",
+          "actif": false
+        },
+        {
+          "membre_id": "alexis-izard",
+          "nom": "Alexis Izard",
+          "fonction": "Membre",
+          "debut": "2023-03-02",
+          "fin": "2023-03-02",
+          "actif": false
+        },
+        {
+          "membre_id": "paul-midy",
+          "nom": "Paul Midy",
+          "fonction": "Membre",
+          "debut": "2026-06-17",
+          "fin": "2026-06-17",
+          "actif": false
+        },
+        {
+          "membre_id": "philippe-emmanuel",
+          "nom": "Philippe Emmanuel",
+          "fonction": "Membre",
+          "debut": "2024-03-30",
+          "fin": "2024-06-09",
+          "actif": true
+        },
+        {
+          "membre_id": "eric-husson",
+          "nom": "Éric Husson",
+          "fonction": "Membre",
+          "debut": "2024-05-14",
+          "fin": "2024-05-15",
+          "actif": false
+        },
+        {
+          "membre_id": "karl-olive",
+          "nom": "Karl Olive",
+          "fonction": "Membre",
+          "debut": "2025-03-04",
+          "fin": "2025-03-04",
+          "actif": false
+        },
+        {
+          "membre_id": "ingrid-dordain",
+          "nom": "Ingrid Dordain",
+          "fonction": "Membre",
+          "debut": "2024-02-08",
+          "fin": "2024-02-08",
+          "actif": false
+        },
+        {
+          "membre_id": "pierre-cazeneuve",
+          "nom": "Pierre Cazeneuve",
+          "fonction": "Membre",
+          "debut": "2026-02-03",
+          "fin": "2026-02-04",
+          "actif": false
+        },
+        {
+          "membre_id": "marc-ferracci",
+          "nom": "Marc Ferracci",
+          "fonction": "Membre",
+          "debut": "2023-06-03",
+          "fin": "2023-06-05",
+          "actif": false
+        },
+        {
+          "membre_id": "prisca-thevenot",
+          "nom": "Prisca Thevenot",
+          "fonction": "Membre",
+          "debut": "2026-06-16",
+          "fin": "2026-06-16",
+          "actif": false
+        },
+        {
+          "membre_id": "emmanuel-pellerin",
+          "nom": "Emmanuel Pellerin",
+          "fonction": "Membre",
+          "debut": "2023-11-22",
+          "fin": "2023-11-22",
+          "actif": false
+        },
+        {
+          "membre_id": "claire-guichard",
+          "nom": "Claire Guichard",
+          "fonction": "Membre",
+          "debut": "2024-04-11",
+          "fin": "2024-06-09",
+          "actif": true
+        },
+        {
+          "membre_id": "benjamin-haddad",
+          "nom": "Benjamin Haddad",
+          "fonction": "Membre",
+          "debut": "2024-04-11",
+          "fin": "2024-06-09",
+          "actif": true
+        },
+        {
+          "membre_id": "laure-miller",
+          "nom": "Laure Miller",
+          "fonction": "Membre",
+          "debut": "2026-01-28",
+          "fin": "2026-01-28",
           "actif": false
         }
       ]
@@ -91365,1034 +92401,6 @@
           "fonction": "Membre",
           "debut": "2025-03-12",
           "fin": "2025-03-13",
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
-      "label": "Commission des affaires étrangères",
-      "nb_membres_a_la_date_de_reference": 21,
-      "nb_membres_cumul_historique": 127,
-      "effectif_reference": 196,
-      "par_fonction": {
-        "membre": 127
-      },
-      "membres": [
-        {
-          "membre_id": "jean-carles-grelier",
-          "nom": "Jean-Carles Grelier",
-          "fonction": "Membre",
-          "debut": "2023-04-04",
-          "fin": "2023-04-04",
-          "actif": false
-        },
-        {
-          "membre_id": "joel-giraud",
-          "nom": "Joël Giraud",
-          "fonction": "Membre",
-          "debut": "2023-11-04",
-          "fin": "2023-11-04",
-          "actif": false
-        },
-        {
-          "membre_id": "eric-woerth",
-          "nom": "Éric Woerth",
-          "fonction": "Membre",
-          "debut": "2023-06-01",
-          "fin": "2024-06-09",
-          "actif": true
-        },
-        {
-          "membre_id": "olivier-dussopt",
-          "nom": "Olivier Dussopt",
-          "fonction": "Membre",
-          "debut": "2022-07-01",
-          "fin": "2022-07-22",
-          "actif": false
-        },
-        {
-          "membre_id": "jacqueline-maquet",
-          "nom": "Jacqueline Maquet",
-          "fonction": "Membre",
-          "debut": "2017-06-29",
-          "fin": "2019-09-30",
-          "actif": false
-        },
-        {
-          "membre_id": "franck-riester",
-          "nom": "Franck Riester",
-          "fonction": "Membre",
-          "debut": "2026-04-09",
-          "fin": "2026-04-16",
-          "actif": false
-        },
-        {
-          "membre_id": "constance-le-grip",
-          "nom": "Constance Le Grip",
-          "fonction": "Membre",
-          "debut": "2026-07-22",
-          "fin": null,
-          "actif": false
-        },
-        {
-          "membre_id": "damien-abad",
-          "nom": "Damien Abad",
-          "fonction": "membre",
-          "debut": "2022-07-01",
-          "fin": "2023-09-01",
-          "actif": false
-        },
-        {
-          "membre_id": "eric-alauzet",
-          "nom": "Éric Alauzet",
-          "fonction": "Membre",
-          "debut": "2023-04-04",
-          "fin": "2023-04-05",
-          "actif": false
-        },
-        {
-          "membre_id": "florent-boudie",
-          "nom": "Florent Boudié",
-          "fonction": "Membre",
-          "debut": "2023-07-05",
-          "fin": "2023-07-05",
-          "actif": false
-        },
-        {
-          "membre_id": "patrick-vignal",
-          "nom": "Patrick Vignal",
-          "fonction": "Membre",
-          "debut": "2024-01-31",
-          "fin": "2024-06-09",
-          "actif": true
-        },
-        {
-          "membre_id": "sophie-errante",
-          "nom": "Sophie Errante",
-          "fonction": "membre",
-          "debut": "2023-11-29",
-          "fin": "2023-11-30",
-          "actif": false
-        },
-        {
-          "membre_id": "gerald-darmanin",
-          "nom": "Gérald Darmanin",
-          "fonction": "Membre",
-          "debut": "2024-09-21",
-          "fin": "2025-01-23",
-          "actif": false
-        },
-        {
-          "membre_id": "barbara-pompili",
-          "nom": "Barbara Pompili",
-          "fonction": "Membre",
-          "debut": "2022-09-15",
-          "fin": "2023-09-24",
-          "actif": false
-        },
-        {
-          "membre_id": "olivier-veran",
-          "nom": "Olivier Véran",
-          "fonction": "Membre",
-          "debut": "2024-02-13",
-          "fin": "2024-06-09",
-          "actif": true
-        },
-        {
-          "membre_id": "stella-dupont",
-          "nom": "Stella Dupont",
-          "fonction": "Membre",
-          "debut": "2024-10-05",
-          "fin": "2025-09-30",
-          "actif": false
-        },
-        {
-          "membre_id": "brigitte-klinkert",
-          "nom": "Brigitte Klinkert",
-          "fonction": "Membre",
-          "debut": "2022-06-30",
-          "fin": "2024-06-09",
-          "actif": true
-        },
-        {
-          "membre_id": "stephane-mazars",
-          "nom": "Stéphane Mazars",
-          "fonction": "Membre",
-          "debut": "2026-03-28",
-          "fin": "2026-03-30",
-          "actif": false
-        },
-        {
-          "membre_id": "vincent-ledoux",
-          "nom": "Vincent Ledoux",
-          "fonction": "Membre",
-          "debut": "2023-11-08",
-          "fin": "2024-06-09",
-          "actif": true
-        },
-        {
-          "membre_id": "elisabeth-borne",
-          "nom": "Élisabeth Borne",
-          "fonction": "Membre",
-          "debut": "2024-02-13",
-          "fin": "2024-06-09",
-          "actif": true
-        },
-        {
-          "membre_id": "sylvain-maillard",
-          "nom": "Sylvain Maillard",
-          "fonction": "Membre",
-          "debut": "2024-05-07",
-          "fin": "2024-05-07",
-          "actif": false
-        },
-        {
-          "membre_id": "olga-givernet",
-          "nom": "Olga Givernet",
-          "fonction": "Membre",
-          "debut": "2023-10-18",
-          "fin": "2024-03-05",
-          "actif": false
-        },
-        {
-          "membre_id": "pascale-boyer",
-          "nom": "Pascale Boyer",
-          "fonction": "Membre",
-          "debut": "2022-10-12",
-          "fin": "2022-10-12",
-          "actif": false
-        },
-        {
-          "membre_id": "anne-laurence-petel",
-          "nom": "Anne-Laurence Petel",
-          "fonction": "Membre",
-          "debut": "2024-02-14",
-          "fin": "2024-02-14",
-          "actif": false
-        },
-        {
-          "membre_id": "bertrand-bouyx",
-          "nom": "Bertrand Bouyx",
-          "fonction": "Membre",
-          "debut": "2024-02-27",
-          "fin": "2024-06-09",
-          "actif": false
-        },
-        {
-          "membre_id": "jean-philippe-ardouin",
-          "nom": "Jean-Philippe Ardouin",
-          "fonction": "membre",
-          "debut": "2024-03-27",
-          "fin": "2024-03-29",
-          "actif": false
-        },
-        {
-          "membre_id": "raphael-gerard",
-          "nom": "Raphaël Gérard",
-          "fonction": "Membre",
-          "debut": "2024-05-22",
-          "fin": "2024-05-22",
-          "actif": false
-        },
-        {
-          "membre_id": "didier-martin",
-          "nom": "Didier Martin",
-          "fonction": "Membre",
-          "debut": "2023-10-17",
-          "fin": "2023-10-17",
-          "actif": false
-        },
-        {
-          "membre_id": "didier-paris",
-          "nom": "Didier Paris",
-          "fonction": "Membre",
-          "debut": "2023-11-18",
-          "fin": "2023-11-20",
-          "actif": false
-        },
-        {
-          "membre_id": "herve-berville",
-          "nom": "Hervé Berville",
-          "fonction": "Membre",
-          "debut": "2025-07-09",
-          "fin": "2026-08-04",
-          "actif": false
-        },
-        {
-          "membre_id": "mireille-clapot",
-          "nom": "Mireille Clapot",
-          "fonction": "Membre",
-          "debut": "2022-08-04",
-          "fin": "2024-06-09",
-          "actif": true
-        },
-        {
-          "membre_id": "graziella-melchior",
-          "nom": "Graziella Melchior",
-          "fonction": "Membre",
-          "debut": "2023-06-20",
-          "fin": "2023-06-21",
-          "actif": false
-        },
-        {
-          "membre_id": "guillaume-kasbarian",
-          "nom": "Guillaume Kasbarian",
-          "fonction": "Membre",
-          "debut": "2026-07-21",
-          "fin": "2026-07-21",
-          "actif": false
-        },
-        {
-          "membre_id": "annaig-le-meur",
-          "nom": "Annaïg Le Meur",
-          "fonction": "Membre",
-          "debut": "2022-06-30",
-          "fin": "2022-06-30",
-          "actif": false
-        },
-        {
-          "membre_id": "didier-le-gac",
-          "nom": "Didier Le Gac",
-          "fonction": "Membre",
-          "debut": "2024-01-17",
-          "fin": "2024-01-17",
-          "actif": false
-        },
-        {
-          "membre_id": "liliana-tanguy",
-          "nom": "Liliana Tanguy",
-          "fonction": "Membre",
-          "debut": "2024-05-15",
-          "fin": "2024-06-09",
-          "actif": true
-        },
-        {
-          "membre_id": "eric-poulliat",
-          "nom": "Éric Poulliat",
-          "fonction": "Membre",
-          "debut": "2023-11-25",
-          "fin": "2023-11-27",
-          "actif": false
-        },
-        {
-          "membre_id": "berangere-couillard",
-          "nom": "Bérangère Couillard",
-          "fonction": "Membre",
-          "debut": "2022-06-30",
-          "fin": "2022-06-30",
-          "actif": false
-        },
-        {
-          "membre_id": "sophie-panonacle",
-          "nom": "Sophie Panonacle",
-          "fonction": "membre",
-          "debut": "2024-03-07",
-          "fin": "2024-03-08",
-          "actif": false
-        },
-        {
-          "membre_id": "pascal-lavergne",
-          "nom": "Pascal Lavergne",
-          "fonction": "Membre",
-          "debut": "2018-11-20",
-          "fin": "2019-05-24",
-          "actif": false
-        },
-        {
-          "membre_id": "philippe-sorez",
-          "nom": "Philippe Sorez",
-          "fonction": "Membre",
-          "debut": "2023-05-03",
-          "fin": "2023-05-03",
-          "actif": false
-        },
-        {
-          "membre_id": "christine-le-nabour",
-          "nom": "Christine Le Nabour",
-          "fonction": "Membre",
-          "debut": "2025-04-09",
-          "fin": "2025-04-11",
-          "actif": false
-        },
-        {
-          "membre_id": "daniel-labaronne",
-          "nom": "Daniel Labaronne",
-          "fonction": "Membre",
-          "debut": "2026-01-10",
-          "fin": "2026-01-12",
-          "actif": false
-        },
-        {
-          "membre_id": "caroline-abadie",
-          "nom": "Caroline Abadie",
-          "fonction": "membre",
-          "debut": "2023-02-28",
-          "fin": "2023-03-02",
-          "actif": false
-        },
-        {
-          "membre_id": "mounir-belhamiti",
-          "nom": "Mounir Belhamiti",
-          "fonction": "Membre",
-          "debut": "2023-11-22",
-          "fin": "2023-11-22",
-          "actif": false
-        },
-        {
-          "membre_id": "lionel-causse",
-          "nom": "Lionel Causse",
-          "fonction": "Membre",
-          "debut": "2023-05-10",
-          "fin": "2023-05-10",
-          "actif": false
-        },
-        {
-          "membre_id": "huguette-tiegna",
-          "nom": "Huguette Tiegna",
-          "fonction": "Membre",
-          "debut": "2022-11-15",
-          "fin": "2022-11-16",
-          "actif": false
-        },
-        {
-          "membre_id": "stephanie-rist",
-          "nom": "Stéphanie Rist",
-          "fonction": "Membre",
-          "debut": "2026-02-11",
-          "fin": "2026-02-11",
-          "actif": false
-        },
-        {
-          "membre_id": "caroline-janvier",
-          "nom": "Caroline Janvier",
-          "fonction": "Membre",
-          "debut": "2024-06-05",
-          "fin": "2024-06-05",
-          "actif": false
-        },
-        {
-          "membre_id": "laetitia-saint-paul",
-          "nom": "Laetitia Saint-Paul",
-          "fonction": "Membre",
-          "debut": "2024-05-22",
-          "fin": "2024-06-09",
-          "actif": true
-        },
-        {
-          "membre_id": "denis-masseglia",
-          "nom": "Denis Masséglia",
-          "fonction": "Membre",
-          "debut": "2026-04-08",
-          "fin": "2026-04-08",
-          "actif": false
-        },
-        {
-          "membre_id": "nicole-dubre-chirat",
-          "nom": "Nicole Dubré-Chirat",
-          "fonction": "Membre",
-          "debut": "2023-05-31",
-          "fin": "2023-06-05",
-          "actif": false
-        },
-        {
-          "membre_id": "philippe-guillemard",
-          "nom": "Philippe Guillemard",
-          "fonction": "Membre",
-          "debut": "2023-03-08",
-          "fin": "2024-02-11",
-          "actif": false
-        },
-        {
-          "membre_id": "eric-girardin",
-          "nom": "Éric Girardin",
-          "fonction": "Membre",
-          "debut": "2022-07-20",
-          "fin": "2022-07-20",
-          "actif": false
-        },
-        {
-          "membre_id": "nicole-le-peih",
-          "nom": "Nicole Le Peih",
-          "fonction": "Membre",
-          "debut": "2017-06-29",
-          "fin": "2022-06-21",
-          "actif": false
-        },
-        {
-          "membre_id": "jean-michel-jacques",
-          "nom": "Jean-Michel Jacques",
-          "fonction": "Membre",
-          "debut": "2024-03-27",
-          "fin": "2024-03-27",
-          "actif": false
-        },
-        {
-          "membre_id": "ludovic-mendes",
-          "nom": "Ludovic Mendes",
-          "fonction": "Membre",
-          "debut": "2026-01-20",
-          "fin": "2026-01-20",
-          "actif": false
-        },
-        {
-          "membre_id": "brigitte-liso",
-          "nom": "Brigitte Liso",
-          "fonction": "Membre",
-          "debut": "2024-01-24",
-          "fin": "2024-01-24",
-          "actif": false
-        },
-        {
-          "membre_id": "charlotte-parmentier-lecocq",
-          "nom": "Charlotte Parmentier-Lecocq",
-          "fonction": "Membre",
-          "debut": "2026-03-27",
-          "fin": null,
-          "actif": false
-        },
-        {
-          "membre_id": "bruno-studer",
-          "nom": "Bruno Studer",
-          "fonction": "Membre",
-          "debut": "2023-05-12",
-          "fin": "2023-05-12",
-          "actif": false
-        },
-        {
-          "membre_id": "frederic-descrozaille",
-          "nom": "Frédéric Descrozaille",
-          "fonction": "membre",
-          "debut": "2023-03-02",
-          "fin": "2023-03-03",
-          "actif": false
-        },
-        {
-          "membre_id": "cecile-rilhac",
-          "nom": "Cécile Rilhac",
-          "fonction": "Membre",
-          "debut": "2024-05-29",
-          "fin": "2024-05-29",
-          "actif": false
-        },
-        {
-          "membre_id": "amelia-lakrafi",
-          "nom": "Amélia Lakrafi",
-          "fonction": "Membre",
-          "debut": "2024-05-30",
-          "fin": "2024-06-09",
-          "actif": true
-        },
-        {
-          "membre_id": "anne-genetet",
-          "nom": "Anne Genetet",
-          "fonction": "Membre",
-          "debut": "2025-05-03",
-          "fin": "2025-05-05",
-          "actif": false
-        },
-        {
-          "membre_id": "philippe-dunoyer",
-          "nom": "Philippe Dunoyer",
-          "fonction": "Membre",
-          "debut": "2024-04-10",
-          "fin": "2024-04-10",
-          "actif": false
-        },
-        {
-          "membre_id": "roland-lescure",
-          "nom": "Roland Lescure",
-          "fonction": "Membre",
-          "debut": "2025-10-18",
-          "fin": "2025-10-20",
-          "actif": false
-        },
-        {
-          "membre_id": "alexandre-holroyd",
-          "nom": "Alexandre Holroyd",
-          "fonction": "Membre",
-          "debut": "2020-01-21",
-          "fin": "2020-07-24",
-          "actif": false
-        },
-        {
-          "membre_id": "pieyre-alexandre-anglade",
-          "nom": "Pieyre-Alexandre Anglade",
-          "fonction": "membre",
-          "debut": "2023-09-01",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "stephane-vojetta",
-          "nom": "Stéphane Vojetta",
-          "fonction": "Membre",
-          "debut": "2024-12-11",
-          "fin": "2024-12-11",
-          "actif": false
-        },
-        {
-          "membre_id": "guillaume-gouffier-cha",
-          "nom": "Guillaume Gouffier Valente",
-          "fonction": "membre",
-          "debut": "2024-03-13",
-          "fin": "2024-03-14",
-          "actif": false
-        },
-        {
-          "membre_id": "xavier-roseren",
-          "nom": "Xavier Roseren",
-          "fonction": "Membre",
-          "debut": "2026-04-04",
-          "fin": "2026-04-07",
-          "actif": false
-        },
-        {
-          "membre_id": "david-valence",
-          "nom": "David Valence",
-          "fonction": "Membre",
-          "debut": "2024-03-07",
-          "fin": "2024-03-07",
-          "actif": false
-        },
-        {
-          "membre_id": "stanislas-guerini",
-          "nom": "Stanislas Guerini",
-          "fonction": "Membre",
-          "debut": "2022-06-30",
-          "fin": "2022-07-22",
-          "actif": false
-        },
-        {
-          "membre_id": "xavier-batut",
-          "nom": "Xavier Batut",
-          "fonction": "Membre",
-          "debut": "2023-08-30",
-          "fin": "2024-01-17",
-          "actif": false
-        },
-        {
-          "membre_id": "michele-peyron",
-          "nom": "Michèle Peyron",
-          "fonction": "Membre",
-          "debut": "2023-12-06",
-          "fin": "2023-12-06",
-          "actif": false
-        },
-        {
-          "membre_id": "hadrien-ghomi",
-          "nom": "Hadrien Ghomi",
-          "fonction": "Membre",
-          "debut": "2024-06-06",
-          "fin": "2024-06-09",
-          "actif": true
-        },
-        {
-          "membre_id": "olivia-gregoire",
-          "nom": "Olivia Grégoire",
-          "fonction": "Membre",
-          "debut": "2025-03-04",
-          "fin": "2025-03-04",
-          "actif": false
-        },
-        {
-          "membre_id": "fanta-berete",
-          "nom": "Fanta Berete",
-          "fonction": "Membre",
-          "debut": "2022-12-14",
-          "fin": "2022-12-14",
-          "actif": false
-        },
-        {
-          "membre_id": "beatrice-piron",
-          "nom": "Béatrice Piron",
-          "fonction": "Membre",
-          "debut": "2024-05-30",
-          "fin": "2024-06-09",
-          "actif": true
-        },
-        {
-          "membre_id": "marie-lebec",
-          "nom": "Marie Lebec",
-          "fonction": "Membre",
-          "debut": "2024-01-17",
-          "fin": "2024-01-17",
-          "actif": false
-        },
-        {
-          "membre_id": "marie-guevenoux",
-          "nom": "Marie Guévenoux",
-          "fonction": "Membre",
-          "debut": "2022-11-01",
-          "fin": "2022-11-03",
-          "actif": false
-        },
-        {
-          "membre_id": "natalia-pouzyreff",
-          "nom": "Natalia Pouzyreff",
-          "fonction": "Membre",
-          "debut": "2025-07-08",
-          "fin": "2025-07-08",
-          "actif": false
-        },
-        {
-          "membre_id": "annie-vidal",
-          "nom": "Annie Vidal",
-          "fonction": "Membre",
-          "debut": "2022-12-14",
-          "fin": "2022-12-14",
-          "actif": false
-        },
-        {
-          "membre_id": "jean-marie-fievet",
-          "nom": "Jean-Marie Fiévet",
-          "fonction": "Membre",
-          "debut": "2022-08-03",
-          "fin": "2022-08-03",
-          "actif": false
-        },
-        {
-          "membre_id": "gabriel-attal",
-          "nom": "Gabriel Attal",
-          "fonction": "Membre",
-          "debut": "2026-04-28",
-          "fin": null,
-          "actif": false
-        },
-        {
-          "membre_id": "marie-pierre-rixain",
-          "nom": "Marie-Pierre Rixain",
-          "fonction": "Membre",
-          "debut": "2024-10-09",
-          "fin": "2024-10-10",
-          "actif": false
-        },
-        {
-          "membre_id": "thomas-gassilloud",
-          "nom": "Thomas Gassilloud",
-          "fonction": "Membre",
-          "debut": "2024-10-09",
-          "fin": "2024-10-10",
-          "actif": false
-        },
-        {
-          "membre_id": "benjamin-dirx",
-          "nom": "Benjamin Dirx",
-          "fonction": "Membre",
-          "debut": "2017-06-29",
-          "fin": "2018-09-29",
-          "actif": false
-        },
-        {
-          "membre_id": "mikaele-seo",
-          "nom": "Mikaele Seo",
-          "fonction": "Membre",
-          "debut": "2026-04-21",
-          "fin": "2026-04-23",
-          "actif": false
-        },
-        {
-          "membre_id": "laurence-heydel-grillere",
-          "nom": "Laurence Heydel Grillere",
-          "fonction": "Membre",
-          "debut": "2022-07-24",
-          "fin": "2022-11-21",
-          "actif": false
-        },
-        {
-          "membre_id": "lionel-vuibert",
-          "nom": "Lionel Vuibert",
-          "fonction": "Membre",
-          "debut": "2023-11-21",
-          "fin": "2024-06-09",
-          "actif": true
-        },
-        {
-          "membre_id": "jean-francois-rousset",
-          "nom": "Jean-François Rousset",
-          "fonction": "Membre",
-          "debut": "2025-03-04",
-          "fin": "2025-03-04",
-          "actif": false
-        },
-        {
-          "membre_id": "sabrina-agresti-roubache",
-          "nom": "Sabrina Roubache",
-          "fonction": "membre",
-          "debut": "2023-06-22",
-          "fin": "2023-06-23",
-          "actif": false
-        },
-        {
-          "membre_id": "didier-parakian",
-          "nom": "Didier Parakian",
-          "fonction": "Membre",
-          "debut": "2023-09-01",
-          "fin": "2024-06-09",
-          "actif": true
-        },
-        {
-          "membre_id": "freddy-sertin",
-          "nom": "Freddy Sertin",
-          "fonction": "Membre",
-          "debut": "2024-02-09",
-          "fin": "2024-02-09",
-          "actif": false
-        },
-        {
-          "membre_id": "benoit-bordat",
-          "nom": "Benoît Bordat",
-          "fonction": "Membre",
-          "debut": "2022-09-14",
-          "fin": "2022-09-14",
-          "actif": false
-        },
-        {
-          "membre_id": "chantal-bouloux",
-          "nom": "Chantal Bouloux",
-          "fonction": "Membre",
-          "debut": "2024-01-27",
-          "fin": "2024-01-30",
-          "actif": false
-        },
-        {
-          "membre_id": "nicolas-pacquot",
-          "nom": "Nicolas Pacquot",
-          "fonction": "Membre",
-          "debut": "2023-03-22",
-          "fin": "2023-03-22",
-          "actif": false
-        },
-        {
-          "membre_id": "thomas-cazenave",
-          "nom": "Thomas Cazenave",
-          "fonction": "Membre",
-          "debut": "2024-07-20",
-          "fin": "2024-07-25",
-          "actif": false
-        },
-        {
-          "membre_id": "servane-hugues",
-          "nom": "Servane Hugues",
-          "fonction": "Membre",
-          "debut": "2023-09-19",
-          "fin": "2023-09-19",
-          "actif": false
-        },
-        {
-          "membre_id": "christophe-marion",
-          "nom": "Christophe Marion",
-          "fonction": "Membre",
-          "debut": "2024-05-14",
-          "fin": "2024-05-15",
-          "actif": false
-        },
-        {
-          "membre_id": "lysiane-metayer",
-          "nom": "Lysiane Métayer",
-          "fonction": "Membre",
-          "debut": "2022-08-03",
-          "fin": "2022-08-03",
-          "actif": false
-        },
-        {
-          "membre_id": "philippe-fait",
-          "nom": "Philippe Fait",
-          "fonction": "Membre",
-          "debut": "2025-06-17",
-          "fin": "2025-09-30",
-          "actif": false
-        },
-        {
-          "membre_id": "charles-sitzenstuhl",
-          "nom": "Charles Sitzenstuhl",
-          "fonction": "Membre",
-          "debut": "2025-02-12",
-          "fin": "2025-02-12",
-          "actif": false
-        },
-        {
-          "membre_id": "sarah-tanzilli",
-          "nom": "Sarah Tanzilli",
-          "fonction": "Membre",
-          "debut": "2024-03-12",
-          "fin": "2024-03-12",
-          "actif": false
-        },
-        {
-          "membre_id": "julie-delpech",
-          "nom": "Julie Delpech",
-          "fonction": "Membre",
-          "debut": "2023-07-06",
-          "fin": "2024-06-09",
-          "actif": true
-        },
-        {
-          "membre_id": "caroline-yadan",
-          "nom": "Caroline Yadan",
-          "fonction": "Membre",
-          "debut": "2026-01-14",
-          "fin": "2026-01-14",
-          "actif": false
-        },
-        {
-          "membre_id": "astrid-panosyan-bouvet",
-          "nom": "Astrid Panosyan-Bouvet",
-          "fonction": "Membre",
-          "debut": "2024-10-11",
-          "fin": "2024-10-21",
-          "actif": false
-        },
-        {
-          "membre_id": "clara-chassaniol",
-          "nom": "Clara Chassaniol",
-          "fonction": "Membre",
-          "debut": "2022-09-14",
-          "fin": "2022-09-14",
-          "actif": false
-        },
-        {
-          "membre_id": "nicolas-metzdorf",
-          "nom": "Nicolas Metzdorf",
-          "fonction": "Membre",
-          "debut": "2024-05-16",
-          "fin": "2024-06-09",
-          "actif": true
-        },
-        {
-          "membre_id": "christopher-weissberg",
-          "nom": "Christopher Weissberg",
-          "fonction": "Membre",
-          "debut": "2026-06-18",
-          "fin": null,
-          "actif": false
-        },
-        {
-          "membre_id": "eleonore-caroit",
-          "nom": "Eléonore Caroit",
-          "fonction": "Membre",
-          "debut": "2023-11-30",
-          "fin": "2024-06-09",
-          "actif": true
-        },
-        {
-          "membre_id": "mathieu-lefevre",
-          "nom": "Mathieu Lefèvre",
-          "fonction": "Membre",
-          "debut": "2025-11-05",
-          "fin": "2025-11-05",
-          "actif": false
-        },
-        {
-          "membre_id": "emilie-chandler",
-          "nom": "Émilie Chandler",
-          "fonction": "membre",
-          "debut": "2024-04-10",
-          "fin": "2024-04-12",
-          "actif": false
-        },
-        {
-          "membre_id": "alexis-izard",
-          "nom": "Alexis Izard",
-          "fonction": "Membre",
-          "debut": "2023-03-02",
-          "fin": "2023-03-02",
-          "actif": false
-        },
-        {
-          "membre_id": "paul-midy",
-          "nom": "Paul Midy",
-          "fonction": "Membre",
-          "debut": "2026-06-17",
-          "fin": "2026-06-17",
-          "actif": false
-        },
-        {
-          "membre_id": "philippe-emmanuel",
-          "nom": "Philippe Emmanuel",
-          "fonction": "Membre",
-          "debut": "2024-03-30",
-          "fin": "2024-06-09",
-          "actif": true
-        },
-        {
-          "membre_id": "eric-husson",
-          "nom": "Éric Husson",
-          "fonction": "Membre",
-          "debut": "2024-05-14",
-          "fin": "2024-05-15",
-          "actif": false
-        },
-        {
-          "membre_id": "karl-olive",
-          "nom": "Karl Olive",
-          "fonction": "Membre",
-          "debut": "2025-03-04",
-          "fin": "2025-03-04",
-          "actif": false
-        },
-        {
-          "membre_id": "ingrid-dordain",
-          "nom": "Ingrid Dordain",
-          "fonction": "Membre",
-          "debut": "2024-02-08",
-          "fin": "2024-02-08",
-          "actif": false
-        },
-        {
-          "membre_id": "pierre-cazeneuve",
-          "nom": "Pierre Cazeneuve",
-          "fonction": "Membre",
-          "debut": "2026-02-03",
-          "fin": "2026-02-04",
-          "actif": false
-        },
-        {
-          "membre_id": "marc-ferracci",
-          "nom": "Marc Ferracci",
-          "fonction": "Membre",
-          "debut": "2023-06-03",
-          "fin": "2023-06-05",
-          "actif": false
-        },
-        {
-          "membre_id": "prisca-thevenot",
-          "nom": "Prisca Thevenot",
-          "fonction": "Membre",
-          "debut": "2026-06-16",
-          "fin": "2026-06-16",
-          "actif": false
-        },
-        {
-          "membre_id": "emmanuel-pellerin",
-          "nom": "Emmanuel Pellerin",
-          "fonction": "Membre",
-          "debut": "2023-11-22",
-          "fin": "2023-11-22",
-          "actif": false
-        },
-        {
-          "membre_id": "claire-guichard",
-          "nom": "Claire Guichard",
-          "fonction": "Membre",
-          "debut": "2024-04-11",
-          "fin": "2024-06-09",
-          "actif": true
-        },
-        {
-          "membre_id": "benjamin-haddad",
-          "nom": "Benjamin Haddad",
-          "fonction": "Membre",
-          "debut": "2024-04-11",
-          "fin": "2024-06-09",
-          "actif": true
-        },
-        {
-          "membre_id": "laure-miller",
-          "nom": "Laure Miller",
-          "fonction": "Membre",
-          "debut": "2026-01-28",
-          "fin": "2026-01-28",
           "actif": false
         }
       ]
@@ -156451,997 +156459,997 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2449",
-      "synchro_le": "2026-09-13T02:44:35+0000"
+      "synchro_le": "2026-09-16T09:29:53+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267318",
-      "synchro_le": "2026-09-13T02:44:31+0000"
+      "synchro_le": "2026-09-16T09:29:29+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267336",
-      "synchro_le": "2026-09-13T02:44:31+0000"
+      "synchro_le": "2026-09-16T09:30:01+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2960",
-      "synchro_le": "2026-09-13T02:44:13+0000"
+      "synchro_le": "2026-09-16T09:29:35+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA330357",
-      "synchro_le": "2026-09-13T02:51:24+0000"
+      "synchro_le": "2026-09-16T09:37:11+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA331835",
-      "synchro_le": "2026-09-13T02:51:29+0000"
+      "synchro_le": "2026-09-16T09:37:53+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA334116",
-      "synchro_le": "2026-09-13T02:47:45+0000"
+      "synchro_le": "2026-09-16T09:38:37+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335758",
-      "synchro_le": "2026-09-13T02:53:24+0000"
+      "synchro_le": "2026-09-16T09:41:51+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA340643",
-      "synchro_le": "2026-09-13T02:44:46+0000"
+      "synchro_le": "2026-09-16T09:30:26+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA345722",
-      "synchro_le": "2026-09-13T02:44:44+0000"
+      "synchro_le": "2026-09-16T09:30:47+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/101580",
-      "synchro_le": "2026-09-13T02:44:55+0000"
+      "synchro_le": "2026-09-16T09:31:04+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605036",
-      "synchro_le": "2026-09-13T02:44:44+0000"
+      "synchro_le": "2026-09-16T09:30:52+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/96850",
-      "synchro_le": "2026-09-13T02:44:51+0000"
+      "synchro_le": "2026-09-16T09:31:17+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605963",
-      "synchro_le": "2026-09-13T02:44:27+0000"
+      "synchro_le": "2026-09-16T09:30:50+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA606507",
-      "synchro_le": "2026-09-13T02:51:35+0000"
+      "synchro_le": "2026-09-16T09:37:31+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA606639",
-      "synchro_le": "2026-09-13T02:51:40+0000"
+      "synchro_le": "2026-09-16T09:38:05+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607193",
-      "synchro_le": "2026-09-13T02:47:59+0000"
+      "synchro_le": "2026-09-16T09:38:51+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607395",
-      "synchro_le": "2026-09-13T02:53:34+0000"
+      "synchro_le": "2026-09-16T09:42:11+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607846",
-      "synchro_le": "2026-09-13T02:44:46+0000"
+      "synchro_le": "2026-09-16T09:30:43+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA609520",
-      "synchro_le": "2026-09-13T02:44:57+0000"
+      "synchro_le": "2026-09-16T09:31:06+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA642695",
-      "synchro_le": "2026-09-13T02:44:52+0000"
+      "synchro_le": "2026-09-16T09:31:17+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA642788",
-      "synchro_le": "2026-09-13T02:44:29+0000"
+      "synchro_le": "2026-09-16T09:30:52+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA642935",
-      "synchro_le": "2026-09-13T02:51:36+0000"
+      "synchro_le": "2026-09-16T09:37:31+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643048",
-      "synchro_le": "2026-09-13T02:51:41+0000"
+      "synchro_le": "2026-09-16T09:38:05+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643175",
-      "synchro_le": "2026-09-13T02:47:59+0000"
+      "synchro_le": "2026-09-16T09:38:51+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643184",
-      "synchro_le": "2026-09-13T02:53:34+0000"
+      "synchro_le": "2026-09-16T09:42:11+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA677483",
-      "synchro_le": "2026-09-13T02:44:48+0000"
+      "synchro_le": "2026-09-16T09:30:45+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA712014",
-      "synchro_le": "2026-09-13T02:44:59+0000"
+      "synchro_le": "2026-09-16T09:31:08+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717161",
-      "synchro_le": "2026-09-13T02:44:52+0000"
+      "synchro_le": "2026-09-16T09:31:17+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717379",
-      "synchro_le": "2026-09-13T02:44:29+0000"
+      "synchro_le": "2026-09-16T09:30:52+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718674",
-      "synchro_le": "2026-09-13T02:51:38+0000"
+      "synchro_le": "2026-09-16T09:37:33+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718710",
-      "synchro_le": "2026-09-13T02:51:41+0000"
+      "synchro_le": "2026-09-16T09:38:05+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718910",
-      "synchro_le": "2026-09-13T02:48:01+0000"
+      "synchro_le": "2026-09-16T09:38:53+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718930",
-      "synchro_le": "2026-09-13T02:53:36+0000"
+      "synchro_le": "2026-09-16T09:42:13+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718962",
-      "synchro_le": "2026-09-13T02:44:50+0000"
+      "synchro_le": "2026-09-16T09:30:47+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719006",
-      "synchro_le": "2026-09-13T02:44:59+0000"
+      "synchro_le": "2026-09-16T09:31:08+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719032",
-      "synchro_le": "2026-09-13T02:44:52+0000"
+      "synchro_le": "2026-09-16T09:31:17+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719080",
-      "synchro_le": "2026-09-13T02:44:29+0000"
+      "synchro_le": "2026-09-16T09:30:53+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719100",
-      "synchro_le": "2026-09-13T02:51:38+0000"
+      "synchro_le": "2026-09-16T09:37:33+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719108",
-      "synchro_le": "2026-09-13T02:51:43+0000"
+      "synchro_le": "2026-09-16T09:38:07+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719118",
-      "synchro_le": "2026-09-13T02:48:01+0000"
+      "synchro_le": "2026-09-16T09:38:53+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719154",
-      "synchro_le": "2026-09-13T02:53:36+0000"
+      "synchro_le": "2026-09-16T09:42:14+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719186",
-      "synchro_le": "2026-09-13T02:44:50+0000"
+      "synchro_le": "2026-09-16T09:30:47+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719190",
-      "synchro_le": "2026-09-13T02:44:59+0000"
+      "synchro_le": "2026-09-16T09:31:08+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719202",
-      "synchro_le": "2026-09-13T02:44:52+0000"
+      "synchro_le": "2026-09-16T09:31:17+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719218",
-      "synchro_le": "2026-09-13T02:44:29+0000"
+      "synchro_le": "2026-09-16T09:30:53+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719294",
-      "synchro_le": "2026-09-13T02:51:38+0000"
+      "synchro_le": "2026-09-16T09:37:33+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719338",
-      "synchro_le": "2026-09-13T02:51:43+0000"
+      "synchro_le": "2026-09-16T09:38:08+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719372",
-      "synchro_le": "2026-09-13T02:48:01+0000"
+      "synchro_le": "2026-09-16T09:38:53+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719376",
-      "synchro_le": "2026-09-13T02:53:36+0000"
+      "synchro_le": "2026-09-16T09:42:14+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719388",
-      "synchro_le": "2026-09-13T02:44:50+0000"
+      "synchro_le": "2026-09-16T09:30:47+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719404",
-      "synchro_le": "2026-09-13T02:44:59+0000"
+      "synchro_le": "2026-09-16T09:31:08+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719412",
-      "synchro_le": "2026-09-13T02:44:52+0000"
+      "synchro_le": "2026-09-16T09:31:18+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719472",
-      "synchro_le": "2026-09-13T02:44:29+0000"
+      "synchro_le": "2026-09-16T09:30:53+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719512",
-      "synchro_le": "2026-09-13T02:51:38+0000"
+      "synchro_le": "2026-09-16T09:37:33+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719550",
-      "synchro_le": "2026-09-13T02:51:43+0000"
+      "synchro_le": "2026-09-16T09:38:08+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719600",
-      "synchro_le": "2026-09-13T02:48:01+0000"
+      "synchro_le": "2026-09-16T09:38:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719624",
-      "synchro_le": "2026-09-13T02:53:37+0000"
+      "synchro_le": "2026-09-16T09:42:14+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719632",
-      "synchro_le": "2026-09-13T02:44:50+0000"
+      "synchro_le": "2026-09-16T09:30:47+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719664",
-      "synchro_le": "2026-09-13T02:45:00+0000"
+      "synchro_le": "2026-09-16T09:31:08+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719668",
-      "synchro_le": "2026-09-13T02:44:53+0000"
+      "synchro_le": "2026-09-16T09:31:18+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719672",
-      "synchro_le": "2026-09-13T02:44:30+0000"
+      "synchro_le": "2026-09-16T09:30:53+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719718",
-      "synchro_le": "2026-09-13T02:51:38+0000"
+      "synchro_le": "2026-09-16T09:37:34+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719756",
-      "synchro_le": "2026-09-13T02:51:43+0000"
+      "synchro_le": "2026-09-16T09:38:08+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719798",
-      "synchro_le": "2026-09-13T02:48:02+0000"
+      "synchro_le": "2026-09-16T09:38:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719814",
-      "synchro_le": "2026-09-13T02:53:37+0000"
+      "synchro_le": "2026-09-16T09:42:14+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719866",
-      "synchro_le": "2026-09-13T02:44:50+0000"
+      "synchro_le": "2026-09-16T09:30:47+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719882",
-      "synchro_le": "2026-09-13T02:45:00+0000"
+      "synchro_le": "2026-09-16T09:31:09+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719890",
-      "synchro_le": "2026-09-13T02:44:53+0000"
+      "synchro_le": "2026-09-16T09:31:18+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719910",
-      "synchro_le": "2026-09-13T02:44:30+0000"
+      "synchro_le": "2026-09-16T09:30:53+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719922",
-      "synchro_le": "2026-09-13T02:51:38+0000"
+      "synchro_le": "2026-09-16T09:37:34+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720014",
-      "synchro_le": "2026-09-13T02:51:43+0000"
+      "synchro_le": "2026-09-16T09:38:08+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720022",
-      "synchro_le": "2026-09-13T02:48:02+0000"
+      "synchro_le": "2026-09-16T09:38:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720054",
-      "synchro_le": "2026-09-13T02:53:37+0000"
+      "synchro_le": "2026-09-16T09:42:14+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720066",
-      "synchro_le": "2026-09-13T02:44:51+0000"
+      "synchro_le": "2026-09-16T09:30:47+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720074",
-      "synchro_le": "2026-09-13T02:45:00+0000"
+      "synchro_le": "2026-09-16T09:31:09+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720138",
-      "synchro_le": "2026-09-13T02:44:53+0000"
+      "synchro_le": "2026-09-16T09:31:18+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720146",
-      "synchro_le": "2026-09-13T02:44:30+0000"
+      "synchro_le": "2026-09-16T09:30:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720154",
-      "synchro_le": "2026-09-13T02:51:38+0000"
+      "synchro_le": "2026-09-16T09:37:34+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720170",
-      "synchro_le": "2026-09-13T02:51:44+0000"
+      "synchro_le": "2026-09-16T09:38:08+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720174",
-      "synchro_le": "2026-09-13T02:48:02+0000"
+      "synchro_le": "2026-09-16T09:38:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720190",
-      "synchro_le": "2026-09-13T02:53:37+0000"
+      "synchro_le": "2026-09-16T09:42:14+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720222",
-      "synchro_le": "2026-09-13T02:44:51+0000"
+      "synchro_le": "2026-09-16T09:30:48+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720342",
-      "synchro_le": "2026-09-13T02:45:00+0000"
+      "synchro_le": "2026-09-16T09:31:09+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720354",
-      "synchro_le": "2026-09-13T02:44:53+0000"
+      "synchro_le": "2026-09-16T09:31:18+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720362",
-      "synchro_le": "2026-09-13T02:44:30+0000"
+      "synchro_le": "2026-09-16T09:30:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720370",
-      "synchro_le": "2026-09-13T02:51:38+0000"
+      "synchro_le": "2026-09-16T09:37:34+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720414",
-      "synchro_le": "2026-09-13T02:51:44+0000"
+      "synchro_le": "2026-09-16T09:38:08+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720446",
-      "synchro_le": "2026-09-13T02:48:02+0000"
+      "synchro_le": "2026-09-16T09:38:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720480",
-      "synchro_le": "2026-09-13T02:53:37+0000"
+      "synchro_le": "2026-09-16T09:42:15+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720754",
-      "synchro_le": "2026-09-13T02:44:51+0000"
+      "synchro_le": "2026-09-16T09:30:48+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720862",
-      "synchro_le": "2026-09-13T02:45:00+0000"
+      "synchro_le": "2026-09-16T09:31:09+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720900",
-      "synchro_le": "2026-09-13T02:44:53+0000"
+      "synchro_le": "2026-09-16T09:31:19+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720932",
-      "synchro_le": "2026-09-13T02:44:30+0000"
+      "synchro_le": "2026-09-16T09:30:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721004",
-      "synchro_le": "2026-09-13T02:51:39+0000"
+      "synchro_le": "2026-09-16T09:37:34+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721024",
-      "synchro_le": "2026-09-13T02:51:44+0000"
+      "synchro_le": "2026-09-16T09:38:08+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721094",
-      "synchro_le": "2026-09-13T02:48:02+0000"
+      "synchro_le": "2026-09-16T09:38:55+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721134",
-      "synchro_le": "2026-09-13T02:53:37+0000"
+      "synchro_le": "2026-09-16T09:42:15+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721150",
-      "synchro_le": "2026-09-13T02:44:51+0000"
+      "synchro_le": "2026-09-16T09:30:48+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721158",
-      "synchro_le": "2026-09-13T02:45:00+0000"
+      "synchro_le": "2026-09-16T09:31:09+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721170",
-      "synchro_le": "2026-09-13T02:44:54+0000"
+      "synchro_le": "2026-09-16T09:31:19+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721262",
-      "synchro_le": "2026-09-13T02:44:31+0000"
+      "synchro_le": "2026-09-16T09:30:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721296",
-      "synchro_le": "2026-09-13T02:51:39+0000"
+      "synchro_le": "2026-09-16T09:37:35+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721328",
-      "synchro_le": "2026-09-13T02:51:44+0000"
+      "synchro_le": "2026-09-16T09:38:08+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721426",
-      "synchro_le": "2026-09-13T02:48:03+0000"
+      "synchro_le": "2026-09-16T09:38:55+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721458",
-      "synchro_le": "2026-09-13T02:53:37+0000"
+      "synchro_le": "2026-09-16T09:42:15+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721466",
-      "synchro_le": "2026-09-13T02:44:51+0000"
+      "synchro_le": "2026-09-16T09:30:48+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721482",
-      "synchro_le": "2026-09-13T02:45:01+0000"
+      "synchro_le": "2026-09-16T09:31:10+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721498",
-      "synchro_le": "2026-09-13T02:44:54+0000"
+      "synchro_le": "2026-09-16T09:31:19+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721522",
-      "synchro_le": "2026-09-13T02:44:31+0000"
+      "synchro_le": "2026-09-16T09:30:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721584",
-      "synchro_le": "2026-09-13T02:51:39+0000"
+      "synchro_le": "2026-09-16T09:37:35+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721632",
-      "synchro_le": "2026-09-13T02:51:44+0000"
+      "synchro_le": "2026-09-16T09:38:08+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721678",
-      "synchro_le": "2026-09-13T02:48:03+0000"
+      "synchro_le": "2026-09-16T09:38:55+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721710",
-      "synchro_le": "2026-09-13T02:53:37+0000"
+      "synchro_le": "2026-09-16T09:42:15+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721722",
-      "synchro_le": "2026-09-13T02:44:52+0000"
+      "synchro_le": "2026-09-16T09:30:48+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721750",
-      "synchro_le": "2026-09-13T02:45:01+0000"
+      "synchro_le": "2026-09-16T09:31:10+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721764",
-      "synchro_le": "2026-09-13T02:44:54+0000"
+      "synchro_le": "2026-09-16T09:31:19+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721828",
-      "synchro_le": "2026-09-13T02:44:31+0000"
+      "synchro_le": "2026-09-16T09:30:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721844",
-      "synchro_le": "2026-09-13T02:51:39+0000"
+      "synchro_le": "2026-09-16T09:37:35+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721852",
-      "synchro_le": "2026-09-13T02:51:44+0000"
+      "synchro_le": "2026-09-16T09:38:09+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721880",
-      "synchro_le": "2026-09-13T02:48:03+0000"
+      "synchro_le": "2026-09-16T09:38:55+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721908",
-      "synchro_le": "2026-09-13T02:53:37+0000"
+      "synchro_le": "2026-09-16T09:42:15+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721916",
-      "synchro_le": "2026-09-13T02:44:52+0000"
+      "synchro_le": "2026-09-16T09:30:48+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722000",
-      "synchro_le": "2026-09-13T02:45:01+0000"
+      "synchro_le": "2026-09-16T09:31:10+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722038",
-      "synchro_le": "2026-09-13T02:44:54+0000"
+      "synchro_le": "2026-09-16T09:31:19+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722046",
-      "synchro_le": "2026-09-13T02:44:31+0000"
+      "synchro_le": "2026-09-16T09:30:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722054",
-      "synchro_le": "2026-09-13T02:51:39+0000"
+      "synchro_le": "2026-09-16T09:37:35+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722070",
-      "synchro_le": "2026-09-13T02:51:44+0000"
+      "synchro_le": "2026-09-16T09:38:09+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722102",
-      "synchro_le": "2026-09-13T02:48:03+0000"
+      "synchro_le": "2026-09-16T09:38:56+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722134",
-      "synchro_le": "2026-09-13T02:53:38+0000"
+      "synchro_le": "2026-09-16T09:42:16+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722150",
-      "synchro_le": "2026-09-13T02:44:52+0000"
+      "synchro_le": "2026-09-16T09:30:49+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722190",
-      "synchro_le": "2026-09-13T02:45:01+0000"
+      "synchro_le": "2026-09-16T09:31:10+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722252",
-      "synchro_le": "2026-09-13T02:44:54+0000"
+      "synchro_le": "2026-09-16T09:31:19+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722292",
-      "synchro_le": "2026-09-13T02:44:31+0000"
+      "synchro_le": "2026-09-16T09:30:55+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722358",
-      "synchro_le": "2026-09-13T02:51:39+0000"
+      "synchro_le": "2026-09-16T09:37:36+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722366",
-      "synchro_le": "2026-09-13T02:51:44+0000"
+      "synchro_le": "2026-09-16T09:38:09+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722382",
-      "synchro_le": "2026-09-13T02:48:04+0000"
+      "synchro_le": "2026-09-16T09:38:56+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722398",
-      "synchro_le": "2026-09-13T02:53:38+0000"
+      "synchro_le": "2026-09-16T09:42:16+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA757225",
-      "synchro_le": "2026-09-13T02:44:52+0000"
+      "synchro_le": "2026-09-16T09:30:49+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA774109",
-      "synchro_le": "2026-09-13T02:45:02+0000"
+      "synchro_le": "2026-09-16T09:31:11+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793190",
-      "synchro_le": "2026-09-13T02:44:54+0000"
+      "synchro_le": "2026-09-16T09:31:19+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793194",
-      "synchro_le": "2026-09-13T02:44:31+0000"
+      "synchro_le": "2026-09-16T09:30:55+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793270",
-      "synchro_le": "2026-09-13T02:51:39+0000"
+      "synchro_le": "2026-09-16T09:37:36+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793278",
-      "synchro_le": "2026-09-13T02:51:45+0000"
+      "synchro_le": "2026-09-16T09:38:09+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793282",
-      "synchro_le": "2026-09-13T02:48:04+0000"
+      "synchro_le": "2026-09-16T09:38:56+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793416",
-      "synchro_le": "2026-09-13T02:53:38+0000"
+      "synchro_le": "2026-09-16T09:42:16+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793500",
-      "synchro_le": "2026-09-13T02:44:52+0000"
+      "synchro_le": "2026-09-16T09:30:49+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793528",
-      "synchro_le": "2026-09-13T02:45:02+0000"
+      "synchro_le": "2026-09-16T09:31:11+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793588",
-      "synchro_le": "2026-09-13T02:44:55+0000"
+      "synchro_le": "2026-09-16T09:31:19+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793788",
-      "synchro_le": "2026-09-13T02:44:32+0000"
+      "synchro_le": "2026-09-16T09:30:55+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793876",
-      "synchro_le": "2026-09-13T02:51:40+0000"
+      "synchro_le": "2026-09-16T09:37:36+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793940",
-      "synchro_le": "2026-09-13T02:51:45+0000"
+      "synchro_le": "2026-09-16T09:38:09+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793944",
-      "synchro_le": "2026-09-13T02:48:04+0000"
+      "synchro_le": "2026-09-16T09:38:56+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794004",
-      "synchro_le": "2026-09-13T02:53:38+0000"
+      "synchro_le": "2026-09-16T09:42:17+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794206",
-      "synchro_le": "2026-09-13T02:44:53+0000"
+      "synchro_le": "2026-09-16T09:30:49+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794214",
-      "synchro_le": "2026-09-13T02:45:02+0000"
+      "synchro_le": "2026-09-16T09:31:11+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794330",
-      "synchro_le": "2026-09-13T02:44:55+0000"
+      "synchro_le": "2026-09-16T09:31:19+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794386",
-      "synchro_le": "2026-09-13T02:44:32+0000"
+      "synchro_le": "2026-09-16T09:30:55+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794450",
-      "synchro_le": "2026-09-13T02:51:40+0000"
+      "synchro_le": "2026-09-16T09:37:36+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794486",
-      "synchro_le": "2026-09-13T02:51:45+0000"
+      "synchro_le": "2026-09-16T09:38:09+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794510",
-      "synchro_le": "2026-09-13T02:48:04+0000"
+      "synchro_le": "2026-09-16T09:38:56+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794658",
-      "synchro_le": "2026-09-13T02:53:38+0000"
+      "synchro_le": "2026-09-16T09:42:17+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794798",
-      "synchro_le": "2026-09-13T02:44:53+0000"
+      "synchro_le": "2026-09-16T09:30:49+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794802",
-      "synchro_le": "2026-09-13T02:45:02+0000"
+      "synchro_le": "2026-09-16T09:31:11+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794846",
-      "synchro_le": "2026-09-13T02:44:55+0000"
+      "synchro_le": "2026-09-16T09:31:20+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794878",
-      "synchro_le": "2026-09-13T02:44:32+0000"
+      "synchro_le": "2026-09-16T09:30:55+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794930",
-      "synchro_le": "2026-09-13T02:51:40+0000"
+      "synchro_le": "2026-09-16T09:37:36+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794974",
-      "synchro_le": "2026-09-13T02:51:45+0000"
+      "synchro_le": "2026-09-16T09:38:09+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794982",
-      "synchro_le": "2026-09-13T02:48:04+0000"
+      "synchro_le": "2026-09-16T09:38:56+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795046",
-      "synchro_le": "2026-09-13T02:53:38+0000"
+      "synchro_le": "2026-09-16T09:42:17+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795050",
-      "synchro_le": "2026-09-13T02:44:53+0000"
+      "synchro_le": "2026-09-16T09:30:50+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795068",
-      "synchro_le": "2026-09-13T02:45:02+0000"
+      "synchro_le": "2026-09-16T09:31:11+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795144",
-      "synchro_le": "2026-09-13T02:44:55+0000"
+      "synchro_le": "2026-09-16T09:31:20+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795176",
-      "synchro_le": "2026-09-13T02:44:32+0000"
+      "synchro_le": "2026-09-16T09:30:55+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795216",
-      "synchro_le": "2026-09-13T02:51:40+0000"
+      "synchro_le": "2026-09-16T09:37:36+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795326",
-      "synchro_le": "2026-09-13T02:51:45+0000"
+      "synchro_le": "2026-09-16T09:38:09+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795330",
-      "synchro_le": "2026-09-13T02:48:04+0000"
+      "synchro_le": "2026-09-16T09:38:57+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795386",
-      "synchro_le": "2026-09-13T02:53:38+0000"
+      "synchro_le": "2026-09-16T09:42:17+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795508",
-      "synchro_le": "2026-09-13T02:44:53+0000"
+      "synchro_le": "2026-09-16T09:30:50+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795528",
-      "synchro_le": "2026-09-13T02:45:02+0000"
+      "synchro_le": "2026-09-16T09:31:11+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795572",
-      "synchro_le": "2026-09-13T02:44:55+0000"
+      "synchro_le": "2026-09-16T09:31:20+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795652",
-      "synchro_le": "2026-09-13T02:44:32+0000"
+      "synchro_le": "2026-09-16T09:30:55+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795664",
-      "synchro_le": "2026-09-13T02:51:40+0000"
+      "synchro_le": "2026-09-16T09:37:36+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795688",
-      "synchro_le": "2026-09-13T02:51:45+0000"
+      "synchro_le": "2026-09-16T09:38:09+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795708",
-      "synchro_le": "2026-09-13T02:48:04+0000"
+      "synchro_le": "2026-09-16T09:38:57+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795722",
-      "synchro_le": "2026-09-13T02:53:38+0000"
+      "synchro_le": "2026-09-16T09:42:17+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795730",
-      "synchro_le": "2026-09-13T02:44:53+0000"
+      "synchro_le": "2026-09-16T09:30:50+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795774",
-      "synchro_le": "2026-09-13T02:45:03+0000"
+      "synchro_le": "2026-09-16T09:31:12+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795864",
-      "synchro_le": "2026-09-13T02:44:55+0000"
+      "synchro_le": "2026-09-16T09:31:20+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795884",
-      "synchro_le": "2026-09-13T02:44:32+0000"
+      "synchro_le": "2026-09-16T09:30:56+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795908",
-      "synchro_le": "2026-09-13T02:51:40+0000"
+      "synchro_le": "2026-09-16T09:37:37+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795920",
-      "synchro_le": "2026-09-13T02:51:45+0000"
+      "synchro_le": "2026-09-16T09:38:09+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795926",
-      "synchro_le": "2026-09-13T02:48:05+0000"
+      "synchro_le": "2026-09-16T09:38:57+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795934",
-      "synchro_le": "2026-09-13T02:53:39+0000"
+      "synchro_le": "2026-09-16T09:42:18+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795950",
-      "synchro_le": "2026-09-13T02:44:53+0000"
+      "synchro_le": "2026-09-16T09:30:50+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795958",
-      "synchro_le": "2026-09-13T02:45:03+0000"
+      "synchro_le": "2026-09-16T09:31:12+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795990",
-      "synchro_le": "2026-09-13T02:44:56+0000"
+      "synchro_le": "2026-09-16T09:31:20+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA817203",
-      "synchro_le": "2026-09-13T02:44:32+0000"
+      "synchro_le": "2026-09-16T09:30:56+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-13T03:19:55+0000",
+    "genere_le": "2026-09-16T10:05:48+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
     "profils_sources": [
       "jean-pierre-pont",
