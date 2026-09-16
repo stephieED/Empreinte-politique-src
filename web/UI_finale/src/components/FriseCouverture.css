@@ -19,6 +19,8 @@
      n'induit pas de hiérarchie. Ne pas la retirer au nom du seul critère : il
      a été pesé. */
   --fc-senat: #169E9E;
+  /* Le gris des mandats locaux sur la fiche candidat (`--local`, #922). */
+  --fc-local: #9a958d;
   --fc-rule: #e7e4df;
   --fc-rule-fin: #f0eeeb;
   --fc-hachure: #eae6e0;
@@ -166,6 +168,9 @@
 .fc-groupe--gouvernement { --fc-inst: var(--fc-gouv); }
 .fc-groupe--PE { --fc-inst: var(--fc-pe); }
 .fc-groupe--Senat { --fc-inst: var(--fc-senat); }
+/* Les mandats locaux, dans le gris qu'ils portent sur la fiche candidat
+   (`--local`, #922). */
+.fc-seg--local { background: var(--fc-local); }
 
 /* LE SEGMENT CONTINUE AVANT L'AXE. Le Sénat porte un mandat depuis octobre
    1986, quatorze ans avant `AXE_DEBUT`. Un bord arrondi collé au zéro dirait
@@ -294,13 +299,16 @@
 /* Quatre teintes depuis #885 : la clé montre CE QUI EST À L'ÉCRAN, et le Sénat
    y est une institution comme les trois autres. */
 .fc-cle--collecte {
-  width: 44px;
+  width: 55px;
+  /* Le gris des mandats locaux y entre avec leur ligne (16/09/2026) : la clé
+     montre les teintes qui sont à l'écran. */
   background: linear-gradient(
     90deg,
-    var(--fc-an) 0 25%,
-    var(--fc-gouv) 25% 50%,
-    var(--fc-pe) 50% 75%,
-    var(--fc-senat) 75%
+    var(--fc-an) 0 20%,
+    var(--fc-gouv) 20% 40%,
+    var(--fc-pe) 40% 60%,
+    var(--fc-senat) 60% 80%,
+    var(--fc-local) 80%
   );
 }
 

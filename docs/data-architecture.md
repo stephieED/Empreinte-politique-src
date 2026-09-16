@@ -877,7 +877,10 @@ graph TD
   `amendement_non_resolu.institution`, `institution`, `source.institution`,
   `categorie_source`), et un bloc **`accueil`** — une borne par institution, et
   les fiches hors couverture (Sénat, aucun mandat, `mandats_anterieurs`) — que
-  la page d'accueil lit. Une `portee` européenne de profil n'y est jamais prise
+  `/sources` lit depuis la forme C de l'accueil (#951), pour sa seule rubrique
+  `anterieurs`. Depuis le 16/09/2026, `institutions[]` compte aussi les
+  **mandats locaux** (`categorie: "mandat_local"`) sous la clé `local`, avec leur
+  `borne` tirée de `mandats_locaux_couverture.borne_couverture`. Une `portee` européenne de profil n'y est jamais prise
   pour une borne : c'était le cas, et les votes de l'Assemblée commençaient en
   2004.
   Le fichier n'est **pas versionné** (`public/data/` est ignoré par git) et sa

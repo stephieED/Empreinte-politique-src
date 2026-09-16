@@ -24,22 +24,18 @@ const GRADUATIONS = [2005, 2010, 2015, 2020, 2025];
  * pour une seule entité est un niveau de trop : elles n'ont pas de sous-partie,
  * la barre est sur leur titre.
  *
- * ET « MANDATS LOCAUX » N'EST PAS JAUNE. Le jaune dit « nous ne l'avons pas
- * collecté », ce qui suppose une source à collecter. Pour une mairie, un
- * conseil départemental ou régional, le dépôt n'en documente AUCUNE : ce n'est
- * pas une collecte en retard, c'est un trou de périmètre. Il prend donc la
- * hachure pâle de ce qu'on ne peut pas lire. */
-/* LE SÉNAT N'EST PLUS ICI (#885, 15/09/2026) : il a ses cinq listes dans
- * `hierarchie`, comme les trois autres institutions. Il y portait un rail jaune
- * et le compte « 7 · 2 candidats » — sept mandats électifs, quand le corpus en
- * porte 133 : les 126 organes n'étaient comptés nulle part.
- *
- * Les mandats locaux restent : #922 a livré le job et le champ de schéma, aucun
- * run ne les a encore écrits. La ligne le dira autrement le jour où ils
- * arrivent — leur borne est 2020, et `mandats_locaux_couverture.appariement`
- * distingue `aucun_mandat_trouve` d'un `non_relu`. */
+ * LES MANDATS LOCAUX SONT COLLECTÉS (#922). La ligne disait « aucune source » et
+ * portait une hachure pleine ; le Répertoire national des élus les publie depuis
+ * 2020, sur les candidats déclarés. Elle suit désormais la grammaire des autres :
+ * hachure avant la borne de la source, un segment de la première donnée à la
+ * collecte, le compte à droite. Sans donnée collectée, elle garde la hachure
+ * pleine et « aucune source » — une ligne vide dirait « personne n'en a ». */
 const SANS_ACTIVITE = [
-  { cle: 'local', titre: 'Mandats locaux', quoi: 'Aucune source identifiée : ni le mandat, ni l’activité.' },
+  {
+    cle: 'local',
+    titre: 'Mandats locaux',
+    quoi: 'Répertoire national des élus : les mandats locaux des candidats déclarés, publiés à partir de 2020.',
+  },
 ];
 
 const nb = (n) => n.toLocaleString('fr-FR').replace(/ | /g, ' ');
@@ -267,19 +263,31 @@ export default function FriseCouverture({ couverture }) {
           {SANS_ACTIVITE.map((x) => {
             const i = parInstitution[x.cle];
             const d = i?.debut ? posDate(i.debut) : 0;
-            const f = i?.fin ? posDate(i.fin) : 100;
+            // Un mandat local en cours n'a pas de fin : le segment va jusqu'à la
+            // collecte, comme sur les autres rails.
+            const f = posDate(i?.fin && i.fin > (i?.debut || '') ? i.fin : collecteLe);
             return (
               <div className="fc-groupe" key={x.cle}>
                 <div className="fc-piste fc-piste--seule">
                   <div className="fc-nom fc-groupe-titre">{x.titre}</div>
                   <div className="fc-rail fc-rail--nu" title={x.quoi}>
-                    {x.cle === 'local' || !i ? (
+                    {!i ? (
                       <span className="fc-horssource" style={{ left: 0, width: '100%' }} />
                     ) : (
-                      <span
-                        className="fc-noncollecte"
-                        style={{ left: `${d}%`, width: `${Math.max(2, f - d)}%` }}
-                      />
+                      <>
+                        {i.borne && posDate(i.borne) > 0 && (
+                          <span
+                            className="fc-horssource"
+                            style={{ left: 0, width: `${posDate(i.borne)}%` }}
+                            title={`aucune donnée publiée avant le ${jour(i.borne)}`}
+                          />
+                        )}
+                        <span
+                          className={`fc-seg fc-seg--${x.cle}`}
+                          style={{ left: `${d}%`, width: `${Math.max(0.6, f - d)}%` }}
+                          title={`${jour(i.debut)} → ${jour(i.fin || collecteLe)}`}
+                        />
+                      </>
                     )}
                   </div>
                   <div className="fc-n">
