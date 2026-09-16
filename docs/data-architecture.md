@@ -847,7 +847,7 @@ graph TD
     ADP --> VC["Candidats — /candidats/:id"]
     IDX --> VG["Groupes — /groupes/:lignee<br/>LigneeProfile.jsx, sans adaptateur"]
     ADP --> VO["Gouvernement — GovernmentProfilePage.jsx"]
-    CVR --> VCV["Couverture — /couverture"]
+    CVR --> VCV["Sources — /sources"]
 ```
 
 - `sync-data.mjs` copie les artefacts vers `public/data/` (Vite ne sert pas de

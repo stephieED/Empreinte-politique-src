@@ -83,14 +83,16 @@ def test_les_quatre_fichiers_de_la_page_existent() -> None:
 def test_la_route_existe_et_l_accueil_y_mene() -> None:
     """Une page qu'aucun lien n'atteint n'est pas publiée."""
     app = APP.read_text(encoding="utf-8")
-    assert 'path="/couverture"' in app
-    assert "CoveragePage" in app
+    # Depuis #951 la page vit sur /sources ; /couverture y redirige, ancre comprise.
+    assert '<Route path="/sources" element={<CoveragePage />} />' in app
+    assert '<Route path="/couverture" element={<RedirectionCouverture />} />' in app
+    assert "pathname: '/sources', hash" in app
 
     liens = "".join(
         (SRC / "pages" / "LandingPage.jsx").read_text(encoding="utf-8")
         + (SRC / "components" / "landing" / "SourcesFreshness.jsx").read_text(encoding="utf-8")
     )
-    assert 'to="/couverture"' in liens, "l'accueil ne mène pas à la page"
+    assert 'to="/sources"' in liens, "l'accueil ne mène pas à la page"
 
 
 def test_le_build_produit_la_couverture(generateur: str) -> None:
@@ -449,7 +451,7 @@ def test_l_accueil_lit_la_projection_et_ne_montre_plus_de_fait_fictif() -> None:
     assert "loadCouverture" in bloc and "data.accueil" in bloc
     assert not re.search(r"'[A-ZÉ][a-zé]+ [A-ZÉ][a-zé]+'", bloc), "aucun nom de candidat écrit dans le composant"
     sources = (SRC / "components" / "landing" / "SourcesFreshness.jsx").read_text(encoding="utf-8")
-    assert sources.index("<CouvertureAccueil />") < sources.index("sourcesConfig.map"), (
+    assert sources.index("<CouvertureAccueil />") < sources.index("<CartesSources />"), (
         "la borne de chaque institution ouvre le bloc des sources"
     )
     accueil = (SRC / "pages" / "LandingPage.jsx").read_text(encoding="utf-8")

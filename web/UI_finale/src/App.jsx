@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import ConstructionBanner from './components/ConstructionBanner';
 import ExplorerLayout from './components/ExplorerLayout';
 import LandingPage from './pages/LandingPage';
@@ -34,7 +34,10 @@ function App() {
         {/* Pages statiques hors ExplorerLayout : pas de candidat/groupe sélectionné,
             les bandeaux Groupes/Gouvernements/Candidats n'ont pas de sens ici. */}
         <Route path="/methodologie" element={<MethodologyPage />} />
-        <Route path="/couverture" element={<CoveragePage />} />
+        <Route path="/sources" element={<CoveragePage />} />
+        {/* /couverture est devenue /sources (#951). Elle REDIRIGE, et garde
+            l'ancre : des liens partagés et les renvois des fiches y mènent. */}
+        <Route path="/couverture" element={<RedirectionCouverture />} />
         <Route path="/faq" element={<FaqPage />} />
         <Route path="/mentions-legales" element={<LegalNoticePage />} />
       </Routes>
@@ -43,3 +46,8 @@ function App() {
 }
 
 export default App;
+
+function RedirectionCouverture() {
+  const { hash } = useLocation();
+  return <Navigate to={{ pathname: '/sources', hash }} replace />;
+}

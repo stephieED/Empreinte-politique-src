@@ -420,7 +420,7 @@ def test_ce_qu_on_n_a_pas_pu_lire_renvoie_le_corpus_a_la_page_de_couverture(proj
     sur `/couverture`, le pourquoi sous `/methodologie#couverture`."""
     assert "signalementsDuMaillon(groupe)" in projection
     section = corps(composant, "function CeQuOnNaPasPuLire(")
-    assert "vers: '/couverture'" in section and "vers: '/methodologie#couverture'" in section
+    assert "vers: '/sources#frise'" in section and "vers: '/methodologie#couverture'" in section
     assert "m.signalements" in section, "la section rend la projection, elle ne relit pas les avertissements"
     assert "warnings" not in section
 

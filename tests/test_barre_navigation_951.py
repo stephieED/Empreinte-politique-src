@@ -105,3 +105,45 @@ def test_les_pages_statiques_portent_la_rangee_et_plus_le_fil_d_ariane() -> None
         source = _sans_commentaires(page.read_text(encoding="utf-8"))
         assert "<EnTeteSite" in source, page.name
         assert "Retour à l'accueil" not in source, page.name
+
+
+# ── La page /sources ────────────────────────────────────────────────────────
+
+SCHEMA = UI / "src" / "data" / "schemaSources.js"
+CONFIG = UI / "src" / "data" / "sources.config.js"
+
+
+def test_sources_mene_a_sa_page() -> None:
+    nav = _sans_commentaires(NAV.read_text(encoding="utf-8"))
+    assert "vers: '/sources'" in nav and "'/couverture'" not in nav
+
+
+def test_le_schema_et_les_cartes_nomment_les_memes_sources() -> None:
+    """Une source dans les cartes sans place dans le schéma ferait mentir la
+    figure ; l'inverse laisserait une source sans licence ni cadence."""
+    schema = SCHEMA.read_text(encoding="utf-8")
+    config = CONFIG.read_text(encoding="utf-8")
+    renvois = set(re.findall(r"config: '([^']+)'", schema))
+    cartes = set(re.findall(r"^    id: '([^']+)'", config, flags=re.M))
+    assert renvois == cartes, (renvois ^ cartes)
+
+
+def test_chaque_source_du_schema_ouvre_sa_page() -> None:
+    """Demandé le 16/09/2026 : le pavé d'une source ouvre la source, dans un
+    nouvel onglet."""
+    schema = SCHEMA.read_text(encoding="utf-8")
+    bloc = schema[schema.index("export const SOURCES_SCHEMA") : schema.index("export const DONNEES_SCHEMA")]
+    ids = re.findall(r"\{ id: '([a-z]+)',", bloc)
+    urls = re.findall(r"url: '(https://[^']+)'", bloc)
+    assert len(urls) == len(ids) == 11
+    composant = (UI / "src" / "components" / "SchemaSources.jsx").read_text(encoding="utf-8")
+    assert 'target="_blank"' in composant and 'rel="noopener noreferrer"' in composant
+
+
+def test_aucun_lien_ne_mene_encore_a_couverture() -> None:
+    """La redirection sert les liens partagés ; le site, lui, pointe juste."""
+    for chemin in (UI / "src").rglob("*.jsx"):
+        if chemin.name == "App.jsx":
+            continue
+        source = chemin.read_text(encoding="utf-8")
+        assert 'to="/couverture' not in source and "vers: '/couverture" not in source, chemin.name

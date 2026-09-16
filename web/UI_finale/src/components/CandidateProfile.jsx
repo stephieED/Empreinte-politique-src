@@ -991,7 +991,7 @@ function Couverture({ couverture, parcours, collecte }) {
           pour tout le corpus, et pourquoi une limite se déclare au lieu de se
           combler (DESIGN_SYSTEM §7 règle 2). */}
       <p className="cp-methodo">
-        <Link to="/couverture">Ce que le dépôt porte, et depuis quand</Link>
+        <Link to="/sources#frise">Ce que le dépôt porte, et depuis quand</Link>
         {' · '}
         <Link to="/methodologie#couverture">
           Pourquoi ces limites se déclarent au lieu de se combler

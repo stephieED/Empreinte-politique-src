@@ -123,7 +123,7 @@ def test_le_pied_de_fiche_ne_garde_que_la_licence(fiche: str) -> None:
 
 def test_la_section_renvoie_a_la_couverture_du_corpus(fiche: str) -> None:
     """Les bornes ne disparaissent pas de la vue : elles changent de page."""
-    assert 'to="/couverture"' in fiche
+    assert 'to="/sources#frise"' in fiche
     assert 'to="/methodologie#couverture"' in fiche
 
 

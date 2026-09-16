@@ -76,6 +76,31 @@ export const sourcesConfig = [
     perimetre: ['PE'],
     couverturePeriode: null,
   },
+  {
+    id: 'eurovoc',
+    nom: 'EuroVoc (Office des publications de l’Union européenne)',
+    type: 'SPARQL',
+    contenuCouvert:
+      "Les noms français des matières européennes, quand le Parlement européen n'en donne que l'identifiant. Rien n'est classé ici : un identifiant sans nom est déclaré, jamais inventé.",
+    cadenceMiseAJour: 'À chaque exécution.',
+    licence: 'CC BY 4.0',
+    implication: "Réutilisation libre sous réserve d'attribution et d'indication des modifications.",
+    perimetre: ['PE'],
+    couverturePeriode: null,
+  },
+  {
+    id: 'repertoire-national-des-elus',
+    nom: 'Répertoire national des élus (data.gouv.fr)',
+    type: 'API tabulaire data.gouv.fr',
+    contenuCouvert:
+      "Les mandats locaux des candidats déclarés : conseils municipaux, mairies, conseils départementaux, régionaux et communautaires.",
+    cadenceMiseAJour: 'À chaque exécution.',
+    licence: 'Licence Ouverte 2.0 (Etalab)',
+    implication: 'Réutilisation libre sous réserve de mention de la source (attribution uniquement).',
+    perimetre: ['Local'],
+    couverturePeriode:
+      "Publiés à partir de 2020 seulement : avant cette date, l'absence d'un mandat local ne dit rien.",
+  },
   // CITÉES, PAS COLLECTÉES (#860). Les mandats nationaux antérieurs à ce que
   // publie l'open data de l'Assemblée sont relus à la main, un par un, et
   // portés par les fiches avec leur lien (`mandats_anterieurs`). Aucun

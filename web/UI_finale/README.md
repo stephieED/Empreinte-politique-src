@@ -170,7 +170,7 @@ diverge.
 | `/gouvernements` | → redirect | Vers le gouvernement par défaut |
 | `/gouvernements/:governmentId` | `GovernmentProfilePage` | Fiche de gouvernement |
 | `/methodologie` | `MethodologyPage` | La méthode, les règles, ce qui n'est pas publié |
-| `/couverture` | `CoveragePage` | Ce que le dépôt porte et depuis quand, pour tout le corpus (#328) |
+| `/sources` | `CoveragePage` | Les sources et ce que chacune apporte (#951), puis ce que le dépôt porte et depuis quand, pour tout le corpus (#328). `/couverture` y redirige |
 | `/mentions-legales` | `LegalNoticePage` | Sources, licences, attribution |
 
 Trois onglets dans l'explorateur — **Candidats · Groupes · Gouvernement** —, mais **dix

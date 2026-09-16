@@ -152,8 +152,8 @@ depuis #901. Pourquoi, et ce que ça a fait gagner :
 
 ## Ce que la couverture ne couvre pas encore
 
-Le site le publie, et pas seulement ce fichier : **[« Ce que contient ce corpus »](https://empreinte-politique.fr/#/couverture)**
-(`#/couverture`) montre, pour les trois populations publiées, ce que le dépôt
+Le site le publie, et pas seulement ce fichier : **[« Sources »](https://empreinte-politique.fr/#/sources)**
+(`#/sources`, anciennement `#/couverture`) montre, pour les trois populations publiées, ce que le dépôt
 porte et depuis quand, puis par liste les fiches où elle manque. **L'accueil en
 donne la version courte** — une borne par institution, et les candidats dont une
 partie des mandats est hors couverture, nommés (#328). Deux tiers des
