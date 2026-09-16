@@ -549,6 +549,12 @@ mais au prix de sa collecte, alors que la reprise ne demande aucun réseau. Pass
 de corpus, idempotente, candidats déclarés seulement : un membre de roster ne
 publie pas de fiche. → `docs/decisions/mandats-anterieurs-couverture-860.md`.
 
+**Elle saute les profils gelés** (statut `decline`, #760), depuis le 16/09/2026 : la passe des
+candidats déclarés ne les réécrit pas, et la reprise ne fait pas ce que le run refuse de faire.
+Un constat posé dans la table pour un candidat gelé **n'atteint pas sa fiche** — c'est le cas de
+Jordan Bardella, que rien ne régénère. Laurent Wauquiez, gelé mais membre d'un groupe, le reçoit
+par la passe des groupes au run suivant. Le décompte imprimé exclut les gelés.
+
 ### Volumétrie : ce que pèse le corpus et ce que rapporterait chaque levier
 
 ```bash
