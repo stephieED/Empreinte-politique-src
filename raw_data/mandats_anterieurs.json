@@ -8,6 +8,22 @@
   "verifie_le": "2026-09-11"
  },
  "candidats": {
+  "anasse-kazib": {
+   "mandats": [],
+   "constat": {
+    "source_url": "https://www2.assemblee-nationale.fr/sycomore/recherche",
+    "constate_le": "2026-09-16",
+    "methode": "relecture_humaine"
+   }
+  },
+  "benoit-mathieu": {
+   "mandats": [],
+   "constat": {
+    "source_url": "https://www2.assemblee-nationale.fr/sycomore/recherche",
+    "constate_le": "2026-09-16",
+    "methode": "relecture_humaine"
+   }
+  },
   "bernard-cazeneuve": [
    {
     "institution": "assemblee_nationale",
@@ -30,6 +46,14 @@
     "verifie_le": "2026-09-11"
    }
   ],
+  "david-lisnard": {
+   "mandats": [],
+   "constat": {
+    "source_url": "https://www2.assemblee-nationale.fr/sycomore/recherche",
+    "constate_le": "2026-09-16",
+    "methode": "relecture_humaine"
+   }
+  },
   "delphine-batho": {
    "mandats": [],
    "constat": {
@@ -60,6 +84,38 @@
     "source_url": "https://www2.assemblee-nationale.fr/sycomore/fiche?num_dept=19365",
     "constate_le": "2026-09-15",
     "methode": "lecture_fiche_sycomore"
+   }
+  },
+  "fabien-verdier": {
+   "mandats": [],
+   "constat": {
+    "source_url": "https://www2.assemblee-nationale.fr/sycomore/recherche",
+    "constate_le": "2026-09-16",
+    "methode": "relecture_humaine"
+   }
+  },
+  "florian-philippot": {
+   "mandats": [],
+   "constat": {
+    "source_url": "https://www2.assemblee-nationale.fr/sycomore/recherche",
+    "constate_le": "2026-09-16",
+    "methode": "relecture_humaine"
+   }
+  },
+  "francis-lalanne": {
+   "mandats": [],
+   "constat": {
+    "source_url": "https://www2.assemblee-nationale.fr/sycomore/recherche",
+    "constate_le": "2026-09-16",
+    "methode": "relecture_humaine"
+   }
+  },
+  "francois-asselineau": {
+   "mandats": [],
+   "constat": {
+    "source_url": "https://www2.assemblee-nationale.fr/sycomore/recherche",
+    "constate_le": "2026-09-16",
+    "methode": "relecture_humaine"
    }
   },
   "francois-ruffin": {
@@ -97,6 +153,22 @@
     "methode": "lecture_fiche_sycomore"
    }
   },
+  "jordan-bardella": {
+   "mandats": [],
+   "constat": {
+    "source_url": "https://www2.assemblee-nationale.fr/sycomore/recherche",
+    "constate_le": "2026-09-16",
+    "methode": "relecture_humaine"
+   }
+  },
+  "karim-bouamrane": {
+   "mandats": [],
+   "constat": {
+    "source_url": "https://www2.assemblee-nationale.fr/sycomore/recherche",
+    "constate_le": "2026-09-16",
+    "methode": "relecture_humaine"
+   }
+  },
   "laurent-wauquiez": {
    "mandats": [],
    "constat": {
@@ -105,12 +177,36 @@
     "methode": "lecture_fiche_sycomore"
    }
   },
+  "lydie-massard": {
+   "mandats": [],
+   "constat": {
+    "source_url": "https://www2.assemblee-nationale.fr/sycomore/recherche",
+    "constate_le": "2026-09-16",
+    "methode": "relecture_humaine"
+   }
+  },
   "marine-le-pen": {
    "mandats": [],
    "constat": {
     "source_url": "https://www2.assemblee-nationale.fr/sycomore/fiche?num_dept=19249",
     "constate_le": "2026-09-15",
     "methode": "lecture_fiche_sycomore"
+   }
+  },
+  "marine-tondelier": {
+   "mandats": [],
+   "constat": {
+    "source_url": "https://www2.assemblee-nationale.fr/sycomore/recherche",
+    "constate_le": "2026-09-16",
+    "methode": "relecture_humaine"
+   }
+  },
+  "nathalie-arthaud": {
+   "mandats": [],
+   "constat": {
+    "source_url": "https://www2.assemblee-nationale.fr/sycomore/recherche",
+    "constate_le": "2026-09-16",
+    "methode": "relecture_humaine"
    }
   },
   "nicolas-dupont-aignan": [
@@ -138,6 +234,14 @@
     "source_url": "https://www2.assemblee-nationale.fr/sycomore/fiche?num_dept=19595",
     "constate_le": "2026-09-15",
     "methode": "lecture_fiche_sycomore"
+   }
+  },
+  "raphael-glucksmann": {
+   "mandats": [],
+   "constat": {
+    "source_url": "https://www2.assemblee-nationale.fr/sycomore/recherche",
+    "constate_le": "2026-09-16",
+    "methode": "relecture_humaine"
    }
   },
   "segolene-royal": [
@@ -208,6 +312,22 @@
     "verifie_le": "2026-09-11"
    }
   ],
+  "selma-labib": {
+   "mandats": [],
+   "constat": {
+    "source_url": "https://www2.assemblee-nationale.fr/sycomore/recherche",
+    "constate_le": "2026-09-16",
+    "methode": "relecture_humaine"
+   }
+  },
+  "sylvain-durif": {
+   "mandats": [],
+   "constat": {
+    "source_url": "https://www2.assemblee-nationale.fr/sycomore/recherche",
+    "constate_le": "2026-09-16",
+    "methode": "relecture_humaine"
+   }
+  },
   "xavier-bertrand": {
    "mandats": [],
    "constat": {

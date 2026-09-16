@@ -54,6 +54,7 @@ RACINE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RACINE / "src"))
 
 from json_io import ecrire_profil_json  # noqa: E402
+from perimetre_candidats import slugs_geles  # noqa: E402
 from mandats_anterieurs import (  # noqa: E402
     CHEMIN_TABLE,
     appliquer_mandats_anterieurs,
@@ -67,14 +68,40 @@ PROVENANCE_PUBLIEE = "candidat_declare"
 CLE = "mandats_anterieurs"
 
 
+def _geles(racine: Path) -> set[str]:
+    """Les slugs dont la collecte est gelée (#760), lus dans `raw_data/candidats.json`.
+
+    La passe des candidats déclarés ne réécrit pas un profil gelé — « profil
+    publié conservé tel quel ». Une reprise qui le réécrirait ferait ce que le
+    run refuse de faire, par un chemin que personne n'attend.
+
+    Deux cas se rencontrent, mesurés le 16/09/2026, et la règle vaut pour les
+    deux. Laurent Wauquiez est gelé mais **membre d'un groupe** : la passe des
+    groupes régénère son pivot et y applique la table elle-même — la reprise
+    n'a pas à s'y substituer. Jordan Bardella n'est régénéré par **aucune**
+    passe : la table porte son constat, le fait est vérifié, et sa fiche ne
+    bouge pas tant qu'il reste gelé. C'est le gel, pas un oubli.
+    """
+    chemin = racine / "raw_data" / "candidats.json"
+    try:
+        document = json.loads(chemin.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return set()
+    candidats = document.get("candidats") if isinstance(document, dict) else document
+    return {slug for slug, _ in slugs_geles(candidats or [])}
+
+
 def _profils_publies(racine: Path) -> list[Path]:
-    """Les profils qui publient une fiche, dans l'ordre du disque.
+    """Les profils qui publient une fiche, dans l'ordre du disque — gelés exclus.
 
     Les deux populations partagent un répertoire et un motif de nom (#630) :
     c'est `meta.provenance` qui les sépare, et rien d'autre.
     """
+    geles = _geles(racine)
     chemins = []
     for chemin in sorted((racine / "pivot_data" / "profiles").glob("*.pivot.json")):
+        if chemin.name.removesuffix(".pivot.json") in geles:
+            continue
         profil = json.loads(chemin.read_text(encoding="utf-8"))
         if (profil.get("meta") or {}).get("provenance") == PROVENANCE_PUBLIEE:
             chemins.append(chemin)
