@@ -88,6 +88,21 @@ CACHE_DOCUMENTS = CACHE_DIR / "documents_doceo.json"
 PAUSE_ENTRE_REQUETES = 0.6
 DELAI_REPLI_429 = 60
 MAX_ESSAIS = 4
+
+#: Échecs réseau CONSÉCUTIFS après lesquels la passe cesse d'interroger (#901).
+#:
+#: Le 16/09/2026, le portail a cessé de répondre sur `/documents` — pas un
+#: `429` avec son `Retry-After`, que ce module sait attendre, mais un **silence**
+#: de 30 s par requête. Les autres ressources du même portail répondaient encore
+#: (`/meps` en 12 s), et la même URL servie depuis un autre réseau rendait 200 :
+#: la limitation visait notre adresse, sur cette ressource.
+#:
+#: Sans disjoncteur, une passe sur 279 documents paie `TIMEOUT` pour chacun —
+#: **2 h 20** — pour finir sans un seul titre, et sans que rien ne dise
+#: pourquoi. Le seuil est bas exprès : cinq silences d'affilée ne sont plus un
+#: aléa, et la donnée manquante se déclare aussi bien après 5 échecs qu'après
+#: 279.
+MAX_ECHECS_CONSECUTIFS = 5
 TIMEOUT = 30
 
 #: La référence telle que l'intitulé la cite, entre parenthèses.
@@ -151,25 +166,44 @@ class ResolveurDocuments:
         self.cache_path = Path(cache_path) if cache_path else CACHE_DOCUMENTS
         self.session = session
         self.hors_ligne = hors_ligne
-        self._cache: dict[str, bool] = self._charger()
+        self._cache: dict[str, dict[str, Any]] = self._charger()
         self._interroges = 0
         self._refuses = 0
+        self._echecs_consecutifs = 0
+        self._disjoncte = False
 
-    def _charger(self) -> dict[str, bool]:
+    def _charger(self) -> dict[str, dict[str, Any]]:
+        """Le cache, dans sa forme courante ou dans celle d'avant (#901).
+
+        `documents-doceo-v1` mappait un doceo sur un **booléen** ; v2 le mappe
+        sur `{"existe": bool, "titre_fr": str | None}`, parce que la réponse du
+        portail portait déjà le titre français et qu'on le jetait. Un cache v1
+        se relit sans être invalidé : ses entrées valent « existe, titre
+        inconnu », et le titre se remplira à la prochaine interrogation.
+        """
         try:
             with open(self.cache_path, encoding="utf-8") as fh:
                 document = json.load(fh)
         except (OSError, json.JSONDecodeError):
             return {}
         entrees = document.get("documents") if isinstance(document, dict) else None
-        return {k: bool(v) for k, v in entrees.items()} if isinstance(entrees, dict) else {}
+        if not isinstance(entrees, dict):
+            return {}
+        cache: dict[str, dict[str, Any]] = {}
+        for doceo, valeur in entrees.items():
+            if isinstance(valeur, dict):
+                cache[doceo] = {"existe": bool(valeur.get("existe")),
+                                "titre_fr": valeur.get("titre_fr") or None}
+            else:
+                cache[doceo] = {"existe": bool(valeur), "titre_fr": None}
+        return cache
 
     def enregistrer(self) -> None:
         """Écrit le cache. À appeler une fois, en fin de passe."""
         self.cache_path.parent.mkdir(parents=True, exist_ok=True)
         with open(self.cache_path, "w", encoding="utf-8") as fh:
             json.dump(
-                {"schema_version": "documents-doceo-v1", "documents": self._cache},
+                {"schema_version": "documents-doceo-v2", "documents": self._cache},
                 fh, ensure_ascii=False,
             )
 
@@ -182,16 +216,71 @@ class ResolveurDocuments:
         doit pouvoir distinguer « ce document n'existe pas » de « nous n'avons
         pas pu demander ».
         """
+        entree = self._entree(doceo)
+        return None if entree is None else entree["existe"]
+
+    def _entree(self, doceo: str) -> Optional[dict[str, Any]]:
+        """L'entrée de cache d'un document, interrogée au besoin.
+
+        Le cache répond toujours, disjoncteur ou non : ce qui a été obtenu reste
+        acquis. Seule l'interrogation s'arrête.
+        """
         if doceo in self._cache:
             return self._cache[doceo]
-        if self.hors_ligne or self.session is None:
+        if self.hors_ligne or self.session is None or self._disjoncte:
             return None
         resultat = self._interroger(doceo)
-        if resultat is not None:
-            self._cache[doceo] = resultat
+        if resultat is None:
+            self._echecs_consecutifs += 1
+            if self._echecs_consecutifs >= MAX_ECHECS_CONSECUTIFS:
+                # Le reste de la passe se déclare « question non posée » sans
+                # payer un TIMEOUT par document. Ce n'est PAS « n'existe pas » :
+                # l'appelant reçoit None, comme hors ligne (§2 règle 5).
+                self._disjoncte = True
+            return None
+        self._echecs_consecutifs = 0
+        self._cache[doceo] = resultat
         return resultat
 
-    def _interroger(self, doceo: str) -> Optional[bool]:
+    def titre_francais(self, doceo: str) -> Optional[str]:
+        """Le titre FRANÇAIS que le portail publie pour ce document (#901).
+
+        Il était déjà téléchargé et jeté : `_interroger` lisait la réponse pour
+        en tirer un booléen, alors que `title_dcterms` y porte le titre en 22 à
+        23 langues. Mesuré le 16/09/2026 sur 20 des 628 résolutions sans
+        dossier : **20 sur 20** ont un titre français, 19 un titre anglais.
+
+        `None` quand le portail n'en publie pas, ou quand la question n'a pas pu
+        être posée — l'appelant garde alors le titre anglais du dump ParlTrack
+        plutôt que de publier un vide (§2 règle 5).
+        """
+        entree = self._entree(doceo)
+        return None if entree is None else entree.get("titre_fr")
+
+    @staticmethod
+    def _titre_fr(charge: Any) -> Optional[str]:
+        """`data.title_dcterms.fr`, quelle que soit la forme du conteneur.
+
+        Le portail rend `data` tantôt comme objet, tantôt comme liste d'un seul
+        élément — les deux se rencontrent sur ce corpus.
+        """
+        if not isinstance(charge, dict):
+            return None
+        data = charge.get("data")
+        if isinstance(data, list):
+            data = data[0] if data else None
+        if not isinstance(data, dict):
+            return None
+        titres = data.get("title_dcterms")
+        if not isinstance(titres, dict):
+            return None
+        titre = titres.get("fr")
+        if isinstance(titre, list):
+            titre = titre[0] if titre else None
+        titre = (titre or "").strip() if isinstance(titre, str) else None
+        return titre or None
+
+    def _interroger(self, doceo: str) -> Optional[dict[str, Any]]:
         url = f"{PORTAIL_API}/documents/{doceo}"
         params = {"language": "fr", "format": "application/ld+json"}
         for _ in range(MAX_ESSAIS):
@@ -211,9 +300,13 @@ class ResolveurDocuments:
                 continue
             time.sleep(PAUSE_ENTRE_REQUETES)
             if reponse.status_code == 404:
-                return False
+                return {"existe": False, "titre_fr": None}
             if reponse.status_code == 200:
-                return True
+                try:
+                    charge = reponse.json()
+                except Exception:
+                    charge = None
+                return {"existe": True, "titre_fr": self._titre_fr(charge)}
             return None
         return None
 
@@ -230,11 +323,21 @@ class ResolveurDocuments:
         return url_doceo(doceo) if self.existe(doceo) else None
 
     @property
-    def statistiques(self) -> dict[str, int]:
+    def disjoncte(self) -> bool:
+        """Vrai quand la passe a cessé d'interroger le portail (#901)."""
+        return self._disjoncte
+
+    @property
+    def statistiques(self) -> dict[str, Any]:
         return {
             "documents_connus": len(self._cache),
             "requetes": self._interroges,
             "refus_429": self._refuses,
+            "echecs_consecutifs": self._echecs_consecutifs,
+            # Publié même à False : un appelant qui ne lit que les compteurs ne
+            # verrait pas qu'une passe s'est arrêtée en route, et lirait une
+            # couverture faible comme un fait sur la source.
+            "disjoncte": self._disjoncte,
         }
 
 

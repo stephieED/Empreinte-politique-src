@@ -213,8 +213,16 @@ def _make_texte_porte(dossier: dict[str, Any]) -> dict[str, Any]:
     """
     stade, stade_non_resolu = _stade_procedural_ue(dossier)
     reference = dossier.get("reference") or None
+    titre = dossier.get("titre") or dossier.get("reference") or ""
     return {
-        "titre": dossier.get("titre") or dossier.get("reference") or "",
+        "titre": titre,
+        # Le titre d'un DOSSIER vient du dump ParlTrack, qui le publie en
+        # anglais, et aucun document `doceo` ne s'y rattache pour aller chercher
+        # la version française (#901). Le champ est posé quand même : les deux
+        # fabriques portent les mêmes clés, sans quoi une fiche distinguerait
+        # deux textes selon le chemin qui les a produits — ce que
+        # `test_les_deux_fabriques_portent_les_memes_cles` interdit.
+        "titre_langue": "en" if titre else None,
         "institution": "parlement_europeen",
         "role": "rapporteur",
         "type_rapport": None,
@@ -616,10 +624,41 @@ def _reference_dossier_activite(entree: dict[str, Any]) -> Optional[str]:
     return None
 
 
+def _titre_publie(
+    entree: dict[str, Any], resolveur: Optional[ResolveurDocuments]
+) -> tuple[str, Optional[str]]:
+    """Le titre à publier, et la langue dans laquelle il l'est (#901).
+
+    Le dump ParlTrack donne le titre en ANGLAIS — « JOINT MOTION FOR A
+    RESOLUTION on Azerbaijan… ». Le portail du Parlement publie le même
+    document en 22 à 23 langues, français compris, et le résolveur téléchargeait
+    déjà cette réponse pour en tirer un booléen d'existence.
+
+    Ce n'est donc pas une traduction que nous fabriquerions : c'est la version
+    française officielle, sous la même licence que le reste du portail (§7).
+
+    Quand le portail n'a rien — pas de référence citée, document introuvable,
+    question non posée — le titre anglais du dump est conservé, et
+    `titre_langue` le dit. Publier un titre vide serait pire que le publier
+    dans la mauvaise langue.
+    """
+    titre_source = entree.get("titre") or ""
+    if resolveur is None:
+        return titre_source, ("en" if titre_source else None)
+    doceo = reference_doceo(entree.get("titre"))
+    if doceo is None:
+        return titre_source, ("en" if titre_source else None)
+    titre_fr = resolveur.titre_francais(doceo)
+    if titre_fr:
+        return titre_fr, "fr"
+    return titre_source, ("en" if titre_source else None)
+
+
 def _make_texte_porte_activite(
     activite: str,
     entree: dict[str, Any],
     stades_par_reference: Optional[dict[str, str]] = None,
+    resolveur: Optional[ResolveurDocuments] = None,
 ) -> dict[str, Any]:
     """Convertit une activité portée (résolution, rapport) en `textes_portes[]`.
 
@@ -650,8 +689,10 @@ def _make_texte_porte_activite(
     else:
         stade, stade_non_resolu = _stade_procedural_ue(
             {"stade_source": (stades_par_reference or {}).get(reference)})
+    titre, titre_langue = _titre_publie(entree, resolveur)
     return {
-        "titre": entree.get("titre") or "",
+        "titre": titre,
+        "titre_langue": titre_langue,
         "institution": "parlement_europeen",
         "nature_texte": nature,
         "role": role,
@@ -842,7 +883,8 @@ def enrich_pivot_with_parltrack(
         if activite not in ROLE_PAR_ACTIVITE:
             continue
         for brut in entrees:
-            entree = _make_texte_porte_activite(activite, brut, stades_par_reference)
+            entree = _make_texte_porte_activite(
+                activite, brut, stades_par_reference, resolveur)
             cle = _tp_key(entree)
             if cle not in existing_tp_keys:
                 existing_tp_keys.add(cle)
