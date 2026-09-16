@@ -216,3 +216,16 @@ def test_les_mandats_anterieurs_sont_nommes_sous_la_frise_de_sources() -> None:
     assert "<MandatsHorsCouverture fiches={data.accueil?.horsCouverture?.anterieurs} />" in frise
     rendu = _sans_commentaires(page[page.index("function MandatsHorsCouverture"):page.index("function TableManquants")])
     assert "non exploitable" not in rendu and "Mandats locaux et autres" not in rendu
+
+
+def test_wikipedia_et_wikidata_disent_ce_qu_elles_apportent() -> None:
+    """Elles disent QUI est candidat (AGENTS.md §7). Leurs textes disaient
+    « suivi biographique complémentaire » et, pour Wikipédia, « citations
+    verbatim » — l'inverse de la règle : des faits, jamais de texte."""
+    config = CONFIG.read_text(encoding="utf-8")
+    wp = config[config.index("id: 'wikipedia-fr'"):config.index("id: 'wikidata'")]
+    wd = config[config.index("id: 'wikidata'"):]
+    for entree in (wp, wd):
+        assert "Suivi biographique" not in entree and "verbatim" not in entree
+    assert "nom: 'Wikipédia'" in wp and "jamais de texte" in wp
+    assert "P4123" in wd
