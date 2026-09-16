@@ -555,18 +555,32 @@ export function rolesDuParcours(mandats) {
 }
 
 /*
- * Les bornes de la frise : du premier début observé à la fin la plus tardive,
- * jamais une année ronde inventée. Un axe qui déborde de la carrière laisserait
- * croire à des années sans rien plutôt qu'à des années hors mesure.
+ * Les bornes de la frise : du premier début observé à AUJOURD'HUI, pour tous.
+ *
+ * LA BORNE DROITE EST LA DATE DU JOUR, lue à l'affichage. Elle s'arrêtait à la
+ * fin la plus tardive quand aucun mandat n'était en cours : la frise de
+ * Bernard Cazeneuve finissait en 2017, celle de Jean-Luc Mélenchon en 2022, et
+ * rien ne distinguait ces axes de ceux qui s'arrêtent aujourd'hui. Le lecteur
+ * concluait que la carrière courait jusqu'à maintenant (signalé le 16/09/2026).
+ * Mesuré ce jour-là sur les 23 candidats déclarés qui ont une frise : 4 axes
+ * s'arrêtaient avant aujourd'hui — Cazeneuve, Royal, Philippot, Mélenchon.
+ *
+ * Le blanc à droite dit « rien de collecté depuis », ce qui est vrai des sources
+ * que la fiche lit. La borne gauche reste le premier début observé, jamais une
+ * année ronde inventée.
+ *
+ * Une fin postérieure à aujourd'hui — un mandat daté à l'avance — n'est pas
+ * rognée : l'axe s'étend jusqu'à elle.
  */
-export function bornesDuParcours(roles) {
+export function bornesDuParcours(roles, aujourdhui = aujourdhuiISO()) {
   if (!roles.length) return null;
   const debuts = roles.map((r) => r.debut).filter(Boolean).sort();
-  const fins = roles.map((r) => (r.actif ? null : r.fin)).filter(Boolean).sort();
-  const finMax = roles.some((r) => r.actif)
-    ? new Date().toISOString().slice(0, 10)
-    : fins[fins.length - 1];
-  return { debut: debuts[0], fin: finMax };
+  const fins = roles
+    .map((r) => (r.actif || r.fin === FIN_OUVERTE ? null : r.fin))
+    .filter(Boolean)
+    .sort();
+  const finMax = fins[fins.length - 1];
+  return { debut: debuts[0], fin: finMax && finMax > aujourdhui ? finMax : aujourdhui };
 }
 
 export function positionSurAxe(date, bornes) {

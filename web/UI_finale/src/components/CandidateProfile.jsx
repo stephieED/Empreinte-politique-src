@@ -198,9 +198,11 @@ function anneesDeLAxe(bornes) {
   const pas = [1, 2, 5, 10, 20].find((p) => (fin - debut) / p <= 7) ?? 25;
   const annees = [];
   for (let a = Math.ceil(debut / pas) * pas; a <= fin; a += pas) annees.push(a);
-  if (annees[0] !== debut) annees.unshift(debut);
-  if (annees[annees.length - 1] !== fin) annees.push(fin);
-  return annees;
+  /* Les deux bornes sont toujours écrites ; un repère rond trop proche d'elles
+   * s'efface à leur profit. Depuis que l'axe s'arrête aujourd'hui, « 2025 » et
+   * « 2026 » se chevauchaient au bout de chaque frise au pas de cinq ans. */
+  const loinDesBornes = annees.filter((a) => a - debut >= pas * 0.3 && fin - a >= pas * 0.3);
+  return [debut, ...loinDesBornes, fin];
 }
 
 function classeInstitution(role) {
