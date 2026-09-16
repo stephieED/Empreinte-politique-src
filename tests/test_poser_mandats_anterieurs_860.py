@@ -192,3 +192,26 @@ def test_la_reprise_ne_touche_aucun_autre_champ(tmp_path):
     assert profil["votes"] == [{"scrutin_id": "x"}]
     assert profil["chambres"] == ["AN"]
     assert profil["meta"] == {"provenance": "candidat_declare"}
+
+
+def test_la_reprise_ne_reecrit_pas_un_profil_gele(tmp_path):
+    """#760 : un profil gelé est conservé tel quel, et la passe des candidats
+    déclarés ne le réécrit pas. La reprise non plus — sinon elle ferait ce que
+    le run refuse de faire. Cas réel du 16/09/2026 : Jordan Bardella, dont la
+    table porte le constat d'absence, et que rien ne régénère."""
+    constat = {"source_url": "https://www2.assemblee-nationale.fr/sycomore/recherche",
+               "constate_le": "2026-09-16", "methode": "relecture_humaine"}
+    racine = _racine(tmp_path, [_profil("jordan-bardella"), _profil("selma-labib")],
+                     {"jordan-bardella": {"mandats": [], "constat": constat},
+                      "selma-labib": {"mandats": [], "constat": constat}})
+    (racine / "raw_data" / "candidats.json").write_text(json.dumps({"candidats": [
+        {"slug": "jordan-bardella", "statut": "decline"},
+        {"slug": "selma-labib", "statut": "declare"},
+    ]}), encoding="utf-8")
+
+    avant = _lire(racine, "jordan-bardella")
+    rapport = REPRISE.poser(racine, ecrire=True)
+
+    assert _lire(racine, "jordan-bardella") == avant
+    assert _lire(racine, "selma-labib")["mandats_anterieurs_constat"] == constat
+    assert rapport["profils"] == 1
