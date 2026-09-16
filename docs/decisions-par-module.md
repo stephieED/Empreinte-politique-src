@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 348 décisions
+gouverne sans avoir à fouiller les 349 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -47,6 +47,7 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 | `src/dossiers_europeens.py` | 2 |
 | `src/fetch_candidats_declares.py` | 2 |
 | `src/gouvernement_profile.py` | 2 |
+| `src/titres_europeens.py` | 2 |
 | `src/build_amendements_index.py` | 1 |
 | `src/candidate_profile_ue.py` | 1 |
 | `src/collecte_mandats_locaux.py` | 1 |
@@ -822,7 +823,7 @@ Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambr
 
 ## `src/merge_profile.py`
 
-64 décision(s) le gouvernent ; le module en cite 5.
+65 décision(s) le gouvernent ; le module en cite 5.
 
 | Décision | Nomme |
 | --- | --- |
@@ -883,6 +884,7 @@ Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambr
 | [Revue transversale des workflows GitHub Actions : ce qui est gardé, ce qui est corrigé (#342) (2026-08-18)](decisions/revue-workflows-ci-342.md) | `merge_pivot_profile` |
 | [Le groupe européen dit son sigle et ce que la source en dit, sans changer de catégorie (#863) (2026-09-12)](decisions/sigle-groupe-europeen-863.md) | `_mandat_key`, `backfill_mandat_organe_source` |
 | [Un texte porté dit ce qu'il est devenu, et son sort ne se déduit jamais de son stade (#743) (2026-09-06)](decisions/sort-des-textes-portes-743.md) | `_dossier_key`, `merge_dossier_records`, `merge_lists_by_key` |
+| [Le sujet nettoyé d'une question européenne n'atteignait pas l'entrée déjà publiée (#980) (2026-09-16)](decisions/sujet-europeen-sans-boutons-a-la-fusion-980.md) | `backfill_sujet_europeen`, `backfill_sujet_seance`, `merge_dossier_records`, `merge_lists_by_key`, `merge_pivot_profile` |
 | [`synchro_sources` publie la dernière récupération réussie, et pas son origine (#600) (2026-08-30)](decisions/synchro-sources-derniere-recuperation-600.md) | `merge_raw_profile` |
 | [Régénérer l'existant : `--refresh-existing`, l'inverse de `--skip-existing` (#445) (2026-08-19)](decisions/telechargement-an-trois-modes-defaillance.md) | `merge_raw_dirs` |
 | [Le lecteur accepte une tranche dérivée, et le silence reste une panne (#691, lot 2)](decisions/tranches-derivees-lecteur-691.md) | `merge_dossier_records` |
@@ -905,7 +907,7 @@ Le mentionnent sans le gouverner : [`chambre-par-mandat-electif`](decisions/cham
 
 ## `src/normalize_parltrack_dumps.py`
 
-14 décision(s) le gouvernent ; le module en cite 3.
+15 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
@@ -920,6 +922,7 @@ Le mentionnent sans le gouverner : [`chambre-par-mandat-electif`](decisions/cham
 | [La projection d'un index est une fabrique, et elle jetait la référence de dossier (#901) (2026-09-14)](decisions/projection-index-activites-jette-le-dossier-901.md) | `_make_texte_porte`, `_make_texte_porte_activite` |
 | [Un profil de roster ne porte pas une liste que sa propre collecte déclare écartée — purge des 49 `textes_portes` résiduels (#747)](decisions/purge-textes-portes-roster-747.md) | `_make_texte_porte` |
 | [L'européen entre dans les listes que la fiche a déjà (#683, lot 2)](decisions/stockage-europeen-dans-les-listes-existantes-683.md) | `NATURES_VOTE_SUR_ENSEMBLE` |
+| [Le sujet nettoyé d'une question européenne n'atteignait pas l'entrée déjà publiée (#980) (2026-09-16)](decisions/sujet-europeen-sans-boutons-a-la-fusion-980.md) | `_make_intervention`, `enrich_pivot_with_parltrack` |
 | [L'empreinte thématique d'une fiche est celle de sa législature (#825)](decisions/tags-agreges-dans-la-periode-825.md) | `_make_intervention` |
 | [Le titre français cherchait sa référence là où elle n'est jamais (#901) (2026-09-16)](decisions/titre-francais-lu-dans-source-url-901.md) | `_titre_publie` |
 | [L'adresse est dérivée, l'existence est prouvée (#827)](decisions/urls-explications-vote-europeennes-827.md) | `_make_intervention` |
@@ -954,7 +957,7 @@ Le mentionnent sans le gouverner : [`civilite-et-pcs-insee-659`](decisions/civil
 
 ## `src/parltrack_dumps.py`
 
-7 décision(s) le gouvernent ; le module en cite 3.
+8 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
@@ -964,7 +967,8 @@ Le mentionnent sans le gouverner : [`civilite-et-pcs-insee-659`](decisions/civil
 | [Un profil de roster ne porte pas une liste que sa propre collecte déclare écartée — purge des 49 `textes_portes` résiduels (#747)](decisions/purge-textes-portes-roster-747.md) | `get_dossiers_for_mep` |
 | [Le stade d'un dossier européen se publie dans sa propre nomenclature, jamais traduit en stade français (#901) (2026-09-13)](decisions/stade-procedural-europeen-901.md) | `VERSION_SCHEMA_INDEX`, `_empreinte_perimetre`, `build_dossiers_index` |
 | [L'européen entre dans les listes que la fiche a déjà (#683, lot 2)](decisions/stockage-europeen-dans-les-listes-existantes-683.md) | `definir_perimetre_meps` |
-| [Un titre européen perd ses boutons de téléchargement, et rien d'autre (#901) (2026-09-15)](decisions/titres-europeens-sans-boutons-901.md) | `VERSION_SCHEMA_INDEX`, `build_activities_index`, `titre_sans_boutons` |
+| [Le sujet nettoyé d'une question européenne n'atteignait pas l'entrée déjà publiée (#980) (2026-09-16)](decisions/sujet-europeen-sans-boutons-a-la-fusion-980.md) | `build_activities_index` |
+| [Un titre européen perd ses boutons de téléchargement, et rien d'autre (#901) (2026-09-15)](decisions/titres-europeens-sans-boutons-901.md) | `VERSION_SCHEMA_INDEX`, `build_activities_index` |
 
 Le mentionnent sans le gouverner : [`investigation-sources-ue`](decisions/investigation-sources-ue.md), [`mandats-officiels-an-369`](decisions/mandats-officiels-an-369.md).
 
@@ -1247,6 +1251,15 @@ Le mentionnent sans le gouverner : [`dossier-des-amendements-639`](decisions/dos
 | Décision | Nomme |
 | --- | --- |
 | [Le `texte_vise` fautif se reprend depuis l'archive figée, pas par une fusion plus permissive (#696, 01/09/2026)](decisions/report-texte-vise-source-696.md) | `est_uid_texte`, `lire_textes_vises` |
+
+## `src/titres_europeens.py`
+
+2 décision(s) le gouvernent ; le module en cite 0.
+
+| Décision | Nomme |
+| --- | --- |
+| [Le sujet nettoyé d'une question européenne n'atteignait pas l'entrée déjà publiée (#980) (2026-09-16)](decisions/sujet-europeen-sans-boutons-a-la-fusion-980.md) | `titre_sans_boutons` |
+| [Un titre européen perd ses boutons de téléchargement, et rien d'autre (#901) (2026-09-15)](decisions/titres-europeens-sans-boutons-901.md) | `titre_sans_boutons` |
 
 ## `src/tranches_amendements_figees.py`
 

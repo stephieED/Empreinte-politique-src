@@ -109,6 +109,7 @@ from schema_pivot import (
     appliquer_chambres,
     deriver_tags_thematiques,
 )
+from titres_europeens import titre_sans_boutons
 
 Key = Any
 
@@ -375,6 +376,58 @@ def backfill_sujet_seance(
             neufs = sujets_neufs.get(key_fn(i))
             if neufs and any(i.get(c) != v for c, v in neufs.items()):
                 i = {**i, **neufs}
+        result.append(i)
+    return result
+
+
+def backfill_sujet_europeen(
+    merged: list[dict[str, Any]],
+    new_list: Optional[list[dict[str, Any]]],
+    key_fn: Optional[Callable[[dict[str, Any]], Key]] = None,
+) -> list[dict[str, Any]]:
+    """Reporte sur une intervention européenne publiée le sujet que #938 a
+    nettoyé (#980).
+
+    #938 retire les boutons « PDF (… KB) DOC (… KB) » à l'indexation du dump :
+    l'entrée neuve est propre. Mais `merge_lists_by_key` garde l'ancienne à
+    identifiant égal, et `backfill_sujet_seance` ne vaut que pour Syceron.
+    Mesuré le 16/09/2026 sur `origin/main` `966dd18a3`, après un run complet :
+    **313** questions européennes des candidats déclarés gardaient leur sujet
+    sale (Le Pen 147, Philippot 128, Mélenchon 38). Les textes portés, fusionnés
+    par `merge_dossier_records` où l'entrée neuve gagne, s'étaient corrigés seuls.
+
+    **Le critère est la règle de #938, pas « le neuf gagne »** : le sujet neuf
+    remplace l'ancien seulement s'il est exactement `titre_sans_boutons(ancien)`.
+    Un intitulé que la source aurait réécrit n'est pas touché. Seul `sujet`
+    change, la clé de fusion ne bouge pas, et le nettoyage reste à l'entrée du
+    corpus : ce report ne fait que laisser passer l'entrée qu'il a produite.
+
+    Rien ne change au brut : les interventions européennes n'entrent qu'au pivot,
+    par `enrich_pivot_with_parltrack`. `tags_thematiques` non plus : il dérive de
+    `theme_officiel`, `null` sur toute entrée européenne.
+    """
+    if not new_list:
+        return merged
+    key_fn = key_fn or _pivot_intervention_key
+
+    def _europeenne(i: Any) -> bool:
+        source = i.get("source") if isinstance(i, dict) else None
+        return isinstance(source, dict) and source.get("institution") == "parlement_europeen"
+
+    sujets_neufs: dict[Key, str] = {}
+    for i in new_list:
+        if _europeenne(i) and isinstance(i.get("sujet"), str):
+            sujets_neufs.setdefault(key_fn(i), i["sujet"])
+    if not sujets_neufs:
+        return merged
+
+    result: list[dict[str, Any]] = []
+    for i in merged:
+        if _europeenne(i):
+            neuf = sujets_neufs.get(key_fn(i))
+            ancien = i.get("sujet")
+            if neuf is not None and ancien != neuf and titre_sans_boutons(ancien) == neuf:
+                i = {**i, "sujet": neuf}
         result.append(i)
     return result
 
@@ -2525,11 +2578,15 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
     # pas d'`intervention_id` et seraient republiées EN DOUBLE à côté de leur
     # renormalisation identifiée. Voir sa docstring pour la preuve de non-perte.
     merged["interventions"] = clean_stale_interventions(
-        backfill_sujet_seance(
-            merge_lists_by_key(old.get("interventions"), new.get("interventions"), _pivot_intervention_key),
+        backfill_sujet_europeen(
+            backfill_sujet_seance(
+                merge_lists_by_key(old.get("interventions"), new.get("interventions"), _pivot_intervention_key),
+                new.get("interventions"),
+                _pivot_intervention_key,
+                preuve=_entree_syceron_publiee,
+            ),
             new.get("interventions"),
             _pivot_intervention_key,
-            preuve=_entree_syceron_publiee,
         )
     )
     # merge_dossier_records (nouvelle valeur gagne en cas de collision, aucune perte
