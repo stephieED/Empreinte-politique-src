@@ -56,8 +56,8 @@
   .som {
     display: block;
     position: sticky;
-    /* Sous la barre compacte (56 px), plus une respiration. */
-    top: 76px;
+    /* Sous la rangée collée (80 px, #951), plus une respiration. */
+    top: 100px;
     align-self: start;
   }
 }

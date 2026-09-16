@@ -25,7 +25,7 @@ const QUESTIONS = [
 
 export default function Faq() {
   return (
-    <section className="landing-section" aria-label="Questions fréquentes">
+    <section className="landing-section" id="faq" aria-label="Questions fréquentes">
       <h2>Questions fréquentes</h2>
       <div className="landing-faq-list">
         {QUESTIONS.map(({ question, answer }) => (

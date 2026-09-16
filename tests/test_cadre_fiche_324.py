@@ -44,6 +44,7 @@ SRC = RACINE / "web" / "UI_finale" / "src"
 
 LAYOUT = SRC / "components" / "ExplorerLayout.jsx"
 LAYOUT_CSS = SRC / "components" / "ExplorerLayout.css"
+ENTETE_CSS = SRC / "components" / "EnTeteSite.css"
 SOMMAIRE = SRC / "components" / "SommaireSections.jsx"
 SOMMAIRE_CSS = SRC / "components" / "SommaireSections.css"
 FICHE = SRC / "components" / "CandidateProfile.jsx"
@@ -68,58 +69,95 @@ def layout_css() -> str:
 
 
 @pytest.fixture(scope="module")
+def entete_css() -> str:
+    return sans_commentaires(ENTETE_CSS.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="module")
 def sommaire() -> str:
     return sans_commentaires(SOMMAIRE.read_text(encoding="utf-8"))
 
 
-# ── L'en-tête ne se recolle pas ─────────────────────────────────────────────
+# ── L'en-tête : la rangée collée, les listes qui défilent (#951) ────────────
 
 
-def test_les_barres_ne_sont_plus_collees(layout_css: str) -> None:
-    """357 px collés sur tous les supports : c'est ce qui est corrigé.
+def _bloc(css: str, selecteur: str) -> str:
+    return css.split(f"{selecteur} {{")[1].split("}")[0]
 
-    Seul le RAPPEL — les listes redemandées par le bouton — peut se coller, et
-    sous la barre compacte.
+
+def test_les_barres_ne_sont_plus_collees(layout_css: str, entete_css: str) -> None:
+    """357 px collés sur tous les supports : c'est ce que #324 a corrigé.
+
+    Depuis #951, seule la rangée du logo se colle. Les listes défilent avec la
+    page, et ne reviennent que dans le panneau.
     """
-    bloc = layout_css.split(".explorer-bars {")[1].split("}")[0]
-    assert "position: sticky" not in bloc, (
-        "les barres défilent avec la page ; c'est tout l'objet du lot"
-    )
-    rappel = layout_css.split(".explorer-bars--rappel {")[1].split("}")[0]
-    assert "position: sticky" in rappel and "top: 56px" in rappel
+    assert "position: sticky" not in _bloc(layout_css, ".explorer-bars")
+    entete = _bloc(entete_css, ".entete-site")
+    assert "position: sticky" in entete and "top: 0" in entete
+
+
+def test_la_mise_en_page_ne_change_pas_au_defilement(layout: str) -> None:
+    """L'en-tête de #324 RETIRAIT les listes au-delà de 180 px de défilement.
+
+    La page raccourcissait de 385 px, le navigateur ramenait le défilement à 0,
+    les listes revenaient : une boucle, mesurée le 16/09/2026 sur la fiche de
+    Jérôme Guedj. Franchir les listes ne change plus qu'une visibilité, et les
+    listes de la page ne portent aucun rendu conditionnel.
+    """
+    assert "SEUIL_REPLI" not in layout
+    barres = layout.split('<div className="explorer-bars">')[1].split("</div>")[0]
+    assert "&&" not in barres and "hidden" not in barres
+    assert "explorer-changer--visible" in layout
+
+
+def test_la_position_se_lit_au_defilement_pas_par_un_observateur(layout: str) -> None:
+    """Un IntersectionObserver ne signale qu'un franchissement.
+
+    Un saut direct — une ancre, un lien partagé — passe les listes sans les
+    croiser : mesuré sur maquette à 390 px, le bouton restait caché.
+    """
+    assert "IntersectionObserver" not in layout
+    assert "getBoundingClientRect().top" in layout
+    assert "addEventListener('scroll'" in layout
+
+
+def test_le_bouton_garde_sa_place(layout_css: str) -> None:
+    """Invisible tant que les listes sont à l'écran, mais sa place est réservée,
+    et ses deux libellés occupent la même case : les liens ne glissent jamais."""
+    bouton = _bloc(layout_css, ".explorer-changer")
+    assert "visibility: hidden" in bouton and "display: none" not in bouton
+    assert "grid-area: 1 / 1" in _bloc(layout_css, ".explorer-changer-libelle")
 
 
 def test_l_attribut_hidden_a_sa_regle_css(layout_css: str) -> None:
     """`display: flex` l'emporte sur `[hidden]` de la feuille du navigateur.
 
-    Sans cette règle, l'attribut est posé et les barres restent affichées — une
+    Sans cette règle, l'attribut est posé et le panneau reste affiché — une
     mesure qui lit `element.hidden` le déclare pourtant corrigé.
     """
-    assert ".explorer-bars[hidden]" in layout_css
-    bloc = layout_css.split(".explorer-bars[hidden] {")[1].split("}")[0]
-    assert "display: none" in bloc
+    assert "display: none" in _bloc(layout_css, ".explorer-panneau[hidden]")
 
 
-def test_la_barre_compacte_fait_56_px(layout_css: str) -> None:
-    bloc = layout_css.split(".explorer-compact {")[1].split("}")[0]
-    assert "height: 56px" in bloc
-    assert "position: sticky" in bloc and "top: 0" in bloc
-
-
-def test_le_rappel_est_opaque(layout_css: str) -> None:
+def test_l_entete_et_le_panneau_sont_opaques(layout_css: str, entete_css: str) -> None:
     """Un fond translucide laissait lire le contenu à travers les listes.
 
     Le flou d'arrière-plan est un raffinement qui ne survit pas partout ;
     l'opacité est un fait.
     """
-    for bloc_nom in (".explorer-compact {", ".explorer-bars--rappel {"):
-        bloc = layout_css.split(bloc_nom)[1].split("}")[0]
+    for css, selecteur in ((entete_css, ".entete-site"), (layout_css, ".explorer-panneau")):
+        bloc = _bloc(css, selecteur)
         fond = [l for l in bloc.splitlines() if l.strip().startswith("background")]
-        assert fond, f"{bloc_nom} doit déclarer un fond"
-        # `rgba` reste permis dans une ombre portée : c'est le FOND qui doit être
-        # opaque, pas chaque couleur de la règle.
-        assert all("rgba(" not in l for l in fond), f"{bloc_nom} doit être opaque"
+        assert fond, f"{selecteur} doit déclarer un fond"
+        assert all("rgba(" not in l for l in fond), f"{selecteur} doit être opaque"
         assert "background: var(--bg);" in bloc
+
+
+def test_sous_720_px_les_listes_quittent_la_page(layout_css: str) -> None:
+    """Elles faisaient 1 277 px sur un 390 px de large : deux écrans avant la
+    fiche. Le bandeau seul reste, et le bouton est là dès l'arrivée."""
+    media = layout_css.split("@media (max-width: 720px)")[1].split("@media")[0]
+    assert ".explorer-bars {\n    display: none;" in media.replace("\r\n", "\n")
+    assert "visibility: visible" in _bloc(media, ".explorer-changer")
 
 
 # ── L'ordre des listes ──────────────────────────────────────────────────────
@@ -128,7 +166,8 @@ def test_le_rappel_est_opaque(layout_css: str) -> None:
 def test_l_ordre_est_candidats_groupes_gouvernements(layout: str) -> None:
     """Une fiche s'atteint par un NOM ; les deux autres listes sont du contexte."""
     ordre = [m for m in re.findall(r"<(CandidatesBar|GroupsBar|GovernmentsBar)\s*/>", layout)]
-    assert ordre == ["CandidatesBar", "GroupsBar", "GovernmentsBar"], ordre
+    # Deux fois le même ordre : dans le panneau, puis dans la page.
+    assert ordre == ["CandidatesBar", "GroupsBar", "GovernmentsBar"] * 2, ordre
 
 
 # ── Le sommaire ─────────────────────────────────────────────────────────────
@@ -195,6 +234,13 @@ def test_la_section_lue_est_la_derniere_franchie(sommaire: str) -> None:
     assert "getBoundingClientRect().top <= SEUIL_LECTURE" in sommaire
 
 
-def test_l_ancre_prend_une_avance_sur_la_barre_collante(sommaire: str) -> None:
-    """Sans elle, la barre compacte recouvre le titre qu'on vient de demander."""
-    assert "AVANCE_ANCRE" in sommaire
+def test_l_ancre_prend_une_avance_sur_la_barre_collante(sommaire: str, entete_css: str) -> None:
+    """Sans elle, la rangée collée recouvre le titre qu'on vient de demander.
+
+    L'avance se règle sur la hauteur de la rangée : elle passait sous les 80 px
+    de #951 quand elle était calée sur les 56 px de l'ancienne barre compacte.
+    """
+    hauteur = int(re.search(r"--entete-hauteur: (\d+)px", entete_css).group(1))
+    avance = int(re.search(r"AVANCE_ANCRE = (\d+)", sommaire).group(1))
+    seuil = int(re.search(r"SEUIL_LECTURE = (\d+)", sommaire).group(1))
+    assert avance > hauteur and seuil > avance

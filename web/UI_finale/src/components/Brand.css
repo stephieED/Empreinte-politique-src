@@ -13,7 +13,8 @@
    sur l'accueil, `/couverture`, la méthodologie et les mentions légales, le
    logo est un frère du `<main>` et tombait donc à x = 0, collé au bord, quand
    la fiche candidat le posait à x = 40. Mesuré au rendu sur les cinq pages.
-   `.explorer-bars` annule la sienne pour cette rangée — sinon 80px. */
+   Depuis #951 le logo de l'explorateur vit dans `.explorer-entete`, qui n'a pas
+   de gouttière gauche : il garde donc la sienne. */
 .brand {
   display: flex;
   align-items: center;
@@ -22,8 +23,9 @@
      dans l'autre axe : les 12px de retrait haut de `.explorer-bars` ne valaient
      que dans l'explorateur. Mesuré à 1440px — le logo tombait à y = 84 sur les
      fiches candidat, groupe et gouvernement, et à y = 72 sur les quatre autres
-     pages. La fiche candidat est la référence, `.explorer-bars` annule donc la
-     sienne pour cette rangée. */
+     pages. Depuis #951 la rangée collée de l'explorateur annule ces 12px : collée,
+     elle doit faire exactement sa hauteur. Le logo y remonte de 12px par rapport
+     aux quatre autres pages, qui recevront la même rangée avec #951. */
   margin-top: 12px;
   height: 80px;
   border-bottom: 1px solid var(--border);

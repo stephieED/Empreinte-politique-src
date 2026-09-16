@@ -776,3 +776,9 @@
     display: none;
   }
 }
+
+/* La rangée du logo est collée (#951) : sans cette marge, « FAQ » dans la barre
+   poserait le titre des questions sous elle. */
+#faq {
+  scroll-margin-top: 96px;
+}

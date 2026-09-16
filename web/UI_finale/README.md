@@ -88,7 +88,7 @@ src/
 ├── index.css                 # Tokens CSS globaux (palette, typographie)
 ├── components/               # Composants d'affichage — ils ne calculent aucun fait
 │   ├── ExplorerLayout        # Coque de l'explorateur : barres latérales + outlet
-│   ├── Brand · PiedDeSite · SommaireSections · ScrollRow · StaticPage
+│   ├── Brand · EnTeteSite · NavigationSite · PiedDeSite · SommaireSections · ScrollRow · StaticPage
 │   ├── CandidatesBar · GroupsBar · GovernmentsBar   # les trois onglets
 │   ├── CandidateProfile      # Fiche candidat
 │   ├── LigneeProfile         # Fiche d'une lignée de groupe (#329)

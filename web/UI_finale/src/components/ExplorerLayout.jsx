@@ -1,6 +1,6 @@
-import { Link, Outlet, useLocation } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import Brand from './Brand';
+import { Outlet, useLocation } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import EnTeteSite from './EnTeteSite';
 import GroupsBar from './GroupsBar';
 import GovernmentsBar from './GovernmentsBar';
 import CandidatesBar from './CandidatesBar';
@@ -10,84 +10,118 @@ import '../styles/shell.css';
 import PiedDeSite from './PiedDeSite';
 import './ExplorerLayout.css';
 
-/* ── Le cadre de la page (#324) ───────────────────────────────────────────────
+/* ── Le cadre de la page (#324, refait par #951) ──────────────────────────────
  *
- * L'EN-TÊTE NE RESTE PLUS COLLÉ EN ENTIER. Mesuré le 08/09/2026 sur la fiche de
- * Jérôme Guedj, build de production : la marque et les trois barres de sélection
- * faisaient 357 px collés en haut, sur TOUS les supports — 45 % de la hauteur
- * d'un 1 280 × 800, 42 % d'un mobile 390 × 844. Ce qui est collé ne rend jamais
- * sa place, et la fiche fait 7 968 px sur ordinateur, 12 122 px sur mobile :
- * neuf écrans parcourus avec un demi-écran utile.
+ * LA RANGÉE DU LOGO RESTE COLLÉE, LES LISTES DÉFILENT. Retenu le 16/09/2026 sur
+ * maquette jouable. La rangée porte le logo, les pages du site et « Changer de
+ * fiche » ; les trois listes vivent dans la page, sous elle.
  *
- * Les barres défilent donc avec la page. Dès qu'on a défilé, une barre COMPACTE
- * de 56 px prend le relais : la marque, et un bouton qui ramène les listes.
- * 357 → 56 px, soit 301 px rendus au contenu — sur les cinq supports, mobile
- * compris. C'est la seule moitié de la réforme qui vaut pour tout le monde.
+ * LA MISE EN PAGE NE CHANGE JAMAIS AU DÉFILEMENT, et c'est tout l'objet de la
+ * refonte. L'en-tête de #324 RETIRAIT les listes de la page au-delà de 180 px :
+ * la page raccourcissait de 385 px, le navigateur ramenait le défilement à 0,
+ * les listes revenaient, et la boucle reprenait. Mesuré le 16/09/2026 sur la
+ * fiche de Jérôme Guedj, défilement par pas de 40 px : à 200 px les listes
+ * partent, 22 ms plus tard le défilement est à 0. Ici, franchir les listes ne
+ * change qu'une VISIBILITÉ — celle du bouton, dont la place est réservée.
  *
- * L'ORDRE DES BARRES EST CANDIDATS, GROUPES, GOUVERNEMENTS. Une fiche s'atteint
- * par un nom ; les deux autres listes sont des entrées de contexte, et elles
- * descendent d'autant.
+ * LA POSITION SE LIT À CHAQUE DÉFILEMENT, PAS PAR UN IntersectionObserver :
+ * l'observateur ne signale qu'un franchissement, et un saut direct — une ancre,
+ * un lien partagé — passe les listes sans jamais les croiser. Mesuré sur
+ * maquette : à 390 px, un saut à 2 600 px laissait le bouton caché.
+ *
+ * SOUS 720 PX, LES LISTES QUITTENT LA PAGE. Elles y faisaient 1 277 px : deux
+ * écrans avant le premier mot de la fiche. Le bandeau seul reste, et « Changer
+ * de fiche » les ouvre dans le panneau.
  */
-const SEUIL_REPLI = 180;
-
 export default function ExplorerLayout() {
-  const [replie, setReplie] = useState(false);
-  const [listesOuvertes, setListesOuvertes] = useState(false);
+  const [listesPassees, setListesPassees] = useState(false);
+  const [panneauOuvert, setPanneauOuvert] = useState(false);
   const { pathname } = useLocation();
+  const enteteRef = useRef(null);
+  const repereRef = useRef(null);
 
   useEffect(() => {
-    const surDefilement = () => {
-      const bas = window.scrollY > SEUIL_REPLI;
-      setReplie(bas);
-      // Remonter en haut referme le rappel : sinon on afficherait deux en-têtes.
-      if (!bas) setListesOuvertes(false);
+    let attente = false;
+    const lire = () => {
+      attente = false;
+      const entete = enteteRef.current;
+      const repere = repereRef.current;
+      if (!entete || !repere) return;
+      setListesPassees(repere.getBoundingClientRect().top <= entete.getBoundingClientRect().bottom);
     };
-    surDefilement();
+    const surDefilement = () => {
+      if (attente) return;
+      attente = true;
+      requestAnimationFrame(lire);
+    };
+    lire();
     window.addEventListener('scroll', surDefilement, { passive: true });
-    return () => window.removeEventListener('scroll', surDefilement);
+    window.addEventListener('resize', surDefilement);
+    return () => {
+      window.removeEventListener('scroll', surDefilement);
+      window.removeEventListener('resize', surDefilement);
+    };
   }, []);
 
-  // Changer de fiche referme les listes : on vient de s'en servir.
+  // Remonter jusqu'aux listes referme le panneau : sinon elles seraient deux fois
+  // à l'écran. Sous 720 px les listes ne sont plus dans la page, le repère est
+  // collé à l'en-tête et cette règle ne se déclenche jamais.
   useEffect(() => {
-    setListesOuvertes(false);
+    if (!listesPassees) setPanneauOuvert(false);
+  }, [listesPassees]);
+
+  // Changer de fiche referme le panneau : on vient de s'en servir.
+  useEffect(() => {
+    setPanneauOuvert(false);
   }, [pathname]);
 
-  const barresVisibles = !replie || listesOuvertes;
+  useEffect(() => {
+    if (!panneauOuvert) return undefined;
+    const surTouche = (e) => {
+      if (e.key === 'Escape') setPanneauOuvert(false);
+    };
+    document.addEventListener('keydown', surTouche);
+    return () => document.removeEventListener('keydown', surTouche);
+  }, [panneauOuvert]);
 
   return (
     <GroupFilterProvider>
       <div className="app-shell">
         <div className="explorer-main">
-          {replie && (
-            <div className="explorer-compact">
-              {/* LE NOM ENTIER, PAS SA PREMIÈRE MOITIÉ. « Empreinte » seul
-                  n'est pas la marque : c'est « Empreinte politique » que le
-                  logo, le pied de site et les mentions légales portent, et
-                  l'en-tête réduit est justement le moment où le lecteur n'a
-                  plus le logo sous les yeux. */}
-              <Link to="/" className="explorer-compact-marque">
-                Empreinte politique
-              </Link>
-              <button
-                type="button"
-                className="explorer-compact-ouvrir"
-                aria-expanded={listesOuvertes}
-                onClick={() => setListesOuvertes((v) => !v)}
-              >
-                {listesOuvertes ? 'Masquer les listes' : 'Changer de fiche'}
-              </button>
+          <EnTeteSite ref={enteteRef}>
+            <button
+              type="button"
+              className={`explorer-changer${listesPassees ? ' explorer-changer--visible' : ''}`}
+              aria-expanded={panneauOuvert}
+              aria-controls="explorer-panneau"
+              onClick={() => setPanneauOuvert((v) => !v)}
+            >
+              {/* Les deux libellés occupent la même case : le bouton garde sa
+                  largeur, et les liens à sa gauche ne bougent pas. */}
+              <span className="explorer-changer-libelle">
+                Changer de fiche
+              </span>
+              <span className="explorer-changer-libelle">
+                Masquer les listes
+              </span>
+            </button>
+            <div id="explorer-panneau" className="explorer-panneau" hidden={!panneauOuvert}>
+              {panneauOuvert && (
+                <>
+                  <CandidatesBar />
+                  <GroupsBar />
+                  <GovernmentsBar />
+                </>
+              )}
             </div>
-          )}
+          </EnTeteSite>
 
-          <div
-            className={`explorer-bars${replie ? ' explorer-bars--rappel' : ''}`}
-            hidden={!barresVisibles}
-          >
-            {!replie && <Brand />}
+          <div className="explorer-bars">
             <CandidatesBar />
             <GroupsBar />
             <GovernmentsBar />
           </div>
+          <div className="explorer-repere" ref={repereRef} aria-hidden="true" />
 
           <div className="explorer-corps">
             <SommaireSections />
