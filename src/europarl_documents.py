@@ -3,6 +3,19 @@
 europarl_documents.py — De la référence citée dans un intitulé de vote à
 l'adresse vérifiée du document qu'elle désigne (#827).
 
+## Les trois décisions à relire avant de toucher à ce module
+
+Cinq décisions nomment ce module ; la liste complète est dans
+`docs/decisions-par-module.md`. Ces trois-là portent ce qui casse en silence :
+
+- `docs/decisions/urls-explications-vote-europeennes-827.md` — **l'adresse est
+  dérivée, l'existence est prouvée** au portail, jamais supposée.
+- `docs/decisions/disjoncteur-portail-europeen-901.md` — **un portail muet n'est
+  pas un `429`** : après cinq silences, la passe s'arrête et le dit.
+- `docs/decisions/titre-francais-lu-dans-source-url-901.md` — **le document se lit
+  dans `source_url`, jamais dans le titre**, et une entrée d'un lecteur plus ancien
+  est réinterrogée une fois : trois défauts qui ont publié 0 titre français.
+
 ## Le problème
 
 Les explications de vote du Parlement européen sont la seule matière du corpus
@@ -136,6 +149,24 @@ def reference_doceo(intitule: Any) -> Optional[str]:
     return f"{lettre}-{legislature}-{annee}-{numero}"
 
 
+#: Le nom d'un document dans son adresse publique, schéma ignoré : 625
+#: `source_url` du corpus sont en `http://`, 56 en `https://` (16/09/2026).
+_DOCEO_DANS_URL = re.compile(r"doceo/document/([A-Z]+-\d+-\d{4}-\d{4})")
+
+
+def document_doceo_de_url(url: Any) -> Optional[str]:
+    """`…/doceo/document/B-8-2017-0240_EN.html` → `B-8-2017-0240` (#901).
+
+    La même lecture que la clé de fusion des textes portés européens
+    (`merge_profile._document_doceo`) : un document est identifié par son
+    adresse, jamais par son titre, qui ne le cite pas.
+    """
+    if not isinstance(url, str):
+        return None
+    m = _DOCEO_DANS_URL.search(url)
+    return m.group(1) if m else None
+
+
 def url_doceo(doceo: str) -> str:
     """L'adresse publique du document, celle qu'un lecteur peut ouvrir.
 
@@ -227,16 +258,33 @@ class ResolveurDocuments:
         entree = self._entree(doceo)
         return None if entree is None else entree["existe"]
 
-    def _entree(self, doceo: str) -> Optional[dict[str, Any]]:
+    def _entree(self, doceo: str, complete: bool = False) -> Optional[dict[str, Any]]:
         """L'entrée de cache d'un document, interrogée au besoin.
 
         Le cache répond toujours, disjoncteur ou non : ce qui a été obtenu reste
         acquis. Seule l'interrogation s'arrête.
+
+        `complete` : l'appelant a besoin du titre ou des concepts, pas seulement
+        de l'existence. Une entrée écrite par un lecteur plus ancien — un
+        booléen v1, un `{existe, titre_fr}` v2 — connaît l'existence mais
+        **ignore** le reste, et se reconnaît à `concepts is None` : le lecteur
+        courant écrit toujours une liste, vide ou non. Elle est alors
+        réinterrogée une fois.
+
+        C'était le troisième défaut du run 35087127267 : la docstring de
+        `_charger` promettait que le titre « se remplirait à la prochaine
+        interrogation », et **aucune n'avait lieu** — une entrée en cache
+        n'était jamais redemandée. La réinterrogation reste réservée à ce
+        besoin : `existe()` seul ne la déclenche pas, sans quoi les ~1 500
+        explications de vote déjà connues seraient toutes redemandées.
         """
-        if doceo in self._cache:
-            return self._cache[doceo]
+        connue = self._cache.get(doceo)
+        if connue is not None and not (
+            complete and connue.get("existe") and connue.get("concepts") is None
+        ):
+            return connue
         if self.hors_ligne or self.session is None or self._disjoncte:
-            return None
+            return connue
         resultat = self._interroger(doceo)
         if resultat is None:
             self._echecs_consecutifs += 1
@@ -245,7 +293,7 @@ class ResolveurDocuments:
                 # payer un TIMEOUT par document. Ce n'est PAS « n'existe pas » :
                 # l'appelant reçoit None, comme hors ligne (§2 règle 5).
                 self._disjoncte = True
-            return None
+            return connue
         self._echecs_consecutifs = 0
         self._cache[doceo] = resultat
         return resultat
@@ -262,7 +310,7 @@ class ResolveurDocuments:
         être posée — l'appelant garde alors le titre anglais du dump ParlTrack
         plutôt que de publier un vide (§2 règle 5).
         """
-        entree = self._entree(doceo)
+        entree = self._entree(doceo, complete=True)
         return None if entree is None else entree.get("titre_fr")
 
     def concepts_eurovoc(self, doceo: str) -> Optional[list[str]]:
@@ -273,7 +321,7 @@ class ResolveurDocuments:
         pas savoir qu'il n'y a rien (§2 règle 5). Elle vaut aussi pour un cache
         écrit avant ce lot, qui rend `None` plutôt qu'une liste vide.
         """
-        entree = self._entree(doceo)
+        entree = self._entree(doceo, complete=True)
         if entree is None:
             return None
         concepts = entree.get("concepts")

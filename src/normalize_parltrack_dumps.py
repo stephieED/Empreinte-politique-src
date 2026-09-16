@@ -29,7 +29,7 @@ import time
 import unicodedata
 from typing import Any, Optional
 
-from europarl_documents import ResolveurDocuments, reference_doceo
+from europarl_documents import ResolveurDocuments, document_doceo_de_url, reference_doceo
 from avertissements import (
     DESTINATAIRE_INTERNE,
     DESTINATAIRE_LECTEUR,
@@ -645,7 +645,13 @@ def _titre_publie(
     titre_source = entree.get("titre") or ""
     if resolveur is None:
         return titre_source, ("en" if titre_source else None)
-    doceo = reference_doceo(entree.get("titre"))
+    # Le document se lit dans `source_url`, JAMAIS dans le titre. La première
+    # version cherchait une référence dans le titre : aucun des 694 titres
+    # publiés n'en porte (« JOINT MOTION FOR A RESOLUTION on Azerbaijan… »), et
+    # le run 35087127267 a publié 0 titre français. Le test l'avait laissé
+    # passer parce qu'il inventait un titre « …(A9-0227/2024) » qui n'existe
+    # nulle part dans le corpus (#901, 16/09/2026).
+    doceo = document_doceo_de_url(entree.get("source_url"))
     if doceo is None:
         return titre_source, ("en" if titre_source else None)
     titre_fr = resolveur.titre_francais(doceo)

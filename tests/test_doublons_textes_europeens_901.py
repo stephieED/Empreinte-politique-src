@@ -35,8 +35,8 @@ SALE = {
     "stade_procedural_non_resolu": {"motif": "activite_sans_dossier"},
     "sort": None,
     "sort_non_resolu": {"motif": "source_sans_sort"},
-    "date_min": "2017-04-05",
-    "date_max": "2017-04-05",
+    "date_min": "2016-11-22",
+    "date_max": "2016-11-22",
     "legislature": None,
     "source_url": "http://www.europarl.europa.eu/doceo/document/B-8-2017-0240_EN.html",
 }

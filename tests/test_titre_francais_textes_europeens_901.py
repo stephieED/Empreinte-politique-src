@@ -124,18 +124,106 @@ def test_le_cache_ecrit_porte_le_titre(tmp_path):
 
 # --- le titre publié sur la fiche -------------------------------------------
 
+# Entrées COPIÉES du corpus (origin/main 46216eb7e), pas inventées. La version
+# précédente de ces deux tests plaçait une référence « (A9-0227/2024) » dans le
+# titre ; aucun des 694 titres publiés n'en porte, et le run 35087127267 a
+# publié 0 titre français pendant que ces tests passaient.
+ENTREE_MAUREL = {  # emmanuel-maurel.pivot.json
+    "titre": "JOINT MOTION FOR A RESOLUTION on Azerbaijan, notably the repression of "
+             "civil society and the cases of Dr Gubad Ibadoghlu and Ilhamiz Guliyev",
+    "source_url": "https://www.europarl.europa.eu/doceo/document/RC-9-2024-0227_EN.html",
+}
+ENTREE_PHILIPPOT = {  # florian-philippot.pivot.json — en http://, comme 625 URL du corpus
+    "titre": "Motion for a resolution on accessibility of goods and services",
+    "source_url": "http://www.europarl.europa.eu/doceo/document/B-8-2017-0240_EN.html",
+}
+
+
+def test_aucun_titre_reel_ne_porte_de_reference():
+    """La prémisse de la première version, démentie : elle est tenue ici."""
+    from europarl_documents import reference_doceo
+    assert reference_doceo(ENTREE_MAUREL["titre"]) is None
+    assert reference_doceo(ENTREE_PHILIPPOT["titre"]) is None
+
+
 def test_le_francais_remplace_l_anglais_et_la_langue_le_dit(tmp_path):
-    entree = {"titre": f"{TITRE_EN} (A9-0227/2024)"}
-    r = _resolveur(tmp_path, _Session({"A-9-2024-0227": TITRE_FR}))
-    titre, langue = _titre_publie(entree, r)
-    assert (titre, langue) == (TITRE_FR, "fr")
+    r = _resolveur(tmp_path, _Session({"RC-9-2024-0227": TITRE_FR}))
+    assert _titre_publie(ENTREE_MAUREL, r) == (TITRE_FR, "fr")
+
+
+def test_une_url_en_http_trouve_aussi_son_titre(tmp_path):
+    r = _resolveur(tmp_path, _Session({"B-8-2017-0240": "PROPOSITION DE RÉSOLUTION"}))
+    assert _titre_publie(ENTREE_PHILIPPOT, r) == ("PROPOSITION DE RÉSOLUTION", "fr")
 
 
 def test_sans_titre_francais_l_anglais_est_conserve(tmp_path):
     """Le repli : un titre dans la mauvaise langue vaut mieux qu'un titre vide."""
-    entree = {"titre": f"{TITRE_EN} (A9-0227/2024)"}
-    titre, langue = _titre_publie(entree, _resolveur(tmp_path, _Session({})))
-    assert (titre, langue) == (entree["titre"], "en")
+    titre, langue = _titre_publie(ENTREE_MAUREL, _resolveur(tmp_path, _Session({})))
+    assert (titre, langue) == (ENTREE_MAUREL["titre"], "en")
+
+
+def test_sans_source_url_le_titre_reste_anglais(tmp_path):
+    entree = {"titre": ENTREE_MAUREL["titre"], "source_url": None}
+    r = _resolveur(tmp_path, _Session({"RC-9-2024-0227": TITRE_FR}))
+    assert _titre_publie(entree, r) == (ENTREE_MAUREL["titre"], "en")
+
+
+# --- le cache qui ne se réinterrogeait jamais --------------------------------
+
+def test_une_entree_v1_est_reinterrogee_pour_son_titre(tmp_path):
+    """Troisième défaut du run 35087127267 : la promesse « le titre se remplira
+    à la prochaine interrogation » n'était tenue par rien — une entrée en cache
+    n'était jamais redemandée."""
+    p = tmp_path / "c.json"
+    p.write_text(json.dumps({"schema_version": "documents-doceo-v1",
+                             "documents": {"RC-9-2024-0227": True}}), encoding="utf-8")
+    session = _Session({"RC-9-2024-0227": TITRE_FR})
+    r = ResolveurDocuments(cache_path=p, session=session)
+    assert r.titre_francais("RC-9-2024-0227") == TITRE_FR
+    assert len(session.appels) == 1
+
+
+def test_existe_seul_ne_reinterroge_pas_une_entree_v1(tmp_path):
+    """Sinon les ~1 500 explications de vote déjà connues seraient redemandées."""
+    p = tmp_path / "c.json"
+    p.write_text(json.dumps({"schema_version": "documents-doceo-v1",
+                             "documents": {"RC-9-2024-0227": True}}), encoding="utf-8")
+    session = _Session({"RC-9-2024-0227": TITRE_FR})
+    r = ResolveurDocuments(cache_path=p, session=session)
+    assert r.existe("RC-9-2024-0227") is True
+    assert session.appels == []
+
+
+def test_une_entree_complete_n_est_pas_redemandee(tmp_path):
+    session = _Session({"RC-9-2024-0227": TITRE_FR})
+    r = _resolveur(tmp_path, session)
+    r.titre_francais("RC-9-2024-0227")
+    r.titre_francais("RC-9-2024-0227")
+    r.concepts_eurovoc("RC-9-2024-0227")
+    assert len(session.appels) == 1
+
+
+def test_un_document_inexistant_n_est_pas_redemande(tmp_path):
+    p = tmp_path / "c.json"
+    p.write_text(json.dumps({"schema_version": "documents-doceo-v1",
+                             "documents": {"B-8-2015-0001": False}}), encoding="utf-8")
+    session = _Session({})
+    r = ResolveurDocuments(cache_path=p, session=session)
+    assert r.titre_francais("B-8-2015-0001") is None
+    assert session.appels == []
+
+
+def test_un_echec_garde_ce_qu_on_savait(tmp_path):
+    """Portail muet sur une entrée v1 : l'existence connue n'est pas perdue."""
+    class _Muet:
+        def get(self, *a, **k):
+            raise TimeoutError("silence")
+    p = tmp_path / "c.json"
+    p.write_text(json.dumps({"schema_version": "documents-doceo-v1",
+                             "documents": {"RC-9-2024-0227": True}}), encoding="utf-8")
+    r = ResolveurDocuments(cache_path=p, session=_Muet())
+    assert r.titre_francais("RC-9-2024-0227") is None
+    assert r.existe("RC-9-2024-0227") is True
 
 
 def test_sans_resolveur_rien_ne_change(tmp_path):

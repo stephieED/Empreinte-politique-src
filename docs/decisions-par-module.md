@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 338 décisions
+gouverne sans avoir à fouiller les 339 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -37,7 +37,6 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 
 | Module | Décisions qui le gouvernent |
 | --- | ---: |
-| `src/europarl_documents.py` | 4 |
 | `src/parse_syceron.py` | 4 |
 | `src/perimetre_candidats.py` | 4 |
 | `src/audit_pipeline.py` | 3 |
@@ -512,12 +511,13 @@ Le mentionnent sans le gouverner : [`budget-collecte-interventions`](decisions/b
 
 ## `src/europarl_documents.py`
 
-4 décision(s) le gouvernent ; le module en cite 0.
+5 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
 | [Un portail muet coûtait 2 h 20 de run pour rien (#901) (2026-09-16)](decisions/disjoncteur-portail-europeen-901.md) | `MAX_ECHECS_CONSECUTIFS`, `PAUSE_ENTRE_REQUETES` |
 | [628 textes européens sans dossier, et le portail les classait déjà (#901) (2026-09-16)](decisions/matieres-eurovoc-documents-901.md) | `DOCEO_BASE`, `ResolveurDocuments` |
+| [Le titre français cherchait sa référence là où elle n'est jamais (#901) (2026-09-16)](decisions/titre-francais-lu-dans-source-url-901.md) | `reference_doceo` |
 | [Le titre français était téléchargé puis jeté (#901) (2026-09-16)](decisions/titre-francais-textes-europeens-901.md) | `ResolveurDocuments` |
 | [L'adresse est dérivée, l'existence est prouvée (#827)](decisions/urls-explications-vote-europeennes-827.md) | `ResolveurDocuments` |
 
@@ -904,7 +904,7 @@ Le mentionnent sans le gouverner : [`chambre-par-mandat-electif`](decisions/cham
 
 ## `src/normalize_parltrack_dumps.py`
 
-13 décision(s) le gouvernent ; le module en cite 3.
+14 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
@@ -920,6 +920,7 @@ Le mentionnent sans le gouverner : [`chambre-par-mandat-electif`](decisions/cham
 | [Un profil de roster ne porte pas une liste que sa propre collecte déclare écartée — purge des 49 `textes_portes` résiduels (#747)](decisions/purge-textes-portes-roster-747.md) | `_make_texte_porte` |
 | [L'européen entre dans les listes que la fiche a déjà (#683, lot 2)](decisions/stockage-europeen-dans-les-listes-existantes-683.md) | `NATURES_VOTE_SUR_ENSEMBLE` |
 | [L'empreinte thématique d'une fiche est celle de sa législature (#825)](decisions/tags-agreges-dans-la-periode-825.md) | `_make_intervention` |
+| [Le titre français cherchait sa référence là où elle n'est jamais (#901) (2026-09-16)](decisions/titre-francais-lu-dans-source-url-901.md) | `_titre_publie` |
 | [L'adresse est dérivée, l'existence est prouvée (#827)](decisions/urls-explications-vote-europeennes-827.md) | `_make_intervention` |
 
 Le mentionnent sans le gouverner : [`investigation-sources-ue`](decisions/investigation-sources-ue.md).
