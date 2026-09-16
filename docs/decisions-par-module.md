@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 349 décisions
+gouverne sans avoir à fouiller les 350 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -407,7 +407,7 @@ Le mentionnent sans le gouverner : [`consommateurs-chambres-migres`](decisions/c
 | --- | --- |
 | [Données UE — investigation des sources (2026-08-04)](decisions/investigation-sources-ue.md) | `find_mep_by_name` |
 
-Le mentionnent sans le gouverner : [`reduction-nommee-collecte-vs-publie-888`](decisions/reduction-nommee-collecte-vs-publie-888.md).
+Le mentionnent sans le gouverner : [`licence-parlement-europeen-cc-by-983`](decisions/licence-parlement-europeen-cc-by-983.md), [`reduction-nommee-collecte-vs-publie-888`](decisions/reduction-nommee-collecte-vs-publie-888.md).
 
 ## `src/check_quality_gate.py`
 
@@ -522,6 +522,8 @@ Le mentionnent sans le gouverner : [`budget-collecte-interventions`](decisions/b
 | [Le titre français cherchait sa référence là où elle n'est jamais (#901) (2026-09-16)](decisions/titre-francais-lu-dans-source-url-901.md) | `reference_doceo` |
 | [Le titre français était téléchargé puis jeté (#901) (2026-09-16)](decisions/titre-francais-textes-europeens-901.md) | `ResolveurDocuments` |
 | [L'adresse est dérivée, l'existence est prouvée (#827)](decisions/urls-explications-vote-europeennes-827.md) | `ResolveurDocuments` |
+
+Le mentionnent sans le gouverner : [`licence-parlement-europeen-cc-by-983`](decisions/licence-parlement-europeen-cc-by-983.md).
 
 ## `src/fetch_candidats_declares.py`
 
@@ -781,13 +783,14 @@ Le mentionnent sans le gouverner : [`profils-json-compact`](decisions/profils-js
 
 ## `src/licences.py`
 
-5 décision(s) le gouvernent ; le module en cite 3.
+6 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
 | [Le sédiment se compte avant de se juger : sept familles, deux couches, aucun retrait (#839, lot A) (2026-09-12)](decisions/audit-sediment-inventaire-839.md) | `LICENCE_PAR_TYPE_SOURCE` |
 | [Une étiquette de licence écrite en dur survit à la source qu'elle décrit (#909) (2026-09-13)](decisions/licence-jamais-en-dur-909.md) | `LICENCE_PARLTRACK`, `appliquer_licence_donnees` |
 | [Le versant AN passe en Licence Ouverte, et `meta.licence_donnees` devient un champ dérivé (#530, lot 6 de l'épic « une seule source AN ») (2026-08-27)](decisions/licence-lot-6-530.md) | `appliquer_licence_donnees` |
+| [Le Parlement européen n'a qu'une licence dans ce dépôt : CC BY 4.0 (#983) (2026-09-16)](decisions/licence-parlement-europeen-cc-by-983.md) | `LICENCE_EUROPARL` |
 | [Le nettoyage fait, la clause ODbL ne tiendrait plus que par un marqueur, sur 475 profils (#839, lot C) (2026-09-12)](decisions/residus-source-retiree-839.md) | `licences_du_profil` |
 | [Un marqueur de provenance sans donnée derrière lui n'est plus une traçabilité, c'est une inexactitude (#890) (2026-09-13)](decisions/retrait-marqueur-regards-citoyens-deputes-890.md) | `appliquer_licence_donnees`, `licences_du_profil` |
 
