@@ -46,6 +46,15 @@ import { REFUS_FICHE_GROUPE } from '../utils/groupe';
  * de famille il se répétait, et un titre qui se répète cesse d'être lu.
  * Les `id` ne bougent PAS : ce sont des ancres visées depuis les fiches.
  */
+/* L'ADN DU PROJET, en tête de la méthode (#951). Texte écrit par la propriétaire
+   le 16/09/2026 : l'automatisation y est dite en toutes lettres. */
+const INTRODUCTION = [
+  'Empreinte politique rassemble ce que les institutions publient sur les candidats à la présidentielle 2027 (mandats, votes, textes, prises de parole) et le donne à lire tel quel.',
+  "Tout est collecté et mis en forme automatiquement par un programme : aucun fait n'est écrit ni altéré à la main. Ce que vous lisez est ce que la source officielle publie, avec le lien direct pour le vérifier.",
+  'Seuls certains rapprochements de données sont validés par un humain, et la fiche le mentionne explicitement.',
+  "Rien n'est noté, classé ni commenté.",
+];
+
 const SECTIONS = [
   /* EN TÊTE, AVANT LES FAMILLES (#951) : les deux blocs que l'accueil portait.
      Ils disent la méthode en quatre étapes et ce que le site refuse de publier,
@@ -550,6 +559,7 @@ export default function MethodologyPage() {
       eyebrow="Empreinte politique"
       title="Méthode éditoriale"
       tagline="Des faits sourcés, sans note de performance."
+      intro={INTRODUCTION}
       sections={SECTIONS}
     />
   );

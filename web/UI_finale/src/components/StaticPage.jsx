@@ -10,7 +10,7 @@ import './StaticPage.css';
 // collée (#951) remplace le fil « ← Retour à l'accueil » : le logo y ramène, et
 // les pages du site sont à côté. Une section sans `heading` n'a pas de titre :
 // la page /faq n'en porte qu'une, que la bannière nomme déjà.
-export default function StaticPage({ eyebrow, title, tagline, updated, sections }) {
+export default function StaticPage({ eyebrow, title, tagline, intro, updated, sections }) {
   return (
     <div className="app-shell">
       <div className="static-page">
@@ -22,6 +22,16 @@ export default function StaticPage({ eyebrow, title, tagline, updated, sections 
             <h1>{title}</h1>
             {tagline && <p>{tagline}</p>}
           </div>
+
+          {/* L'INTRODUCTION (#951) : quelques phrases sous la bannière, sans titre ni
+              carte — ce que le projet est, avant la méthode détaillée. */}
+          {intro && (
+            <div className="static-intro">
+              {intro.map((phrase) => (
+                <p key={phrase}>{phrase}</p>
+              ))}
+            </div>
+          )}
 
           {updated && <p className="static-updated">{updated}</p>}
 
