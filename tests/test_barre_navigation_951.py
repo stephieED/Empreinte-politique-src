@@ -204,3 +204,14 @@ def test_l_accueil_est_le_hero_puis_les_candidats() -> None:
     assert "Les candidats déclarés</h2>" in liste, "titre sans nombre, validé le 16/09/2026"
     assert "cb-chip--sans-mandat" in liste, "le grisé de la barre de l'explorateur, infobulle comprise"
     assert 'to="/groupes"' in liste and 'to="/gouvernements"' in liste
+
+
+def test_les_mandats_anterieurs_sont_nommes_sous_la_frise_de_sources() -> None:
+    """La liste de l'accueil revient sur /sources (16/09/2026), réduite à la
+    seule rubrique encore vraie : Sénat et mandats locaux sont collectés depuis
+    #885 et #922."""
+    page = (UI / "src" / "pages" / "CoveragePage.jsx").read_text(encoding="utf-8")
+    frise = page[page.index('id="frise"'):page.index('id="manquants"')]
+    assert "<MandatsHorsCouverture fiches={data.accueil?.horsCouverture?.anterieurs} />" in frise
+    rendu = _sans_commentaires(page[page.index("function MandatsHorsCouverture"):page.index("function TableManquants")])
+    assert "non exploitable" not in rendu and "Mandats locaux et autres" not in rendu
