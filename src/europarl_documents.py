@@ -88,6 +88,21 @@ CACHE_DOCUMENTS = CACHE_DIR / "documents_doceo.json"
 PAUSE_ENTRE_REQUETES = 0.6
 DELAI_REPLI_429 = 60
 MAX_ESSAIS = 4
+
+#: Échecs réseau CONSÉCUTIFS après lesquels la passe cesse d'interroger (#901).
+#:
+#: Le 16/09/2026, le portail a cessé de répondre sur `/documents` — pas un
+#: `429` avec son `Retry-After`, que ce module sait attendre, mais un **silence**
+#: de 30 s par requête. Les autres ressources du même portail répondaient encore
+#: (`/meps` en 12 s), et la même URL servie depuis un autre réseau rendait 200 :
+#: la limitation visait notre adresse, sur cette ressource.
+#:
+#: Sans disjoncteur, une passe sur 279 documents paie `TIMEOUT` pour chacun —
+#: **2 h 20** — pour finir sans un seul titre, et sans que rien ne dise
+#: pourquoi. Le seuil est bas exprès : cinq silences d'affilée ne sont plus un
+#: aléa, et la donnée manquante se déclare aussi bien après 5 échecs qu'après
+#: 279.
+MAX_ECHECS_CONSECUTIFS = 5
 TIMEOUT = 30
 
 #: La référence telle que l'intitulé la cite, entre parenthèses.
@@ -154,6 +169,8 @@ class ResolveurDocuments:
         self._cache: dict[str, dict[str, Any]] = self._charger()
         self._interroges = 0
         self._refuses = 0
+        self._echecs_consecutifs = 0
+        self._disjoncte = False
 
     def _charger(self) -> dict[str, dict[str, Any]]:
         """Le cache, dans sa forme courante ou dans celle d'avant (#901).
@@ -203,14 +220,26 @@ class ResolveurDocuments:
         return None if entree is None else entree["existe"]
 
     def _entree(self, doceo: str) -> Optional[dict[str, Any]]:
-        """L'entrée de cache d'un document, interrogée au besoin."""
+        """L'entrée de cache d'un document, interrogée au besoin.
+
+        Le cache répond toujours, disjoncteur ou non : ce qui a été obtenu reste
+        acquis. Seule l'interrogation s'arrête.
+        """
         if doceo in self._cache:
             return self._cache[doceo]
-        if self.hors_ligne or self.session is None:
+        if self.hors_ligne or self.session is None or self._disjoncte:
             return None
         resultat = self._interroger(doceo)
-        if resultat is not None:
-            self._cache[doceo] = resultat
+        if resultat is None:
+            self._echecs_consecutifs += 1
+            if self._echecs_consecutifs >= MAX_ECHECS_CONSECUTIFS:
+                # Le reste de la passe se déclare « question non posée » sans
+                # payer un TIMEOUT par document. Ce n'est PAS « n'existe pas » :
+                # l'appelant reçoit None, comme hors ligne (§2 règle 5).
+                self._disjoncte = True
+            return None
+        self._echecs_consecutifs = 0
+        self._cache[doceo] = resultat
         return resultat
 
     def titre_francais(self, doceo: str) -> Optional[str]:
@@ -294,11 +323,21 @@ class ResolveurDocuments:
         return url_doceo(doceo) if self.existe(doceo) else None
 
     @property
-    def statistiques(self) -> dict[str, int]:
+    def disjoncte(self) -> bool:
+        """Vrai quand la passe a cessé d'interroger le portail (#901)."""
+        return self._disjoncte
+
+    @property
+    def statistiques(self) -> dict[str, Any]:
         return {
             "documents_connus": len(self._cache),
             "requetes": self._interroges,
             "refus_429": self._refuses,
+            "echecs_consecutifs": self._echecs_consecutifs,
+            # Publié même à False : un appelant qui ne lit que les compteurs ne
+            # verrait pas qu'une passe s'est arrêtée en route, et lirait une
+            # couverture faible comme un fait sur la source.
+            "disjoncte": self._disjoncte,
         }
 
 
