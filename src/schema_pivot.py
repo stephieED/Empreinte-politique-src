@@ -285,6 +285,19 @@ Format d'un profil pivot v1 :
     "textes_portes": [                       # dossiers dont l'élu est auteur ou rapporteur
         {
             "titre": "Proposition de loi ...",
+            "titre_langue": None,            # #901 — "fr" | "en" | null, sur les seules entrées
+                                             # européennes. Le dump ParlTrack donne le titre en
+                                             # ANGLAIS ; le portail du Parlement publie le même
+                                             # document en 22-23 langues, et le résolveur
+                                             # téléchargeait déjà cette réponse pour en tirer un
+                                             # booléen d'existence. Ce n'est donc PAS une
+                                             # traduction que nous fabriquons : c'est la version
+                                             # française officielle. Le champ dit dans quelle
+                                             # langue le titre publié est — sans lui, plus rien
+                                             # ne permet de mesurer combien restent en anglais,
+                                             # ni d'empêcher de croire que nous traduisons.
+                                             # null sur une entrée AN, dont le titre est français
+                                             # par construction.
             # "institution": "parlement_europeen"
                                              # FACULTATIF (#683) — présent sur les seules entrées
                                              # du Parlement européen. Son absence signifie

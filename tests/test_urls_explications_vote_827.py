@@ -169,7 +169,10 @@ def test_le_cache_survit_a_un_second_resolveur(tmp_path, monkeypatch):
 
     second = ResolveurDocuments(cache_path=chemin, hors_ligne=True)
     assert second.existe("A-8-2017-0196") is True
-    assert json.loads(chemin.read_text())["schema_version"] == "documents-doceo-v1"
+    # v2 depuis #901 : le cache porte `{existe, titre_fr}` là où il ne portait
+    # qu'un booléen. Un cache v1 se relit sans être invalidé (test dédié dans
+    # `test_titre_francais_textes_europeens_901.py`).
+    assert json.loads(chemin.read_text())["schema_version"] == "documents-doceo-v2"
 
 
 def test_un_cache_illisible_ne_fait_pas_tomber_le_run(tmp_path):

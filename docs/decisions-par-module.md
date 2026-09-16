@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 334 décisions
+gouverne sans avoir à fouiller les 335 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -45,12 +45,12 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 | `src/audit_gouvernement_dataset.py` | 2 |
 | `src/avertissements.py` | 2 |
 | `src/dossiers_europeens.py` | 2 |
+| `src/europarl_documents.py` | 2 |
 | `src/fetch_candidats_declares.py` | 2 |
 | `src/gouvernement_profile.py` | 2 |
 | `src/build_amendements_index.py` | 1 |
 | `src/candidate_profile_ue.py` | 1 |
 | `src/collecte_mandats_locaux.py` | 1 |
-| `src/europarl_documents.py` | 1 |
 | `src/generate_lignee_profiles.py` | 1 |
 | `src/identifiants_wikidata.py` | 1 |
 | `src/json_io.py` | 1 |
@@ -508,10 +508,11 @@ Le mentionnent sans le gouverner : [`budget-collecte-interventions`](decisions/b
 
 ## `src/europarl_documents.py`
 
-1 décision(s) le gouvernent ; le module en cite 0.
+2 décision(s) le gouvernent ; le module en cite 0.
 
 | Décision | Nomme |
 | --- | --- |
+| [Le titre français était téléchargé puis jeté (#901) (2026-09-16)](decisions/titre-francais-textes-europeens-901.md) | `ResolveurDocuments` |
 | [L'adresse est dérivée, l'existence est prouvée (#827)](decisions/urls-explications-vote-europeennes-827.md) | `ResolveurDocuments` |
 
 ## `src/fetch_candidats_declares.py`
