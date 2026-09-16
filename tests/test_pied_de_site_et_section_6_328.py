@@ -95,12 +95,12 @@ def test_les_liens_sortants_lachent_la_main() -> None:
     assert source.count('target="_blank"') == 2
 
 
-def test_l_entete_reduit_porte_le_nom_entier() -> None:
-    """« Empreinte » seul n'est pas la marque, et l'en-tête réduit est justement
-    le moment où le lecteur n'a plus le logo sous les yeux."""
+def test_l_entete_colle_porte_la_marque() -> None:
+    """« Empreinte » seul n'est pas la marque. Depuis #951 la rangée collée porte
+    le logo lui-même, et le lecteur ne le perd plus de vue en défilant."""
     source = EXPLORATEUR.read_text(encoding="utf-8")
-    bloc = source[source.index("explorer-compact-marque") :][:300]
-    assert "Empreinte politique" in bloc
+    bloc = source[source.index('<header className="explorer-entete"') :][:200]
+    assert "<Brand />" in bloc
 
 
 # ── §6 : ce qui cesse d'être répété, et ce qui cesse d'être affirmé ─────────

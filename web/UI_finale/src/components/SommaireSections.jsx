@@ -33,13 +33,13 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import './SommaireSections.css';
 
-/* La hauteur de la barre compacte (56 px) plus une marge de lecture : une
+/* La hauteur de la rangée collée (80 px, #951) plus une marge de lecture : une
  * section est « en cours » dès que son titre est passé dessous. */
-const SEUIL_LECTURE = 120;
+const SEUIL_LECTURE = 144;
 
-/* L'avance prise au clic : sans elle, la barre compacte recouvre exactement le
+/* L'avance prise au clic : sans elle, la rangée collée recouvre exactement le
  * titre qu'on vient de demander. */
-const AVANCE_ANCRE = 90;
+const AVANCE_ANCRE = 114;
 
 export default function SommaireSections() {
   const [sections, setSections] = useState([]);
