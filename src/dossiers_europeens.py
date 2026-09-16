@@ -48,6 +48,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 import time
 from pathlib import Path
@@ -62,7 +63,10 @@ from parltrack_dumps import ensure_dump, iter_dump_zst  # noqa: E402
 #: Le dump que ce module lit. Déjà téléchargé par `extract-parltrack`.
 DUMP_DOSSIERS = "ep_dossiers.json.zst"
 
-SCHEMA_VERSION = "dossiers-europeens-v1"
+#: v2 depuis le 16/09/2026 : chaque entrée publie ses `matieres` (#901). Un
+#: champ ajouté change ce qu'un lecteur peut attendre du fichier, et la version
+#: est le seul endroit où il peut le constater sans relire le code.
+SCHEMA_VERSION = "dossiers-europeens-v2"
 DEFAULT_PROFILS_DIR = Path("pivot_data/profiles")
 DEFAULT_SORTIE = Path("pivot_data/dossiers_europeens.json")
 
@@ -159,6 +163,64 @@ def _sigles_et_noms(commission: dict[str, Any]) -> list[tuple[str, Optional[str]
             nom = noms[rang] if rang < len(noms) else None
             couples.append((sigle, nom if isinstance(nom, str) and nom else None))
     return couples
+
+
+#: Séparateur entre le code OEIL et son libellé, quand la source les colle dans
+#: une chaîne unique : `"6.20.03 Bilateral economic and trade agreements"`.
+_CODE_MATIERE = re.compile(r"^\s*(?P<code>\d+(?:\.\d+)*)\s+(?P<libelle>.+?)\s*$")
+
+
+def matieres(dossier: dict[str, Any]) -> list[dict[str, Any]]:
+    """Les matières OEIL d'un dossier — `procedure.subject`, normalisé.
+
+    POURQUOI CE CHAMP, ALORS QUE LA COMMISSION AU FOND EXISTE DÉJÀ. Parce
+    qu'elle ne couvre pas ce corpus. Mesuré le 16/09/2026 sur les 389 dossiers
+    que les profils citent : la commission au fond en nomme 345, mais **aucune**
+    des 40 résolutions d'actualité (`RSP`) — une résolution d'actualité n'est
+    pas renvoyée en commission, donc la source n'a rien à publier. `subject`,
+    lui, est rempli sur les **389**, RSP comprises.
+
+    DEUX FORMES DANS LA SOURCE, et la seconde surprend. Un dict
+    `{"6.20.03": "Bilateral economic…"}` sur 387 dossiers ; une **liste de
+    chaînes** où le code et le libellé sont collés — `"6.20.03 Bilateral
+    economic…"` — sur 2. Les deux disent la même chose, et un lecteur qui n'en
+    connaîtrait qu'une perdrait deux dossiers sans erreur visible.
+
+    CE N'EST PAS UN VOCABULAIRE FERMÉ, et c'est délibéré : 244 valeurs
+    distinctes sur ce seul corpus, une nomenclature hiérarchique que le
+    Parlement fait vivre. Un `frozenset KNOWN_*` la fossiliserait et refuserait
+    la première matière ajoutée en amont. Le code est publié tel quel, avec son
+    libellé, et l'interface le replie si elle veut (`6.20.03` → `6.20` → `6`).
+
+    Les libellés sont en anglais : c'est ce que la source publie, comme les
+    titres, et rien ici ne les traduit.
+    """
+    brut = (dossier.get("procedure") or {}).get("subject")
+    trouvees: dict[str, Optional[str]] = {}
+    if isinstance(brut, dict):
+        for code, libelle in brut.items():
+            code = str(code).strip()
+            if code:
+                trouvees[code] = str(libelle).strip() or None
+    elif isinstance(brut, list):
+        for entree in brut:
+            m = _CODE_MATIERE.match(str(entree))
+            if m:
+                trouvees[m.group("code")] = m.group("libelle")
+            elif str(entree).strip():
+                # Une entrée sans code lisible n'est pas jetée : elle est
+                # publiée sans code plutôt que perdue en silence (§2 règle 5).
+                trouvees[str(entree).strip()] = None
+    return [{"code": c, "libelle": trouvees[c]} for c in sorted(trouvees)]
+
+
+def matieres_non_resolu(
+    dossier: dict[str, Any], trouvees: list[dict[str, Any]]
+) -> Optional[dict[str, str]]:
+    """Pourquoi un dossier ne publie aucune matière — jamais une liste vide nue."""
+    if trouvees:
+        return None
+    return {"motif": "source_sans_matiere"}
 
 
 def commissions_au_fond(dossier: dict[str, Any]) -> list[dict[str, Any]]:
@@ -322,6 +384,7 @@ def construire(
         stade, stade_non_resolu = _stade_procedural_ue(
             {"stade_source": procedure.get("stage_reached")})
         au_fond = commissions_au_fond(dossier)
+        sujets = matieres(dossier)
         entree: dict[str, Any] = {
             "id": identifiant(reference),
             "reference": reference,
@@ -329,6 +392,7 @@ def construire(
             "type_procedure": procedure.get("type") or None,
             "stade_procedural": stade,
             "commissions_au_fond": au_fond,
+            "matieres": sujets,
             "source_url": (dossier.get("meta") or {}).get("source")
             or f"https://parltrack.org/dossier/{reference}",
         }
@@ -337,6 +401,9 @@ def construire(
         non_resolu = commissions_au_fond_non_resolu(dossier, au_fond)
         if non_resolu:
             entree["commissions_au_fond_non_resolu"] = non_resolu
+        sans_matiere = matieres_non_resolu(dossier, sujets)
+        if sans_matiere:
+            entree["matieres_non_resolu"] = sans_matiere
         entrees.append(entree)
     entrees.sort(key=lambda e: e["reference"])
     return entrees

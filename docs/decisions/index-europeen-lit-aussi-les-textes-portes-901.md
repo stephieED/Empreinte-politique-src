@@ -9,7 +9,9 @@
 > personne ne la lisait : **34 références distinctes**, soit **54 occurrences**
 > sur les fiches, désignaient un dossier absent de l'index. L'index passe de
 > **355 à 389** dossiers. Ce n'était pas un filtre par type de procédure — il
-> n'y en a jamais eu.
+> n'y en a jamais eu. **Et comme l'extension n'apportait que 4 commissions au
+> fond, l'index publie désormais `matieres` — la classification OEIL, remplie
+> sur les 389 dossiers, RSP comprises.**
 
 ## Contexte
 
