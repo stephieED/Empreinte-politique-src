@@ -47,6 +47,7 @@ NOMS_ATTENDUS: dict[str, tuple[str, ...]] = {
     "parltrack-et-europarl": ("Parltrack", "Parlement européen"),
     "sycomore-et-journal-officiel": ("Sycomore", "Journal officiel"),
     "repertoire-national-des-elus": ("Répertoire national des élus", "RNE"),
+    "eurovoc": ("EuroVoc",),
 }
 
 #: `nosdeputes/` est un répertoire, et son statut est *historique* : plus

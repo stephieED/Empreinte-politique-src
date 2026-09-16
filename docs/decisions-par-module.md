@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 336 décisions
+gouverne sans avoir à fouiller les 337 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -37,11 +37,11 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 
 | Module | Décisions qui le gouvernent |
 | --- | ---: |
+| `src/europarl_documents.py` | 4 |
 | `src/parse_syceron.py` | 4 |
 | `src/perimetre_candidats.py` | 4 |
 | `src/audit_pipeline.py` | 3 |
 | `src/budget_collecte.py` | 3 |
-| `src/europarl_documents.py` | 3 |
 | `src/purge_mandats_dupliques.py` | 3 |
 | `src/audit_gouvernement_dataset.py` | 2 |
 | `src/avertissements.py` | 2 |
@@ -485,6 +485,10 @@ Le mentionnent sans le gouverner : [`absences-publiees-comme-faits-556-558-560`]
 
 Le mentionnent sans le gouverner : [`couverture-remplacee-par-liste-602`](decisions/couverture-remplacee-par-liste-602.md), [`fiches-groupe-17e-legislature-700`](decisions/fiches-groupe-17e-legislature-700.md), [`lecture-dumps-parltrack-683`](decisions/lecture-dumps-parltrack-683.md), [`licence-jamais-en-dur-909`](decisions/licence-jamais-en-dur-909.md), [`pied-de-site-et-section-6-328`](decisions/pied-de-site-et-section-6-328.md), [`preuve-de-borne-dite-une-fois-328`](decisions/preuve-de-borne-dite-une-fois-328.md), [`retrait-residus-senat-908`](decisions/retrait-residus-senat-908.md).
 
+## `src/documents_europeens.py`
+
+Le mentionnent sans le gouverner : [`matieres-eurovoc-documents-901`](decisions/matieres-eurovoc-documents-901.md).
+
 ## `src/dossiers_europeens.py`
 
 2 décision(s) le gouvernent ; le module en cite 0.
@@ -494,7 +498,7 @@ Le mentionnent sans le gouverner : [`couverture-remplacee-par-liste-602`](decisi
 | [L'index européen ne lisait que les amendements, et 34 références ne résolvaient nulle part (#901) (2026-09-16)](decisions/index-europeen-lit-aussi-les-textes-portes-901.md) | `references_visees` |
 | [Les quatre saisines au fond européennes se distinguent, elles ne se fondent pas (#901) (2026-09-14)](decisions/trois-saisines-au-fond-europeennes-901.md) | `KNOWN_STATUTS_COMMISSION_AU_FOND`, `commissions_au_fond_non_resolu` |
 
-Le mentionnent sans le gouverner : [`index-dossiers-europeens-901`](decisions/index-dossiers-europeens-901.md).
+Le mentionnent sans le gouverner : [`index-dossiers-europeens-901`](decisions/index-dossiers-europeens-901.md), [`matieres-eurovoc-documents-901`](decisions/matieres-eurovoc-documents-901.md).
 
 ## `src/download_watchdog.py`
 
@@ -508,11 +512,12 @@ Le mentionnent sans le gouverner : [`budget-collecte-interventions`](decisions/b
 
 ## `src/europarl_documents.py`
 
-3 décision(s) le gouvernent ; le module en cite 0.
+4 décision(s) le gouvernent ; le module en cite 0.
 
 | Décision | Nomme |
 | --- | --- |
 | [Un portail muet coûtait 2 h 20 de run pour rien (#901) (2026-09-16)](decisions/disjoncteur-portail-europeen-901.md) | `MAX_ECHECS_CONSECUTIFS`, `PAUSE_ENTRE_REQUETES` |
+| [628 textes européens sans dossier, et le portail les classait déjà (#901) (2026-09-16)](decisions/matieres-eurovoc-documents-901.md) | `DOCEO_BASE`, `ResolveurDocuments` |
 | [Le titre français était téléchargé puis jeté (#901) (2026-09-16)](decisions/titre-francais-textes-europeens-901.md) | `ResolveurDocuments` |
 | [L'adresse est dérivée, l'existence est prouvée (#827)](decisions/urls-explications-vote-europeennes-827.md) | `ResolveurDocuments` |
 

@@ -232,6 +232,25 @@ Produit : `pivot_data/dossiers_europeens.json` — référence de procédure →
 intitulé, type et stade, pour les dossiers que les amendements européens
 visent. C'est ce qui donne un titre lisible derrière « 2021/0136(COD) ».
 
+### L'index des documents européens (matières EuroVoc)
+
+```bash
+python3 src/documents_europeens.py --profils-dir pivot_data/profiles \
+    --out pivot_data/documents_europeens.json
+```
+
+Produit : `pivot_data/documents_europeens.json` — pour chaque document `doceo`
+cité par un texte porté européen, ses **matières EuroVoc**, libellés en
+français. Il existe pour ce que l'index des dossiers ne couvre pas : une
+résolution déposée en séance n'ouvre aucune procédure, donc n'a ni commission
+au fond ni entrée dans `dossiers_europeens.json`.
+
+Interroge le réseau, à la différence des deux index ci-dessus : le portail du
+Parlement pour les concepts — dans la réponse que le résolveur télécharge déjà,
+donc **sans requête de plus** — et l'Office des publications pour les libellés,
+par lots de 100 concepts. Si le portail se tait, la passe s'arrête après cinq
+silences et le dit en fin de sortie.
+
 ### La table des commissions saisies au fond
 
 ```bash

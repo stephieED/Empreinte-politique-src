@@ -115,8 +115,11 @@ def test_le_cache_ecrit_porte_le_titre(tmp_path):
     r.titre_francais(DOCEO)
     r.enregistrer()
     ecrit = json.loads(p.read_text(encoding="utf-8"))
-    assert ecrit["schema_version"] == "documents-doceo-v2"
-    assert ecrit["documents"][DOCEO] == {"existe": True, "titre_fr": TITRE_FR}
+    # v3 depuis l'ajout des concepts EuroVoc (#901) : la réponse du portail en
+    # porte trois faits, et les jeter pour en garder un seul était le défaut.
+    assert ecrit["schema_version"] == "documents-doceo-v3"
+    assert ecrit["documents"][DOCEO] == {
+        "existe": True, "titre_fr": TITRE_FR, "concepts": []}
 
 
 # --- le titre publié sur la fiche -------------------------------------------
@@ -142,3 +145,40 @@ def test_sans_resolveur_rien_ne_change(tmp_path):
 
 def test_un_titre_absent_ne_fabrique_pas_de_langue():
     assert _titre_publie({}, None) == ("", None)
+
+
+def test_un_cache_v2_ne_ment_pas_sur_les_concepts(tmp_path):
+    """v2 ne connaissait pas les concepts : `None`, jamais `[]`.
+
+    Une liste vide dirait « ce document n'est classé sous aucun concept », ce
+    que le cache v2 ne peut pas savoir. L'entrée vaut « concepts inconnus », et
+    se remplira à la prochaine interrogation (§2 règle 5).
+    """
+    p = tmp_path / "c.json"
+    p.write_text(json.dumps({"schema_version": "documents-doceo-v2",
+                             "documents": {DOCEO: {"existe": True, "titre_fr": TITRE_FR}}}),
+                 encoding="utf-8")
+    r = ResolveurDocuments(cache_path=p, hors_ligne=True)
+    assert r.existe(DOCEO) is True
+    assert r.titre_francais(DOCEO) == TITRE_FR
+    assert r.concepts_eurovoc(DOCEO) is None
+
+
+def test_les_concepts_sont_lus_depuis_is_about(tmp_path):
+    class _S:
+        def get(self, url, params=None, timeout=None):
+            return _Reponse(200, {"data": {"is_about": [
+                "http://eurovoc.europa.eu/2155", "http://eurovoc.europa.eu/5454"]}})
+
+    r = ResolveurDocuments(cache_path=tmp_path / "c.json", session=_S())
+    assert r.concepts_eurovoc(DOCEO) == ["2155", "5454"]
+
+
+def test_un_document_sans_is_about_rend_une_liste_vide(tmp_path):
+    """Le portail répond et ne classe pas : `[]`, pas `None`."""
+    class _S:
+        def get(self, url, params=None, timeout=None):
+            return _Reponse(200, {"data": {"title_dcterms": {"fr": "T"}}})
+
+    r = ResolveurDocuments(cache_path=tmp_path / "c.json", session=_S())
+    assert r.concepts_eurovoc(DOCEO) == []
