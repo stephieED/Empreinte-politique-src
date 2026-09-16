@@ -792,21 +792,32 @@ existait**, pas parce qu'ils en avaient besoin.
 sont publiés et lus. Une fiche de parti et l'étiquette partisane d'une personne
 sont deux choses.
 
-### Les deux index européens, dans `merge-and-pivot` (#901)
+### Les trois index européens, dans `merge-and-pivot` (#901)
 
-Deux étapes, ajoutées le 14/09/2026, entre les passes pivot et la génération des
-fiches de groupe. Elles **ne collectent rien** : les dumps ParlTrack sont déjà en
+Trois étapes, entre les passes pivot et la génération des fiches de groupe.
+
+| Étape | Produit | Volumétrie |
+|---|---|---|
+| `src/scrutins_europeens.py` | `pivot_data/scrutins_europeens.json` | **5 571** scrutins, 3,8 Mo (14/09/2026) |
+| `src/dossiers_europeens.py` | `pivot_data/dossiers_europeens.json` | **389** dossiers (16/09/2026) |
+| `src/documents_europeens.py` | `pivot_data/documents_europeens.json` | **335** documents cités (16/09/2026) |
+
+**Les deux premières ne collectent rien** : les dumps ParlTrack sont déjà en
 cache, déposés par `extract-parltrack`.
 
-| Étape | Produit | Volumétrie au 14/09/2026 |
-|---|---|---|
-| `src/scrutins_europeens.py` | `pivot_data/scrutins_europeens.json` | **5 571** scrutins, 3,8 Mo |
-| `src/dossiers_europeens.py` | `pivot_data/dossiers_europeens.json` | **355** dossiers, 168 Ko |
+**La troisième interroge le réseau, et c'est la seule.** Elle lit
+`src/europarl_documents.py` pour les concepts EuroVoc d'un document — dans la
+réponse que le résolveur télécharge **déjà** pour l'existence et le titre, donc
+sans requête de plus au Parlement — puis résout les libellés chez l'Office des
+publications, **par lots SPARQL de 100 concepts**. Si le portail du Parlement se
+tait, le disjoncteur arrête la passe après cinq silences consécutifs plutôt que
+de payer un `TIMEOUT` par document, et le résumé du job le dit.
 
 **Pourquoi après les passes pivot, et pas avant.** Leur périmètre est *ce que les
 profils publiés citent* — les `numero_scrutin` des votes pour le premier, les
-`texte_vise` des amendements pour le second. Les construire avant indexerait le
-corpus d'hier. C'est le même choix que `pivot_data/scrutins.json` côté Assemblée :
+`texte_vise` des amendements **et les `reference_dossier` des textes portés**
+pour le deuxième, les `source_url` doceo des textes portés européens pour le
+troisième. Les construire avant indexerait le corpus d'hier. C'est le même choix que `pivot_data/scrutins.json` côté Assemblée :
 l'index suit le corpus, il ne le précède pas.
 
 **Aucune tolérance.** Un dump indisponible fait échouer l'étape

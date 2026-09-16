@@ -192,10 +192,18 @@ class ResolveurDocuments:
         cache: dict[str, dict[str, Any]] = {}
         for doceo, valeur in entrees.items():
             if isinstance(valeur, dict):
-                cache[doceo] = {"existe": bool(valeur.get("existe")),
-                                "titre_fr": valeur.get("titre_fr") or None}
+                concepts = valeur.get("concepts")
+                cache[doceo] = {
+                    "existe": bool(valeur.get("existe")),
+                    "titre_fr": valeur.get("titre_fr") or None,
+                    # `None` ≠ `[]` : v2 ne connaissait pas les concepts, et une
+                    # liste vide dirait « ce document n'en a aucun ». Une entrée
+                    # v2 est donc « concepts inconnus », et se remplira à la
+                    # prochaine interrogation (#901).
+                    "concepts": list(concepts) if isinstance(concepts, list) else None,
+                }
             else:
-                cache[doceo] = {"existe": bool(valeur), "titre_fr": None}
+                cache[doceo] = {"existe": bool(valeur), "titre_fr": None, "concepts": None}
         return cache
 
     def enregistrer(self) -> None:
@@ -203,7 +211,7 @@ class ResolveurDocuments:
         self.cache_path.parent.mkdir(parents=True, exist_ok=True)
         with open(self.cache_path, "w", encoding="utf-8") as fh:
             json.dump(
-                {"schema_version": "documents-doceo-v2", "documents": self._cache},
+                {"schema_version": "documents-doceo-v3", "documents": self._cache},
                 fh, ensure_ascii=False,
             )
 
@@ -257,6 +265,54 @@ class ResolveurDocuments:
         entree = self._entree(doceo)
         return None if entree is None else entree.get("titre_fr")
 
+    def concepts_eurovoc(self, doceo: str) -> Optional[list[str]]:
+        """Les identifiants EuroVoc du document — `None` si la question n'a pas
+        pu être posée, `[]` si le portail n'en publie aucun (#901).
+
+        La distinction est la même que partout ailleurs : ne pas savoir n'est
+        pas savoir qu'il n'y a rien (§2 règle 5). Elle vaut aussi pour un cache
+        écrit avant ce lot, qui rend `None` plutôt qu'une liste vide.
+        """
+        entree = self._entree(doceo)
+        if entree is None:
+            return None
+        concepts = entree.get("concepts")
+        return list(concepts) if isinstance(concepts, list) else None
+
+    @staticmethod
+    def _data(charge: Any) -> Optional[dict[str, Any]]:
+        """`data`, que le portail rend tantôt en objet, tantôt en liste d'un."""
+        if not isinstance(charge, dict):
+            return None
+        data = charge.get("data")
+        if isinstance(data, list):
+            data = data[0] if data else None
+        return data if isinstance(data, dict) else None
+
+    @staticmethod
+    def _concepts(charge: Any) -> list[str]:
+        """Les concepts EuroVoc du document — `data.is_about` (#901).
+
+        La source rend des URI (`http://eurovoc.europa.eu/2155`) ; seul
+        l'identifiant est conservé, l'URI se reconstruisant. Leurs libellés
+        vivent ailleurs : `documents_europeens.py` les résout chez l'Office des
+        publications, qui publie EuroVoc sous CC BY 4.0.
+        """
+        data = ResolveurDocuments._data(charge)
+        if data is None:
+            return []
+        brut = data.get("is_about")
+        if isinstance(brut, str):
+            brut = [brut]
+        if not isinstance(brut, list):
+            return []
+        codes: list[str] = []
+        for uri in brut:
+            code = str(uri).rstrip("/").rsplit("/", 1)[-1].strip()
+            if code and code not in codes:
+                codes.append(code)
+        return codes
+
     @staticmethod
     def _titre_fr(charge: Any) -> Optional[str]:
         """`data.title_dcterms.fr`, quelle que soit la forme du conteneur.
@@ -264,12 +320,8 @@ class ResolveurDocuments:
         Le portail rend `data` tantôt comme objet, tantôt comme liste d'un seul
         élément — les deux se rencontrent sur ce corpus.
         """
-        if not isinstance(charge, dict):
-            return None
-        data = charge.get("data")
-        if isinstance(data, list):
-            data = data[0] if data else None
-        if not isinstance(data, dict):
+        data = ResolveurDocuments._data(charge)
+        if data is None:
             return None
         titres = data.get("title_dcterms")
         if not isinstance(titres, dict):
@@ -300,13 +352,15 @@ class ResolveurDocuments:
                 continue
             time.sleep(PAUSE_ENTRE_REQUETES)
             if reponse.status_code == 404:
-                return {"existe": False, "titre_fr": None}
+                return {"existe": False, "titre_fr": None, "concepts": []}
             if reponse.status_code == 200:
                 try:
                     charge = reponse.json()
                 except Exception:
                     charge = None
-                return {"existe": True, "titre_fr": self._titre_fr(charge)}
+                return {"existe": True,
+                        "titre_fr": self._titre_fr(charge),
+                        "concepts": self._concepts(charge)}
             return None
         return None
 

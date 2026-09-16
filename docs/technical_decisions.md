@@ -22,6 +22,7 @@ La version d'avant la découpe (30/08/2026, 18 404 lignes, 1 054 Ko) est figée 
 
 - `2026-09-16` <a id="disjoncteur-portail-europeen-901"></a>[Un portail muet coûtait 2 h 20 de run pour rien (#901)](decisions/disjoncteur-portail-europeen-901.md) — Le 16/09/2026, `data.europarl.europa.eu` a cessé de répondre sur
 - `2026-09-16` <a id="index-europeen-lit-aussi-les-textes-portes-901"></a>[L'index européen ne lisait que les amendements, et 34 références ne résolvaient nulle part (#901)](decisions/index-europeen-lit-aussi-les-textes-portes-901.md) — `references_visees()` construisait le périmètre de
+- `2026-09-16` <a id="matieres-eurovoc-documents-901"></a>[628 textes européens sans dossier, et le portail les classait déjà (#901)](decisions/matieres-eurovoc-documents-901.md) — `dossiers_europeens.json` porte la matière d'un **dossier**. Or
 - `2026-09-16` <a id="titre-francais-textes-europeens-901"></a>[Le titre français était téléchargé puis jeté (#901)](decisions/titre-francais-textes-europeens-901.md) — Les fiches affichaient « JOINT MOTION FOR A RESOLUTION on
 - `2026-09-15` <a id="borne-mandats-locaux-2020-922"></a>[Les mandats locaux commencent en 2020, et l'avant se déclare (#922)](decisions/borne-mandats-locaux-2020-922.md) — Deux jeux couvrent 2020 → aujourd'hui sous Licence Ouverte 2.0 :
 - `2026-09-15` <a id="collecte-mandats-locaux-rne-922"></a>[Collecter les mandats locaux : une catégorie à part, et une fin qu'on n'invente pas (#922)](decisions/collecte-mandats-locaux-rne-922.md) — `src/rne_opendata.py` lit les mandats locaux dans deux jeux sous

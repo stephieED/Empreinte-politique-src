@@ -3141,6 +3141,23 @@ jobs:
             --profils-dir pivot_data/profiles \
             --out pivot_data/dossiers_europeens.json
 
+      # #901 — l'index des documents européens : `doceo` → matières EuroVoc.
+      # Après l'index des dossiers, et pour ce qu'il ne couvre pas : 628 des 694
+      # textes portés européens ne citent AUCUN dossier — des résolutions
+      # déposées en séance, qui n'ouvrent pas de procédure. Le portail les
+      # classe pourtant (`is_about`), et les concepts arrivent dans la réponse
+      # que le résolveur télécharge déjà : aucune requête de plus au Parlement.
+      # Seuls les libellés coûtent, chez l'Office des publications (EuroVoc,
+      # CC BY 4.0), résolus par lots SPARQL.
+      #   entrée   : src/documents_europeens.py (lit src/europarl_documents.py)
+      #   consomme : pivot_data/profiles/*.pivot.json (les `source_url` doceo)
+      #   produit  : pivot_data/documents_europeens.json
+      - name: Générer l'index des documents européens
+        run: |
+          python3 src/documents_europeens.py \
+            --profils-dir pivot_data/profiles \
+            --out pivot_data/documents_europeens.json
+
       - name: Générer les profils de groupe parlementaire réel
         env:
           OVERWRITE: ${{ inputs.existing_profiles == 'overwrite' }}
@@ -3786,7 +3803,7 @@ jobs:
           # `resolutions_candidats.json` N'entre PAS : c'est un intermédiaire de
           # run, comme `rosters_bruts.json`, et le committer ferait bouger un
           # fichier à chaque exécution sans que personne ne le lise.
-          git add raw_data/candidats.json raw_data/profiles raw_data/correspondance_acteurs_an.json pivot_data/profiles pivot_data/groupes pivot_data/gouvernements pivot_data/scrutins.json pivot_data/scrutins_europeens.json pivot_data/dossiers_europeens.json pivot_data/amendements
+          git add raw_data/candidats.json raw_data/profiles raw_data/correspondance_acteurs_an.json pivot_data/profiles pivot_data/groupes pivot_data/gouvernements pivot_data/scrutins.json pivot_data/scrutins_europeens.json pivot_data/dossiers_europeens.json pivot_data/documents_europeens.json pivot_data/amendements
           # Table des commissions saisies au fond (#328), ajoutée seulement si
           # elle existe : `git add` sur un chemin absent échoue, et le step qui
           # la produit est non bloquant. Un run sans archive lisible ne doit pas
