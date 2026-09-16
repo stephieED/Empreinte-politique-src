@@ -1,6 +1,4 @@
 import { Fragment } from 'react';
-import { Link } from 'react-router-dom';
-import { DEFAULT_CANDIDATE_ID, DEFAULT_GROUP_ID, DEFAULT_GOVERNMENT_ID } from '../../data';
 import { SOURCE_BADGE_VERIFIED } from '../../utils/lecture';
 import './landing.css';
 
@@ -65,10 +63,10 @@ const PIPELINE_STEPS = [
 ];
 
 // Hero (#143) : promesse factuelle + micro-animation du pipeline donnée brute
-// → fait vérifié → fiche candidat. Le CTA final (candidat/groupe/gouvernement,
-// ex-FinalCta) est intégré directement ici plutôt que répété dans une section
-// dédiée en bas de page, pour éviter un unique bouton perdu en haut et un
-// second bloc de CTA redondant en bas (retour utilisateur du 2026-08-15).
+// → fait vérifié → fiche candidat. Ses trois boutons (« Voir un profil
+// candidat / de groupe / de gouvernement ») sont retirés par la forme C de #951 :
+// ils menaient à une fiche prise par défaut, et la liste des candidats qui suit
+// le Hero donne le choix dès l'arrivée.
 export default function Hero() {
   return (
     <section className="landing-section landing-hero" aria-label="Présentation">
@@ -91,20 +89,6 @@ export default function Hero() {
         </div>
       </div>
 
-      <div className="hero-ready">
-        <h2>Prêt à explorer ?</h2>
-        <div className="landing-cta-group">
-          <Link className="landing-cta" to={`/candidats/${DEFAULT_CANDIDATE_ID}`}>
-            Voir un profil candidat
-          </Link>
-          <Link className="landing-cta" to={`/groupes/${DEFAULT_GROUP_ID}`}>
-            Voir un profil de groupe parlementaire
-          </Link>
-          <Link className="landing-cta" to={`/gouvernements/${DEFAULT_GOVERNMENT_ID}`}>
-            Voir un profil de gouvernement
-          </Link>
-        </div>
-      </div>
     </section>
   );
 }

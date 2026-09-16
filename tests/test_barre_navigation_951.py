@@ -176,3 +176,30 @@ def test_la_source_a_venir_ouvre_la_liste_et_ne_compte_pas() -> None:
     assert "12 mars 2027 à 18 h" in entree and "26 mars 2027" in entree and "loi du 6 novembre 1962" in entree
     accueil = (UI / "src" / "components" / "landing" / "HowItWorks.jsx").read_text(encoding="utf-8")
     assert "sourcesConfig.filter((s) => !s.aVenir).length" in accueil
+
+
+# ── La tête de méthodologie et la forme C de l'accueil ──────────────────────
+
+METHODO = UI / "src" / "pages" / "MethodologyPage.jsx"
+
+
+def test_la_methodologie_s_ouvre_sur_les_blocs_de_l_accueil() -> None:
+    """« Comment ça marche » et « Ce que vous ne trouverez pas ici » ouvrent
+    /methodologie, AVANT la première famille."""
+    page = METHODO.read_text(encoding="utf-8")
+    debut = page.index("const SECTIONS = [")
+    assert page.index("<HowItWorks", debut) < page.index("<WhatYouWontFind", debut) < page.index("{ famille: 'Fiche candidat' }", debut)
+
+
+def test_l_accueil_est_le_hero_puis_les_candidats() -> None:
+    """Forme C, arbitrée le 16/09/2026 : le Hero sans ses trois boutons, puis les
+    candidats déclarés lus dans le manifeste, nombre compris."""
+    accueil = _sans_commentaires(ACCUEIL.read_text(encoding="utf-8"))
+    corps = accueil[accueil.index("<main"):accueil.index("</main>")]
+    assert re.findall(r"<([A-Z][A-Za-z]+) />", corps) == ["Hero", "CandidatsDeclares"]
+    hero = _sans_commentaires((UI / "src" / "components" / "landing" / "Hero.jsx").read_text(encoding="utf-8"))
+    assert "landing-cta" not in hero and "Voir un profil" not in hero
+    liste = (UI / "src" / "components" / "landing" / "CandidatsDeclares.jsx").read_text(encoding="utf-8")
+    assert "getCandidatesList" in liste and "candidats.length" in liste
+    assert "cb-chip--sans-mandat" in liste, "le grisé de la barre de l'explorateur, infobulle comprise"
+    assert 'to="/groupes"' in liste and 'to="/gouvernements"' in liste

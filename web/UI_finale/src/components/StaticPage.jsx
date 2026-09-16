@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import EnTeteSite from './EnTeteSite';
 import PiedDeSite from './PiedDeSite';
 import '../styles/shell.css';
@@ -36,7 +37,12 @@ export default function StaticPage({ eyebrow, title, tagline, updated, sections 
                  gouvernement n'a aucune section de méthode, et le dire est
                  préférable à un lecteur qui cherche sans savoir pourquoi il ne
                  trouve pas (§2 règle 5). */
-              section.famille ? (
+              /* UNE ENTRÉE `element` EST UN BLOC DÉJÀ COMPOSÉ (#951) : « Comment ça
+                 marche » et « Ce que vous ne trouverez pas ici » portent leur propre
+                 carte et leur titre, rendus tels que l'accueil les rendait. */
+              section.element ? (
+                <Fragment key={section.id}>{section.element}</Fragment>
+              ) : section.famille ? (
                 <div className="static-famille" key={`famille-${section.famille}`}>
                   <h2>{section.famille}</h2>
                   {section.note}

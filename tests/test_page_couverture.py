@@ -88,11 +88,12 @@ def test_la_route_existe_et_l_accueil_y_mene() -> None:
     assert '<Route path="/couverture" element={<RedirectionCouverture />} />' in app
     assert "pathname: '/sources', hash" in app
 
-    liens = "".join(
-        (SRC / "pages" / "LandingPage.jsx").read_text(encoding="utf-8")
-        + (SRC / "components" / "landing" / "SourcesFreshness.jsx").read_text(encoding="utf-8")
-    )
-    assert 'to="/sources"' in liens, "l'accueil ne mène pas à la page"
+    # Depuis la forme C de l'accueil (#951), la page s'atteint par la barre des
+    # pages du site, que l'accueil porte comme toutes les pages.
+    nav = (SRC / "components" / "NavigationSite.jsx").read_text(encoding="utf-8")
+    assert "vers: '/sources'" in nav, "la barre ne mène pas à la page"
+    accueil = (SRC / "pages" / "LandingPage.jsx").read_text(encoding="utf-8")
+    assert "<EnTeteSite />" in accueil, "l'accueil ne porte pas la barre"
 
 
 def test_le_build_produit_la_couverture(generateur: str) -> None:
@@ -446,14 +447,11 @@ def test_l_accueil_dit_depuis_quand_et_nomme_sans_rien_ecrire_a_la_main(tmp_path
     }
 
 
-def test_l_accueil_lit_la_projection_et_ne_montre_plus_de_fait_fictif() -> None:
-    bloc = _sans_commentaires((SRC / "components" / "landing" / "CouvertureAccueil.jsx").read_text(encoding="utf-8"))
-    assert "loadCouverture" in bloc and "data.accueil" in bloc
-    assert not re.search(r"'[A-ZÉ][a-zé]+ [A-ZÉ][a-zé]+'", bloc), "aucun nom de candidat écrit dans le composant"
-    sources = (SRC / "components" / "landing" / "SourcesFreshness.jsx").read_text(encoding="utf-8")
-    assert sources.index("<CouvertureAccueil />") < sources.index("<CartesSources />"), (
-        "la borne de chaque institution ouvre le bloc des sources"
-    )
+def test_l_accueil_ne_montre_plus_de_fait_fictif_ni_sa_frise() -> None:
+    """La frise simplifiée de l'accueil (`CouvertureAccueil`) est partie avec
+    « Sources & fraîcheur » dans la forme C (#951) : la vraie frise est sur
+    /sources. Le fait fictif de #328 ne revient pas pour autant."""
     accueil = (SRC / "pages" / "LandingPage.jsx").read_text(encoding="utf-8")
     assert "<FactDemo" not in accueil and not (SRC / "components" / "landing" / "FactDemo.jsx").exists()
+    assert not (SRC / "components" / "landing" / "CouvertureAccueil.jsx").exists()
     assert "parcours politiques" in (SRC / "components" / "landing" / "Hero.jsx").read_text(encoding="utf-8")

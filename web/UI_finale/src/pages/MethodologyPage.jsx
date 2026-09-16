@@ -1,4 +1,6 @@
 import StaticPage from '../components/StaticPage';
+import HowItWorks from '../components/landing/HowItWorks';
+import WhatYouWontFind from '../components/landing/WhatYouWontFind';
 import { LAST_READING_RULE, STATED_REFUSALS, WHOLE_TEXT_VOTE_BOUND } from '../utils/lecture';
 import { REFUS_FICHE_GROUPE } from '../utils/groupe';
 
@@ -45,6 +47,12 @@ import { REFUS_FICHE_GROUPE } from '../utils/groupe';
  * Les `id` ne bougent PAS : ce sont des ancres visées depuis les fiches.
  */
 const SECTIONS = [
+  /* EN TÊTE, AVANT LES FAMILLES (#951) : les deux blocs que l'accueil portait.
+     Ils disent la méthode en quatre étapes et ce que le site refuse de publier,
+     avant le détail fiche par fiche. Ils ne portent pas de titre de famille :
+     leurs propres titres les nomment. */
+  { id: 'comment-ca-marche', element: <HowItWorks key="comment" /> },
+  { id: 'ce-que-vous-ne-trouverez-pas', element: <WhatYouWontFind key="refus" /> },
   { famille: 'Fiche candidat' },
   {
     id: 'fonctions',
