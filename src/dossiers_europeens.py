@@ -242,12 +242,25 @@ def commissions_au_fond_non_resolu(
 
 
 def references_visees(profils_dir: Path) -> set[str]:
-    """Les `texte_vise` européens que les profils publiés citent.
+    """Les références de dossier européen que les profils publiés citent.
 
-    Lues dans `amendement_non_resolu`, où elles vivent : `amendement_id` reste
-    `null` pour un amendement européen, et c'est voulu (#431).
+    DEUX sources, et la seconde manquait (#901, 16/09/2026).
 
-    Comme pour les scrutins, l'index suit le corpus : 367 références servies,
+    Les **amendements** publient leur `texte_vise` dans `amendement_non_resolu`,
+    où il vit : `amendement_id` reste `null` pour un amendement européen, et
+    c'est voulu (#431).
+
+    Les **textes portés** publient `reference_dossier`, et l'index les ignorait.
+    Conséquence mesurée sur `origin/main` `80a24ecf6` : 34 références citées par
+    un `textes_portes[]` européen n'étaient dans aucun index, soit **54
+    occurrences** sur les fiches — un identifiant publié qui ne résout nulle
+    part. Les 10 dossiers `RSP` déjà présents y étaient entrés par la bande,
+    parce qu'un amendement les visait.
+
+    Ce n'était donc pas un filtre par type de procédure — il n'y en a aucun —
+    mais un périmètre de lecture trop étroit.
+
+    Comme pour les scrutins, l'index suit le corpus : les références servies,
     pas les 23 885 dossiers du dump.
     """
     refs: set[str] = set()
@@ -267,6 +280,14 @@ def references_visees(profils_dir: Path) -> set[str]:
             vise = non_resolu.get("texte_vise")
             if isinstance(vise, str) and vise:
                 refs.add(vise)
+        for texte in profil.get("textes_portes") or []:
+            if not isinstance(texte, dict):
+                continue
+            if texte.get("institution") != "parlement_europeen":
+                continue
+            reference = texte.get("reference_dossier")
+            if isinstance(reference, str) and reference:
+                refs.add(reference)
     return refs
 
 

@@ -71,6 +71,47 @@ def test_les_references_sont_lues_dans_amendement_non_resolu(tmp_path):
     assert references_visees(tmp_path) == {"2021/0136(COD)", "2017/2070(INI)"}
 
 
+def test_les_references_sont_aussi_lues_dans_les_textes_portes(tmp_path):
+    """La seconde source, et celle qui manquait (#901, 16/09/2026).
+
+    Un `textes_portes[]` européen publie `reference_dossier`, et l'index ne la
+    lisait pas : 34 références citées par une fiche — 54 occurrences — ne
+    résolvaient nulle part. Les 10 dossiers `RSP` qui y figuraient déjà y
+    étaient entrés par la bande, parce qu'un amendement les visait.
+    """
+    (tmp_path / "a.pivot.json").write_text(json.dumps({
+        "textes_portes": [
+            {"institution": "parlement_europeen", "reference_dossier": "2024/2698(RSP)"},
+            {"institution": "parlement_europeen", "reference_dossier": "2015/2652(RSP)"},
+        ],
+    }), encoding="utf-8")
+
+    assert references_visees(tmp_path) == {"2024/2698(RSP)", "2015/2652(RSP)"}
+
+
+def test_les_deux_sources_se_reunissent(tmp_path):
+    """Un amendement et un texte porté qui visent le même dossier : une entrée."""
+    profil = _profil("2021/0136(COD)")
+    profil["textes_portes"] = [
+        {"institution": "parlement_europeen", "reference_dossier": "2021/0136(COD)"},
+        {"institution": "parlement_europeen", "reference_dossier": "2024/2698(RSP)"},
+    ]
+    (tmp_path / "a.pivot.json").write_text(json.dumps(profil), encoding="utf-8")
+
+    assert references_visees(tmp_path) == {"2021/0136(COD)", "2024/2698(RSP)"}
+
+
+def test_un_texte_porte_francais_n_entre_pas_dans_le_perimetre(tmp_path):
+    """`institution` sépare les deux corpus, ici comme pour les amendements."""
+    (tmp_path / "x.pivot.json").write_text(json.dumps({"textes_portes": [
+        {"institution": None, "reference_dossier": "DLR5L17N47389"},
+        {"institution": "parlement_europeen", "reference_dossier": None},
+        {"institution": "parlement_europeen"},
+    ]}), encoding="utf-8")
+
+    assert references_visees(tmp_path) == set()
+
+
 def test_un_amendement_francais_n_entre_pas_dans_le_perimetre(tmp_path):
     (tmp_path / "x.pivot.json").write_text(json.dumps({"amendements": [
         {"amendement_id": "an:17:1", "amendement_non_resolu": None},
