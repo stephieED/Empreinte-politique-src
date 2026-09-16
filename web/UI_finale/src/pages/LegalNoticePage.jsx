@@ -131,15 +131,24 @@ const SECTIONS = [
 
         <h3>Parlement européen</h3>
         <p>
-          Les fiches et photos des député·es européen·nes proviennent du portail Open Data du Parlement
-          européen (data.europarl.europa.eu) et du site institutionnel (www.europarl.europa.eu),
-          réutilisées conformément au Legal Notice du Parlement européen :{' '}
-          <a href="https://www.europarl.europa.eu/legal-notice/fr/" target="_blank" rel="noopener noreferrer">
-            https://www.europarl.europa.eu/legal-notice/fr/
-          </a>{' '}
-          — reproduction, diffusion commerciale ou non commerciale autorisées sous réserve de reproduire
-          l'élément dans son intégralité et d'en indiquer la source (« © Union européenne, [année] – Source :
-          Parlement européen »).
+          Les mandats des député·es européen·nes, ainsi que l'existence et le titre français des
+          documents européens, proviennent du portail Open Data du Parlement européen
+          (data.europarl.europa.eu), dont les données sont réutilisables sous licence{' '}
+          <strong>Creative Commons Attribution 4.0 International (CC BY 4.0)</strong> :{' '}
+          <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">
+            https://creativecommons.org/licenses/by/4.0/
+          </a>
+          , en application de l'article 4 de la décision du Bureau du Parlement européen du 16 décembre
+          2024 :{' '}
+          <a href="https://eur-lex.europa.eu/eli/C/2025/341/oj" target="_blank" rel="noopener noreferrer">
+            https://eur-lex.europa.eu/eli/C/2025/341/oj
+          </a>
+          . Les liens vers www.europarl.europa.eu renvoient au document d'origine ; aucun contenu n'en est
+          reproduit.
+        </p>
+        <p className="static-note">
+          Contient des informations issues du portail Open Data du Parlement européen, mises à disposition
+          sous licence CC BY 4.0.
         </p>
 
         <h3>Wikipédia et Wikidata</h3>

@@ -266,3 +266,18 @@ def test_la_config_des_sources_garde_le_share_alike_parltrack():
     bloc = config[config.index("id: 'parltrack'"):config.index("id: 'parlement-europeen-opendata'")]
     assert "ODbL v1.0" in bloc
     assert "share-alike" in bloc
+
+
+def test_le_parlement_europeen_n_a_qu_une_licence_cc_by_4_0():
+    """#983 : le dépôt disait « CC BY 4.0 » dans le code et « EP Legal Notice »
+    dans l'interface. Un seul libellé : l'article 4 de la décision du Bureau du
+    16/12/2024 (EUR-Lex C/2025/341), et la licence que l'API du portail déclare
+    elle-même. `www.europarl.europa.eu` n'est jamais interrogé, seulement lié ;
+    l'interface n'affiche aucune photo."""
+    config = _texte(CONFIG_SOURCES)
+    bloc = config[config.index("id: 'parlement-europeen-opendata'"):config.index("id: 'eurovoc'")]
+    assert "licence: 'CC BY 4.0'" in bloc and "Legal Notice" not in bloc
+    page = _texte(PAGE_MENTIONS_LEGALES)
+    section = page[page.index("<h3>Parlement européen</h3>"):page.index("<h3>Wikipédia et Wikidata</h3>")]
+    assert "CC BY 4.0" in section and "eur-lex.europa.eu/eli/C/2025/341/oj" in section
+    assert "Legal Notice" not in section and "photos" not in section
