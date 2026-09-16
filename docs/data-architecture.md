@@ -72,8 +72,9 @@ les recherche :
   déclarés appariés — jamais un profil sénatorial complet.
   **Ce que le Sénat ne rend toujours pas** : ni scrutins, ni comptes rendus. La
   condition 2 du §7 de #528 est **déclarée non remplie**, pas contournée, et les
-  deux fiches `groupe-Senat-*.json` restent gelées à 0 cohésion — rouvrir leur
-  génération publierait une fiche dont le cœur serait vide.
+  deux fiches `groupe-Senat-*.json`, gelées depuis #516, ont été **retirées le
+  16/09/2026** avec leurs deux lignées : elles dérivaient de NosSénateurs et
+  n'étaient plus publiées par le site (`retrait-groupes-senat-nossenateurs.md`).
   → `docs/decisions/retrait-senat-528.md`, et l'issue #885
 
 ## Le flux
@@ -576,8 +577,9 @@ Trois pièges de lecture, sur ce fichier précisément :
 Les groupes à produire sont déclarés dans `raw_data/groupes_reels.json` : **12
 entrées** — 5 groupes AN de la XVIe, **5 groupes AN de la XVIIe** (ajoutés par
 #700, `docs/decisions/fiches-groupe-17e-legislature-700.md` : leurs fiches
-paraissent au premier run qui suit) et 2 Sénat —, dont **2 suspendues**
-(`Senat:LR`, `Senat:SER`) depuis le 24/08/2026. **Une fiche par groupe ET par
+paraissent au premier run qui suit) et, jusqu'au 16/09/2026, 2 Sénat —
+(`Senat:LR`, `Senat:SER`, suspendues depuis le 24/08/2026 puis **retirées** avec leurs
+fichiers et leurs lignées : `retrait-groupes-senat-nossenateurs.md`). **Une fiche par groupe ET par
 législature** : le nom de fichier le porte depuis l'origine
 (`groupe-AN-REN-16.json`).
 Une entrée `extraction_suspendue` est **ignorée sans être un échec** : ni fetch,
@@ -651,7 +653,7 @@ ressemblance de sigle** : nos fiches disent `REN` et `LFI`, le référentiel dit
 `python3 src/an_roster.py --positions` sert de fil-piège, et le **§4b du portail
 de qualité** fait échouer le commit, seuil 0, si une fiche AN publiée n'a pas
 son entrée. Le champ est **optionnel** : les 7 fiches publiées avant le lot ne le
-portent pas, et les 2 `groupe-Senat-*` ne le porteront jamais — AMO30 ne
+portent pas, et les 2 `groupe-Senat-*`, retirées le 16/09/2026, ne l'ont jamais porté — AMO30 ne
 qualifie que les organes de l'Assemblée.
 
 **`succede_a` nomme le groupe de la législature précédente dont celui-ci prend
@@ -697,7 +699,7 @@ des 193 de `AN:REN-16`, quand 169 y siégeaient à la clôture). `periode.actif`
 n'est pas concerné : il décrit la période, pas un effectif à un instant.
 
 `date_reference` est **optionnelle** : les 2 fiches `groupe-Senat-*` gelées par
-#516 ne seront pas régénérées et gardent les anciens noms. Tout lecteur doit
+#516 ne l'ont jamais portée, et ont été retirées le 16/09/2026. Tout lecteur doit
 accepter les deux (`audit_groupe_dataset.CHAMPS_EFFECTIF` le fait).
 
 **L'amplitude sur la période** (#702) : `effectif.min_historique` et

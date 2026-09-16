@@ -223,23 +223,20 @@ def _entrees_senat() -> list[dict]:
     return [g for g in groupes if g.get("chambre") == "Senat"]
 
 
-def test_les_deux_entrees_senat_restent_dans_la_config():
-    """Suspendre n'est pas retirer (#516) : retirer une entrée supprimerait un
-    fichier publié, et une disparition abort le commit (#460/#470)."""
-    entrees = _entrees_senat()
-    assert {g["groupe_id"] for g in entrees} == {"Senat:LR", "Senat:SER"}
-    assert {g["fichier"] for g in entrees} == {
-        "groupe-Senat-LR.json", "groupe-Senat-SER.json",
-    }
+def test_les_entrees_senat_sont_retirees_de_la_config():
+    """Suspendre n'est plus conserver : les deux groupes sont RETIRÉS (16/09/2026).
 
-
-def test_les_deux_entrees_senat_restent_suspendues():
-    for groupe in _entrees_senat():
-        bloc = groupe.get("extraction_suspendue")
-        assert bloc, f"{groupe['groupe_id']} n'est plus suspendu."
-        # Le bloc complet reste exigé par le quality gate (#516) : une
-        # suspension sans rien à relire devient permanente par omission.
-        assert set(bloc) >= {"depuis", "motif", "references", "condition_reprise"}
+    #516 gardait Senat:LR et Senat:SER suspendus plutôt que retirés, parce qu'un
+    fichier disparu fait avorter le commit (#460/#470). Deux faits ont renversé
+    ce choix : ces fiches dérivent de NosSénateurs (`group_profile.py` le dit), et
+    #885 les a sorties de l'interface — il ne restait qu'une donnée dérivée d'une
+    source retirée, publiée dans le dépôt et lue par personne. La disparition n'avorte
+    plus rien : les fichiers et leurs entrées sont retirés dans le même commit.
+    → `docs/decisions/retrait-groupes-senat-nossenateurs.md`
+    """
+    config = json.loads(GROUPES.read_text(encoding="utf-8"))
+    assert _entrees_senat() == []
+    assert [l for l in config["lignees"] if l.get("chambre") == "Senat"] == []
 
 
 def test_la_condition_de_reprise_est_editoriale_et_non_un_etat_de_source():
