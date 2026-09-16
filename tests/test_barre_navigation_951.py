@@ -188,6 +188,7 @@ def test_la_methodologie_s_ouvre_sur_les_blocs_de_l_accueil() -> None:
     /methodologie, AVANT la première famille."""
     page = METHODO.read_text(encoding="utf-8")
     debut = page.index("const SECTIONS = [")
+    assert page.index("{ famille: 'Les principes' }", debut) < page.index("<HowItWorks", debut)
     assert page.index("<HowItWorks", debut) < page.index("<WhatYouWontFind", debut) < page.index("{ famille: 'Fiche candidat' }", debut)
 
 

@@ -61,8 +61,9 @@ const INTRODUCTION = [
 const SECTIONS = [
   /* EN TÊTE, AVANT LES FAMILLES (#951) : les deux blocs que l'accueil portait.
      Ils disent la méthode en quatre étapes et ce que le site refuse de publier,
-     avant le détail fiche par fiche. Ils ne portent pas de titre de famille :
-     leurs propres titres les nomment. */
+     avant le détail fiche par fiche. Leur famille, « Les principes », est
+     retenue le 16/09/2026 : « Le concept » légende déjà l'illustration du Hero. */
+  { famille: 'Les principes' },
   { id: 'comment-ca-marche', element: <HowItWorks key="comment" /> },
   { id: 'ce-que-vous-ne-trouverez-pas', element: <WhatYouWontFind key="refus" /> },
   { famille: 'Fiche candidat' },
