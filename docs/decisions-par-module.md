@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 339 décisions
+gouverne sans avoir à fouiller les 341 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -59,6 +59,7 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 | `src/normalize_senat.py` | 1 |
 | `src/purge_interventions_heritees.py` | 1 |
 | `src/retrait_heritage_senat.py` | 1 |
+| `src/rne_opendata.py` | 1 |
 | `src/scrutins_dossiers_an.py` | 1 |
 | `src/scrutins_legislature.py` | 1 |
 | `src/senat_mandats.py` | 1 |
@@ -1062,6 +1063,12 @@ Le mentionnent sans le gouverner : [`purge-doublons-herites-729`](decisions/purg
 | [Le dernier marqueur Regards Citoyens part quand il ne couvre plus rien, et pas avant (#908) (2026-09-13)](decisions/retrait-residus-senat-908.md) | `mandats_electifs_remplaces` |
 
 ## `src/rne_opendata.py`
+
+1 décision(s) le gouvernent ; le module en cite 0.
+
+| Décision | Nomme |
+| --- | --- |
+| [Le fichier des sortants a vieilli ses élus d'un siècle, et cinq mandats ont disparu (#922) (2026-09-16)](decisions/sortants-annee-decalee-922.md) | `PAGES_MAX` |
 
 Le mentionnent sans le gouverner : [`collecte-mandats-locaux-rne-922`](decisions/collecte-mandats-locaux-rne-922.md).
 

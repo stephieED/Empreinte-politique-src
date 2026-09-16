@@ -247,6 +247,63 @@ def resoudre_ressources(appel: Callable[[str], Any], slug: str) -> dict[str, str
     return resolues
 
 
+#: Lignes par page de l'API tabulaire. Une page ne suffit pas toujours : mesuré le
+#: 16/09/2026, la date de naissance de Delphine Batho est partagée par 49 élus du
+#: fichier des conseillers municipaux sortants — à une ligne du plafond.
+TAILLE_PAGE = 50
+
+#: Au-delà, on cesse de suivre les pages : une date de naissance partagée par
+#: plus de 1 000 élus n'existe pas, et une boucle sans fin sur une API ne se
+#: rattrape pas.
+PAGES_MAX = 20
+
+
+def dates_de_naissance_interrogees(date_naissance: str) -> tuple[str, ...]:
+    """La date telle qu'elle est, et la même un siècle plus tard (#922).
+
+    LE FICHIER DES SORTANTS PUBLIE DES NAISSANCES AU XXIᵉ SIÈCLE. Il donnait
+    l'année sur deux chiffres (« 02/02/69 ») ; convertie en ISO, une année basse
+    a pris le mauvais siècle. Mesuré le 16/09/2026 à la source :
+
+      David Lisnard     né 1969-02-02  publié 2069-02-02
+      Édouard Philippe né 1970-11-28  publié 2070-11-28
+      Gabriel Attal    né 1989-03-16  publié 1989-03-16 (correct)
+
+    Interrogée sur la seule date exacte, la source ne rendait rien, et le mandat
+    clos disparaissait sans erreur : **5 mandats 2020-2026** sur les candidats
+    déclarés (Lisnard, Philippe, Roussel, Bouamrane, Bertrand). Les 4 mandats clos
+    que le corpus portait étaient tous ceux de candidats nés après 1980 — la
+    signature exacte du défaut.
+
+    Le seuil de bascule n'est **pas deviné** : les deux formes sont toujours
+    demandées. Aucun élu ne peut être né après 2050, donc la forme décalée ne
+    peut désigner qu'une date corrompue, et `concerne()` vérifie le nom et le
+    prénom sur chaque ligne dans les deux cas.
+    """
+    annee, reste = date_naissance[:4], date_naissance[4:]
+    if not annee.isdigit():
+        return (date_naissance,)
+    return (date_naissance, f"{int(annee) + 100}{reste}")
+
+
+def _toutes_les_pages(appel: Callable[[str], Any], url: str) -> list[dict[str, Any]]:
+    """Toutes les lignes d'une requête, page après page (#922).
+
+    Le module ne lisait que la première page : une personne en 51ᵉ position
+    était perdue en silence. On suit `links.next` tant que le serveur en donne
+    une, jusqu'à `PAGES_MAX`.
+    """
+    lignes: list[dict[str, Any]] = []
+    suivante: Optional[str] = url
+    for _ in range(PAGES_MAX):
+        if not suivante:
+            break
+        reponse = appel(suivante) or {}
+        lignes.extend(l for l in (reponse.get("data") or []) if isinstance(l, dict))
+        suivante = (reponse.get("links") or {}).get("next")
+    return lignes
+
+
 def lignes_de(
     appel: Callable[[str], Any],
     rid: str,
@@ -258,20 +315,26 @@ def lignes_de(
 
     **Deux clés d'interrogation, et la première est la bonne quand on l'a.**
     Interroger par date de naissance contourne d'un coup le problème des
-    diacritiques : la date ne s'écrit que d'une façon. À défaut, on interroge
-    par nom — le patronyme, moins souvent accentué que le prénom — et on filtre
-    le prénom en mémoire.
+    diacritiques. À défaut, on interroge par nom — le patronyme, moins souvent
+    accentué que le prénom — et on filtre le prénom en mémoire.
 
-    Dans les deux cas, `concerne()` tranche : le filtrage serveur ne suffit
+    La date est demandée sous DEUX formes : voir
+    `dates_de_naissance_interrogees`, et le siècle que le fichier des sortants a
+    ajouté aux naissances.
+
+    Dans tous les cas, `concerne()` tranche : le filtrage serveur ne suffit
     jamais seul.
     """
+    base = URL_TABULAIRE.format(rid=rid)
     if date_naissance:
-        filtre = f"{COL_NAISSANCE}__exact={date_naissance}"
+        filtres = [f"{COL_NAISSANCE}__exact={d}"
+                   for d in dates_de_naissance_interrogees(date_naissance)]
     else:
-        filtre = f"{COL_NOM}__exact={aplatir(nom)}"
-    reponse = appel(f"{URL_TABULAIRE.format(rid=rid)}?{filtre}&page_size=50")
-    lignes = (reponse or {}).get("data") or []
-    return [l for l in lignes if isinstance(l, dict) and concerne(l, nom, prenom)]
+        filtres = [f"{COL_NOM}__exact={aplatir(nom)}"]
+    lignes: list[dict[str, Any]] = []
+    for filtre in filtres:
+        lignes.extend(_toutes_les_pages(appel, f"{base}?{filtre}&page_size={TAILLE_PAGE}"))
+    return [l for l in lignes if concerne(l, nom, prenom)]
 
 
 def mandats_locaux(
