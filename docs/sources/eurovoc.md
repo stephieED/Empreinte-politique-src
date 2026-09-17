@@ -56,9 +56,23 @@ Le document garde les libellés trouvés et déclare les autres —
 `matieres_non_resolu.motif = "libelle_eurovoc_introuvable"`, avec les codes
 concernés. Une matière perdue en silence serait indétectable.
 
-Si EuroVoc ne répond pas du tout, `resoudre_libelles()` **lève** au lieu de
-rendre des codes nus : un index de matières illisibles vaut moins que pas
-d'index.
+## Le troisième piège : un silence passager
+
+Le point SPARQL peut se taire un moment. Le 17/09/2026, le run `35194727922` a
+dépassé une fois le délai de 60 s sur la requête des domaines ; rejouée une heure
+plus tard, elle répondait en 0,1 à 0,4 s. Chaque requête est donc **réessayée
+deux fois** (après 5 puis 20 s) sur un délai dépassé, une coupure, un `429` ou une
+erreur `5xx` ; un `400` ne l'est pas, la requête est fausse.
+
+Si EuroVoc reste muet après ces essais, les deux lectures ne se traitent pas
+pareil :
+
+- **les libellés** : `resoudre_libelles()` **lève** au lieu de rendre des codes
+  nus, et l'étape échoue. Un index de matières illisibles vaut moins que pas
+  d'index ;
+- **les domaines** : l'index est publié, chaque matière porte `domaine: null`, et
+  chaque document déclare `domaines_non_resolu.motif = "eurovoc_injoignable"`. Le
+  domaine sert un axe de couleur, son absence ne bloque pas le corpus.
 
 ## Attribution
 
