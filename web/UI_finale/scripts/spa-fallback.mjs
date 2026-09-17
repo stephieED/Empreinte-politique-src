@@ -14,11 +14,12 @@
  * bonne page. C'est le seul mécanisme disponible : Pages n'a pas de règle de
  * réécriture.
  *
- * CE QUE CE REPLI NE CORRIGE PAS, ET QUI EST ASSUMÉ : le STATUT HTTP reste
- * 404 sur un lien profond. Le lecteur voit la bonne page, un robot voit une
- * erreur. Le corriger demanderait un hébergement qui sait réécrire, ou un
- * routage par fragment (`/#/candidats/…`) qui abîmerait les URL — deux choix
- * plus lourds que le défaut qu'ils réparent.
+ * CE QUE CE REPLI NE CORRIGE PAS : le STATUT HTTP reste 404. Le lecteur voit
+ * la bonne page, un robot voit une erreur et n'indexe rien. Présenté ici comme
+ * une limite assumée jusqu'à #969 : `pages-par-adresse.mjs`, lancé juste
+ * après, écrit un vrai fichier pour chaque adresse PUBLIÉE, qui répond donc
+ * 200. Ce repli ne sert plus qu'aux adresses qui n'en ont pas — une fiche
+ * masquée, un identifiant inconnu — pour lesquelles 404 est le bon statut.
  *
  * IL VIT DANS LE BUILD, pas dans `deploy-pages.yml` : un `dist/` construit à
  * la main et publié autrement doit porter le même repli. Le workflow ne fait

@@ -10,12 +10,10 @@ import {
   legislatureDeAmendementId,
 } from './pivotAdapter';
 
-export const DEFAULT_CANDIDATE_ID = 'jean-luc-melenchon';
-/* Une LIGNÉE, plus une fiche de législature (#329, #836) : l'adresse d'un
- * groupe vient de son `lignee_id` déclaré, et ne bouge pas quand il change de
- * sigle ou de législature. */
-export const DEFAULT_GROUP_ID = 'AN-SOC';
-export const DEFAULT_GOVERNMENT_ID = 'LECORNU_II';
+/* Les adresses par défaut vivent dans leur propre module, sans dépendance :
+ * `scripts/pages-par-adresse.mjs` les lit au build pour écrire les pages de
+ * redirection (#969). */
+export { DEFAULT_CANDIDATE_ID, DEFAULT_GROUP_ID, DEFAULT_GOVERNMENT_ID } from './adressesParDefaut.js';
 
 let manifestPromise = null;
 let scrutinsPromise = null;

@@ -18,8 +18,10 @@ Pages sert `404.html` pour tout chemin inconnu. Lui donner le contenu de
 page. C'est le seul mécanisme disponible — Pages n'a aucune règle de
 réécriture.
 
-CE QUI RESTE ASSUMÉ : le statut HTTP demeure 404 sur un lien profond. Le
-lecteur voit la bonne page, un robot voit une erreur.
+CE QUI RESTAIT ASSUMÉ : le statut HTTP demeurait 404 sur un lien profond. Le
+lecteur voyait la bonne page, un robot une erreur. Depuis #969, chaque adresse
+publiée a son propre fichier et répond 200 (`test_pages_par_adresse_969.py`) ;
+le repli ne sert plus qu'aux adresses non publiées.
 
 CE QUE CES GARDE-FOUS NE COUVRENT PAS : ils ne construisent rien et
 n'exécutent aucun script (la CI des tests n'installe pas Node). Le repli a été
