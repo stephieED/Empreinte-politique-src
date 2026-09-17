@@ -15,7 +15,7 @@ identifiant numérique et un libellé dans une vingtaine de langues.
 | --- | --- |
 | Point d'accès | `https://publications.europa.eu/webapi/rdf/sparql` |
 | Forme d'un concept | `http://eurovoc.europa.eu/2155` → « opposition politique » |
-| Propriété lue | `skos:prefLabel`, filtrée sur `lang = "fr"` |
+| Propriétés lues | `skos:prefLabel` du concept, filtrée sur `lang = "fr"` ; son **domaine** : `skos:inScheme` → microthésaurus (`eurovoc:MicroThesaurus`) → `eurovoc:domain` → `skos:notation` et `skos:prefLabel` en français |
 | Licence | **CC BY 4.0** — attribution, et indication des modifications |
 
 ## Ce que nous en faisons, et ce que nous n'en faisons pas
@@ -28,6 +28,19 @@ mot lisible** — sans quoi une fiche afficherait « 2155 ».
 **Nous ne classons rien nous-mêmes.** La matière d'un document est un fait du
 Parlement, pas une lecture que nous ferions de son titre. C'est la condition
 pour qu'elle soit publiable (§2 règles 2 et 8).
+
+## Le domaine : un chemin dans le thésaurus, et un piège
+
+Depuis le 17/09/2026, chaque concept publie aussi son **domaine**, le premier des
+trois niveaux du thésaurus (21 domaines, « 08 RELATIONS INTERNATIONALES »). Le
+chemin est lu, jamais déduit d'un libellé : concept → microthésaurus → domaine.
+
+**Le piège** : `skos:inScheme` rend aussi le thésaurus racine
+(`http://eurovoc.europa.eu/100141`), qui n'a pas de domaine. Seul le schéma typé
+`MicroThesaurus` en porte un. Mesuré sur les 980 concepts publiés : **979**
+résolus, **aucun** rattaché à deux domaines. Le seul sans domaine, `100145`, est
+lui-même un domaine que le portail donne comme concept : il est déclaré
+(`domaine_eurovoc_introuvable`), pas deviné.
 
 ## Le piège : une requête par concept, ou une pour cent
 

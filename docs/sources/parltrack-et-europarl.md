@@ -103,6 +103,16 @@ dossiers) ; forme rare : une **liste de chaînes** où code et libellé sont col
 erreur. Code hiérarchique, 238 valeurs sur ce corpus : pas un vocabulaire fermé. Mesuré le
 16/09/2026 (#901).
 
+**Le premier niveau — la famille — n'a de libellé que sur une minorité de dossiers.** Un
+dossier porte d'ordinaire ses seuls codes profonds (`6.40.10`) ; le code d'une famille
+(`6`) n'apparaît, avec son libellé, que sur **437** occurrences des 23 885 dossiers du dump
+(mesuré le 17/09/2026 sur le dump du 17/08). Il faut donc le lire sur **tout** le dump. Trois
+formes : une clé de dict seule (`"4": "Economic, social and territorial cohesion"`), une
+chaîne de liste qui colle code et libellé (`"3 Community policies"`), et des fiches anciennes
+qui n'ont que `meta.created`, pas `meta.updated`. **Le libellé a changé avec le temps** :
+« Internal market, SLIM » (2013) puis « Internal market, single market » (2026). Libellés en
+**anglais** seulement ; le site OEIL en français répond `307` à une requête simple.
+
 ### `ep_mep_activities` — les activités
 
 Une entrée `REPORT` porte `dossiers[]`, la référence de procédure visée, sur **144 des 146**
