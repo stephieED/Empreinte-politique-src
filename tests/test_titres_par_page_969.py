@@ -153,6 +153,25 @@ def test_une_chambre_inconnue_arrete_le_build_plutot_que_de_disparaitre():
     assert res.stdout.startswith("erreur") and "Cese" in res.stdout
 
 
+def test_chaque_chambre_du_schema_est_connue_du_module():
+    """Une valeur de `KNOWN_CHAMBRES` inconnue du module arrêterait le build du site."""
+    from schema_pivot import KNOWN_CHAMBRES
+
+    res = _node("console.log(JSON.stringify([...Object.keys(M.PREPOSITION), ...M.CHAMBRES_SANS_LIBELLE]));")
+    assert res.returncode == 0, res.stderr
+    connues = json.loads(res.stdout)
+    assert KNOWN_CHAMBRES == set(connues), (KNOWN_CHAMBRES, connues)
+
+
+def test_une_chambre_mairie_ne_bloque_pas_et_n_est_pas_nommee():
+    res = _node(
+        "console.log(JSON.stringify(M.metaCandidat({slug:'x', nom:'X', parti:'P'},"
+        " {chambres:['mairie'], mandats:[{categorie:'mandat_electif'}], votes:[], textes_portes:[]})));"
+    )
+    assert res.returncode == 0, res.stderr
+    assert json.loads(res.stdout)["description"].startswith("Mandats · P.")
+
+
 def test_chaque_balise_du_vrai_index_html_est_remplacee_une_fois():
     gabarit = INDEX.read_text(encoding="utf-8")
     meta = {"titre": 'Nom "cité" & co', "description": "Une description", "url": "https://empreinte-politique.fr/faq"}

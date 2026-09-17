@@ -19,7 +19,7 @@ export const MARQUE = 'Empreinte politique';
 const SOURCE = 'Chaque fait renvoie à sa source officielle, sans note ni classement.';
 
 /* Les institutions, dans l'ordre où la fiche les présente. */
-const PREPOSITION = { AN: "à l'Assemblée nationale", Senat: 'au Sénat', PE: 'au Parlement européen' };
+export const PREPOSITION = { AN: "à l'Assemblée nationale", Senat: 'au Sénat', PE: 'au Parlement européen' };
 
 /* Pages fixes : le titre est celui que la page affiche. Seule la méthode a une
  * description propre ; les autres gardent celle du site. */
@@ -42,9 +42,14 @@ function annee(date) {
   return typeof date === 'string' && /^\d{4}/.test(date) ? date.slice(0, 4) : null;
 }
 
+/* Valeurs de `KNOWN_CHAMBRES` (`src/schema_pivot.py`) qui ne sont pas une
+ * assemblée : la description dit « mandats », sans nommer de lieu. Un test
+ * échoue si le schéma gagne une valeur que ce module ne connaît pas. */
+export const CHAMBRES_SANS_LIBELLE = ['mairie'];
+
 export function metaCandidat(entree, profil) {
   const chambres = (profil.chambres || []).filter((c) => c in PREPOSITION);
-  const inconnues = (profil.chambres || []).filter((c) => !(c in PREPOSITION));
+  const inconnues = (profil.chambres || []).filter((c) => !(c in PREPOSITION) && !CHAMBRES_SANS_LIBELLE.includes(c));
   if (inconnues.length) throw new Error(`${entree.slug} : chambre sans libellé — ${inconnues.join(', ')}`);
 
   const mandats = profil.mandats || [];
