@@ -895,6 +895,12 @@ graph TD
   `src/utils/lignee.js` que le navigateur importe aussi. Les fiches de lignée ne
   sont pas copiées ; les projections de comparaison par législature
   (`comparaison-groupes.mjs`) ne sont plus servies, elles sont lues en mémoire.
+  **Les débats complets d'une lignée** s'écrivent à côté, dans
+  `public/data/lignees/<id>.debats.json` (#979) : la projection ne porte que les
+  dix débats les plus portés de chaque groupe, la recherche sur la fiche doit
+  les couvrir tous. `[intitulé, porteurs]` et un dénominateur par groupe —
+  1,0 Mo pour les douze lignées, 115 Ko pour la socialiste (mesuré le
+  17/09/2026) —, chargé par la page au premier mot tapé seulement.
   `scripts/amendements-lignees.mjs` y ajoute les amendements de chaque maillon
   par commission saisie au fond, relus dans les profils et l'index, et ne sert
   la répartition d'un type de déposant que si elle **retombe sur le total

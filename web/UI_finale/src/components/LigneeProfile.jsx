@@ -16,13 +16,15 @@
  * critère court sous le titre, la limite en pied de section, le raisonnement en
  * méthodologie derrière un renvoi — jamais un paragraphe sur la fiche.
  */
-import { useMemo, useState } from 'react';
+import { createContext, useContext, useMemo, useState } from 'react';
+import { BarreFiltre, EtiquetteFiltre, MOT } from './Recherche';
 import { Link } from 'react-router-dom';
 import '../styles/shell.css';
 import './LigneeProfile.css';
 import NavigationPeriodes from './NavigationPeriodes';
 import { ListeVide } from './Lecture';
 import { LAST_READING_LABEL, formatNumber, styleForPosition } from '../utils/lecture';
+import { MAILLON_A_DES_RESULTATS } from '../utils/filtreLignee';
 import { cumulerTypes, LISTES_SIGNALEES, motifDePosture, ORDRE_PASSAGES, PASSAGES, QUALITES_TEXTE, textesDesQualites } from '../utils/lignee';
 import { Cascade, ListeCascade } from './CascadeTextes';
 import { MATIERE_NON_ETABLIE, textesPortes } from '../utils/profilCandidat';
@@ -73,7 +75,37 @@ function LienSource({ url, children }) {
  * `id` et `data-section` servent `SommaireSections`, qui lit la page.
  * `renvoi` mène à une ancre de la méthodologie ; une section qui pose deux
  * questions distinctes en porte deux, sous `renvois` (DESIGN_SYSTEM §7). */
+/* ── La recherche sur la fiche (#979) ────────────────────────────────────────
+ *
+ * Sous un mot, la page lit une lignée RÉDUITE (`filtrerLignee`) et chaque
+ * section EMPILE les groupes de la lignée où le mot trouve quelque chose, du
+ * plus récent au plus ancien, sans flèches — la recherche couvre toute la
+ * lignée (forme B, arbitrée le 17/09/2026). Le contexte dit à une section quel
+ * maillon elle rend, et si elle porte le titre (premier de la pile) et le pied
+ * (dernier). « En bref » et « Qui sont-ils » se retirent ; « Ce qu'on n'a pas pu
+ * lire » ne change pas. */
+const Filtre = createContext({ mot: '', index: null, avecTete: true, avecPied: true });
+function Etiquette() {
+  const { mot } = useContext(Filtre);
+  return mot ? <EtiquetteFiltre mot={mot} /> : null;
+}
+function VideFiltre({ children }) {
+  const { mot } = useContext(Filtre);
+  return <p className="cp-filtre-vide">{children} {MOT(mot)}.</p>;
+}
 function Section({ numero, titre, critere, pied, renvoi, renvois, children }) {
+  const { avecTete, avecPied } = useContext(Filtre);
+  if (!avecTete || !avecPied) {
+    return (
+      <section className="lp-section" data-section={avecTete ? titre : undefined} id={avecTete ? `section-${numero}` : undefined} style={avecTete ? undefined : { marginTop: 18 }}>
+        {avecTete && (<><div className="lp-section-bande"><span className="lp-section-numero">{numero}</span><span className="lp-section-trait" /></div>
+        <h2 className="lp-section-titre"><span>{titre}</span></h2>{critere && <p className="lp-section-critere">{critere}</p>}</>)}
+        <div className="lp-section-corps">{children}</div>
+        {avecPied && pied && <p className="lp-section-pied">{pied}</p>}
+        {avecPied && renvoi && <p className="lp-methodo"><Link to={`/methodologie#${renvoi.ancre}`}>{renvoi.texte}</Link></p>}
+      </section>
+    );
+  }
   return (
     <section className="lp-section" data-section={titre} id={`section-${numero}`}>
       <div className="lp-section-bande">
@@ -128,16 +160,19 @@ function TeteDePeriode({ maillon, avecPosture = true }) {
  * fiche candidat, la même, avec son rail proportionnel au poids de CETTE
  * section. Une lignée d'un seul maillon n'a rien à naviguer. */
 function useMaillon(lignee) {
+  const force = useContext(Filtre).index;
   const [index, setIndex] = useState(lignee.maillons.length - 1);
+  if (force != null) return [lignee.maillons[force], force, () => {}];
   return [lignee.maillons[index], index, setIndex];
 }
 
 function Navigation({ lignee, index, onIndex, poids, unite, uniteSingulier }) {
+  const force = useContext(Filtre).index;
   const periodes = useMemo(
     () => lignee.maillons.map((m) => ({ ...m, cle: m.id, debut: m.periode.debut, fin: m.periode.fin })),
     [lignee],
   );
-  if (periodes.length < 2) return null;
+  if (periodes.length < 2 || force != null) return null;
   return (
     <NavigationPeriodes
       index={index}
@@ -470,12 +505,13 @@ function QuiSontIls({ lignee }) {
 /* ── § 2 — sur quoi ils ont pris la parole ─────────────────────────────────── */
 function SurQuoiIlsParlent({ lignee }) {
   const [m, index, setIndex] = useMaillon(lignee);
-  const s = m.sujets;
+  const { mot } = useContext(Filtre);
+  const s = mot ? m.sujets : { ...m.sujets, liste: m.sujets.liste.slice(0, 10) };
   return (
     <Section
       critere="Les débats où le plus de membres sont intervenus : des sujets, jamais des positions du groupe."
       numero="2"
-      pied={s.liste.length > 0
+      pied={mot ? null : s.liste.length > 0
         ? `${s.liste.length} sur ${formatNumber(s.total)} débats · membres qui y sont intervenus, sur ${formatNumber(s.denominateur)} passés par le groupe`
         : null}
       renvoi={{ ancre: 'paroles', texte: 'D’où viennent ces intitulés' }}
@@ -484,7 +520,8 @@ function SurQuoiIlsParlent({ lignee }) {
       <Navigation index={index} lignee={lignee} onIndex={setIndex} poids={(p) => p.sujets.total} unite="débats" uniteSingulier="débat" />
       <div className="lp-carte">
         <TeteDePeriode avecPosture={false} maillon={m} />
-        {s.liste.length === 0 ? <Vide maillon={m} /> : s.liste.map((t) => (
+        <Etiquette />
+        {s.liste.length === 0 && mot ? <VideFiltre>Aucun débat dont l’intitulé contient</VideFiltre> : s.liste.length === 0 ? <Vide maillon={m} /> : s.liste.map((t) => (
           <div className="lp-sujet" key={t.label}>
             <span className="lp-sujet-lib">{t.label}</span>
             <span className="lp-sujet-n lp-num" title={t.porteursTexte}>
@@ -529,6 +566,7 @@ const LIBELLES_QUALITE = {
  * ensemble, comme les types de déposant des amendements. Sous le seuil de
  * l'examen en commission, rien n'est publié (AGENTS §6). */
 function TextesPortes({ maillon, rangs }) {
+  const { mot } = useContext(Filtre);
   const [qualites, setQualites] = useState(Object.keys(QUALITES_TEXTE));
   const [sel, setSel] = useState(null);
   const textes = useMemo(() => {
@@ -538,6 +576,9 @@ function TextesPortes({ maillon, rangs }) {
     return textesPortes(retenus, (dossier) => parDossier.get(dossier) ?? null);
   }, [maillon, qualites]);
   if (!textes) return null;
+  if (mot && !maillon.textes.length) {
+    return <div className="lp-carte lp-textes"><Etiquette /><VideFiltre>Aucun texte porté dont l’intitulé contient</VideFiltre></div>;
+  }
   const presentes = Object.keys(QUALITES_TEXTE).filter((q) => maillon.textes.some((t) => t.roles?.[q]));
   const basculer = (q) => {
     // Une qualité au moins reste retenue : une cascade vide se lirait « aucun texte ».
@@ -546,6 +587,7 @@ function TextesPortes({ maillon, rangs }) {
   };
   return (
     <div className="lp-carte lp-textes">
+      <Etiquette />
       <div className="lp-mat-tete">
         <span className="lp-mat-titre">Les textes qu'ils ont portés</span>
         <span className="lp-mat-totaux lp-num">
@@ -571,7 +613,7 @@ function TextesPortes({ maillon, rangs }) {
       {textes.cascade.total > 0 ? (
         <>
           <Cascade cascade={textes.cascade} onSelection={setSel} rangs={rangs} selection={sel} />
-          <ListeCascade cascade={textes.cascade} onRaz={() => setSel(null)} selection={sel} />
+          <ListeCascade cascade={textes.cascade} onRaz={sel ? () => setSel(null) : null} selection={sel ?? (mot ? { matiere: null, lo: 0, hi: textes.cascade.stades.length - 1 } : null)} />
         </>
       ) : (
         <p className="lp-rien">Aucun de ces textes n'a atteint l'examen en commission.</p>
@@ -621,6 +663,7 @@ function TextesAmendes({ detail }) {
 }
 
 function CeQuIlsOntPropose({ lignee }) {
+  const { mot } = useContext(Filtre);
   const [m, index, setIndex] = useMaillon(lignee);
   const types = Object.keys(TYPES_DEPOSANT).filter((t) => m.amendements.parType[t]);
   const [choisis, setChoisis] = useState(['depute']);
@@ -648,7 +691,7 @@ function CeQuIlsOntPropose({ lignee }) {
   const maxD = Math.max(1, ...lignes.map((l) => (l.textes ? l.amendements / l.textes : 0)));
   const limites = [];
   if (m.amendements.distincts) limites.push(`${formatNumber(m.amendements.distincts)} amendements distincts en tout`);
-  if (m.amendements.sansType) limites.push(`dont ${formatNumber(m.amendements.sansType)} sans type de déposant publié`);
+  if (m.amendements.sansType && !mot) limites.push(`dont ${formatNumber(m.amendements.sansType)} sans type de déposant publié`);
   if (lignes.length) limites.push('textes rangés du plus récemment amendé au plus ancien');
 
   return (
@@ -670,7 +713,8 @@ function CeQuIlsOntPropose({ lignee }) {
       <TeteDePeriode maillon={m} />
       {m.textes ? <TextesPortes key={m.id} maillon={m} rangs={rangs} /> : null}
       <div className="lp-carte">
-        {!bloc ? <Vide maillon={m} /> : (
+        <Etiquette />
+        {!bloc && mot ? <VideFiltre>Aucun dossier amendé dont l’intitulé contient</VideFiltre> : !bloc ? <Vide maillon={m} /> : (
           <>
             {types.length > 1 && (
               <div aria-label="Types de déposant retenus" className="lp-onglets" role="group">
@@ -716,7 +760,7 @@ function CeQuIlsOntPropose({ lignee }) {
               {lignes.map((l, r) => {
                 const densite = l.textes ? l.amendements / l.textes : null;
                 const teinte = PALETTE_MATIERE[(rangs.get(l.commission) ?? r) % PALETTE_MATIERE.length];
-                const ouvert = ouverte === l.commission;
+                const ouvert = ouverte === l.commission || Boolean(mot);
                 return (
                   <div key={l.commission}>
                     <button
@@ -753,7 +797,7 @@ function CeQuIlsOntPropose({ lignee }) {
                     <span className="lp-mr-rail" />
                     <span className="lp-mr-n lp-mr-n--textes">{nd.textes ? formatNumber(nd.textes) : '—'}</span>
                   </button>
-                  {ouverte === MATIERE_NON_ETABLIE && nd.detail.length > 0 && <TextesAmendes detail={nd.detail} />}
+                  {(ouverte === MATIERE_NON_ETABLIE || mot) && nd.detail.length > 0 && <TextesAmendes detail={nd.detail} />}
                 </div>
               )}
             </div>
@@ -806,6 +850,7 @@ function Scrutin({ id, pour, contre, abstention, scrutins }) {
 }
 
 function CeQuIlsOntVote({ lignee }) {
+  const { mot } = useContext(Filtre);
   const [m, index, setIndex] = useMaillon(lignee);
   const [filtre, setFiltre] = useState(null);
   const [montres, setMontres] = useState(SCRUTINS_MONTRES);
@@ -816,7 +861,11 @@ function CeQuIlsOntVote({ lignee }) {
     abstention: p.partages - p.pourEtContre,
     pour_et_contre: p.pourEtContre,
   };
-  const liste = (m.partageListes?.[filtre || 'partages'] || []);
+  /* Sous un mot, la liste est DÉPLIÉE sur toutes les parts (#979) : les votes
+   * d'une seule voix n'y apparaissaient qu'au clic sur leur segment. */
+  const liste = filtre || !mot
+    ? (m.partageListes?.[filtre || 'partages'] || [])
+    : [...(m.partageListes?.partages || []), ...(m.partageListes?.une_seule_voix || [])];
   const dernieres = liste.filter(([id]) => m.scrutins[id]?.derniere);
   const reste = liste.filter(([id]) => !m.scrutins[id]?.derniere);
   const basculer = (cle) => { setFiltre(filtre === cle ? null : cle); setMontres(SCRUTINS_MONTRES); };
@@ -833,16 +882,17 @@ function CeQuIlsOntVote({ lignee }) {
         index={index}
         lignee={lignee}
         onIndex={(i) => { setIndex(i); setFiltre(null); setMontres(SCRUTINS_MONTRES); }}
-        poids={(x) => x.quorum.agreges}
+        poids={(x) => (mot ? x.quorum.mesurables : x.quorum.agreges)}
         unite="scrutins"
         uniteSingulier="scrutin"
       />
       <div className="lp-carte">
+        <Etiquette />
         <TeteDePeriode maillon={m} />
-        {!q.agreges ? <Vide maillon={m} /> : (
+        {q.agreges && mot && !q.mesurables ? <VideFiltre>Aucun scrutin dont l’intitulé contient</VideFiltre> : !q.agreges ? <Vide maillon={m} /> : (
           <>
             <p className="lp-sous">
-              Sur les {formatNumber(q.mesurables)} scrutins où le quorum du groupe est atteint, sur {formatNumber(q.agreges)}
+              Sur les {formatNumber(q.mesurables)} scrutins où le quorum du groupe est atteint{mot ? '' : `, sur ${formatNumber(q.agreges)}`}
             </p>
             <div aria-label="Filtrer la liste par part" className="lp-trois" role="group">
               {Object.entries(PARTS).map(([cle, part]) => (
@@ -865,20 +915,20 @@ function CeQuIlsOntVote({ lignee }) {
               ))}
             </div>
             <p className="lp-sous">
-              {filtre ? PARTS[filtre].titre : 'Les plus partagés'} <span className="lp-sous-regle">· {LAST_READING_LABEL}</span>
+              {filtre ? PARTS[filtre].titre : mot ? 'Tous les scrutins' : 'Les plus partagés'} <span className="lp-sous-regle">· {LAST_READING_LABEL}</span>
             </p>
             {dernieres.length === 0 ? (
               <p className="lp-rien">Aucune dernière lecture d'un texte dans cette part.</p>
-            ) : dernieres.slice(0, montres).map(([id, po, co, ab]) => (
+            ) : dernieres.slice(0, mot ? undefined : montres).map(([id, po, co, ab]) => (
               <Scrutin abstention={ab} contre={co} id={id} key={id} pour={po} scrutins={m.scrutins} />
             ))}
-            {dernieres.length > montres && (
+            {!mot && dernieres.length > montres && (
               <button className="lp-plus" onClick={() => setMontres(montres + 20)} type="button">
                 et {formatNumber(dernieres.length - montres)} autres textes
               </button>
             )}
             {reste.length > 0 && (
-              <details className="lp-tous">
+              <details className="lp-tous" open={Boolean(mot)}>
                 <summary>Lectures antérieures, amendements, articles et motions — {formatNumber(reste.length)} scrutins</summary>
                 <Repli entrees={reste} scrutins={m.scrutins} />
               </details>
@@ -921,6 +971,7 @@ const NATURES = [
 const LIBELLES_NATURE = { meme_sens: 'même sens', nuance: 'nuance', oppose: 'sens opposé' };
 
 function AvecQuiIlsVotent({ lignee }) {
+  const { mot } = useContext(Filtre);
   const [m, index, setIndex] = useMaillon(lignee);
   const [ouvert, setOuvert] = useState(null);
   const lignes = (m.convergences || []).filter((a) => a.communs > 0);
@@ -949,8 +1000,9 @@ function AvecQuiIlsVotent({ lignee }) {
         uniteSingulier="texte comparé"
       />
       <div className="lp-carte">
+        <Etiquette />
         <TeteDePeriode maillon={m} />
-        {!m.convergences ? <Vide maillon={m} /> : lignes.length === 0 ? (
+        {m.convergences && mot && lignes.length === 0 ? <VideFiltre>Aucun texte comparé dont l’intitulé contient</VideFiltre> : !m.convergences ? <Vide maillon={m} /> : lignes.length === 0 ? (
           <p className="lp-rien">Aucun texte en dernière lecture où ce groupe et un autre atteignent tous deux leur quorum.</p>
         ) : (
           <>
@@ -996,6 +1048,7 @@ function AvecQuiIlsVotent({ lignee }) {
                     <small>textes communs</small>
                   </span>
                   {actif && <TextesCompares autre={a.sigle} entrees={a.scrutins[actif] || []} moi={m.sigle} scrutins={m.scrutins} />}
+                  {!actif && mot && <TextesCompares autre={a.sigle} entrees={NATURES.flatMap((n) => a.scrutins[n.cle] || []).concat(a.scrutins.autres || [])} moi={m.sigle} scrutins={m.scrutins} />}
                 </div>
               );
             })}
@@ -1096,7 +1149,20 @@ function CeQuOnNaPasPuLire({ lignee }) {
   );
 }
 
-export default function LigneeProfile({ lignee }) {
+/* Une section par groupe de la lignée qui a des résultats ; tous vides, le plus
+ * récent seul, qui dit que le mot ne trouve rien. */
+function EnPile({ lignee, cle, Composant }) {
+  const ctx = useContext(Filtre);
+  const n = lignee.maillons.length;
+  let rangs = lignee.maillons.map((_, i) => i).reverse().filter((i) => MAILLON_A_DES_RESULTATS[cle](lignee.maillons[i]));
+  if (!rangs.length) rangs = [n - 1];
+  return rangs.map((i, k) => (
+    <Filtre.Provider key={i} value={{ ...ctx, index: i, avecTete: k === 0, avecPied: k === rangs.length - 1 }}>
+      <Composant lignee={lignee} />
+    </Filtre.Provider>
+  ));
+}
+export default function LigneeProfile({ lignee, mot = '', saisie = '', onSaisie = () => {} }) {
   const aujourdhui = lignee.genereLe || new Date().toISOString().slice(0, 10);
   const noms = [];
   for (const m of lignee.maillons) if (!noms.includes(m.nom)) noms.push(m.nom);
@@ -1116,16 +1182,33 @@ export default function LigneeProfile({ lignee }) {
         <p className="lp-qui">{noms.join(' → ')} · {depuis}</p>
       </header>
 
+      <BarreFiltre onSaisie={onSaisie} saisie={saisie} />
+
+      {!mot && (
       <section className="lp-section lp-section--bref" data-section="En bref" id="section-bref">
         <h2 className="lp-section-titre"><span>En bref</span></h2>
         <Frise aujourdhui={aujourdhui} lignee={lignee} />
       </section>
+      )}
 
-      <QuiSontIls lignee={lignee} />
-      <SurQuoiIlsParlent lignee={lignee} />
-      <CeQuIlsOntPropose lignee={lignee} />
-      <CeQuIlsOntVote lignee={lignee} />
-      <AvecQuiIlsVotent lignee={lignee} />
+      <Filtre.Provider value={{ mot, index: null, avecTete: true, avecPied: true }}>
+        {!mot && <QuiSontIls lignee={lignee} />}
+        {mot ? (
+          <>
+            <EnPile Composant={SurQuoiIlsParlent} cle="parole" lignee={lignee} />
+            <EnPile Composant={CeQuIlsOntPropose} cle="propose" lignee={lignee} />
+            <EnPile Composant={CeQuIlsOntVote} cle="vote" lignee={lignee} />
+            <EnPile Composant={AvecQuiIlsVotent} cle="avec" lignee={lignee} />
+          </>
+        ) : (
+          <>
+            <SurQuoiIlsParlent key={`p-${mot}`} lignee={lignee} />
+            <CeQuIlsOntPropose key={`r-${mot}`} lignee={lignee} />
+            <CeQuIlsOntVote key={`v-${mot}`} lignee={lignee} />
+            <AvecQuiIlsVotent key={`a-${mot}`} lignee={lignee} />
+          </>
+        )}
+      </Filtre.Provider>
       <CeQuOnNaPasPuLire lignee={lignee} />
 
       <footer className="lp-pied">

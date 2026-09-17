@@ -239,3 +239,29 @@ export function construireVueLignee({ fichier, lignee, fiches, idsDeFiche, scrut
     maillons,
   };
 }
+
+/* ── LES DÉBATS COMPLETS D'UNE LIGNÉE, POUR LA RECHERCHE (#979) ──────────────
+ *
+ * La projection ne porte que les dix débats les plus portés de chaque maillon :
+ * c'est ce que « Sur quoi ils ont pris la parole » affiche. Une recherche sur
+ * la fiche doit pourtant les couvrir TOUS — 284 débats pour NG-15, dont 274
+ * qu'elle ne verrait pas. Les livrer dans la projection coûtait ~2 Mo sur les
+ * 29 fiches (+336 Ko pour la lignée socialiste, mesuré le 17/09/2026), payés
+ * par chaque lecteur. Ils vivent donc à part, et la page ne les charge que
+ * quand un mot est tapé.
+ *
+ * Même règle que la projection (`etiquettesThematiques`), sans limite ; une
+ * entrée compacte `[intitulé, porteurs]`, le dénominateur une fois par maillon. */
+export function construireDebatsLignee({ fichier, lignee, fiches, idsDeFiche }) {
+  const maillons = {};
+  for (const maillon of lignee.maillons || []) {
+    const groupe = fiches.get(maillon.fichier);
+    if (!groupe) throw new Error(`vue-lignee : ${fichier} nomme ${maillon.fichier}, absent de pivot_data/groupes/`);
+    const debats = etiquettesThematiques(groupe, Infinity);
+    maillons[idsDeFiche.get(maillon.fichier)] = {
+      denominateur: (groupe.membres || []).length,
+      debats: debats.map((d) => [d.label, d.porteurs]),
+    };
+  }
+  return { schema_version: 'debats-lignee-v1', id: idDePage(fichier), maillons };
+}
