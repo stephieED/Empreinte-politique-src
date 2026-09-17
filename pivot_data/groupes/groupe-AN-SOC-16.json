@@ -63719,9 +63719,9 @@
         {
           "membre_id": "jerome-guedj",
           "nom": "Jérôme Guedj",
-          "fonction": "membre",
+          "fonction": "Membre",
           "debut": "2024-06-07",
-          "fin": null,
+          "fin": "2024-06-09",
           "actif": true
         },
         {
@@ -65144,8 +65144,8 @@
           "membre_id": "philippe-brun",
           "nom": "Philippe Brun",
           "fonction": "Membre",
-          "debut": "2023-10-31",
-          "fin": "2023-10-31",
+          "debut": "2026-09-17",
+          "fin": null,
           "actif": false
         },
         {
@@ -70351,46 +70351,6 @@
       ]
     },
     {
-      "categorie": "commission",
-      "label": "Comité consultatif auprès du conseil d'administration de l'etablissement public de paris-saclay",
-      "nb_membres_a_la_date_de_reference": 1,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 31,
-      "par_fonction": {
-        "membre titulaire": 1
-      },
-      "membres": [
-        {
-          "membre_id": "jerome-guedj",
-          "nom": "Jérôme Guedj",
-          "fonction": "membre titulaire",
-          "debut": "2023-01-25",
-          "fin": "2024-06-14",
-          "actif": true
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
-      "label": "Commission spéciale pour l'examen du projet de loi relatif à l'accompagnement des malades et de la fin de vie",
-      "nb_membres_a_la_date_de_reference": 1,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 31,
-      "par_fonction": {
-        "membre": 1
-      },
-      "membres": [
-        {
-          "membre_id": "jerome-guedj",
-          "nom": "Jérôme Guedj",
-          "fonction": "membre",
-          "debut": "2024-04-10",
-          "fin": null,
-          "actif": true
-        }
-      ]
-    },
-    {
       "categorie": "commission_enquete",
       "label": "Commission d’enquête sur les difficultés d’accès aux soins à l’hôpital public",
       "nb_membres_a_la_date_de_reference": 1,
@@ -74655,46 +74615,6 @@
     },
     {
       "categorie": "commission",
-      "label": "Commission d'enquête relative à l'identification des défaillances de fonctionnement au sein des fédérations françaises de sport et des organismes de gouvernance du monde sportif en tant qu'elles ont délégation de service public",
-      "nb_membres_a_la_date_de_reference": 0,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 31,
-      "par_fonction": {
-        "membre": 1
-      },
-      "membres": [
-        {
-          "membre_id": "jerome-guedj",
-          "nom": "Jérôme Guedj",
-          "fonction": "membre",
-          "debut": "2023-06-30",
-          "fin": "2024-01-07",
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
-      "label": "Commission d'enquête sur l'attribution, le contenu et le contrôle des autorisations de services de télévision à caractère national sur la télévision numérique terrestre",
-      "nb_membres_a_la_date_de_reference": 0,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 31,
-      "par_fonction": {
-        "membre": 1
-      },
-      "membres": [
-        {
-          "membre_id": "jerome-guedj",
-          "nom": "Jérôme Guedj",
-          "fonction": "membre",
-          "debut": "2023-11-19",
-          "fin": "2024-05-15",
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
       "label": "Commission des affaires culturelles, familiales et sociales",
       "nb_membres_a_la_date_de_reference": 0,
       "nb_membres_cumul_historique": 1,
@@ -74729,86 +74649,6 @@
           "fonction": "Membre",
           "debut": "2007-10-04",
           "fin": "2009-06-30",
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
-      "label": "Députés Non Inscrits",
-      "nb_membres_a_la_date_de_reference": 0,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 31,
-      "par_fonction": {
-        "membre": 1
-      },
-      "membres": [
-        {
-          "membre_id": "jerome-guedj",
-          "nom": "Jérôme Guedj",
-          "fonction": "membre",
-          "debut": "2022-06-24",
-          "fin": "2022-06-29",
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
-      "label": "Groupe de travail longévité et autonomie",
-      "nb_membres_a_la_date_de_reference": 0,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 31,
-      "par_fonction": {
-        "co-président": 1
-      },
-      "membres": [
-        {
-          "membre_id": "jerome-guedj",
-          "nom": "Jérôme Guedj",
-          "fonction": "co-président",
-          "debut": "2022-09-30",
-          "fin": "2023-04-01",
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
-      "label": "Mission d'évaluation de la loi du 2 février 2016 créant de nouveaux droits en faveur des malades et des personnes en fin de vie dite claeys-leonetti",
-      "nb_membres_a_la_date_de_reference": 0,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 31,
-      "par_fonction": {
-        "membre": 1
-      },
-      "membres": [
-        {
-          "membre_id": "jerome-guedj",
-          "nom": "Jérôme Guedj",
-          "fonction": "membre",
-          "debut": "2022-11-26",
-          "fin": "2023-04-13",
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
-      "label": "Mission d'évaluation et de contrôle des lois de financement de la sécurité sociale",
-      "nb_membres_a_la_date_de_reference": 0,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 31,
-      "par_fonction": {
-        "co-président": 1
-      },
-      "membres": [
-        {
-          "membre_id": "jerome-guedj",
-          "nom": "Jérôme Guedj",
-          "fonction": "co-président",
-          "debut": "2023-01-25",
-          "fin": "2023-10-06",
           "actif": false
         }
       ]
@@ -80730,162 +80570,162 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1008",
-      "synchro_le": "2026-09-14T11:54:55+0000"
+      "synchro_le": "2026-09-17T10:21:36+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1567",
-      "synchro_le": "2026-09-14T11:54:44+0000"
+      "synchro_le": "2026-09-17T10:21:56+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA333285",
-      "synchro_le": "2026-09-14T11:54:38+0000"
+      "synchro_le": "2026-09-17T10:22:02+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335054",
-      "synchro_le": "2026-09-14T11:54:50+0000"
+      "synchro_le": "2026-09-17T10:22:06+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA340343",
-      "synchro_le": "2026-09-14T11:49:47+0000"
+      "synchro_le": "2026-09-17T10:14:02+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA342196",
-      "synchro_le": "2026-09-14T11:50:02+0000"
+      "synchro_le": "2026-09-17T10:14:25+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA342415",
-      "synchro_le": "2026-09-14T11:50:02+0000"
+      "synchro_le": "2026-09-17T10:14:31+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA344201",
-      "synchro_le": "2026-09-14T11:49:48+0000"
+      "synchro_le": "2026-09-17T10:13:58+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607553",
-      "synchro_le": "2026-09-14T11:54:56+0000"
+      "synchro_le": "2026-09-17T10:21:36+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA608172",
-      "synchro_le": "2026-09-14T11:54:44+0000"
+      "synchro_le": "2026-09-17T10:21:57+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA608695",
-      "synchro_le": "2026-09-14T11:54:39+0000"
+      "synchro_le": "2026-09-17T10:22:03+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA609332",
-      "synchro_le": "2026-09-14T11:54:50+0000"
+      "synchro_le": "2026-09-17T10:22:07+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA609590",
-      "synchro_le": "2026-09-14T11:49:48+0000"
+      "synchro_le": "2026-09-17T10:14:02+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA642764",
-      "synchro_le": "2026-09-14T11:50:04+0000"
+      "synchro_le": "2026-09-17T10:14:28+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643143",
-      "synchro_le": "2026-09-14T11:50:02+0000"
+      "synchro_le": "2026-09-17T10:14:32+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643157",
-      "synchro_le": "2026-09-14T11:49:48+0000"
+      "synchro_le": "2026-09-17T10:13:58+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643192",
-      "synchro_le": "2026-09-14T11:54:56+0000"
+      "synchro_le": "2026-09-17T10:21:37+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719930",
-      "synchro_le": "2026-09-14T11:54:45+0000"
+      "synchro_le": "2026-09-17T10:21:57+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA774958",
-      "synchro_le": "2026-09-14T11:54:39+0000"
+      "synchro_le": "2026-09-17T10:22:03+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA774960",
-      "synchro_le": "2026-09-14T11:54:51+0000"
+      "synchro_le": "2026-09-17T10:22:07+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793394",
-      "synchro_le": "2026-09-14T11:49:48+0000"
+      "synchro_le": "2026-09-17T10:14:03+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793624",
-      "synchro_le": "2026-09-14T11:50:05+0000"
+      "synchro_le": "2026-09-17T10:14:28+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793816",
-      "synchro_le": "2026-09-14T11:50:03+0000"
+      "synchro_le": "2026-09-17T10:14:32+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794094",
-      "synchro_le": "2026-09-14T11:49:48+0000"
+      "synchro_le": "2026-09-17T10:13:58+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794270",
-      "synchro_le": "2026-09-14T11:54:57+0000"
+      "synchro_le": "2026-09-17T10:21:37+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794494",
-      "synchro_le": "2026-09-14T11:54:45+0000"
+      "synchro_le": "2026-09-17T10:21:57+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794854",
-      "synchro_le": "2026-09-14T11:54:39+0000"
+      "synchro_le": "2026-09-17T10:22:04+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795156",
-      "synchro_le": "2026-09-14T11:54:51+0000"
+      "synchro_le": "2026-09-17T10:22:07+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795430",
-      "synchro_le": "2026-09-14T11:49:48+0000"
+      "synchro_le": "2026-09-17T10:14:03+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795762",
-      "synchro_le": "2026-09-14T11:50:05+0000"
+      "synchro_le": "2026-09-17T10:14:28+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795828",
-      "synchro_le": "2026-09-14T11:50:03+0000"
+      "synchro_le": "2026-09-17T10:14:32+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-14T12:21:12+0000",
+    "genere_le": "2026-09-17T10:45:28+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr",
     "profils_sources": [
       "alain-david",

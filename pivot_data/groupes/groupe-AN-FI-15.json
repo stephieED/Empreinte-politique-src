@@ -61694,9 +61694,9 @@
         {
           "membre_id": "jean-luc-melenchon",
           "nom": "Jean-Luc Mélenchon",
-          "fonction": "membre",
+          "fonction": "Membre",
           "debut": "2022-01-14",
-          "fin": null,
+          "fin": "2022-06-21",
           "actif": true
         },
         {
@@ -63323,26 +63323,6 @@
       ]
     },
     {
-      "categorie": "commission",
-      "label": "Mission d'information sur les mers et océans : quelle stratégie pour la france",
-      "nb_membres_a_la_date_de_reference": 1,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 17,
-      "par_fonction": {
-        "co-rapporteur": 1
-      },
-      "membres": [
-        {
-          "membre_id": "jean-luc-melenchon",
-          "nom": "Jean-Luc Mélenchon",
-          "fonction": "co-rapporteur",
-          "debut": "2017-11-29",
-          "fin": null,
-          "actif": true
-        }
-      ]
-    },
-    {
       "categorie": "delegation",
       "label": "Délégation aux collectivités territoriales et à la décentralisation",
       "nb_membres_a_la_date_de_reference": 1,
@@ -63698,26 +63678,6 @@
           "fonction": "Membre suppléant",
           "debut": "2017-10-24",
           "fin": "2022-06-21",
-          "actif": true
-        }
-      ]
-    },
-    {
-      "categorie": "extra_parlementaire",
-      "label": "Section française de l'assemblée parlementaire de la francophonie a.p.f",
-      "nb_membres_a_la_date_de_reference": 1,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 17,
-      "par_fonction": {
-        "membre": 1
-      },
-      "membres": [
-        {
-          "membre_id": "jean-luc-melenchon",
-          "nom": "Jean-Luc Mélenchon",
-          "fonction": "membre",
-          "debut": "2017-10-28",
-          "fin": null,
           "actif": true
         }
       ]
@@ -65126,34 +65086,6 @@
       ]
     },
     {
-      "categorie": "commission",
-      "label": "Députés Non Inscrits",
-      "nb_membres_a_la_date_de_reference": 0,
-      "nb_membres_cumul_historique": 2,
-      "effectif_reference": 17,
-      "par_fonction": {
-        "membre": 2
-      },
-      "membres": [
-        {
-          "membre_id": "jean-luc-melenchon",
-          "nom": "Jean-Luc Mélenchon",
-          "fonction": "membre",
-          "debut": "2017-06-21",
-          "fin": "2017-06-28",
-          "actif": false
-        },
-        {
-          "membre_id": "loic-prud-homme",
-          "nom": "Loïc Prud'homme",
-          "fonction": "membre",
-          "debut": "2022-06-24",
-          "fin": "2022-06-29",
-          "actif": false
-        }
-      ]
-    },
-    {
       "categorie": "commission_enquete",
       "label": "Commission d’enquête relative à la lutte contre les fraudes aux prestations sociales",
       "nb_membres_a_la_date_de_reference": 0,
@@ -65829,26 +65761,6 @@
     },
     {
       "categorie": "commission",
-      "label": "Commission d'enquête sur les causes de l'incapacité de la france à atteindre les objectifs des plans successifs de maîtrise des impacts des produits phytosanitaires sur la santé humaine et environnementale et notamment sur les conditions de l'exercice des missions des autorités publiques en charge de la sécurité sanitaire",
-      "nb_membres_a_la_date_de_reference": 0,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 17,
-      "par_fonction": {
-        "membre": 1
-      },
-      "membres": [
-        {
-          "membre_id": "loic-prud-homme",
-          "nom": "Loïc Prud'homme",
-          "fonction": "membre",
-          "debut": "2023-07-01",
-          "fin": "2024-01-07",
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
       "label": "Commission des budgets",
       "nb_membres_a_la_date_de_reference": 0,
       "nb_membres_cumul_historique": 1,
@@ -65863,126 +65775,6 @@
           "fonction": "Membre suppléant(e)",
           "debut": "2017-01-19",
           "fin": "2017-06-18",
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
-      "label": "Conseil d'administration de l'institut national du cancer",
-      "nb_membres_a_la_date_de_reference": 0,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 17,
-      "par_fonction": {
-        "membre suppléant": 1
-      },
-      "membres": [
-        {
-          "membre_id": "loic-prud-homme",
-          "nom": "Loïc Prud'homme",
-          "fonction": "membre suppléant",
-          "debut": "2023-01-25",
-          "fin": "2024-06-11",
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
-      "label": "Groupe français de l'union interparlementaire u.i.p",
-      "nb_membres_a_la_date_de_reference": 0,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 17,
-      "par_fonction": {
-        "vice-président": 1
-      },
-      "membres": [
-        {
-          "membre_id": "loic-prud-homme",
-          "nom": "Loïc Prud'homme",
-          "fonction": "vice-président",
-          "debut": "2022-10-11",
-          "fin": "2024-06-11",
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
-      "label": "La France Insoumise",
-      "nb_membres_a_la_date_de_reference": 0,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 17,
-      "par_fonction": {
-        "président": 1
-      },
-      "membres": [
-        {
-          "membre_id": "jean-luc-melenchon",
-          "nom": "Jean-Luc Mélenchon",
-          "fonction": "président",
-          "debut": "2017-06-28",
-          "fin": "2021-10-12",
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
-      "label": "La France Insoumise - NUPES",
-      "nb_membres_a_la_date_de_reference": 0,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 17,
-      "par_fonction": {
-        "membre": 1
-      },
-      "membres": [
-        {
-          "membre_id": "loic-prud-homme",
-          "nom": "Loïc Prud'homme",
-          "fonction": "membre",
-          "debut": "2022-06-29",
-          "fin": "2024-06-09",
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
-      "label": "Mission d'information sur l'adaptation de la politique de l'eau au défi climatique",
-      "nb_membres_a_la_date_de_reference": 0,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 17,
-      "par_fonction": {
-        "membre": 1
-      },
-      "membres": [
-        {
-          "membre_id": "loic-prud-homme",
-          "nom": "Loïc Prud'homme",
-          "fonction": "membre",
-          "debut": "2023-05-26",
-          "fin": "2024-01-24",
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
-      "label": "Mission d'information sur l'impact, la gestion et les conséquences dans toutes ses dimensions de l'épidémie de coronavirus-covid 19 en france",
-      "nb_membres_a_la_date_de_reference": 0,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 17,
-      "par_fonction": {
-        "président de groupe": 1
-      },
-      "membres": [
-        {
-          "membre_id": "jean-luc-melenchon",
-          "nom": "Jean-Luc Mélenchon",
-          "fonction": "président de groupe",
-          "debut": "2020-03-31",
-          "fin": "2020-12-02",
           "actif": false
         }
       ]
@@ -69864,7 +69656,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2150",
-      "synchro_le": "2026-09-14T11:50:46+0000"
+      "synchro_le": "2026-09-17T10:15:14+0000"
     },
     {
       "type": "europarl",
@@ -69874,98 +69666,98 @@
     {
       "type": "parltrack",
       "url": "https://parltrack.org/dumps",
-      "synchro_le": "2026-09-14T12:03:45"
+      "synchro_le": "2026-09-17T10:30:34"
     },
     {
       "type": "senat",
       "url": "https://data.senat.fr/",
-      "synchro_le": "2026-09-14T11:07:27+0000",
+      "synchro_le": "2026-09-14T21:00:14+0000",
       "licence": "Licence Ouverte / Open Licence (Sénat) — data.senat.fr"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA588884",
-      "synchro_le": "2026-09-14T11:55:09+0000"
+      "synchro_le": "2026-09-17T10:22:36+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718860",
-      "synchro_le": "2026-09-14T11:49:59+0000"
+      "synchro_le": "2026-09-17T10:14:14+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718868",
-      "synchro_le": "2026-09-14T11:50:31+0000"
+      "synchro_le": "2026-09-17T10:14:39+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719578",
-      "synchro_le": "2026-09-14T11:50:27+0000"
+      "synchro_le": "2026-09-17T10:14:49+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719676",
-      "synchro_le": "2026-09-14T11:55:28+0000"
+      "synchro_le": "2026-09-17T10:22:05+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720286",
-      "synchro_le": "2026-09-14T11:50:09+0000"
+      "synchro_le": "2026-09-17T10:14:38+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720422",
-      "synchro_le": "2026-09-14T11:50:08+0000"
+      "synchro_le": "2026-09-17T10:14:18+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720430",
-      "synchro_le": "2026-09-14T11:55:04+0000"
+      "synchro_le": "2026-09-17T10:21:43+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720846",
-      "synchro_le": "2026-09-14T11:54:53+0000"
+      "synchro_le": "2026-09-17T10:22:03+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720892",
-      "synchro_le": "2026-09-14T11:55:10+0000"
+      "synchro_le": "2026-09-17T10:22:37+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721062",
-      "synchro_le": "2026-09-14T11:54:58+0000"
+      "synchro_le": "2026-09-17T10:22:14+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721202",
-      "synchro_le": "2026-09-14T11:49:59+0000"
+      "synchro_le": "2026-09-17T10:14:15+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721210",
-      "synchro_le": "2026-09-14T11:50:28+0000"
+      "synchro_le": "2026-09-17T10:14:50+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721226",
-      "synchro_le": "2026-09-14T11:55:20+0000"
+      "synchro_le": "2026-09-17T10:22:23+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721960",
-      "synchro_le": "2026-09-14T11:50:10+0000"
+      "synchro_le": "2026-09-17T10:14:39+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722142",
-      "synchro_le": "2026-09-14T11:50:09+0000"
+      "synchro_le": "2026-09-17T10:14:18+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-14T12:22:15+0000",
+    "genere_le": "2026-09-17T10:46:16+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + Licence Ouverte / Open Licence (Sénat) — data.senat.fr + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu) + ODbL v1.0 (ParlTrack — https://parltrack.org/dumps)",
     "profils_sources": [
       "jean-luc-melenchon",

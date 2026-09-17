@@ -376,14 +376,14 @@
       "membre_id": "philippe-brun",
       "nom": "Philippe Brun",
       "debut_dans_groupe": "2024-07-19",
-      "fin_dans_groupe": null,
+      "fin_dans_groupe": "2026-09-16",
       "periodes": [
         {
           "debut": "2024-07-19",
-          "fin": null
+          "fin": "2026-09-16"
         }
       ],
-      "present_a_la_date_de_reference": true
+      "present_a_la_date_de_reference": false
     },
     {
       "membre_id": "melanie-thomin",
@@ -963,11 +963,11 @@
     }
   ],
   "date_reference": {
-    "date": "2026-09-16",
+    "date": "2026-09-17",
     "origine": "generation"
   },
   "effectif": {
-    "a_la_date_de_reference": 68,
+    "a_la_date_de_reference": 67,
     "min_historique": {
       "valeur": 66,
       "date": "2024-07-19"
@@ -130125,7 +130125,7 @@
     {
       "categorie": "extra_parlementaire",
       "label": "Commission régionale du fonds pour le développement de la vie associative",
-      "nb_membres_a_la_date_de_reference": 35,
+      "nb_membres_a_la_date_de_reference": 34,
       "nb_membres_cumul_historique": 36,
       "effectif_reference": 70,
       "par_fonction": {
@@ -130259,7 +130259,7 @@
           "fonction": "Membre titulaire",
           "debut": "2024-12-06",
           "fin": null,
-          "actif": true
+          "actif": false
         },
         {
           "membre_id": "melanie-thomin",
@@ -130426,7 +130426,7 @@
     {
       "categorie": "extra_parlementaire",
       "label": "Commission départementale de coopération intercommunale",
-      "nb_membres_a_la_date_de_reference": 19,
+      "nb_membres_a_la_date_de_reference": 18,
       "nb_membres_cumul_historique": 24,
       "effectif_reference": 70,
       "par_fonction": {
@@ -130527,7 +130527,7 @@
           "fonction": "Membre titulaire",
           "debut": "2024-12-06",
           "fin": null,
-          "actif": true
+          "actif": false
         },
         {
           "membre_id": "mickael-bouloux",
@@ -130630,7 +130630,7 @@
     {
       "categorie": "extra_parlementaire",
       "label": "Commission départementale prévue à l'article L. 2334-37 du code général des collectivités territoriales",
-      "nb_membres_a_la_date_de_reference": 19,
+      "nb_membres_a_la_date_de_reference": 18,
       "nb_membres_cumul_historique": 23,
       "effectif_reference": 70,
       "par_fonction": {
@@ -130731,7 +130731,7 @@
           "fonction": "Membre titulaire",
           "debut": "2024-12-06",
           "fin": null,
-          "actif": true
+          "actif": false
         },
         {
           "membre_id": "melanie-thomin",
@@ -131336,7 +131336,7 @@
     {
       "categorie": "groupe_amitie",
       "label": "France-Palestine",
-      "nb_membres_a_la_date_de_reference": 12,
+      "nb_membres_a_la_date_de_reference": 11,
       "nb_membres_cumul_historique": 12,
       "effectif_reference": 70,
       "par_fonction": {
@@ -131381,7 +131381,7 @@
           "fonction": "Membre",
           "debut": "2025-02-05",
           "fin": null,
-          "actif": true
+          "actif": false
         },
         {
           "membre_id": "mickael-bouloux",
@@ -131428,114 +131428,6 @@
           "nom": "Peio Dufau",
           "fonction": "Membre",
           "debut": "2025-01-23",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "dieynaba-diop",
-          "nom": "Dieynaba Diop",
-          "fonction": "Membre",
-          "debut": "2025-01-30",
-          "fin": null,
-          "actif": true
-        }
-      ]
-    },
-    {
-      "categorie": "groupe_amitie",
-      "label": "France-Maroc",
-      "nb_membres_a_la_date_de_reference": 11,
-      "nb_membres_cumul_historique": 12,
-      "effectif_reference": 70,
-      "par_fonction": {
-        "membre": 12
-      },
-      "membres": [
-        {
-          "membre_id": "alain-david",
-          "nom": "Alain David",
-          "fonction": "Membre",
-          "debut": "2025-01-24",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "guillaume-garot",
-          "nom": "Guillaume Garot",
-          "fonction": "Membre",
-          "debut": "2025-01-30",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "marietta-karamanli",
-          "nom": "Marietta Karamanli",
-          "fonction": "Membre",
-          "debut": "2025-01-29",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "marie-noelle-battistel",
-          "nom": "Marie-Noëlle Battistel",
-          "fonction": "Membre",
-          "debut": "2025-01-29",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "fanny-dombre-coste",
-          "nom": "Fanny Dombre Coste",
-          "fonction": "Membre",
-          "debut": "2025-01-23",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "belkhir-belhaddad",
-          "nom": "Belkhir Belhaddad",
-          "fonction": "Membre",
-          "debut": "2025-01-24",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "sacha-houlie",
-          "nom": "Sacha Houlié",
-          "fonction": "Membre",
-          "debut": "2022-12-08",
-          "fin": "2024-06-09",
-          "actif": false
-        },
-        {
-          "membre_id": "philippe-brun",
-          "nom": "Philippe Brun",
-          "fonction": "Membre",
-          "debut": "2025-02-05",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "pierrick-courbon",
-          "nom": "Pierrick Courbon",
-          "fonction": "Membre",
-          "debut": "2025-01-24",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "estelle-mercier",
-          "nom": "Estelle Mercier",
-          "fonction": "Membre",
-          "debut": "2025-01-30",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "stephane-hablot",
-          "nom": "Stéphane Hablot",
-          "fonction": "Membre",
-          "debut": "2025-02-06",
           "fin": null,
           "actif": true
         },
@@ -133511,122 +133403,6 @@
       ]
     },
     {
-      "categorie": "groupe_amitie",
-      "label": "France-Algérie",
-      "nb_membres_a_la_date_de_reference": 10,
-      "nb_membres_cumul_historique": 13,
-      "effectif_reference": 70,
-      "par_fonction": {
-        "membre": 13
-      },
-      "membres": [
-        {
-          "membre_id": "alain-david",
-          "nom": "Alain David",
-          "fonction": "Membre",
-          "debut": "2017-09-29",
-          "fin": "2022-06-21",
-          "actif": false
-        },
-        {
-          "membre_id": "jerome-guedj",
-          "nom": "Jérôme Guedj",
-          "fonction": "Membre",
-          "debut": "2022-12-13",
-          "fin": "2024-06-09",
-          "actif": false
-        },
-        {
-          "membre_id": "pascale-got",
-          "nom": "Pascale Got",
-          "fonction": "Membre",
-          "debut": "2025-12-10",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "guillaume-garot",
-          "nom": "Guillaume Garot",
-          "fonction": "Membre",
-          "debut": "2025-01-30",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "herve-saulignac",
-          "nom": "Hervé Saulignac",
-          "fonction": "Membre",
-          "debut": "2025-01-27",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "dominique-potier",
-          "nom": "Dominique Potier",
-          "fonction": "Membre",
-          "debut": "2012-10-23",
-          "fin": "2017-06-20",
-          "actif": false
-        },
-        {
-          "membre_id": "belkhir-belhaddad",
-          "nom": "Belkhir Belhaddad",
-          "fonction": "Membre",
-          "debut": "2025-01-24",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "isabelle-santiago",
-          "nom": "Isabelle Santiago",
-          "fonction": "Membre",
-          "debut": "2025-01-28",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "philippe-brun",
-          "nom": "Philippe Brun",
-          "fonction": "Membre",
-          "debut": "2025-02-05",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "mickael-bouloux",
-          "nom": "Mickaël Bouloux",
-          "fonction": "Membre",
-          "debut": "2025-01-31",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "fatiha-keloua-hachi",
-          "nom": "Fatiha Keloua Hachi",
-          "fonction": "Membre",
-          "debut": "2025-02-06",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "laurent-lhardit",
-          "nom": "Laurent Lhardit",
-          "fonction": "Membre",
-          "debut": "2025-01-30",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "pierre-pribetich",
-          "nom": "Pierre Pribetich",
-          "fonction": "Membre",
-          "debut": "2025-12-12",
-          "fin": null,
-          "actif": true
-        }
-      ]
-    },
-    {
       "categorie": "groupe_etudes",
       "label": "Logement et écoconstruction",
       "nb_membres_a_la_date_de_reference": 10,
@@ -133745,19 +133521,43 @@
     },
     {
       "categorie": "groupe_amitie",
-      "label": "France-Sénégal",
+      "label": "France-Maroc",
       "nb_membres_a_la_date_de_reference": 10,
-      "nb_membres_cumul_historique": 11,
+      "nb_membres_cumul_historique": 12,
       "effectif_reference": 70,
       "par_fonction": {
-        "membre": 11
+        "membre": 12
       },
       "membres": [
         {
-          "membre_id": "marie-recalde",
-          "nom": "Marie Récalde",
+          "membre_id": "alain-david",
+          "nom": "Alain David",
           "fonction": "Membre",
-          "debut": "2026-07-15",
+          "debut": "2025-01-24",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "guillaume-garot",
+          "nom": "Guillaume Garot",
+          "fonction": "Membre",
+          "debut": "2025-01-30",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "marietta-karamanli",
+          "nom": "Marietta Karamanli",
+          "fonction": "Membre",
+          "debut": "2025-01-29",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "marie-noelle-battistel",
+          "nom": "Marie-Noëlle Battistel",
+          "fonction": "Membre",
+          "debut": "2025-01-29",
           "fin": null,
           "actif": true
         },
@@ -133770,28 +133570,20 @@
           "actif": true
         },
         {
-          "membre_id": "dominique-potier",
-          "nom": "Dominique Potier",
+          "membre_id": "belkhir-belhaddad",
+          "nom": "Belkhir Belhaddad",
           "fonction": "Membre",
-          "debut": "2012-10-23",
-          "fin": "2017-06-20",
+          "debut": "2025-01-24",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "sacha-houlie",
+          "nom": "Sacha Houlié",
+          "fonction": "Membre",
+          "debut": "2022-12-08",
+          "fin": "2024-06-09",
           "actif": false
-        },
-        {
-          "membre_id": "colette-capdevielle",
-          "nom": "Colette Capdevielle",
-          "fonction": "Membre",
-          "debut": "2025-01-30",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "joel-aviragnet",
-          "nom": "Joël Aviragnet",
-          "fonction": "Membre",
-          "debut": "2025-01-23",
-          "fin": null,
-          "actif": true
         },
         {
           "membre_id": "philippe-brun",
@@ -133799,29 +133591,29 @@
           "fonction": "Membre",
           "debut": "2025-02-05",
           "fin": null,
-          "actif": true
+          "actif": false
         },
         {
-          "membre_id": "mickael-bouloux",
-          "nom": "Mickaël Bouloux",
+          "membre_id": "pierrick-courbon",
+          "nom": "Pierrick Courbon",
           "fonction": "Membre",
-          "debut": "2025-01-31",
+          "debut": "2025-01-24",
           "fin": null,
           "actif": true
         },
         {
-          "membre_id": "anna-pic",
-          "nom": "Anna Pic",
+          "membre_id": "estelle-mercier",
+          "nom": "Estelle Mercier",
           "fonction": "Membre",
           "debut": "2025-01-30",
           "fin": null,
           "actif": true
         },
         {
-          "membre_id": "elie-califer",
-          "nom": "Elie Califer",
+          "membre_id": "stephane-hablot",
+          "nom": "Stéphane Hablot",
           "fonction": "Membre",
-          "debut": "2025-02-17",
+          "debut": "2025-02-06",
           "fin": null,
           "actif": true
         },
@@ -133830,14 +133622,6 @@
           "nom": "Dieynaba Diop",
           "fonction": "Membre",
           "debut": "2025-01-30",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "beatrice-bellay",
-          "nom": "Béatrice Bellay",
-          "fonction": "Membre",
-          "debut": "2025-11-04",
           "fin": null,
           "actif": true
         }
@@ -134102,76 +133886,75 @@
     },
     {
       "categorie": "groupe_amitie",
-      "label": "France-Québec",
+      "label": "France-Algérie",
       "nb_membres_a_la_date_de_reference": 9,
-      "nb_membres_cumul_historique": 15,
+      "nb_membres_cumul_historique": 13,
       "effectif_reference": 70,
       "par_fonction": {
-        "membre": 14,
-        "secrétaire": 1
+        "membre": 13
       },
       "membres": [
+        {
+          "membre_id": "alain-david",
+          "nom": "Alain David",
+          "fonction": "Membre",
+          "debut": "2017-09-29",
+          "fin": "2022-06-21",
+          "actif": false
+        },
+        {
+          "membre_id": "jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre",
+          "debut": "2022-12-13",
+          "fin": "2024-06-09",
+          "actif": false
+        },
+        {
+          "membre_id": "pascale-got",
+          "nom": "Pascale Got",
+          "fonction": "Membre",
+          "debut": "2025-12-10",
+          "fin": null,
+          "actif": true
+        },
         {
           "membre_id": "guillaume-garot",
           "nom": "Guillaume Garot",
           "fonction": "Membre",
-          "debut": "2007-10-10",
-          "fin": "2012-06-19",
-          "actif": false
-        },
-        {
-          "membre_id": "marietta-karamanli",
-          "nom": "Marietta Karamanli",
-          "fonction": "Membre",
-          "debut": "2025-01-29",
+          "debut": "2025-01-30",
           "fin": null,
           "actif": true
         },
         {
-          "membre_id": "marie-recalde",
-          "nom": "Marie Récalde",
+          "membre_id": "herve-saulignac",
+          "nom": "Hervé Saulignac",
           "fonction": "Membre",
-          "debut": "2012-10-18",
+          "debut": "2025-01-27",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "dominique-potier",
+          "nom": "Dominique Potier",
+          "fonction": "Membre",
+          "debut": "2012-10-23",
           "fin": "2017-06-20",
           "actif": false
         },
         {
-          "membre_id": "marie-noelle-battistel",
-          "nom": "Marie-Noëlle Battistel",
+          "membre_id": "belkhir-belhaddad",
+          "nom": "Belkhir Belhaddad",
           "fonction": "Membre",
-          "debut": "2017-10-05",
-          "fin": "2022-06-21",
-          "actif": false
-        },
-        {
-          "membre_id": "fanny-dombre-coste",
-          "nom": "Fanny Dombre Coste",
-          "fonction": "Membre",
-          "debut": "2014-05-20",
-          "fin": "2017-06-20",
-          "actif": false
-        },
-        {
-          "membre_id": "christine-pires-beaune",
-          "nom": "Christine Pirès Beaune",
-          "fonction": "Membre",
-          "debut": "2017-11-08",
-          "fin": "2022-06-21",
-          "actif": false
+          "debut": "2025-01-24",
+          "fin": null,
+          "actif": true
         },
         {
           "membre_id": "isabelle-santiago",
           "nom": "Isabelle Santiago",
-          "fonction": "Secrétaire",
-          "debut": "2025-02-20",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "arthur-delaporte",
-          "nom": "Arthur Delaporte",
           "fonction": "Membre",
-          "debut": "2025-01-23",
+          "debut": "2025-01-28",
           "fin": null,
           "actif": true
         },
@@ -134181,7 +133964,7 @@
           "fonction": "Membre",
           "debut": "2025-02-05",
           "fin": null,
-          "actif": true
+          "actif": false
         },
         {
           "membre_id": "mickael-bouloux",
@@ -134195,39 +133978,23 @@
           "membre_id": "fatiha-keloua-hachi",
           "nom": "Fatiha Keloua Hachi",
           "fonction": "Membre",
-          "debut": "2025-02-17",
+          "debut": "2025-02-06",
           "fin": null,
           "actif": true
         },
         {
-          "membre_id": "sebastien-saint-pasteur",
-          "nom": "Sébastien Saint-Pasteur",
+          "membre_id": "laurent-lhardit",
+          "nom": "Laurent Lhardit",
           "fonction": "Membre",
-          "debut": "2025-01-23",
+          "debut": "2025-01-30",
           "fin": null,
           "actif": true
         },
         {
-          "membre_id": "karim-benbrahim",
-          "nom": "Karim Benbrahim",
+          "membre_id": "pierre-pribetich",
+          "nom": "Pierre Pribetich",
           "fonction": "Membre",
-          "debut": "2025-02-02",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "christophe-proenca",
-          "nom": "Christophe Proença",
-          "fonction": "Membre",
-          "debut": "2025-01-23",
-          "fin": "2025-01-23",
-          "actif": false
-        },
-        {
-          "membre_id": "thierry-sother",
-          "nom": "Thierry Sother",
-          "fonction": "Membre",
-          "debut": "2025-01-23",
+          "debut": "2025-12-12",
           "fin": null,
           "actif": true
         }
@@ -134462,6 +134229,106 @@
           "nom": "Dieynaba Diop",
           "fonction": "Membre",
           "debut": "2025-01-30",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "France-Sénégal",
+      "nb_membres_a_la_date_de_reference": 9,
+      "nb_membres_cumul_historique": 11,
+      "effectif_reference": 70,
+      "par_fonction": {
+        "membre": 11
+      },
+      "membres": [
+        {
+          "membre_id": "marie-recalde",
+          "nom": "Marie Récalde",
+          "fonction": "Membre",
+          "debut": "2026-07-15",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "fanny-dombre-coste",
+          "nom": "Fanny Dombre Coste",
+          "fonction": "Membre",
+          "debut": "2025-01-23",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "dominique-potier",
+          "nom": "Dominique Potier",
+          "fonction": "Membre",
+          "debut": "2012-10-23",
+          "fin": "2017-06-20",
+          "actif": false
+        },
+        {
+          "membre_id": "colette-capdevielle",
+          "nom": "Colette Capdevielle",
+          "fonction": "Membre",
+          "debut": "2025-01-30",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "joel-aviragnet",
+          "nom": "Joël Aviragnet",
+          "fonction": "Membre",
+          "debut": "2025-01-23",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "philippe-brun",
+          "nom": "Philippe Brun",
+          "fonction": "Membre",
+          "debut": "2025-02-05",
+          "fin": null,
+          "actif": false
+        },
+        {
+          "membre_id": "mickael-bouloux",
+          "nom": "Mickaël Bouloux",
+          "fonction": "Membre",
+          "debut": "2025-01-31",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "anna-pic",
+          "nom": "Anna Pic",
+          "fonction": "Membre",
+          "debut": "2025-01-30",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "elie-califer",
+          "nom": "Elie Califer",
+          "fonction": "Membre",
+          "debut": "2025-02-17",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "dieynaba-diop",
+          "nom": "Dieynaba Diop",
+          "fonction": "Membre",
+          "debut": "2025-01-30",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "beatrice-bellay",
+          "nom": "Béatrice Bellay",
+          "fonction": "Membre",
+          "debut": "2025-11-04",
           "fin": null,
           "actif": true
         }
@@ -134755,498 +134622,6 @@
     },
     {
       "categorie": "commission",
-      "label": "Commission des finances, de l'économie générale et du contrôle budgétaire",
-      "nb_membres_a_la_date_de_reference": 8,
-      "nb_membres_cumul_historique": 60,
-      "effectif_reference": 70,
-      "par_fonction": {
-        "membre": 60
-      },
-      "membres": [
-        {
-          "membre_id": "jerome-guedj",
-          "nom": "Jérôme Guedj",
-          "fonction": "Membre",
-          "debut": "2026-01-08",
-          "fin": "2026-01-08",
-          "actif": false
-        },
-        {
-          "membre_id": "francois-hollande",
-          "nom": "François Hollande",
-          "fonction": "Membre",
-          "debut": "2012-03-09",
-          "fin": "2012-05-14",
-          "actif": false
-        },
-        {
-          "membre_id": "pascale-got",
-          "nom": "Pascale Got",
-          "fonction": "Membre",
-          "debut": "2010-05-05",
-          "fin": "2010-05-05",
-          "actif": false
-        },
-        {
-          "membre_id": "guillaume-garot",
-          "nom": "Guillaume Garot",
-          "fonction": "Membre",
-          "debut": "2015-05-27",
-          "fin": "2015-05-27",
-          "actif": false
-        },
-        {
-          "membre_id": "marietta-karamanli",
-          "nom": "Marietta Karamanli",
-          "fonction": "Membre",
-          "debut": "2026-05-19",
-          "fin": "2026-05-19",
-          "actif": false
-        },
-        {
-          "membre_id": "herve-saulignac",
-          "nom": "Hervé Saulignac",
-          "fonction": "Membre",
-          "debut": "2025-06-28",
-          "fin": "2025-07-01",
-          "actif": false
-        },
-        {
-          "membre_id": "claudia-rouaux",
-          "nom": "Claudia Rouaux",
-          "fonction": "Membre",
-          "debut": "2024-11-06",
-          "fin": "2024-11-08",
-          "actif": false
-        },
-        {
-          "membre_id": "marie-noelle-battistel",
-          "nom": "Marie-Noëlle Battistel",
-          "fonction": "Membre",
-          "debut": "2024-11-19",
-          "fin": "2024-11-19",
-          "actif": false
-        },
-        {
-          "membre_id": "fanny-dombre-coste",
-          "nom": "Fanny Dombre Coste",
-          "fonction": "Membre",
-          "debut": "2026-05-20",
-          "fin": "2026-05-20",
-          "actif": false
-        },
-        {
-          "membre_id": "laurent-baumel",
-          "nom": "Laurent Baumel",
-          "fonction": "Membre",
-          "debut": "2026-05-21",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "dominique-potier",
-          "nom": "Dominique Potier",
-          "fonction": "Membre",
-          "debut": "2025-11-07",
-          "fin": "2025-11-07",
-          "actif": false
-        },
-        {
-          "membre_id": "christine-pires-beaune",
-          "nom": "Christine Pirès Beaune",
-          "fonction": "Membre",
-          "debut": "2026-02-06",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "colette-capdevielle",
-          "nom": "Colette Capdevielle",
-          "fonction": "Membre",
-          "debut": "2026-05-13",
-          "fin": "2026-05-18",
-          "actif": false
-        },
-        {
-          "membre_id": "olivier-faure",
-          "nom": "Olivier Faure",
-          "fonction": "Membre",
-          "debut": "2012-06-28",
-          "fin": "2017-06-20",
-          "actif": false
-        },
-        {
-          "membre_id": "joel-aviragnet",
-          "nom": "Joël Aviragnet",
-          "fonction": "Membre",
-          "debut": "2026-06-03",
-          "fin": "2026-06-03",
-          "actif": false
-        },
-        {
-          "membre_id": "christian-baptiste",
-          "nom": "Christian Baptiste",
-          "fonction": "Membre",
-          "debut": "2026-05-21",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "philippe-naillet",
-          "nom": "Philippe Naillet",
-          "fonction": "Membre",
-          "debut": "2024-11-01",
-          "fin": "2024-11-04",
-          "actif": false
-        },
-        {
-          "membre_id": "chantal-jourdan",
-          "nom": "Chantal Jourdan",
-          "fonction": "Membre",
-          "debut": "2025-12-20",
-          "fin": "2026-01-02",
-          "actif": false
-        },
-        {
-          "membre_id": "jiovanny-william",
-          "nom": "Jiovanny William",
-          "fonction": "Membre",
-          "debut": "2026-07-21",
-          "fin": "2026-08-31",
-          "actif": false
-        },
-        {
-          "membre_id": "gerard-leseul",
-          "nom": "Gérard Leseul",
-          "fonction": "Membre",
-          "debut": "2026-04-29",
-          "fin": "2026-04-30",
-          "actif": false
-        },
-        {
-          "membre_id": "isabelle-santiago",
-          "nom": "Isabelle Santiago",
-          "fonction": "Membre",
-          "debut": "2026-01-08",
-          "fin": "2026-01-08",
-          "actif": false
-        },
-        {
-          "membre_id": "arthur-delaporte",
-          "nom": "Arthur Delaporte",
-          "fonction": "Membre",
-          "debut": "2024-05-22",
-          "fin": "2024-05-23",
-          "actif": false
-        },
-        {
-          "membre_id": "philippe-brun",
-          "nom": "Philippe Brun",
-          "fonction": "Membre",
-          "debut": "2025-01-25",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "melanie-thomin",
-          "nom": "Mélanie Thomin",
-          "fonction": "Membre",
-          "debut": "2025-11-07",
-          "fin": "2025-11-07",
-          "actif": false
-        },
-        {
-          "membre_id": "mickael-bouloux",
-          "nom": "Mickaël Bouloux",
-          "fonction": "Membre",
-          "debut": "2026-06-04",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "anna-pic",
-          "nom": "Anna Pic",
-          "fonction": "Membre",
-          "debut": "2025-10-18",
-          "fin": "2025-10-21",
-          "actif": false
-        },
-        {
-          "membre_id": "roger-vicot",
-          "nom": "Roger Vicot",
-          "fonction": "Membre",
-          "debut": "2023-05-31",
-          "fin": "2023-05-31",
-          "actif": false
-        },
-        {
-          "membre_id": "inaki-echaniz",
-          "nom": "Iñaki Echaniz",
-          "fonction": "Membre",
-          "debut": "2026-05-14",
-          "fin": "2026-05-19",
-          "actif": false
-        },
-        {
-          "membre_id": "fatiha-keloua-hachi",
-          "nom": "Fatiha Keloua Hachi",
-          "fonction": "Membre",
-          "debut": "2025-12-20",
-          "fin": "2026-01-02",
-          "actif": false
-        },
-        {
-          "membre_id": "stephane-delautrette",
-          "nom": "Stéphane Delautrette",
-          "fonction": "Membre",
-          "debut": "2025-11-04",
-          "fin": "2025-11-04",
-          "actif": false
-        },
-        {
-          "membre_id": "elie-califer",
-          "nom": "Elie Califer",
-          "fonction": "Membre",
-          "debut": "2026-02-03",
-          "fin": "2026-02-05",
-          "actif": false
-        },
-        {
-          "membre_id": "martine-froger",
-          "nom": "Martine Froger",
-          "fonction": "Membre",
-          "debut": "2026-05-20",
-          "fin": "2026-05-20",
-          "actif": false
-        },
-        {
-          "membre_id": "aurelien-rousseau",
-          "nom": "Aurélien Rousseau",
-          "fonction": "Membre",
-          "debut": "2024-12-12",
-          "fin": "2024-12-12",
-          "actif": false
-        },
-        {
-          "membre_id": "emmanuel-gregoire",
-          "nom": "Emmanuel Grégoire",
-          "fonction": "Membre",
-          "debut": "2024-12-12",
-          "fin": "2024-12-12",
-          "actif": false
-        },
-        {
-          "membre_id": "marie-jose-allemand",
-          "nom": "Marie-José Allemand",
-          "fonction": "Membre",
-          "debut": "2026-06-02",
-          "fin": "2026-06-05",
-          "actif": false
-        },
-        {
-          "membre_id": "valerie-rossi",
-          "nom": "Valérie Rossi",
-          "fonction": "Membre",
-          "debut": "2026-05-20",
-          "fin": "2026-05-20",
-          "actif": false
-        },
-        {
-          "membre_id": "laurent-lhardit",
-          "nom": "Laurent Lhardit",
-          "fonction": "Membre",
-          "debut": "2025-11-18",
-          "fin": "2025-11-18",
-          "actif": false
-        },
-        {
-          "membre_id": "marc-pena",
-          "nom": "Marc Pena",
-          "fonction": "Membre",
-          "debut": "2025-11-05",
-          "fin": "2025-11-05",
-          "actif": false
-        },
-        {
-          "membre_id": "paul-christophle",
-          "nom": "Paul Christophle",
-          "fonction": "Membre",
-          "debut": "2026-02-04",
-          "fin": "2026-02-05",
-          "actif": false
-        },
-        {
-          "membre_id": "oceane-godard",
-          "nom": "Océane Godard",
-          "fonction": "Membre",
-          "debut": "2025-11-09",
-          "fin": "2025-11-10",
-          "actif": false
-        },
-        {
-          "membre_id": "pierre-pribetich",
-          "nom": "Pierre Pribetich",
-          "fonction": "Membre",
-          "debut": "2025-11-07",
-          "fin": "2025-11-07",
-          "actif": false
-        },
-        {
-          "membre_id": "arnaud-simion",
-          "nom": "Arnaud Simion",
-          "fonction": "Membre",
-          "debut": "2026-05-20",
-          "fin": "2026-05-20",
-          "actif": false
-        },
-        {
-          "membre_id": "jacques-oberti",
-          "nom": "Jacques Oberti",
-          "fonction": "Membre",
-          "debut": "2026-06-06",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "sebastien-saint-pasteur",
-          "nom": "Sébastien Saint-Pasteur",
-          "fonction": "Membre",
-          "debut": "2025-12-03",
-          "fin": "2025-12-03",
-          "actif": false
-        },
-        {
-          "membre_id": "pierrick-courbon",
-          "nom": "Pierrick Courbon",
-          "fonction": "Membre",
-          "debut": "2025-12-11",
-          "fin": "2025-12-11",
-          "actif": false
-        },
-        {
-          "membre_id": "fabrice-roussel",
-          "nom": "Fabrice Roussel",
-          "fonction": "Membre",
-          "debut": "2025-10-22",
-          "fin": "2025-10-22",
-          "actif": false
-        },
-        {
-          "membre_id": "sophie-pantel",
-          "nom": "Sophie Pantel",
-          "fonction": "Membre",
-          "debut": "2026-09-01",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "estelle-mercier",
-          "nom": "Estelle Mercier",
-          "fonction": "Membre",
-          "debut": "2026-01-03",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "stephane-hablot",
-          "nom": "Stéphane Hablot",
-          "fonction": "Membre",
-          "debut": "2026-06-03",
-          "fin": "2026-06-03",
-          "actif": false
-        },
-        {
-          "membre_id": "julien-gokel",
-          "nom": "Julien Gokel",
-          "fonction": "Membre",
-          "debut": "2025-11-19",
-          "fin": "2025-11-19",
-          "actif": false
-        },
-        {
-          "membre_id": "peio-dufau",
-          "nom": "Peio Dufau",
-          "fonction": "Membre",
-          "debut": "2024-10-31",
-          "fin": "2024-10-31",
-          "actif": false
-        },
-        {
-          "membre_id": "denis-fegne",
-          "nom": "Denis Fégné",
-          "fonction": "Membre",
-          "debut": "2024-10-30",
-          "fin": "2024-10-30",
-          "actif": false
-        },
-        {
-          "membre_id": "thierry-sother",
-          "nom": "Thierry Sother",
-          "fonction": "Membre",
-          "debut": "2026-05-05",
-          "fin": "2026-05-07",
-          "actif": false
-        },
-        {
-          "membre_id": "sandrine-runel",
-          "nom": "Sandrine Runel",
-          "fonction": "Membre",
-          "debut": "2025-02-19",
-          "fin": "2025-02-19",
-          "actif": false
-        },
-        {
-          "membre_id": "florence-herouin-leautey",
-          "nom": "Florence Herouin-Léautey",
-          "fonction": "Membre",
-          "debut": "2025-11-08",
-          "fin": "2025-11-08",
-          "actif": false
-        },
-        {
-          "membre_id": "celine-thiebault-martinez",
-          "nom": "Céline Thiébault-Martinez",
-          "fonction": "Membre",
-          "debut": "2025-11-06",
-          "fin": "2025-11-06",
-          "actif": false
-        },
-        {
-          "membre_id": "dieynaba-diop",
-          "nom": "Dieynaba Diop",
-          "fonction": "Membre",
-          "debut": "2026-01-09",
-          "fin": "2026-01-12",
-          "actif": false
-        },
-        {
-          "membre_id": "romain-eskenazi",
-          "nom": "Romain Eskenazi",
-          "fonction": "Membre",
-          "debut": "2026-05-13",
-          "fin": "2026-05-13",
-          "actif": false
-        },
-        {
-          "membre_id": "beatrice-bellay",
-          "nom": "Béatrice Bellay",
-          "fonction": "Membre",
-          "debut": "2025-11-09",
-          "fin": "2025-11-12",
-          "actif": false
-        },
-        {
-          "membre_id": "ayda-hadizadeh",
-          "nom": "Ayda Hadizadeh",
-          "fonction": "Membre",
-          "debut": "2026-01-08",
-          "fin": "2026-01-08",
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
       "label": "Commission de la défense nationale et des forces armées",
       "nb_membres_a_la_date_de_reference": 8,
       "nb_membres_cumul_historique": 42,
@@ -135403,8 +134778,8 @@
           "membre_id": "philippe-brun",
           "nom": "Philippe Brun",
           "fonction": "Membre",
-          "debut": "2023-10-31",
-          "fin": "2023-10-31",
+          "debut": "2026-09-17",
+          "fin": null,
           "actif": false
         },
         {
@@ -135938,6 +135313,139 @@
           "debut": "2026-02-21",
           "fin": "2026-02-25",
           "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "France-Québec",
+      "nb_membres_a_la_date_de_reference": 8,
+      "nb_membres_cumul_historique": 15,
+      "effectif_reference": 70,
+      "par_fonction": {
+        "membre": 14,
+        "secrétaire": 1
+      },
+      "membres": [
+        {
+          "membre_id": "guillaume-garot",
+          "nom": "Guillaume Garot",
+          "fonction": "Membre",
+          "debut": "2007-10-10",
+          "fin": "2012-06-19",
+          "actif": false
+        },
+        {
+          "membre_id": "marietta-karamanli",
+          "nom": "Marietta Karamanli",
+          "fonction": "Membre",
+          "debut": "2025-01-29",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "marie-recalde",
+          "nom": "Marie Récalde",
+          "fonction": "Membre",
+          "debut": "2012-10-18",
+          "fin": "2017-06-20",
+          "actif": false
+        },
+        {
+          "membre_id": "marie-noelle-battistel",
+          "nom": "Marie-Noëlle Battistel",
+          "fonction": "Membre",
+          "debut": "2017-10-05",
+          "fin": "2022-06-21",
+          "actif": false
+        },
+        {
+          "membre_id": "fanny-dombre-coste",
+          "nom": "Fanny Dombre Coste",
+          "fonction": "Membre",
+          "debut": "2014-05-20",
+          "fin": "2017-06-20",
+          "actif": false
+        },
+        {
+          "membre_id": "christine-pires-beaune",
+          "nom": "Christine Pirès Beaune",
+          "fonction": "Membre",
+          "debut": "2017-11-08",
+          "fin": "2022-06-21",
+          "actif": false
+        },
+        {
+          "membre_id": "isabelle-santiago",
+          "nom": "Isabelle Santiago",
+          "fonction": "Secrétaire",
+          "debut": "2025-02-20",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "arthur-delaporte",
+          "nom": "Arthur Delaporte",
+          "fonction": "Membre",
+          "debut": "2025-01-23",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "philippe-brun",
+          "nom": "Philippe Brun",
+          "fonction": "Membre",
+          "debut": "2025-02-05",
+          "fin": null,
+          "actif": false
+        },
+        {
+          "membre_id": "mickael-bouloux",
+          "nom": "Mickaël Bouloux",
+          "fonction": "Membre",
+          "debut": "2025-01-31",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "fatiha-keloua-hachi",
+          "nom": "Fatiha Keloua Hachi",
+          "fonction": "Membre",
+          "debut": "2025-02-17",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "sebastien-saint-pasteur",
+          "nom": "Sébastien Saint-Pasteur",
+          "fonction": "Membre",
+          "debut": "2025-01-23",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "karim-benbrahim",
+          "nom": "Karim Benbrahim",
+          "fonction": "Membre",
+          "debut": "2025-02-02",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "christophe-proenca",
+          "nom": "Christophe Proença",
+          "fonction": "Membre",
+          "debut": "2025-01-23",
+          "fin": "2025-01-23",
+          "actif": false
+        },
+        {
+          "membre_id": "thierry-sother",
+          "nom": "Thierry Sother",
+          "fonction": "Membre",
+          "debut": "2025-01-23",
+          "fin": null,
+          "actif": true
         }
       ]
     },
@@ -136875,6 +136383,498 @@
     },
     {
       "categorie": "commission",
+      "label": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+      "nb_membres_a_la_date_de_reference": 7,
+      "nb_membres_cumul_historique": 60,
+      "effectif_reference": 70,
+      "par_fonction": {
+        "membre": 60
+      },
+      "membres": [
+        {
+          "membre_id": "jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre",
+          "debut": "2026-01-08",
+          "fin": "2026-01-08",
+          "actif": false
+        },
+        {
+          "membre_id": "francois-hollande",
+          "nom": "François Hollande",
+          "fonction": "Membre",
+          "debut": "2012-03-09",
+          "fin": "2012-05-14",
+          "actif": false
+        },
+        {
+          "membre_id": "pascale-got",
+          "nom": "Pascale Got",
+          "fonction": "Membre",
+          "debut": "2010-05-05",
+          "fin": "2010-05-05",
+          "actif": false
+        },
+        {
+          "membre_id": "guillaume-garot",
+          "nom": "Guillaume Garot",
+          "fonction": "Membre",
+          "debut": "2015-05-27",
+          "fin": "2015-05-27",
+          "actif": false
+        },
+        {
+          "membre_id": "marietta-karamanli",
+          "nom": "Marietta Karamanli",
+          "fonction": "Membre",
+          "debut": "2026-05-19",
+          "fin": "2026-05-19",
+          "actif": false
+        },
+        {
+          "membre_id": "herve-saulignac",
+          "nom": "Hervé Saulignac",
+          "fonction": "Membre",
+          "debut": "2025-06-28",
+          "fin": "2025-07-01",
+          "actif": false
+        },
+        {
+          "membre_id": "claudia-rouaux",
+          "nom": "Claudia Rouaux",
+          "fonction": "Membre",
+          "debut": "2024-11-06",
+          "fin": "2024-11-08",
+          "actif": false
+        },
+        {
+          "membre_id": "marie-noelle-battistel",
+          "nom": "Marie-Noëlle Battistel",
+          "fonction": "Membre",
+          "debut": "2024-11-19",
+          "fin": "2024-11-19",
+          "actif": false
+        },
+        {
+          "membre_id": "fanny-dombre-coste",
+          "nom": "Fanny Dombre Coste",
+          "fonction": "Membre",
+          "debut": "2026-05-20",
+          "fin": "2026-05-20",
+          "actif": false
+        },
+        {
+          "membre_id": "laurent-baumel",
+          "nom": "Laurent Baumel",
+          "fonction": "Membre",
+          "debut": "2026-05-21",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "dominique-potier",
+          "nom": "Dominique Potier",
+          "fonction": "Membre",
+          "debut": "2025-11-07",
+          "fin": "2025-11-07",
+          "actif": false
+        },
+        {
+          "membre_id": "christine-pires-beaune",
+          "nom": "Christine Pirès Beaune",
+          "fonction": "Membre",
+          "debut": "2026-02-06",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "colette-capdevielle",
+          "nom": "Colette Capdevielle",
+          "fonction": "Membre",
+          "debut": "2026-05-13",
+          "fin": "2026-05-18",
+          "actif": false
+        },
+        {
+          "membre_id": "olivier-faure",
+          "nom": "Olivier Faure",
+          "fonction": "Membre",
+          "debut": "2012-06-28",
+          "fin": "2017-06-20",
+          "actif": false
+        },
+        {
+          "membre_id": "joel-aviragnet",
+          "nom": "Joël Aviragnet",
+          "fonction": "Membre",
+          "debut": "2026-06-03",
+          "fin": "2026-06-03",
+          "actif": false
+        },
+        {
+          "membre_id": "christian-baptiste",
+          "nom": "Christian Baptiste",
+          "fonction": "Membre",
+          "debut": "2026-05-21",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "philippe-naillet",
+          "nom": "Philippe Naillet",
+          "fonction": "Membre",
+          "debut": "2024-11-01",
+          "fin": "2024-11-04",
+          "actif": false
+        },
+        {
+          "membre_id": "chantal-jourdan",
+          "nom": "Chantal Jourdan",
+          "fonction": "Membre",
+          "debut": "2025-12-20",
+          "fin": "2026-01-02",
+          "actif": false
+        },
+        {
+          "membre_id": "jiovanny-william",
+          "nom": "Jiovanny William",
+          "fonction": "Membre",
+          "debut": "2026-07-21",
+          "fin": "2026-08-31",
+          "actif": false
+        },
+        {
+          "membre_id": "gerard-leseul",
+          "nom": "Gérard Leseul",
+          "fonction": "Membre",
+          "debut": "2026-04-29",
+          "fin": "2026-04-30",
+          "actif": false
+        },
+        {
+          "membre_id": "isabelle-santiago",
+          "nom": "Isabelle Santiago",
+          "fonction": "Membre",
+          "debut": "2026-01-08",
+          "fin": "2026-01-08",
+          "actif": false
+        },
+        {
+          "membre_id": "arthur-delaporte",
+          "nom": "Arthur Delaporte",
+          "fonction": "Membre",
+          "debut": "2024-05-22",
+          "fin": "2024-05-23",
+          "actif": false
+        },
+        {
+          "membre_id": "philippe-brun",
+          "nom": "Philippe Brun",
+          "fonction": "Membre",
+          "debut": "2025-01-25",
+          "fin": null,
+          "actif": false
+        },
+        {
+          "membre_id": "melanie-thomin",
+          "nom": "Mélanie Thomin",
+          "fonction": "Membre",
+          "debut": "2025-11-07",
+          "fin": "2025-11-07",
+          "actif": false
+        },
+        {
+          "membre_id": "mickael-bouloux",
+          "nom": "Mickaël Bouloux",
+          "fonction": "Membre",
+          "debut": "2026-06-04",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "anna-pic",
+          "nom": "Anna Pic",
+          "fonction": "Membre",
+          "debut": "2025-10-18",
+          "fin": "2025-10-21",
+          "actif": false
+        },
+        {
+          "membre_id": "roger-vicot",
+          "nom": "Roger Vicot",
+          "fonction": "Membre",
+          "debut": "2023-05-31",
+          "fin": "2023-05-31",
+          "actif": false
+        },
+        {
+          "membre_id": "inaki-echaniz",
+          "nom": "Iñaki Echaniz",
+          "fonction": "Membre",
+          "debut": "2026-05-14",
+          "fin": "2026-05-19",
+          "actif": false
+        },
+        {
+          "membre_id": "fatiha-keloua-hachi",
+          "nom": "Fatiha Keloua Hachi",
+          "fonction": "Membre",
+          "debut": "2025-12-20",
+          "fin": "2026-01-02",
+          "actif": false
+        },
+        {
+          "membre_id": "stephane-delautrette",
+          "nom": "Stéphane Delautrette",
+          "fonction": "Membre",
+          "debut": "2025-11-04",
+          "fin": "2025-11-04",
+          "actif": false
+        },
+        {
+          "membre_id": "elie-califer",
+          "nom": "Elie Califer",
+          "fonction": "Membre",
+          "debut": "2026-02-03",
+          "fin": "2026-02-05",
+          "actif": false
+        },
+        {
+          "membre_id": "martine-froger",
+          "nom": "Martine Froger",
+          "fonction": "Membre",
+          "debut": "2026-05-20",
+          "fin": "2026-05-20",
+          "actif": false
+        },
+        {
+          "membre_id": "aurelien-rousseau",
+          "nom": "Aurélien Rousseau",
+          "fonction": "Membre",
+          "debut": "2024-12-12",
+          "fin": "2024-12-12",
+          "actif": false
+        },
+        {
+          "membre_id": "emmanuel-gregoire",
+          "nom": "Emmanuel Grégoire",
+          "fonction": "Membre",
+          "debut": "2024-12-12",
+          "fin": "2024-12-12",
+          "actif": false
+        },
+        {
+          "membre_id": "marie-jose-allemand",
+          "nom": "Marie-José Allemand",
+          "fonction": "Membre",
+          "debut": "2026-06-02",
+          "fin": "2026-06-05",
+          "actif": false
+        },
+        {
+          "membre_id": "valerie-rossi",
+          "nom": "Valérie Rossi",
+          "fonction": "Membre",
+          "debut": "2026-05-20",
+          "fin": "2026-05-20",
+          "actif": false
+        },
+        {
+          "membre_id": "laurent-lhardit",
+          "nom": "Laurent Lhardit",
+          "fonction": "Membre",
+          "debut": "2025-11-18",
+          "fin": "2025-11-18",
+          "actif": false
+        },
+        {
+          "membre_id": "marc-pena",
+          "nom": "Marc Pena",
+          "fonction": "Membre",
+          "debut": "2025-11-05",
+          "fin": "2025-11-05",
+          "actif": false
+        },
+        {
+          "membre_id": "paul-christophle",
+          "nom": "Paul Christophle",
+          "fonction": "Membre",
+          "debut": "2026-02-04",
+          "fin": "2026-02-05",
+          "actif": false
+        },
+        {
+          "membre_id": "oceane-godard",
+          "nom": "Océane Godard",
+          "fonction": "Membre",
+          "debut": "2025-11-09",
+          "fin": "2025-11-10",
+          "actif": false
+        },
+        {
+          "membre_id": "pierre-pribetich",
+          "nom": "Pierre Pribetich",
+          "fonction": "Membre",
+          "debut": "2025-11-07",
+          "fin": "2025-11-07",
+          "actif": false
+        },
+        {
+          "membre_id": "arnaud-simion",
+          "nom": "Arnaud Simion",
+          "fonction": "Membre",
+          "debut": "2026-05-20",
+          "fin": "2026-05-20",
+          "actif": false
+        },
+        {
+          "membre_id": "jacques-oberti",
+          "nom": "Jacques Oberti",
+          "fonction": "Membre",
+          "debut": "2026-06-06",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "sebastien-saint-pasteur",
+          "nom": "Sébastien Saint-Pasteur",
+          "fonction": "Membre",
+          "debut": "2025-12-03",
+          "fin": "2025-12-03",
+          "actif": false
+        },
+        {
+          "membre_id": "pierrick-courbon",
+          "nom": "Pierrick Courbon",
+          "fonction": "Membre",
+          "debut": "2025-12-11",
+          "fin": "2025-12-11",
+          "actif": false
+        },
+        {
+          "membre_id": "fabrice-roussel",
+          "nom": "Fabrice Roussel",
+          "fonction": "Membre",
+          "debut": "2025-10-22",
+          "fin": "2025-10-22",
+          "actif": false
+        },
+        {
+          "membre_id": "sophie-pantel",
+          "nom": "Sophie Pantel",
+          "fonction": "Membre",
+          "debut": "2026-09-01",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "estelle-mercier",
+          "nom": "Estelle Mercier",
+          "fonction": "Membre",
+          "debut": "2026-01-03",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "stephane-hablot",
+          "nom": "Stéphane Hablot",
+          "fonction": "Membre",
+          "debut": "2026-06-03",
+          "fin": "2026-06-03",
+          "actif": false
+        },
+        {
+          "membre_id": "julien-gokel",
+          "nom": "Julien Gokel",
+          "fonction": "Membre",
+          "debut": "2025-11-19",
+          "fin": "2025-11-19",
+          "actif": false
+        },
+        {
+          "membre_id": "peio-dufau",
+          "nom": "Peio Dufau",
+          "fonction": "Membre",
+          "debut": "2024-10-31",
+          "fin": "2024-10-31",
+          "actif": false
+        },
+        {
+          "membre_id": "denis-fegne",
+          "nom": "Denis Fégné",
+          "fonction": "Membre",
+          "debut": "2024-10-30",
+          "fin": "2024-10-30",
+          "actif": false
+        },
+        {
+          "membre_id": "thierry-sother",
+          "nom": "Thierry Sother",
+          "fonction": "Membre",
+          "debut": "2026-05-05",
+          "fin": "2026-05-07",
+          "actif": false
+        },
+        {
+          "membre_id": "sandrine-runel",
+          "nom": "Sandrine Runel",
+          "fonction": "Membre",
+          "debut": "2025-02-19",
+          "fin": "2025-02-19",
+          "actif": false
+        },
+        {
+          "membre_id": "florence-herouin-leautey",
+          "nom": "Florence Herouin-Léautey",
+          "fonction": "Membre",
+          "debut": "2025-11-08",
+          "fin": "2025-11-08",
+          "actif": false
+        },
+        {
+          "membre_id": "celine-thiebault-martinez",
+          "nom": "Céline Thiébault-Martinez",
+          "fonction": "Membre",
+          "debut": "2025-11-06",
+          "fin": "2025-11-06",
+          "actif": false
+        },
+        {
+          "membre_id": "dieynaba-diop",
+          "nom": "Dieynaba Diop",
+          "fonction": "Membre",
+          "debut": "2026-01-09",
+          "fin": "2026-01-12",
+          "actif": false
+        },
+        {
+          "membre_id": "romain-eskenazi",
+          "nom": "Romain Eskenazi",
+          "fonction": "Membre",
+          "debut": "2026-05-13",
+          "fin": "2026-05-13",
+          "actif": false
+        },
+        {
+          "membre_id": "beatrice-bellay",
+          "nom": "Béatrice Bellay",
+          "fonction": "Membre",
+          "debut": "2025-11-09",
+          "fin": "2025-11-12",
+          "actif": false
+        },
+        {
+          "membre_id": "ayda-hadizadeh",
+          "nom": "Ayda Hadizadeh",
+          "fonction": "Membre",
+          "debut": "2026-01-08",
+          "fin": "2026-01-08",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission",
       "label": "Commission des affaires étrangères",
       "nb_membres_a_la_date_de_reference": 7,
       "nb_membres_cumul_historique": 32,
@@ -137512,90 +137512,6 @@
       ]
     },
     {
-      "categorie": "groupe_amitie",
-      "label": "France-Côte d'Ivoire",
-      "nb_membres_a_la_date_de_reference": 7,
-      "nb_membres_cumul_historique": 9,
-      "effectif_reference": 70,
-      "par_fonction": {
-        "membre": 9
-      },
-      "membres": [
-        {
-          "membre_id": "herve-saulignac",
-          "nom": "Hervé Saulignac",
-          "fonction": "Membre",
-          "debut": "2022-12-07",
-          "fin": "2024-06-09",
-          "actif": false
-        },
-        {
-          "membre_id": "jiovanny-william",
-          "nom": "Jiovanny William",
-          "fonction": "Membre",
-          "debut": "2025-02-06",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "sacha-houlie",
-          "nom": "Sacha Houlié",
-          "fonction": "Membre",
-          "debut": "2025-01-29",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "gerard-leseul",
-          "nom": "Gérard Leseul",
-          "fonction": "Membre",
-          "debut": "2023-06-05",
-          "fin": "2024-06-09",
-          "actif": false
-        },
-        {
-          "membre_id": "isabelle-santiago",
-          "nom": "Isabelle Santiago",
-          "fonction": "Membre",
-          "debut": "2025-01-28",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "philippe-brun",
-          "nom": "Philippe Brun",
-          "fonction": "Membre",
-          "debut": "2025-02-05",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "mickael-bouloux",
-          "nom": "Mickaël Bouloux",
-          "fonction": "Membre",
-          "debut": "2026-04-15",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "estelle-mercier",
-          "nom": "Estelle Mercier",
-          "fonction": "Membre",
-          "debut": "2025-01-30",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "beatrice-bellay",
-          "nom": "Béatrice Bellay",
-          "fonction": "Membre",
-          "debut": "2025-11-04",
-          "fin": null,
-          "actif": true
-        }
-      ]
-    },
-    {
       "categorie": "groupe_etudes",
       "label": "Antisémitisme",
       "nb_membres_a_la_date_de_reference": 7,
@@ -138186,6 +138102,90 @@
     },
     {
       "categorie": "groupe_amitie",
+      "label": "France-Côte d'Ivoire",
+      "nb_membres_a_la_date_de_reference": 6,
+      "nb_membres_cumul_historique": 9,
+      "effectif_reference": 70,
+      "par_fonction": {
+        "membre": 9
+      },
+      "membres": [
+        {
+          "membre_id": "herve-saulignac",
+          "nom": "Hervé Saulignac",
+          "fonction": "Membre",
+          "debut": "2022-12-07",
+          "fin": "2024-06-09",
+          "actif": false
+        },
+        {
+          "membre_id": "jiovanny-william",
+          "nom": "Jiovanny William",
+          "fonction": "Membre",
+          "debut": "2025-02-06",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "sacha-houlie",
+          "nom": "Sacha Houlié",
+          "fonction": "Membre",
+          "debut": "2025-01-29",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "gerard-leseul",
+          "nom": "Gérard Leseul",
+          "fonction": "Membre",
+          "debut": "2023-06-05",
+          "fin": "2024-06-09",
+          "actif": false
+        },
+        {
+          "membre_id": "isabelle-santiago",
+          "nom": "Isabelle Santiago",
+          "fonction": "Membre",
+          "debut": "2025-01-28",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "philippe-brun",
+          "nom": "Philippe Brun",
+          "fonction": "Membre",
+          "debut": "2025-02-05",
+          "fin": null,
+          "actif": false
+        },
+        {
+          "membre_id": "mickael-bouloux",
+          "nom": "Mickaël Bouloux",
+          "fonction": "Membre",
+          "debut": "2026-04-15",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "estelle-mercier",
+          "nom": "Estelle Mercier",
+          "fonction": "Membre",
+          "debut": "2025-01-30",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "beatrice-bellay",
+          "nom": "Béatrice Bellay",
+          "fonction": "Membre",
+          "debut": "2025-11-04",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
       "label": "France-Japon",
       "nb_membres_a_la_date_de_reference": 6,
       "nb_membres_cumul_historique": 9,
@@ -138424,82 +138424,6 @@
           "nom": "Dieynaba Diop",
           "fonction": "Membre",
           "debut": "2024-10-15",
-          "fin": null,
-          "actif": true
-        }
-      ]
-    },
-    {
-      "categorie": "groupe_amitie",
-      "label": "France-Royaume-Uni de Grande-Bretagne et d'Irlande du Nord",
-      "nb_membres_a_la_date_de_reference": 6,
-      "nb_membres_cumul_historique": 8,
-      "effectif_reference": 70,
-      "par_fonction": {
-        "membre": 8
-      },
-      "membres": [
-        {
-          "membre_id": "guillaume-garot",
-          "nom": "Guillaume Garot",
-          "fonction": "Membre",
-          "debut": "2017-10-12",
-          "fin": "2022-06-21",
-          "actif": false
-        },
-        {
-          "membre_id": "marie-recalde",
-          "nom": "Marie Récalde",
-          "fonction": "Membre",
-          "debut": "2026-07-15",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "marie-noelle-battistel",
-          "nom": "Marie-Noëlle Battistel",
-          "fonction": "Membre",
-          "debut": "2017-10-05",
-          "fin": "2022-06-21",
-          "actif": false
-        },
-        {
-          "membre_id": "arthur-delaporte",
-          "nom": "Arthur Delaporte",
-          "fonction": "Membre",
-          "debut": "2025-01-23",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "philippe-brun",
-          "nom": "Philippe Brun",
-          "fonction": "Membre",
-          "debut": "2025-02-05",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "melanie-thomin",
-          "nom": "Mélanie Thomin",
-          "fonction": "Membre",
-          "debut": "2025-01-30",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "aurelien-rousseau",
-          "nom": "Aurélien Rousseau",
-          "fonction": "Membre",
-          "debut": "2025-01-30",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "sebastien-saint-pasteur",
-          "nom": "Sébastien Saint-Pasteur",
-          "fonction": "Membre",
-          "debut": "2025-03-11",
           "fin": null,
           "actif": true
         }
@@ -138788,74 +138712,6 @@
           "nom": "Stéphane Hablot",
           "fonction": "Membre",
           "debut": "2025-02-14",
-          "fin": null,
-          "actif": true
-        }
-      ]
-    },
-    {
-      "categorie": "groupe_amitie",
-      "label": "France-Turquie",
-      "nb_membres_a_la_date_de_reference": 6,
-      "nb_membres_cumul_historique": 7,
-      "effectif_reference": 70,
-      "par_fonction": {
-        "membre": 7
-      },
-      "membres": [
-        {
-          "membre_id": "alain-david",
-          "nom": "Alain David",
-          "fonction": "Membre",
-          "debut": "2025-01-24",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "guillaume-garot",
-          "nom": "Guillaume Garot",
-          "fonction": "Membre",
-          "debut": "2025-01-30",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "marietta-karamanli",
-          "nom": "Marietta Karamanli",
-          "fonction": "Membre",
-          "debut": "2025-01-29",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "olivier-faure",
-          "nom": "Olivier Faure",
-          "fonction": "Membre",
-          "debut": "2012-10-11",
-          "fin": "2017-06-20",
-          "actif": false
-        },
-        {
-          "membre_id": "sacha-houlie",
-          "nom": "Sacha Houlié",
-          "fonction": "Membre",
-          "debut": "2025-01-29",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "philippe-brun",
-          "nom": "Philippe Brun",
-          "fonction": "Membre",
-          "debut": "2025-02-05",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "thierry-sother",
-          "nom": "Thierry Sother",
-          "fonction": "Membre",
-          "debut": "2025-01-23",
           "fin": null,
           "actif": true
         }
@@ -139398,6 +139254,82 @@
     },
     {
       "categorie": "groupe_amitie",
+      "label": "France-Royaume-Uni de Grande-Bretagne et d'Irlande du Nord",
+      "nb_membres_a_la_date_de_reference": 5,
+      "nb_membres_cumul_historique": 8,
+      "effectif_reference": 70,
+      "par_fonction": {
+        "membre": 8
+      },
+      "membres": [
+        {
+          "membre_id": "guillaume-garot",
+          "nom": "Guillaume Garot",
+          "fonction": "Membre",
+          "debut": "2017-10-12",
+          "fin": "2022-06-21",
+          "actif": false
+        },
+        {
+          "membre_id": "marie-recalde",
+          "nom": "Marie Récalde",
+          "fonction": "Membre",
+          "debut": "2026-07-15",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "marie-noelle-battistel",
+          "nom": "Marie-Noëlle Battistel",
+          "fonction": "Membre",
+          "debut": "2017-10-05",
+          "fin": "2022-06-21",
+          "actif": false
+        },
+        {
+          "membre_id": "arthur-delaporte",
+          "nom": "Arthur Delaporte",
+          "fonction": "Membre",
+          "debut": "2025-01-23",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "philippe-brun",
+          "nom": "Philippe Brun",
+          "fonction": "Membre",
+          "debut": "2025-02-05",
+          "fin": null,
+          "actif": false
+        },
+        {
+          "membre_id": "melanie-thomin",
+          "nom": "Mélanie Thomin",
+          "fonction": "Membre",
+          "debut": "2025-01-30",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "aurelien-rousseau",
+          "nom": "Aurélien Rousseau",
+          "fonction": "Membre",
+          "debut": "2025-01-30",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "sebastien-saint-pasteur",
+          "nom": "Sébastien Saint-Pasteur",
+          "fonction": "Membre",
+          "debut": "2025-03-11",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
       "label": "France-Vietnam",
       "nb_membres_a_la_date_de_reference": 5,
       "nb_membres_cumul_historique": 8,
@@ -139474,7 +139406,7 @@
     },
     {
       "categorie": "groupe_amitie",
-      "label": "France-Liban",
+      "label": "France-Turquie",
       "nb_membres_a_la_date_de_reference": 5,
       "nb_membres_cumul_historique": 7,
       "effectif_reference": 70,
@@ -139483,19 +139415,35 @@
       },
       "membres": [
         {
+          "membre_id": "alain-david",
+          "nom": "Alain David",
+          "fonction": "Membre",
+          "debut": "2025-01-24",
+          "fin": null,
+          "actif": true
+        },
+        {
           "membre_id": "guillaume-garot",
           "nom": "Guillaume Garot",
           "fonction": "Membre",
-          "debut": "2023-01-25",
-          "fin": "2024-06-09",
-          "actif": false
+          "debut": "2025-01-30",
+          "fin": null,
+          "actif": true
         },
         {
-          "membre_id": "boris-vallaud",
-          "nom": "Boris Vallaud",
+          "membre_id": "marietta-karamanli",
+          "nom": "Marietta Karamanli",
           "fonction": "Membre",
-          "debut": "2022-12-16",
-          "fin": "2024-06-09",
+          "debut": "2025-01-29",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "olivier-faure",
+          "nom": "Olivier Faure",
+          "fonction": "Membre",
+          "debut": "2012-10-11",
+          "fin": "2017-06-20",
           "actif": false
         },
         {
@@ -139512,29 +139460,13 @@
           "fonction": "Membre",
           "debut": "2025-02-05",
           "fin": null,
-          "actif": true
+          "actif": false
         },
         {
-          "membre_id": "mickael-bouloux",
-          "nom": "Mickaël Bouloux",
+          "membre_id": "thierry-sother",
+          "nom": "Thierry Sother",
           "fonction": "Membre",
-          "debut": "2026-05-19",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "roger-vicot",
-          "nom": "Roger Vicot",
-          "fonction": "Membre",
-          "debut": "2025-02-06",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "pierre-pribetich",
-          "nom": "Pierre Pribetich",
-          "fonction": "Membre",
-          "debut": "2026-04-07",
+          "debut": "2025-01-23",
           "fin": null,
           "actif": true
         }
@@ -140528,7 +140460,7 @@
     },
     {
       "categorie": "groupe_amitie",
-      "label": "France-Tunisie",
+      "label": "France-Liban",
       "nb_membres_a_la_date_de_reference": 4,
       "nb_membres_cumul_historique": 7,
       "effectif_reference": 70,
@@ -140537,36 +140469,28 @@
       },
       "membres": [
         {
-          "membre_id": "jerome-guedj",
-          "nom": "Jérôme Guedj",
+          "membre_id": "guillaume-garot",
+          "nom": "Guillaume Garot",
           "fonction": "Membre",
-          "debut": "2022-12-13",
+          "debut": "2023-01-25",
           "fin": "2024-06-09",
           "actif": false
         },
         {
-          "membre_id": "guillaume-garot",
-          "nom": "Guillaume Garot",
+          "membre_id": "boris-vallaud",
+          "nom": "Boris Vallaud",
           "fonction": "Membre",
-          "debut": "2025-01-30",
+          "debut": "2022-12-16",
+          "fin": "2024-06-09",
+          "actif": false
+        },
+        {
+          "membre_id": "sacha-houlie",
+          "nom": "Sacha Houlié",
+          "fonction": "Membre",
+          "debut": "2025-01-29",
           "fin": null,
           "actif": true
-        },
-        {
-          "membre_id": "laurent-baumel",
-          "nom": "Laurent Baumel",
-          "fonction": "Membre",
-          "debut": "2012-10-15",
-          "fin": "2017-06-20",
-          "actif": false
-        },
-        {
-          "membre_id": "joel-aviragnet",
-          "nom": "Joël Aviragnet",
-          "fonction": "Membre",
-          "debut": "2014-12-02",
-          "fin": "2015-07-17",
-          "actif": false
         },
         {
           "membre_id": "philippe-brun",
@@ -140574,21 +140498,29 @@
           "fonction": "Membre",
           "debut": "2025-02-05",
           "fin": null,
-          "actif": true
+          "actif": false
         },
         {
-          "membre_id": "martine-froger",
-          "nom": "Martine Froger",
+          "membre_id": "mickael-bouloux",
+          "nom": "Mickaël Bouloux",
           "fonction": "Membre",
-          "debut": "2025-02-07",
+          "debut": "2026-05-19",
           "fin": null,
           "actif": true
         },
         {
-          "membre_id": "karim-benbrahim",
-          "nom": "Karim Benbrahim",
+          "membre_id": "roger-vicot",
+          "nom": "Roger Vicot",
           "fonction": "Membre",
-          "debut": "2025-02-02",
+          "debut": "2025-02-06",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "pierre-pribetich",
+          "nom": "Pierre Pribetich",
+          "fonction": "Membre",
+          "debut": "2026-04-07",
           "fin": null,
           "actif": true
         }
@@ -142236,6 +142168,74 @@
       ]
     },
     {
+      "categorie": "groupe_amitie",
+      "label": "France-Tunisie",
+      "nb_membres_a_la_date_de_reference": 3,
+      "nb_membres_cumul_historique": 7,
+      "effectif_reference": 70,
+      "par_fonction": {
+        "membre": 7
+      },
+      "membres": [
+        {
+          "membre_id": "jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre",
+          "debut": "2022-12-13",
+          "fin": "2024-06-09",
+          "actif": false
+        },
+        {
+          "membre_id": "guillaume-garot",
+          "nom": "Guillaume Garot",
+          "fonction": "Membre",
+          "debut": "2025-01-30",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "laurent-baumel",
+          "nom": "Laurent Baumel",
+          "fonction": "Membre",
+          "debut": "2012-10-15",
+          "fin": "2017-06-20",
+          "actif": false
+        },
+        {
+          "membre_id": "joel-aviragnet",
+          "nom": "Joël Aviragnet",
+          "fonction": "Membre",
+          "debut": "2014-12-02",
+          "fin": "2015-07-17",
+          "actif": false
+        },
+        {
+          "membre_id": "philippe-brun",
+          "nom": "Philippe Brun",
+          "fonction": "Membre",
+          "debut": "2025-02-05",
+          "fin": null,
+          "actif": false
+        },
+        {
+          "membre_id": "martine-froger",
+          "nom": "Martine Froger",
+          "fonction": "Membre",
+          "debut": "2025-02-07",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "karim-benbrahim",
+          "nom": "Karim Benbrahim",
+          "fonction": "Membre",
+          "debut": "2025-02-02",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
       "categorie": "groupe_etudes",
       "label": "Amiante",
       "nb_membres_a_la_date_de_reference": 3,
@@ -143682,42 +143682,6 @@
       ]
     },
     {
-      "categorie": "commission",
-      "label": "Commission spéciale chargée de vérifier et d'apurer les comptes",
-      "nb_membres_a_la_date_de_reference": 2,
-      "nb_membres_cumul_historique": 3,
-      "effectif_reference": 70,
-      "par_fonction": {
-        "membre": 3
-      },
-      "membres": [
-        {
-          "membre_id": "christine-pires-beaune",
-          "nom": "Christine Pirès Beaune",
-          "fonction": "Membre",
-          "debut": "2022-07-13",
-          "fin": "2024-06-09",
-          "actif": false
-        },
-        {
-          "membre_id": "philippe-brun",
-          "nom": "Philippe Brun",
-          "fonction": "Membre",
-          "debut": "2025-10-09",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "estelle-mercier",
-          "nom": "Estelle Mercier",
-          "fonction": "Membre",
-          "debut": "2025-10-09",
-          "fin": null,
-          "actif": true
-        }
-      ]
-    },
-    {
       "categorie": "delegation",
       "label": "Office parlementaire d'évaluation des choix scientifiques et technologiques",
       "nb_membres_a_la_date_de_reference": 2,
@@ -144498,34 +144462,6 @@
     },
     {
       "categorie": "groupe_amitie",
-      "label": "France-Gabon",
-      "nb_membres_a_la_date_de_reference": 2,
-      "nb_membres_cumul_historique": 2,
-      "effectif_reference": 70,
-      "par_fonction": {
-        "membre": 2
-      },
-      "membres": [
-        {
-          "membre_id": "marie-recalde",
-          "nom": "Marie Récalde",
-          "fonction": "Membre",
-          "debut": "2025-01-23",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "philippe-brun",
-          "nom": "Philippe Brun",
-          "fonction": "Membre",
-          "debut": "2025-02-05",
-          "fin": null,
-          "actif": true
-        }
-      ]
-    },
-    {
-      "categorie": "groupe_amitie",
       "label": "France-Géorgie",
       "nb_membres_a_la_date_de_reference": 2,
       "nb_membres_cumul_historique": 2,
@@ -145091,6 +145027,42 @@
       ]
     },
     {
+      "categorie": "commission",
+      "label": "Commission spéciale chargée de vérifier et d'apurer les comptes",
+      "nb_membres_a_la_date_de_reference": 1,
+      "nb_membres_cumul_historique": 3,
+      "effectif_reference": 70,
+      "par_fonction": {
+        "membre": 3
+      },
+      "membres": [
+        {
+          "membre_id": "christine-pires-beaune",
+          "nom": "Christine Pirès Beaune",
+          "fonction": "Membre",
+          "debut": "2022-07-13",
+          "fin": "2024-06-09",
+          "actif": false
+        },
+        {
+          "membre_id": "philippe-brun",
+          "nom": "Philippe Brun",
+          "fonction": "Membre",
+          "debut": "2025-10-09",
+          "fin": null,
+          "actif": false
+        },
+        {
+          "membre_id": "estelle-mercier",
+          "nom": "Estelle Mercier",
+          "fonction": "Membre",
+          "debut": "2025-10-09",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
       "categorie": "groupe_amitie",
       "label": "France-Birmanie",
       "nb_membres_a_la_date_de_reference": 1,
@@ -145553,6 +145525,34 @@
     },
     {
       "categorie": "groupe_amitie",
+      "label": "France-Gabon",
+      "nb_membres_a_la_date_de_reference": 1,
+      "nb_membres_cumul_historique": 2,
+      "effectif_reference": 70,
+      "par_fonction": {
+        "membre": 2
+      },
+      "membres": [
+        {
+          "membre_id": "marie-recalde",
+          "nom": "Marie Récalde",
+          "fonction": "Membre",
+          "debut": "2025-01-23",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "philippe-brun",
+          "nom": "Philippe Brun",
+          "fonction": "Membre",
+          "debut": "2025-02-05",
+          "fin": null,
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
       "label": "France-Maurice",
       "nb_membres_a_la_date_de_reference": 1,
       "nb_membres_cumul_historique": 2,
@@ -145658,26 +145658,6 @@
           "nom": "Claudia Rouaux",
           "fonction": "Membre",
           "debut": "2025-02-07",
-          "fin": null,
-          "actif": true
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
-      "label": "Commission spéciale pour l'examen du projet de loi relatif à l'accompagnement des malades et de la fin de vie",
-      "nb_membres_a_la_date_de_reference": 1,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 70,
-      "par_fonction": {
-        "membre": 1
-      },
-      "membres": [
-        {
-          "membre_id": "jerome-guedj",
-          "nom": "Jérôme Guedj",
-          "fonction": "membre",
-          "debut": "2024-04-10",
           "fin": null,
           "actif": true
         }
@@ -151429,66 +151409,6 @@
     },
     {
       "categorie": "commission",
-      "label": "Comité consultatif auprès du conseil d'administration de l'etablissement public de paris-saclay",
-      "nb_membres_a_la_date_de_reference": 0,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 70,
-      "par_fonction": {
-        "membre titulaire": 1
-      },
-      "membres": [
-        {
-          "membre_id": "jerome-guedj",
-          "nom": "Jérôme Guedj",
-          "fonction": "membre titulaire",
-          "debut": "2023-01-25",
-          "fin": "2024-06-14",
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
-      "label": "Commission d'enquête relative à l'identification des défaillances de fonctionnement au sein des fédérations françaises de sport et des organismes de gouvernance du monde sportif en tant qu'elles ont délégation de service public",
-      "nb_membres_a_la_date_de_reference": 0,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 70,
-      "par_fonction": {
-        "membre": 1
-      },
-      "membres": [
-        {
-          "membre_id": "jerome-guedj",
-          "nom": "Jérôme Guedj",
-          "fonction": "membre",
-          "debut": "2023-06-30",
-          "fin": "2024-01-07",
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
-      "label": "Commission d'enquête sur l'attribution, le contenu et le contrôle des autorisations de services de télévision à caractère national sur la télévision numérique terrestre",
-      "nb_membres_a_la_date_de_reference": 0,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 70,
-      "par_fonction": {
-        "membre": 1
-      },
-      "membres": [
-        {
-          "membre_id": "jerome-guedj",
-          "nom": "Jérôme Guedj",
-          "fonction": "membre",
-          "debut": "2023-11-19",
-          "fin": "2024-05-15",
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
       "label": "Commission des affaires culturelles, familiales et sociales",
       "nb_membres_a_la_date_de_reference": 0,
       "nb_membres_cumul_historique": 1,
@@ -151503,86 +151423,6 @@
           "fonction": "Membre",
           "debut": "2009-04-25",
           "fin": "2009-04-28",
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
-      "label": "Députés Non Inscrits",
-      "nb_membres_a_la_date_de_reference": 0,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 70,
-      "par_fonction": {
-        "membre": 1
-      },
-      "membres": [
-        {
-          "membre_id": "jerome-guedj",
-          "nom": "Jérôme Guedj",
-          "fonction": "membre",
-          "debut": "2022-06-24",
-          "fin": "2022-06-29",
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
-      "label": "Groupe de travail longévité et autonomie",
-      "nb_membres_a_la_date_de_reference": 0,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 70,
-      "par_fonction": {
-        "co-président": 1
-      },
-      "membres": [
-        {
-          "membre_id": "jerome-guedj",
-          "nom": "Jérôme Guedj",
-          "fonction": "co-président",
-          "debut": "2022-09-30",
-          "fin": "2023-04-01",
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
-      "label": "Mission d'évaluation de la loi du 2 février 2016 créant de nouveaux droits en faveur des malades et des personnes en fin de vie dite claeys-leonetti",
-      "nb_membres_a_la_date_de_reference": 0,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 70,
-      "par_fonction": {
-        "membre": 1
-      },
-      "membres": [
-        {
-          "membre_id": "jerome-guedj",
-          "nom": "Jérôme Guedj",
-          "fonction": "membre",
-          "debut": "2022-11-26",
-          "fin": "2023-04-13",
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission",
-      "label": "Mission d'évaluation et de contrôle des lois de financement de la sécurité sociale",
-      "nb_membres_a_la_date_de_reference": 0,
-      "nb_membres_cumul_historique": 1,
-      "effectif_reference": 70,
-      "par_fonction": {
-        "co-président": 1
-      },
-      "membres": [
-        {
-          "membre_id": "jerome-guedj",
-          "nom": "Jérôme Guedj",
-          "fonction": "co-président",
-          "debut": "2023-01-25",
-          "fin": "2023-10-06",
           "actif": false
         }
       ]
@@ -157124,367 +156964,367 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1008",
-      "synchro_le": "2026-09-16T09:37:37+0000"
+      "synchro_le": "2026-09-17T10:21:36+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1567",
-      "synchro_le": "2026-09-16T09:38:10+0000"
+      "synchro_le": "2026-09-17T10:21:56+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1654",
-      "synchro_le": "2026-09-16T09:31:31+0000"
+      "synchro_le": "2026-09-17T10:14:42+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/4285",
-      "synchro_le": "2026-09-15T14:54:25+0000"
+      "synchro_le": "2026-09-17T10:14:45+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA331973",
-      "synchro_le": "2026-09-16T09:31:52+0000"
+      "synchro_le": "2026-09-17T10:15:10+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA333285",
-      "synchro_le": "2026-09-16T09:38:57+0000"
+      "synchro_le": "2026-09-17T10:22:02+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335054",
-      "synchro_le": "2026-09-16T09:42:18+0000"
+      "synchro_le": "2026-09-17T10:22:06+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA340343",
-      "synchro_le": "2026-09-16T09:30:50+0000"
+      "synchro_le": "2026-09-17T10:14:02+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA341981",
-      "synchro_le": "2026-09-16T09:31:46+0000"
+      "synchro_le": "2026-09-17T10:15:00+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA342196",
-      "synchro_le": "2026-09-16T09:31:12+0000"
+      "synchro_le": "2026-09-17T10:14:25+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA342415",
-      "synchro_le": "2026-09-16T09:31:20+0000"
+      "synchro_le": "2026-09-17T10:14:31+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA606573",
-      "synchro_le": "2026-09-16T09:31:27+0000"
+      "synchro_le": "2026-09-17T10:14:31+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA606793",
-      "synchro_le": "2026-09-16T09:37:56+0000"
+      "synchro_le": "2026-09-17T10:21:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607553",
-      "synchro_le": "2026-09-16T09:37:37+0000"
+      "synchro_le": "2026-09-17T10:21:36+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA608172",
-      "synchro_le": "2026-09-16T09:38:10+0000"
+      "synchro_le": "2026-09-17T10:21:57+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA608264",
-      "synchro_le": "2026-09-16T09:38:26+0000"
+      "synchro_le": "2026-09-17T10:22:14+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA609332",
-      "synchro_le": "2026-09-16T09:42:18+0000"
+      "synchro_le": "2026-09-17T10:22:07+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA642764",
-      "synchro_le": "2026-09-16T09:31:14+0000"
+      "synchro_le": "2026-09-17T10:14:28+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643143",
-      "synchro_le": "2026-09-16T09:31:20+0000"
+      "synchro_le": "2026-09-17T10:14:32+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643157",
-      "synchro_le": "2026-09-16T09:30:56+0000"
+      "synchro_le": "2026-09-17T10:13:58+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643192",
-      "synchro_le": "2026-09-16T09:37:38+0000"
+      "synchro_le": "2026-09-17T10:21:37+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719930",
-      "synchro_le": "2026-09-16T09:38:10+0000"
+      "synchro_le": "2026-09-17T10:21:57+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720362",
-      "synchro_le": "2026-09-16T09:30:54+0000"
+      "synchro_le": "2026-09-17T10:13:55+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720992",
-      "synchro_le": "2026-09-16T09:40:58+0000"
+      "synchro_le": "2026-09-17T10:22:48+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722150",
-      "synchro_le": "2026-09-16T09:30:49+0000"
+      "synchro_le": "2026-09-17T10:14:00+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA774958",
-      "synchro_le": "2026-09-16T09:38:58+0000"
+      "synchro_le": "2026-09-17T10:22:03+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA774960",
-      "synchro_le": "2026-09-16T09:42:19+0000"
+      "synchro_le": "2026-09-17T10:22:07+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793394",
-      "synchro_le": "2026-09-16T09:30:51+0000"
+      "synchro_le": "2026-09-17T10:14:03+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793624",
-      "synchro_le": "2026-09-16T09:31:15+0000"
+      "synchro_le": "2026-09-17T10:14:28+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793816",
-      "synchro_le": "2026-09-16T09:31:21+0000"
+      "synchro_le": "2026-09-17T10:14:32+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794094",
-      "synchro_le": "2026-09-16T09:30:56+0000"
+      "synchro_le": "2026-09-17T10:13:58+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794270",
-      "synchro_le": "2026-09-16T09:37:38+0000"
+      "synchro_le": "2026-09-17T10:21:37+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794494",
-      "synchro_le": "2026-09-16T09:38:10+0000"
+      "synchro_le": "2026-09-17T10:21:57+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794854",
-      "synchro_le": "2026-09-16T09:38:59+0000"
+      "synchro_le": "2026-09-17T10:22:04+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795156",
-      "synchro_le": "2026-09-16T09:42:19+0000"
+      "synchro_le": "2026-09-17T10:22:07+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795430",
-      "synchro_le": "2026-09-16T09:30:52+0000"
+      "synchro_le": "2026-09-17T10:14:03+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795762",
-      "synchro_le": "2026-09-16T09:31:15+0000"
+      "synchro_le": "2026-09-17T10:14:28+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA822617",
-      "synchro_le": "2026-09-16T09:42:40+0000"
+      "synchro_le": "2026-09-17T10:22:25+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA826635",
-      "synchro_le": "2026-09-16T09:31:51+0000"
+      "synchro_le": "2026-09-17T10:14:46+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840171",
-      "synchro_le": "2026-09-16T09:31:53+0000"
+      "synchro_le": "2026-09-17T10:15:10+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840175",
-      "synchro_le": "2026-09-16T09:31:46+0000"
+      "synchro_le": "2026-09-17T10:15:00+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840665",
-      "synchro_le": "2026-09-16T09:31:27+0000"
+      "synchro_le": "2026-09-17T10:14:31+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840673",
-      "synchro_le": "2026-09-16T09:37:56+0000"
+      "synchro_le": "2026-09-17T10:21:55+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840765",
-      "synchro_le": "2026-09-16T09:38:27+0000"
+      "synchro_le": "2026-09-17T10:22:16+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840793",
-      "synchro_le": "2026-09-16T09:40:59+0000"
+      "synchro_le": "2026-09-17T10:22:48+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840829",
-      "synchro_le": "2026-09-16T09:42:40+0000"
+      "synchro_le": "2026-09-17T10:22:25+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840903",
-      "synchro_le": "2026-09-16T09:31:52+0000"
+      "synchro_le": "2026-09-17T10:14:46+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840939",
-      "synchro_le": "2026-09-16T09:31:53+0000"
+      "synchro_le": "2026-09-17T10:15:10+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA840955",
-      "synchro_le": "2026-09-16T09:31:46+0000"
+      "synchro_le": "2026-09-17T10:15:01+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/38845",
-      "synchro_le": "2026-09-15T14:53:43+0000"
+      "synchro_le": "2026-09-17T10:15:05+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841091",
-      "synchro_le": "2026-09-16T09:31:27+0000"
+      "synchro_le": "2026-09-17T10:14:31+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841107",
-      "synchro_le": "2026-09-16T09:37:56+0000"
+      "synchro_le": "2026-09-17T10:21:55+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841243",
-      "synchro_le": "2026-09-16T09:38:28+0000"
+      "synchro_le": "2026-09-17T10:22:16+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841295",
-      "synchro_le": "2026-09-16T09:40:59+0000"
+      "synchro_le": "2026-09-17T10:22:49+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841315",
-      "synchro_le": "2026-09-16T09:42:41+0000"
+      "synchro_le": "2026-09-17T10:22:25+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841327",
-      "synchro_le": "2026-09-16T09:31:52+0000"
+      "synchro_le": "2026-09-17T10:14:46+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841367",
-      "synchro_le": "2026-09-16T09:31:53+0000"
+      "synchro_le": "2026-09-17T10:15:10+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841381",
-      "synchro_le": "2026-09-16T09:32:07+0000"
+      "synchro_le": "2026-09-17T10:15:06+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841463",
-      "synchro_le": "2026-09-16T09:31:28+0000"
+      "synchro_le": "2026-09-17T10:14:31+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841471",
-      "synchro_le": "2026-09-16T09:37:56+0000"
+      "synchro_le": "2026-09-17T10:21:55+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841539",
-      "synchro_le": "2026-09-16T09:38:29+0000"
+      "synchro_le": "2026-09-17T10:22:16+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841633",
-      "synchro_le": "2026-09-16T09:40:59+0000"
+      "synchro_le": "2026-09-17T10:22:49+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841665",
-      "synchro_le": "2026-09-16T09:42:41+0000"
+      "synchro_le": "2026-09-17T10:22:26+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841681",
-      "synchro_le": "2026-09-16T09:31:52+0000"
+      "synchro_le": "2026-09-17T10:14:46+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841717",
-      "synchro_le": "2026-09-16T09:31:53+0000"
+      "synchro_le": "2026-09-17T10:15:11+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841813",
-      "synchro_le": "2026-09-16T09:32:07+0000"
+      "synchro_le": "2026-09-17T10:15:06+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841853",
-      "synchro_le": "2026-09-16T09:31:28+0000"
+      "synchro_le": "2026-09-17T10:14:32+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841893",
-      "synchro_le": "2026-09-16T09:37:57+0000"
+      "synchro_le": "2026-09-17T10:21:55+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA841919",
-      "synchro_le": "2026-09-16T09:38:29+0000"
+      "synchro_le": "2026-09-17T10:22:16+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA842195",
-      "synchro_le": "2026-09-16T09:40:59+0000"
+      "synchro_le": "2026-09-17T10:22:49+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA842211",
-      "synchro_le": "2026-09-16T09:42:41+0000"
+      "synchro_le": "2026-09-17T10:22:26+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA842263",
-      "synchro_le": "2026-09-16T09:31:52+0000"
+      "synchro_le": "2026-09-17T10:14:47+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-16T10:06:11+0000",
+    "genere_le": "2026-09-17T10:45:53+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
     "profils_sources": [
       "alain-david",
@@ -157560,8 +157400,8 @@
     ],
     "seuil_quorum": 0.5,
     "warnings": [
-      "date_reference : tous les comptes de cette fiche se rapportent au 2026-09-16, date de génération — au moins une appartenance au groupe est encore ouverte, la législature court. La valeur bougera au prochain run (#653).",
-      "effectif_sur_la_periode : entre 2024-07-19 et 2026-09-16, le groupe a compté au minimum 66 membres (2024-07-19) et au maximum 69 (2025-10-08) — première date à laquelle chaque borne est atteinte. L'effectif est réévalué à chaque entrée et à chaque lendemain de sortie, jamais hors de cette fenêtre. `membres[]` ne porte qu'un intervalle par membre (périodes recollées, #526) : un départ suivi d'un retour n'y apparaît pas, et aucune de ces deux bornes ne le voit (#702).",
+      "date_reference : tous les comptes de cette fiche se rapportent au 2026-09-17, date de génération — au moins une appartenance au groupe est encore ouverte, la législature court. La valeur bougera au prochain run (#653).",
+      "effectif_sur_la_periode : entre 2024-07-19 et 2026-09-17, le groupe a compté au minimum 66 membres (2024-07-19) et au maximum 69 (2025-10-08) — première date à laquelle chaque borne est atteinte. L'effectif est réévalué à chaque entrée et à chaque lendemain de sortie, jamais hors de cette fenêtre. `membres[]` ne porte qu'un intervalle par membre (périodes recollées, #526) : un départ suivi d'un retour n'y apparaît pas, et aucune de ces deux bornes ne le voit (#702).",
       "tags_thematiques_agreges : 28067 intervention(s) tenue(s) sous une autre législature que la 17e n'ont pas nourri l'empreinte thématique — elles appartiennent à la carrière de leurs auteurs, pas à l'activité de ce groupe (#825, même règle que les votes depuis #403 et que les amendements depuis #821).",
       "amendements_agreges : 441578 signature(s) portant sur des amendements déposés sous une autre législature que la 17e ont été écartées — ils appartiennent à la carrière de leurs auteurs, pas à l'activité de ce groupe (#821, même règle que les votes depuis #403).",
       "fraicheur_donnees : composition dérivée du référentiel AMO30 de l'Assemblée nationale (data.assemblee-nationale.fr, Licence Ouverte), et non plus de www.nosdeputes.fr depuis #527. Une législature close y est complète : les mandats terminés en cours de législature y figurent, alors que la dernière composition connue d'un miroir les perd. La fiche reflète donc l'appartenance au groupe telle que l'Assemblée la publie à la date de meta.genere_le ; un membre sans profil publié n'y apparaît pas (voir meta.couverture_roster)."
