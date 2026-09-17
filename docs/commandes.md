@@ -808,10 +808,12 @@ python3 src/migrer_profils_partitionnes_580.py --verifier-seulement
 python3 src/purge_mandats_dupliques.py --only jean-luc-melenchon
 python3 src/purge_interventions_heritees.py
 python3 src/purge_interventions_heritees.py --profiles-dir pivot_data/profiles
+python3 src/purge_mandats_nosdeputes.py
+python3 src/purge_mandats_nosdeputes.py --profiles-dir pivot_data/profiles
 ```
 
 Pour écrire réellement : retirer `--verifier` sur les deux premières, passer
-`--apply` sur les trois dernières. Chacune est décrite dans la décision qui porte
+`--apply` sur les cinq dernières. Chacune est décrite dans la décision qui porte
 son numéro, sous `docs/decisions/`.
 
 `purge_interventions_heritees.py` se lance **deux fois, une fois par couche** :
@@ -822,6 +824,11 @@ conserve et le dit. `--retirer-sans-jumelle` étend le retrait à celles-là —
 vérifiées une par une dans les archives de l'AN, qui ne les rattache à aucun
 mandat (#839). Au pivot, il **recompose les champs dérivés** (`tags_thematiques`,
 `meta.licence_donnees`) après le retrait, comme la fusion le fait (§4).
+
+`purge_mandats_nosdeputes.py` se lance aussi une fois par couche. Il retire un mandat
+**sans `categorie_source`** dont la fonction commence par une minuscule : la forme
+qu'écrivait la collecte NosDéputés, qu'aucune source vivante n'établit (#718). Au
+pivot, il recompose `chambres`.
 
 `purge_mandats_non_faits.py` retire les onglets de page publiés comme des
 commissions, sur une **liste close** de libellés : même signature de forme que
