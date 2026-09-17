@@ -807,13 +807,16 @@ Trois étapes, entre les passes pivot et la génération des fiches de groupe.
 | `src/documents_europeens.py` | `pivot_data/documents_europeens.json` | **335** documents cités (16/09/2026) |
 
 **Les deux premières ne collectent rien** : les dumps ParlTrack sont déjà en
-cache, déposés par `extract-parltrack`.
+cache, déposés par `extract-parltrack`. `dossiers_europeens.py` lit pourtant le
+dump des dossiers **en entier**, et pas seulement les dossiers cités : le libellé
+d'une famille OEIL (`6` → « External relations of the Union ») n'apparaît que sur
+437 occurrences des 23 885 dossiers, et il faut le trouver où il est (v3, 17/09/2026).
 
 **La troisième interroge le réseau, et c'est la seule.** Elle lit
 `src/europarl_documents.py` pour les concepts EuroVoc d'un document — dans la
 réponse que le résolveur télécharge **déjà** pour l'existence et le titre, donc
-sans requête de plus au Parlement — puis résout les libellés chez l'Office des
-publications, **par lots SPARQL de 100 concepts**. Si le portail du Parlement se
+sans requête de plus au Parlement — puis résout les libellés **et les domaines** chez l'Office des
+publications, **par lots SPARQL de 100 concepts** — deux requêtes par lot (v2, 17/09/2026). Si le portail du Parlement se
 tait, le disjoncteur arrête la passe après cinq silences consécutifs plutôt que
 de payer un `TIMEOUT` par document, et le résumé du job le dit.
 
