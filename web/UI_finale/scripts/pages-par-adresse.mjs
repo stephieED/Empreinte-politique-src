@@ -51,6 +51,7 @@ import {
   metaLignee,
 } from './metadonnees-pages.mjs';
 import { avecBloc, blocCandidat, blocGouvernement, blocLignee } from './bloc-sans-js.mjs';
+import { robots, sitemap } from './sitemap-et-robots.mjs';
 
 const racineUI = dirname(dirname(fileURLToPath(import.meta.url)));
 const dist = join(racineUI, 'dist');
@@ -126,6 +127,8 @@ if (cles !== [...PAGES_FIXES].sort().join(', ')) echouer(`les pages fixes n'ont 
  * JavaScript (#969). Une erreur de texte arrête le build. */
 const metas = new Map();
 const blocs = new Map();
+/* Adresse → date de la donnée, pour le `lastmod` du sitemap. */
+const datesDesDonnees = new Map();
 const dateDuBuild = new Date().toISOString().slice(0, 10);
 try {
   for (const chemin of PAGES_FIXES) metas.set(chemin, PAGES_FIXES_META[chemin]);
@@ -133,17 +136,20 @@ try {
     const profil = JSON.parse(readFileSync(join(dist, 'data', 'profiles', `${c.slug}.pivot.json`), 'utf-8'));
     metas.set(`candidats/${c.slug}`, metaCandidat(c, profil));
     blocs.set(`candidats/${c.slug}`, blocCandidat(c, profil, dateDuBuild));
+    datesDesDonnees.set(`candidats/${c.slug}`, profil.meta?.genere_le || null);
   }
   /* La période n'est pas au manifeste : elle se lit dans la vue de lignée. */
   for (const l of manifeste.lignees || []) {
     const vue = JSON.parse(readFileSync(join(dist, 'data', 'lignees', l.fichier), 'utf-8'));
     metas.set(`groupes/${l.id}`, metaLignee(vue));
     blocs.set(`groupes/${l.id}`, blocLignee(vue, dateDuBuild));
+    datesDesDonnees.set(`groupes/${l.id}`, vue.genereLe || null);
   }
   for (const g of manifeste.gouvernements || []) {
     metas.set(`gouvernements/${g.id}`, metaGouvernement(g));
     const profil = JSON.parse(readFileSync(join(dist, 'data', 'gouvernements', g.fichier), 'utf-8'));
     blocs.set(`gouvernements/${g.id}`, blocGouvernement(profil, dateDuBuild));
+    datesDesDonnees.set(`gouvernements/${g.id}`, profil.meta?.genere_le || null);
   }
 } catch (erreur) {
   echouer(`texte d'une page impossible à écrire — ${erreur.message}`);
@@ -165,10 +171,17 @@ for (const [depuis, vers] of Object.entries(redirections)) {
   ecrire(depuis, gabarit.replace('</head>', `  <link rel="canonical" href="https://${domaine}/${vers}" />\n  </head>`));
 }
 
+/* Le sitemap ne liste QUE les pages publiées, jamais les redirections (#969). */
+const entrees = [{ chemin: '', lastmod: dateDuBuild }]
+  .concat([...publiees].map((chemin) => ({ chemin, lastmod: datesDesDonnees.get(chemin) || dateDuBuild })));
+writeFileSync(join(dist, 'sitemap.xml'), sitemap(domaine, entrees));
+writeFileSync(join(dist, 'robots.txt'), robots(domaine));
+
 console.log(
   `pages-par-adresse : ${publiees.size + 1} pages publiées répondent 200 — l'accueil, `
   + `${pages.fixes.length} pages fixes, ${pages.candidats.length} fiches candidat (candidats du manifeste), `
   + `${pages.groupes.length} fiches de lignée, ${pages.gouvernements.length} fiches de gouvernement ; `
   + `${Object.keys(redirections).length} adresses de redirection, canonical vers leur arrivée ; `
-  + `${blocs.size} fiches portent leurs faits en clair, lisibles sans JavaScript.`,
+  + `${blocs.size} fiches portent leurs faits en clair, lisibles sans JavaScript ; `
+  + `sitemap.xml en liste ${entrees.length}, robots.txt le désigne.`,
 );

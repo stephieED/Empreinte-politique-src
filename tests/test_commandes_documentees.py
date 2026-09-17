@@ -44,7 +44,9 @@ _HORS_DEPOT = {"npm", "pytest", "cd", "tail", "kill", "git", "source", "pip"}
 
 #: `python3 -m pytest`, `python3 -m http.server` : le module n'est pas un
 #: fichier du dépôt.
-_INTERPRETEURS = {"python", "python3"}
+#: `node web/UI_finale/scripts/…` : l'interpréteur n'est pas du dépôt, le
+#: script qui suit l'est (#969).
+_INTERPRETEURS = {"python", "python3", "node"}
 
 _OPTION_LONGUE = re.compile(r"^--[a-z0-9][a-z0-9-]*$")
 _OPTION_EN_TABLEAU = re.compile(r"`(--[a-z0-9][a-z0-9-]*)")
@@ -176,6 +178,7 @@ def test_toute_commande_relevee_porte_un_chemin_du_depot():
         "le format des blocs de commande a probablement changé")
     hors_arbo = sorted(
         s for s in scripts
-        if not (s.startswith("src/") or s.startswith("scripts/")))
+        if not (s.startswith("src/") or s.startswith("scripts/")
+                or s.startswith("web/UI_finale/scripts/")))
     assert not hors_arbo, (
         f"chemins inattendus dans docs/commandes.md : {hors_arbo}")

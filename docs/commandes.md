@@ -889,6 +889,19 @@ données pivot vers `public/data/` (généré, git-ignoré) puis démarre Vite. 
 couverture affichée se limite aux candidats, groupes et gouvernements qui ont un
 fichier pivot en local.
 
+### Ce qu'un moteur de recherche voit du site en ligne
+
+```bash
+node web/UI_finale/scripts/verifier-referencement.mjs
+```
+
+Parcourt le `sitemap.xml` du site **en ligne** et relève, adresse par adresse :
+statut HTTP, `<title>`, `canonical`, et longueur du texte lisible **sans
+JavaScript**. Sort en échec si une adresse ne répond pas 200, si un titre
+manque, si deux pages partagent le même titre, ou si une fiche a perdu son texte
+en clair (#969). Une autre base s'ajoute en argument — un build local servi
+comme GitHub Pages, jamais `vite preview`, qui ne reproduit pas son 404.
+
 Les générations de design archivées (`web/old/`, v1–v7) sont du HTML statique :
 
 ```bash
