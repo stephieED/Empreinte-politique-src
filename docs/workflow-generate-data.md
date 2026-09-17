@@ -410,7 +410,10 @@ dérive du référentiel et non du corpus) ; profils de groupe parlementaire ré
 précédent vient d'écrire, jamais du réseau, donc APRÈS lui et insensibles à son
 code 2 ; `continue-on-error`, même arbitrage que le step gouvernement, la §4c du
 portail hard-failant sur une fiche absente ou invalide ; **104 s et 1 453 Mio de
-RSS** mesurés pour les 10 lignées), profils
+RSS** mesurés pour les 10 lignées), **la liste des gouvernements lue dans AMO30**
+(`gouvernements_amo30.py`, #996 — réécrit `raw_data/gouvernements_reels.json`, 17
+gouvernements depuis 2007 ; sans `continue-on-error` : une archive illisible lève
+avant toute écriture et la liste committée reste), profils
 de gouvernement ; `check_quality_gate.py` ; les **quatre contrôles** de la §8 ;
 la vérification que `src/` et `raw_data/*.json` n'ont pas bougé sur la branche
 pendant le run ; le commit et le push ; **le signal disant si ce commit

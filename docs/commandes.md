@@ -186,7 +186,14 @@ python3 src/group_profile.py --groupe-id "AN:SOC" --groupe-sigle SOC \
 
 ### Une fiche de gouvernement
 
-Tous les gouvernements déclarés dans `raw_data/gouvernements_reels.json` :
+La liste des gouvernements se lit dans le référentiel AMO30 (#996) ; le fichier
+est réécrit à chaque run, ne pas l'éditer à la main :
+
+```bash
+python3 src/gouvernements_amo30.py --out raw_data/gouvernements_reels.json
+```
+
+Puis tous les gouvernements de cette liste :
 
 ```bash
 python3 src/generate_gouvernement_profiles.py --validate \

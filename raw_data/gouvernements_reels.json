@@ -1,15 +1,28 @@
 {
   "_meta": {
-    "description": "Liste validée manuellement (voir issue #209) des gouvernements réels à générer via un futur gouvernement_profile.py / gouvernement_roster.py. Miroir éditorial de raw_data/groupes_reels.json. `libelle_an` est le `organe.libelleAbrege` officiel tel qu'il apparaît dans mandats[].label (\"Gouvernement (<libelle_an>)\") des profils pivot individuels — nécessaire pour désambiguïser deux gouvernements homonymes lors d'un remaniement (l'AN n'expose que ce libellé abrégé, potentiellement ambigu). `periode` est dérivée des dates min/max observées sur les mandats fonction_gouvernementale réellement présents dans pivot_data/profiles/*.pivot.json (source : AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip), pas d'une source éditoriale externe.",
-    "avertissement": "Couverture limitée aux gouvernements pour lesquels au moins un ministre a un profil pivot local dans pivot_data/profiles/ (voir README §6 'Coverage limits'). Un gouvernement dont aucun membre n'a de pivot généré n'apparaît pas ici, même s'il a existé."
+    "description": "Produit à chaque run par src/gouvernements_amo30.py (#996) : un gouvernement par organe `GOUVERNEMENT` du référentiel AMO30 de l'Assemblée nationale. `libelle_an` est `libelleAbrege`, tel que la collecte l'écrit dans mandats[].label (\"Gouvernement (<libelle_an>)\") ; `periode` recopie `viMoDe` ; `nom` met le libellé en forme. Ne pas éditer à la main : le prochain run réécrit ce fichier.",
+    "avertissement": "Couverture : les gouvernements qu'AMO30 publie, soit depuis FILLON 1 (2007-05-17) dans l'archive qui a produit ce fichier. Les gouvernements antérieurs n'y figurent pas : leur absence ne dit pas qu'ils n'ont pas existé.",
+    "source": "AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
   },
   "gouvernements": [
+    {
+      "gouvernement_id": "gouvernement:FILLON_1",
+      "nom": "Gouvernement Fillon I",
+      "libelle_an": "FILLON 1",
+      "organe_ref": "PO382939",
+      "periode": {
+        "debut": "2007-05-17",
+        "fin": "2007-06-18"
+      },
+      "fichier": "gouvernement-FILLON_1.json"
+    },
     {
       "gouvernement_id": "gouvernement:FILLON_2",
       "nom": "Gouvernement Fillon II",
       "libelle_an": "FILLON 2",
+      "organe_ref": "PO384206",
       "periode": {
-        "debut": "2007-06-19",
+        "debut": "2007-06-18",
         "fin": "2010-11-13"
       },
       "fichier": "gouvernement-FILLON_2.json"
@@ -18,6 +31,7 @@
       "gouvernement_id": "gouvernement:FILLON_3",
       "nom": "Gouvernement Fillon III",
       "libelle_an": "FILLON 3",
+      "organe_ref": "PO425695",
       "periode": {
         "debut": "2010-11-14",
         "fin": "2012-05-10"
@@ -25,9 +39,65 @@
       "fichier": "gouvernement-FILLON_3.json"
     },
     {
+      "gouvernement_id": "gouvernement:AYRAULT_1",
+      "nom": "Gouvernement Ayrault I",
+      "libelle_an": "AYRAULT 1",
+      "organe_ref": "PO590011",
+      "periode": {
+        "debut": "2012-05-16",
+        "fin": "2012-06-18"
+      },
+      "fichier": "gouvernement-AYRAULT_1.json"
+    },
+    {
+      "gouvernement_id": "gouvernement:AYRAULT_2",
+      "nom": "Gouvernement Ayrault II",
+      "libelle_an": "AYRAULT 2",
+      "organe_ref": "PO653199",
+      "periode": {
+        "debut": "2012-06-19",
+        "fin": "2014-03-31"
+      },
+      "fichier": "gouvernement-AYRAULT_2.json"
+    },
+    {
+      "gouvernement_id": "gouvernement:VALLS",
+      "nom": "Gouvernement Valls I",
+      "libelle_an": "VALLS",
+      "organe_ref": "PO700706",
+      "periode": {
+        "debut": "2014-04-01",
+        "fin": "2014-08-25"
+      },
+      "fichier": "gouvernement-VALLS.json"
+    },
+    {
+      "gouvernement_id": "gouvernement:VALLS_2",
+      "nom": "Gouvernement Valls II",
+      "libelle_an": "VALLS 2",
+      "organe_ref": "PO702883",
+      "periode": {
+        "debut": "2014-08-26",
+        "fin": "2016-12-06"
+      },
+      "fichier": "gouvernement-VALLS_2.json"
+    },
+    {
+      "gouvernement_id": "gouvernement:CAZENEUVE",
+      "nom": "Gouvernement Cazeneuve",
+      "libelle_an": "CAZENEUVE",
+      "organe_ref": "PO715793",
+      "periode": {
+        "debut": "2016-12-07",
+        "fin": "2017-05-17"
+      },
+      "fichier": "gouvernement-CAZENEUVE.json"
+    },
+    {
       "gouvernement_id": "gouvernement:PHILIPPE",
       "nom": "Gouvernement Philippe I",
       "libelle_an": "PHILIPPE",
+      "organe_ref": "PO717173",
       "periode": {
         "debut": "2017-05-18",
         "fin": "2017-06-19"
@@ -38,6 +108,7 @@
       "gouvernement_id": "gouvernement:PHILIPPE_2",
       "nom": "Gouvernement Philippe II",
       "libelle_an": "PHILIPPE 2",
+      "organe_ref": "PO725688",
       "periode": {
         "debut": "2017-06-20",
         "fin": "2020-07-06"
@@ -48,6 +119,7 @@
       "gouvernement_id": "gouvernement:CASTEX",
       "nom": "Gouvernement Castex",
       "libelle_an": "CASTEX",
+      "organe_ref": "PO773371",
       "periode": {
         "debut": "2020-07-07",
         "fin": "2022-05-16"
@@ -58,8 +130,9 @@
       "gouvernement_id": "gouvernement:BORNE",
       "nom": "Gouvernement Borne",
       "libelle_an": "BORNE",
+      "organe_ref": "PO791579",
       "periode": {
-        "debut": "2022-05-21",
+        "debut": "2022-05-17",
         "fin": "2024-01-09"
       },
       "fichier": "gouvernement-BORNE.json"
@@ -68,6 +141,7 @@
       "gouvernement_id": "gouvernement:ATTAL",
       "nom": "Gouvernement Attal",
       "libelle_an": "ATTAL",
+      "organe_ref": "PO833673",
       "periode": {
         "debut": "2024-01-10",
         "fin": "2024-09-05"
@@ -78,8 +152,9 @@
       "gouvernement_id": "gouvernement:BARNIER",
       "nom": "Gouvernement Barnier",
       "libelle_an": "BARNIER",
+      "organe_ref": "PO847639",
       "periode": {
-        "debut": "2024-09-28",
+        "debut": "2024-09-06",
         "fin": "2024-12-13"
       },
       "fichier": "gouvernement-BARNIER.json"
@@ -88,18 +163,31 @@
       "gouvernement_id": "gouvernement:BAYROU",
       "nom": "Gouvernement Bayrou",
       "libelle_an": "BAYROU",
+      "organe_ref": "PO855052",
       "periode": {
-        "debut": "2024-12-24",
+        "debut": "2024-12-14",
         "fin": "2025-09-09"
       },
       "fichier": "gouvernement-BAYROU.json"
     },
     {
+      "gouvernement_id": "gouvernement:LECORNU",
+      "nom": "Gouvernement Lecornu I",
+      "libelle_an": "LECORNU",
+      "organe_ref": "PO873418",
+      "periode": {
+        "debut": "2025-09-10",
+        "fin": "2025-10-10"
+      },
+      "fichier": "gouvernement-LECORNU.json"
+    },
+    {
       "gouvernement_id": "gouvernement:LECORNU_II",
       "nom": "Gouvernement Lecornu II",
       "libelle_an": "LECORNU II",
+      "organe_ref": "PO873634",
       "periode": {
-        "debut": "2025-10-13",
+        "debut": "2025-10-11",
         "fin": null
       },
       "fichier": "gouvernement-LECORNU_II.json"

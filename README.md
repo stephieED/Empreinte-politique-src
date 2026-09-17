@@ -111,7 +111,7 @@ cite ni un script disparu ni une option qui n'existe plus.
 raw_data/      Entrées déclaratives + collecte brute (proche de la source)
   candidats.json            la liste éditoriale des candidats déclarés
   groupes_reels.json        les groupes parlementaires à produire
-  gouvernements_reels.json  les gouvernements à produire
+  gouvernements_reels.json  les gouvernements à produire, lus dans AMO30 à chaque run
   profiles/                 <slug>.json + une tranche par législature (#580)
 pivot_data/    Le format pivot — la SEULE couche que web/ lit
   profiles/       <slug>.pivot.json
@@ -176,9 +176,10 @@ où ils se lisaient comme des faits sur la personne affichée (#328).
   → [`docs/decisions/fiches-groupe-17e-legislature-700.md`](docs/decisions/fiches-groupe-17e-legislature-700.md),
   [`docs/decisions/retrait-senat-528.md`](docs/decisions/retrait-senat-528.md),
   [`docs/decisions/extraction-groupe-suspendue-516.md`](docs/decisions/extraction-groupe-suspendue-516.md)
-- **Gouvernements** : seuls ceux déclarés dans
-  `raw_data/gouvernements_reels.json`, pas toute la Ve République. Aucune
-  fonction gouvernementale du corpus n'est antérieure au 18/05/2007, et les
+- **Gouvernements** : ceux que le référentiel AMO30 de l'Assemblée publie, soit
+  **17 depuis Fillon I (17/05/2007)**, lus à chaque run (#996) ; pas toute la
+  Ve République. Aucune fonction gouvernementale du corpus n'est antérieure au
+  18/05/2007, et les
   mandats 2002-2007 de Xavier Bertrand manquent dans une période que sa fiche
   dit couverte : #859.
   `membres[].portefeuille` et `premier_ministre` restent `null` quand aucun

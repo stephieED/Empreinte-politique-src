@@ -734,12 +734,18 @@ l'agrégation faite ici. → [`extract-roster-groupes.md`](./extract-roster-grou
 
 ### `pivot_data/gouvernements/` — les gouvernements
 
-**10 fiches** publiées, déclarées dans `raw_data/gouvernements_reels.json` —
-Fillon II et III, Philippe I et II, Castex, Borne, Attal, Barnier, Bayrou,
-Lecornu II (le seul dont `periode.fin` est `null`). La liste est **éditoriale et
-validée à la main**, comme `groupes_reels.json` : ce n'est pas la série complète
-des gouvernements de la Ve République, et elle ne prétend pas l'être — la période
-2012-05-10 → 2017-05-18 n'y figure pas, Lecornu I non plus.
+**La liste des gouvernements est lue dans AMO30 à chaque run** (#996, 17/09/2026) :
+`src/gouvernements_amo30.py` écrit `raw_data/gouvernements_reels.json`, un
+gouvernement par organe `GOUVERNEMENT`, avec `organe_ref`, `libelle_an`
+(`libelleAbrege`) et `periode` (`viMoDe`) **verbatim**. **17** gouvernements dans
+l'archive du 17/08/2026, de Fillon I (17/05/2007) à Lecornu II (le seul dont
+`periode.fin` est `null`) ; Raffarin et Villepin n'y figurent pas. Jusqu'au
+17/09/2026, la liste était **écrite à la main** (#209) : 10 fiches, sans Fillon I,
+Ayrault I et II, Valls I et II, Cazeneuve ni Lecornu I. Les dates d'AMO30
+élargissent les périodes des 10 fiches existantes, sans jamais les rétrécir.
+La composition des fiches reste, dans ce lot, celle des profils présents
+(`membres[]` ne liste que les ministres qui ont un profil) : la collecte de tous
+les membres est l'objet des lots suivants de #996.
 Deux matériaux, jamais mélangés :
 
 - **la composition** — `gouvernement_roster.py`, **aucun appel réseau** : il
