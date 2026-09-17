@@ -453,6 +453,7 @@ export function buildCandidateView(
     selectionEuropeenne.retenus,
     mandats,
     dossierEuropeen,
+    selectionEuropeenne.joints,
   );
   const votesEuropeens = {
     positions: selectionEuropeenne.total,

@@ -432,8 +432,11 @@ export default function VotesParPeriode({ periodes, portee, reperes, regle, etiq
       {reperes && ue && (
         <p className="cp-note vp-couverture">
           <b>Ce que cette figure ne sait pas.</b> Sur ses {formatNumber(reperes.total)} textes votés
-          au Parlement européen, {formatNumber(reperes.total - reperes.matiere)} ne disent pas quelle
-          commission a examiné le texte — ils restent en « matière non établie ».
+          au Parlement européen, {formatNumber(reperes.total - reperes.matiere)} ne portent aucun
+          thème — la source ne les rattache à aucun dossier — et{' '}
+          {formatNumber(reperes.positions - reperes.total)} position
+          {reperes.positions - reperes.total > 1 ? 's' : ''} portent sur un scrutin antérieur du
+          même texte, que le dernier vote retenu remplace.
         </p>
       )}
       {reperes && !ue && (

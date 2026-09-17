@@ -246,8 +246,26 @@ def test_la_figure_europeenne_n_a_qu_une_periode() -> None:
         "periodes": 1,
         "libelle": "Au Parlement européen",
         "groupes": ["S&D"],
-        "reperes": {"total": 2, "matiere": 0},
+        "reperes": {"total": 2, "positions": 0, "matiere": 0},
     }
+
+
+def test_le_repli_sur_le_dernier_vote_dit_ce_qu_il_retire(periodes) -> None:
+    """3 598 positions donnent 3 175 textes chez Emmanuel Maurel : les 423 autres
+    portent sur un scrutin antérieur du même texte. Laissé à la soustraction,
+    l'écart se lirait comme une perte (§2 règles 5 et 7). Et la note ne parle
+    plus de commission : l'axe européen est le thème."""
+    note = periodes.split("{reperes && ue && (")[1].split("{reperes && !ue && (")[0]
+    assert "ne portent aucun" in note and "thème" in note
+    assert "commission" not in note
+    assert "reperes.positions - reperes.total" in note
+    out = _executer(_SCRUTINS + """
+      const votes = [pe(9, '2017-06-01', 'd', 'abstention'), pe(12, '2018-10-24', 'd', 'pour')];
+      const { retenus, joints } = u.votesEuropeensRetenus(votes, scrutins);
+      const f = u.figureVotesEuropeens(retenus, [], () => null, joints);
+      console.log(JSON.stringify(f.reperes));
+    """)
+    assert out == {"total": 1, "positions": 2, "matiere": 0}
 
 
 def test_aucune_origine_de_texte_au_parlement_europeen() -> None:

@@ -121,7 +121,7 @@ export function themesDuDossier(dossier) {
 /** La figure : une seule période, un rang par thème, et les textes eux-mêmes.
  *  La forme rendue est celle de « Ce qu'il a voté » côté français — même
  *  composant, mêmes couleurs de position. */
-export function figureVotesEuropeens(retenus, mandats, dossierEuropeen = () => null) {
+export function figureVotesEuropeens(retenus, mandats, dossierEuropeen = () => null, positions = 0) {
   const sieges = siegesEuropeens(mandats);
   const textes = retenus
     .map(({ position, scrutin, reference }) => {
@@ -174,6 +174,14 @@ export function figureVotesEuropeens(retenus, mandats, dossierEuropeen = () => n
     textes: textes.length,
     // Ce que la figure ne sait pas, publié plutôt que laissé à la soustraction
     // (§2 règles 5 et 7).
-    reperes: { total: textes.length, matiere: textes.filter((t) => t.themes.length).length },
+    /* CE QUE LE REPLI RETIRE SE DIT. Sur Emmanuel Maurel, 3 598 positions
+     * donnent 3 175 textes : les 423 autres portent sur un scrutin antérieur du
+     * même texte. Laissé à la soustraction, l'écart se lirait comme une perte
+     * (§2 règles 5 et 7). */
+    reperes: {
+      total: textes.length,
+      positions,
+      matiere: textes.filter((t) => t.themes.length).length,
+    },
   };
 }
