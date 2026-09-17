@@ -103,6 +103,34 @@ def test_les_deux_sources_se_reunissent(tmp_path):
     assert references_visees(tmp_path) == {"2021/0136(COD)", "2024/2698(RSP)"}
 
 
+#: Copiés de `raphael-glucksmann` (`origin/main` `789537af5`) : un vote européen
+#: qui cite son dossier, un qui ne le cite pas, et un vote de l'Assemblée
+#: (`gabriel-attal`), qui n'a pas de bloc non résolu.
+VOTE_PE_AVEC_DOSSIER = {"scrutin_id": None, "position": "pour", "scrutin_non_resolu": {"institution": "parlement_europeen", "titre": "RC-B9-0006/2019 - Résolution", "nature": "resolution", "reference_dossier": "2019/2730(RSP)", "date": "2019-07-18", "numero_scrutin": 108532, "source_url": "http://www.europarl.europa.eu/RegData/seance_pleniere/proces_verbal/2019/07-18/liste_presence/P9_PV(2019)07-18(RCV)_XC.xml"}}
+VOTE_PE_SANS_DOSSIER = {"scrutin_id": None, "position": "pour", "scrutin_non_resolu": {"institution": "parlement_europeen", "titre": "RC-B9-0006/2019 - Résolution 18/07/2019 11:30:30.000", "nature": "resolution", "reference_dossier": None, "date": "2019-07-18", "numero_scrutin": "2019-07-18 00:00:00-9.", "source_url": "http://www.europarl.europa.eu/RegData/seance_pleniere/proces_verbal/2019/07-18/liste_presence/P9_PV(2019)07-18(RCV)_XC.xml"}}
+VOTE_AN = {"scrutin_id": "an:15:1", "position": "pour"}
+
+
+def test_les_references_sont_aussi_lues_dans_les_votes(tmp_path):
+    """La troisième source (17/09/2026) : 4 630 références citées par les votes
+    européens, dont 296 seulement étaient dans l'index."""
+    (tmp_path / "raphael-glucksmann.pivot.json").write_text(json.dumps({
+        "votes": [VOTE_PE_AVEC_DOSSIER, VOTE_PE_SANS_DOSSIER, VOTE_AN],
+    }), encoding="utf-8")
+
+    assert references_visees(tmp_path) == {"2019/2730(RSP)"}
+
+
+def test_les_trois_sources_se_reunissent(tmp_path):
+    profil = _profil("2021/0136(COD)")
+    profil["textes_portes"] = [{"institution": "parlement_europeen", "reference_dossier": "2024/2698(RSP)"}]
+    profil["votes"] = [VOTE_PE_AVEC_DOSSIER, {**VOTE_PE_AVEC_DOSSIER, "scrutin_non_resolu": {
+        **VOTE_PE_AVEC_DOSSIER["scrutin_non_resolu"], "reference_dossier": "2021/0136(COD)"}}]
+    (tmp_path / "a.pivot.json").write_text(json.dumps(profil), encoding="utf-8")
+
+    assert references_visees(tmp_path) == {"2021/0136(COD)", "2024/2698(RSP)", "2019/2730(RSP)"}
+
+
 def test_un_texte_porte_francais_n_entre_pas_dans_le_perimetre(tmp_path):
     """`institution` sépare les deux corpus, ici comme pour les amendements."""
     (tmp_path / "x.pivot.json").write_text(json.dumps({"textes_portes": [

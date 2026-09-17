@@ -394,6 +394,14 @@ def references_visees(profils_dir: Path) -> set[str]:
     Ce n'était donc pas un filtre par type de procédure — il n'y en a aucun —
     mais un périmètre de lecture trop étroit.
 
+    TROISIÈME source depuis le 17/09/2026 : les **votes**. Un vote européen
+    publie `reference_dossier` dans `scrutin_non_resolu`. Mesuré sur `origin/main`
+    `789537af5` : les 11 013 positions de vote des 6 candidats déclarés concernés
+    citent **4 630** références distinctes, dont **296** seulement étaient dans
+    l'index — les 4 334 autres n'avaient ni titre, ni type, ni famille, et
+    l'interface n'avait que l'intitulé du scrutin. Le dump déjà téléchargé en
+    porte 4 253 : l'extension ne coûte aucune requête.
+
     Comme pour les scrutins, l'index suit le corpus : les références servies,
     pas les 23 885 dossiers du dump.
     """
@@ -420,6 +428,17 @@ def references_visees(profils_dir: Path) -> set[str]:
             if texte.get("institution") != "parlement_europeen":
                 continue
             reference = texte.get("reference_dossier")
+            if isinstance(reference, str) and reference:
+                refs.add(reference)
+        for vote in profil.get("votes") or []:
+            if not isinstance(vote, dict):
+                continue
+            non_resolu = vote.get("scrutin_non_resolu")
+            if not isinstance(non_resolu, dict):
+                continue
+            if non_resolu.get("institution") != "parlement_europeen":
+                continue
+            reference = non_resolu.get("reference_dossier")
             if isinstance(reference, str) and reference:
                 refs.add(reference)
     return refs
@@ -519,7 +538,7 @@ def _build_arg_parser() -> argparse.ArgumentParser:
 def main(argv: Optional[list[str]] = None) -> int:
     args = _build_arg_parser().parse_args(argv)
     refs = references_visees(args.profils_dir)
-    print(f"→ {len(refs)} référence(s) de dossier visée(s) par les amendements publiés")
+    print(f"→ {len(refs)} référence(s) de dossier citée(s) par les amendements, textes portés et votes publiés")
     entrees = construire(refs, force_download=args.force_download)
     manquantes = sorted(refs - {e["reference"] for e in entrees})
     if manquantes:
