@@ -15,6 +15,7 @@
 import '../styles/shell.css';
 import './CandidateProfile.css';
 import { BadgeSource, ListeVide } from './Lecture';
+import { BarreFiltre, EtiquetteFiltre, MOT, VideDuFiltre } from './Recherche';
 import { teinteMatiere } from '../utils/matiere';
 import { MATIERE_NON_ETABLIE, NATURES_UE } from '../utils/profilCandidat';
 import { Cascade, ListeCascade } from './CascadeTextes';
@@ -117,50 +118,6 @@ function Section({ numero, titre, critere, pied, children }) {
  * - un mot qui ne trouve rien laisse la section EN PLACE, avec un message du
  *   filtre (`VideDuFiltre`) — jamais le message d'une collecte vide, « Non
  *   collecté », qui serait faux (§2 règle 5). */
-function BarreFiltre({ saisie, onSaisie }) {
-  return (
-    <div className="cp-filtre" role="search">
-      <svg aria-hidden="true" height="16" viewBox="0 0 16 16" width="16">
-        <circle cx="7" cy="7" fill="none" r="5" stroke="currentColor" strokeWidth="1.6" />
-        <path d="M11 11l3.5 3.5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.6" />
-      </svg>
-      <input
-        aria-label="Rechercher sur cette page"
-        autoComplete="off"
-        id="cp-filtre-mot"
-        onChange={(e) => onSaisie(e.target.value)}
-        placeholder="Rechercher sur cette page"
-        type="search"
-        value={saisie}
-      />
-      {saisie && (
-        <button className="cp-filtre-raz" onClick={() => onSaisie('')} type="button">
-          Effacer
-        </button>
-      )}
-    </div>
-  );
-}
-
-function EtiquetteFiltre({ mot }) {
-  return (
-    <p className="cp-filtre-etiquette">
-      Contenant <mark>« {mot} »</mark>
-    </p>
-  );
-}
-
-function VideDuFiltre({ mot, children, tete = null }) {
-  return (
-    <div className="cp-carte">
-      <EtiquetteFiltre mot={mot} />
-      {tete}
-      <p className="cp-note cp-filtre-vide">{children}</p>
-    </div>
-  );
-}
-
-const MOT = (mot) => <mark className="cp-filtre-mot">« {mot} »</mark>;
 
 /*
  * Une pastille de position déclarée. Elle accompagne TOUJOURS le chiffre

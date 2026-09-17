@@ -1,4 +1,5 @@
 import { INSTITUTION_PARLEMENT, sigleDuSiege } from '../utils/profilCandidat';
+import { etiquettesThematiques } from '../utils/groupe';
 import { filtrerProfil, motsDuFiltre, periodeCumulee } from '../utils/filtreIntitule';
 import { porteeCommune } from '../utils/votesParPeriode';
 import { titreDuTexteVote } from '../utils/lecture';
@@ -460,6 +461,27 @@ export async function getLigneeProfile(id) {
   const entry = (manifest.lignees || []).find((l) => l.id === id);
   if (!entry) return null;
   return fetchJson(`/data/lignees/${entry.fichier}`);
+}
+
+/* Les débats complets d'une lignée (#979) : la projection n'en porte que dix
+ * par groupe. La page ne les demande que quand un mot est tapé dans sa
+ * recherche. Rendus sous la forme de `sujets.liste`, par la MÊME règle
+ * (`etiquettesThematiques`) : le fichier ne transporte que `[intitulé,
+ * porteurs]` et le dénominateur, et la phrase des porteurs se compose ici comme
+ * au build. `null` si le fichier manque : la section filtre alors les dix. */
+export async function getDebatsLignee(id) {
+  const manifest = await loadManifest();
+  const entry = (manifest.lignees || []).find((l) => l.id === id);
+  if (!entry?.debats) return null;
+  const brut = await fetchJson(`/data/lignees/${entry.debats}`);
+  if (!brut?.maillons) return null;
+  return Object.fromEntries(Object.entries(brut.maillons).map(([maillon, m]) => [
+    maillon,
+    etiquettesThematiques({
+      tags_thematiques_agreges: m.debats.map(([tag, n]) => ({ tag, nb_membres_porteurs: n })),
+      membres: { length: m.denominateur },
+    }, Infinity),
+  ]));
 }
 
 /**

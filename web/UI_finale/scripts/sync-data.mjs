@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { cleLegislature, construireComparaisons } from './comparaison-groupes.mjs';
 import { construireCouverture } from './couverture-corpus.mjs';
-import { construireVueLignee, idDePage } from './vue-lignee.mjs';
+import { construireDebatsLignee, construireVueLignee, idDePage } from './vue-lignee.mjs';
 import { repartitionsDesMaillons } from './amendements-lignees.mjs';
 import { selectDerniereLectureVotes } from '../src/utils/lecture.js';
 
@@ -353,6 +353,9 @@ for (const file of lignesFiles) {
   manifestLignees.push({
     id,
     fichier: `${id}.json`,
+    // Les débats complets, pour la recherche sur la fiche (#979) : chargés
+    // seulement quand un mot est tapé.
+    debats: `${id}.debats.json`,
     ligneeId: lignee.lignee_id,
     nom: lignee.lignee_nom,
     chambre: lignee.chambre,
@@ -419,7 +422,9 @@ const entreesLignees = plusRecent(
 );
 const vuesAJour = manifestLignees.length > 0 && manifestLignees.every((l) => {
   const f = path.join(outDir, 'lignees', l.fichier);
-  return existsSync(f) && statSync(f).mtimeMs >= entreesLignees;
+  const d = path.join(outDir, 'lignees', l.debats);
+  return existsSync(f) && statSync(f).mtimeMs >= entreesLignees
+    && existsSync(d) && statSync(d).mtimeMs >= entreesLignees;
 });
 if (vuesAJour) {
   console.log('sync-data : vues de lignée à jour, reconstruction sautée.');
@@ -465,6 +470,13 @@ if (vuesAJour) {
       aujourdhui,
     });
     writeFileSync(path.join(outDir, 'lignees', entree.fichier), JSON.stringify(vue));
+    const debats = construireDebatsLignee({
+      fichier: `lignee-${entree.id}.json`,
+      lignee,
+      fiches: ficheParFichier,
+      idsDeFiche: idDeFicheParFichier,
+    });
+    writeFileSync(path.join(outDir, 'lignees', entree.debats), JSON.stringify(debats));
   }
   console.log(`sync-data : ${manifestLignees.length} vues de lignée écrites en ${((Date.now() - debut) / 1000).toFixed(1)} s.`);
 }
