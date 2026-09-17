@@ -71,6 +71,13 @@ SPARQL_EUROVOC = "https://publications.europa.eu/webapi/rdf/sparql"
 LOT_SPARQL = 100
 
 TIMEOUT_SPARQL = 60
+
+#: Attentes avant la 2e puis la 3e tentative d'une requête SPARQL (#901).
+#: Le run 35194727922 (17/09/2026) est tombé sur UN délai de 60 s dépassé chez
+#: l'Office des publications ; la même requête, rejouée une heure plus tard,
+#: répondait en 0,1 à 0,4 s. Une panne passagère ne doit pas faire échouer la
+#: publication de tout le corpus.
+ATTENTES_SPARQL = (5, 20)
 PAUSE_ENTRE_LOTS = 0.5
 
 LICENCE = (
@@ -102,6 +109,41 @@ SELECT ?c ?dn ?dl WHERE {
 
 class LibellesEurovocIndisponibles(RuntimeError):
     """EuroVoc n'a pas répondu : publier des codes nus serait illisible."""
+
+
+#: Statuts qui valent la peine d'un nouvel essai : la limite de débit et les
+#: erreurs du serveur. Un 400 dit que la requête est fausse, la rejouer n'y
+#: changera rien.
+_STATUTS_A_REESSAYER = frozenset({429, 500, 502, 503, 504})
+
+
+def _interroger_sparql(session: Any, requete: str, quoi: str) -> dict[str, Any]:
+    """Pose une requête SPARQL, en réessayant ce qui peut être passager.
+
+    Lève `LibellesEurovocIndisponibles` après la dernière tentative : c'est
+    l'appelant qui décide si l'absence bloque (les libellés) ou se déclare (les
+    domaines).
+    """
+    derniere = ""
+    for essai in range(len(ATTENTES_SPARQL) + 1):
+        if essai:
+            time.sleep(ATTENTES_SPARQL[essai - 1])
+        try:
+            reponse = session.get(
+                SPARQL_EUROVOC,
+                params={"query": requete},
+                headers={"Accept": "application/sparql-results+json"},
+                timeout=TIMEOUT_SPARQL,
+            )
+        except Exception as exc:
+            derniere = f"injoignable : {exc}"
+            continue
+        if reponse.status_code == 200:
+            return reponse.json()
+        derniere = f"a répondu {reponse.status_code}"
+        if reponse.status_code not in _STATUTS_A_REESSAYER:
+            break
+    raise LibellesEurovocIndisponibles(f"EuroVoc {derniere} ({quoi}).")
 
 
 def uri_eurovoc(code: str) -> str:
@@ -165,23 +207,10 @@ def resoudre_libelles(
     for depart in range(0, len(restants), lot):
         tranche = restants[depart:depart + lot]
         requete = _REQUETE % " ".join(f"<{uri_eurovoc(c)}>" for c in tranche)
-        try:
-            reponse = session.get(
-                SPARQL_EUROVOC,
-                params={"query": requete},
-                headers={"Accept": "application/sparql-results+json"},
-                timeout=TIMEOUT_SPARQL,
-            )
-        except Exception as exc:
-            raise LibellesEurovocIndisponibles(
-                f"EuroVoc injoignable : {exc}. Publier des codes nus donnerait "
-                "une matière que personne ne peut lire."
-            ) from exc
-        if reponse.status_code != 200:
-            raise LibellesEurovocIndisponibles(
-                f"EuroVoc a répondu {reponse.status_code}."
-            )
-        for ligne in reponse.json().get("results", {}).get("bindings", []):
+        # Une panne qui dure après les nouveaux essais fait échouer l'étape :
+        # publier des codes nus donnerait une matière que personne ne peut lire.
+        reponse = _interroger_sparql(session, requete, "libellés")
+        for ligne in reponse.get("results", {}).get("bindings", []):
             code = str(ligne["c"]["value"]).rstrip("/").rsplit("/", 1)[-1]
             libelle = str(ligne["l"]["value"]).strip()
             if libelle:
@@ -207,20 +236,8 @@ def resoudre_domaines(
     for depart in range(0, len(restants), lot):
         tranche = restants[depart:depart + lot]
         requete = _REQUETE_DOMAINES % " ".join(f"<{uri_eurovoc(c)}>" for c in tranche)
-        try:
-            reponse = session.get(
-                SPARQL_EUROVOC,
-                params={"query": requete},
-                headers={"Accept": "application/sparql-results+json"},
-                timeout=TIMEOUT_SPARQL,
-            )
-        except Exception as exc:
-            raise LibellesEurovocIndisponibles(
-                f"EuroVoc injoignable pour les domaines : {exc}.") from exc
-        if reponse.status_code != 200:
-            raise LibellesEurovocIndisponibles(
-                f"EuroVoc a répondu {reponse.status_code} pour les domaines.")
-        for ligne in reponse.json().get("results", {}).get("bindings", []):
+        reponse = _interroger_sparql(session, requete, "domaines")
+        for ligne in reponse.get("results", {}).get("bindings", []):
             code = str(ligne["c"]["value"]).rstrip("/").rsplit("/", 1)[-1]
             domaine = str(ligne["dn"]["value"]).strip()
             libelle = str(ligne["dl"]["value"]).strip()
@@ -235,7 +252,7 @@ def _entree(
     doceo: str,
     codes: Optional[list[str]],
     libelles: dict[str, str],
-    domaines: Optional[dict[str, dict[str, str]]] = None,
+    domaines: Optional[dict[str, dict[str, str]]] = {},
 ) -> dict[str, Any]:
     """Une entrée d'index, avec le motif quand elle ne porte pas de matière."""
     entree: dict[str, Any] = {"id": doceo, "matieres": []}
@@ -246,6 +263,9 @@ def _entree(
         entree["matieres_non_resolu"] = {"motif": "source_sans_concept"}
         return entree
     connus = [c for c in codes if c in libelles]
+    # `domaines is None` : EuroVoc n'a pas répondu, la question n'a pas pu être
+    # posée. Ce n'est pas « ce concept n'a pas de domaine », et le motif le dit.
+    injoignable = domaines is None
     domaines = domaines or {}
     entree["matieres"] = [
         {"code": c, "libelle": libelles[c], "domaine": domaines.get(c)} for c in connus
@@ -255,7 +275,7 @@ def _entree(
         # Le domaine est à `null` sur la matière ET déclaré ici : un lecteur qui
         # compte par domaine doit savoir ce qu'il n'a pas pu compter.
         entree["domaines_non_resolu"] = {
-            "motif": "domaine_eurovoc_introuvable",
+            "motif": "eurovoc_injoignable" if injoignable else "domaine_eurovoc_introuvable",
             "codes": sans_domaine,
         }
     manquants = [c for c in codes if c not in libelles]
@@ -279,7 +299,15 @@ def construire(references: Iterable[str], resolveur: Any, session: Any) -> list[
         concepts_par_doc[doceo] = resolveur.concepts_eurovoc(doceo)
     tous = {c for codes in concepts_par_doc.values() if codes for c in codes}
     libelles = resoudre_libelles(tous, session) if tous else {}
-    domaines = resoudre_domaines(set(libelles), session) if libelles else {}
+    domaines: Optional[dict[str, dict[str, str]]] = {}
+    if libelles:
+        try:
+            domaines = resoudre_domaines(set(libelles), session)
+        except LibellesEurovocIndisponibles as exc:
+            # Le domaine sert un axe de couleur : son absence se déclare sur
+            # chaque document, elle ne bloque pas la publication du corpus.
+            print(f"  ⚠ domaines EuroVoc non publiés : {exc}", file=sys.stderr)
+            domaines = None
     return [_entree(d, concepts_par_doc[d], libelles, domaines) for d in voulues]
 
 

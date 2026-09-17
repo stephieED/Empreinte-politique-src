@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 353 décisions
+gouverne sans avoir à fouiller les 354 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -51,6 +51,7 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 | `src/build_amendements_index.py` | 1 |
 | `src/candidate_profile_ue.py` | 1 |
 | `src/collecte_mandats_locaux.py` | 1 |
+| `src/documents_europeens.py` | 1 |
 | `src/generate_lignee_profiles.py` | 1 |
 | `src/identifiants_wikidata.py` | 1 |
 | `src/json_io.py` | 1 |
@@ -487,6 +488,12 @@ Le mentionnent sans le gouverner : [`absences-publiees-comme-faits-556-558-560`]
 Le mentionnent sans le gouverner : [`couverture-remplacee-par-liste-602`](decisions/couverture-remplacee-par-liste-602.md), [`fiches-groupe-17e-legislature-700`](decisions/fiches-groupe-17e-legislature-700.md), [`lecture-dumps-parltrack-683`](decisions/lecture-dumps-parltrack-683.md), [`licence-jamais-en-dur-909`](decisions/licence-jamais-en-dur-909.md), [`pied-de-site-et-section-6-328`](decisions/pied-de-site-et-section-6-328.md), [`preuve-de-borne-dite-une-fois-328`](decisions/preuve-de-borne-dite-une-fois-328.md), [`retrait-residus-senat-908`](decisions/retrait-residus-senat-908.md).
 
 ## `src/documents_europeens.py`
+
+1 décision(s) le gouvernent ; le module en cite 0.
+
+| Décision | Nomme |
+| --- | --- |
+| [Un délai dépassé chez EuroVoc a coûté toute la publication d'un run (#901) (2026-09-17)](decisions/eurovoc-muet-ne-bloque-pas-le-corpus-901.md) | `LibellesEurovocIndisponibles`, `_interroger_sparql`, `resoudre_domaines` |
 
 Le mentionnent sans le gouverner : [`domaines-eurovoc-familles-oeil-901`](decisions/domaines-eurovoc-familles-oeil-901.md), [`matieres-eurovoc-documents-901`](decisions/matieres-eurovoc-documents-901.md).
 

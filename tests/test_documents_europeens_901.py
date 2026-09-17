@@ -36,6 +36,13 @@ from documents_europeens import (  # noqa: E402
 )
 
 
+@pytest.fixture(autouse=True)
+def _sans_attente(monkeypatch):
+    """Les nouveaux essais SPARQL attendent 5 puis 20 s : pas dans les tests."""
+    import documents_europeens
+    monkeypatch.setattr(documents_europeens, "ATTENTES_SPARQL", (0, 0))
+
+
 class _ReponseSparql:
     def __init__(self, bindings, status_code=200):
         self.status_code = status_code
