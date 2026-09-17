@@ -37,29 +37,38 @@ from documents_europeens import (  # noqa: E402
 
 
 class _ReponseSparql:
-    def __init__(self, paires, status_code=200):
+    def __init__(self, bindings, status_code=200):
         self.status_code = status_code
-        self._paires = paires
+        self._bindings = bindings
 
     def json(self):
-        return {"results": {"bindings": [
-            {"c": {"value": uri_eurovoc(c)}, "l": {"value": l}}
-            for c, l in self._paires
-        ]}}
+        return {"results": {"bindings": self._bindings}}
 
 
 class _SessionSparql:
-    """Rejoue EuroVoc : rend un libellé pour les concepts qu'il connaît."""
+    """Rejoue EuroVoc : un libellé pour les concepts qu'il connaît, et, à la
+    requête des domaines (celle qui cite `ev:domain`), le ou les domaines de
+    chacun, dans la forme que le point SPARQL rend réellement (17/09/2026)."""
 
-    def __init__(self, libelles, status_code=200):
+    def __init__(self, libelles, status_code=200, domaines=None):
         self.libelles = libelles
+        self.domaines = domaines or {}
         self.status_code = status_code
         self.requetes = []
 
     def get(self, url, params=None, headers=None, timeout=None):
-        self.requetes.append(params["query"])
-        demandes = [c for c in self.libelles if f"<{uri_eurovoc(c)}>" in params["query"]]
-        return _ReponseSparql([(c, self.libelles[c]) for c in demandes], self.status_code)
+        requete = params["query"]
+        self.requetes.append(requete)
+        if "ev:domain" in requete:
+            return _ReponseSparql([
+                {"c": {"value": uri_eurovoc(c)}, "dn": {"value": code}, "dl": {"value": libelle}}
+                for c, doms in self.domaines.items() if f"<{uri_eurovoc(c)}>" in requete
+                for code, libelle in doms
+            ], self.status_code)
+        demandes = [c for c in self.libelles if f"<{uri_eurovoc(c)}>" in requete]
+        return _ReponseSparql([
+            {"c": {"value": uri_eurovoc(c)}, "l": {"value": self.libelles[c]}} for c in demandes
+        ], self.status_code)
 
 
 class _Resolveur:
@@ -158,9 +167,9 @@ def test_un_document_classe_porte_ses_matieres():
         _Resolveur({"RC-9-2024-0227": ["2155", "5454"]}),
         _SessionSparql({"2155": "opposition politique", "5454": "Azerbaïdjan"}),
     )
-    assert entrees[0]["matieres"] == [
-        {"code": "2155", "libelle": "opposition politique"},
-        {"code": "5454", "libelle": "Azerbaïdjan"},
+    assert [(m["code"], m["libelle"]) for m in entrees[0]["matieres"]] == [
+        ("2155", "opposition politique"),
+        ("5454", "Azerbaïdjan"),
     ]
     assert "matieres_non_resolu" not in entrees[0]
 
@@ -183,7 +192,8 @@ def test_un_libelle_manquant_est_declare_sans_perdre_les_autres():
         _Resolveur({"X-9-2024-0001": ["2155", "9999"]}),
         _SessionSparql({"2155": "opposition politique"}),
     )
-    assert entrees[0]["matieres"] == [{"code": "2155", "libelle": "opposition politique"}]
+    assert [(m["code"], m["libelle"]) for m in entrees[0]["matieres"]] == [
+        ("2155", "opposition politique")]
     assert entrees[0]["matieres_non_resolu"] == {
         "motif": "libelle_eurovoc_introuvable", "codes": ["9999"]}
 
@@ -200,6 +210,6 @@ def test_aucune_entree_sans_matiere_ni_motif():
 
 def test_l_entete_nomme_les_deux_licences():
     doc = document([])
-    assert doc["schema_version"] == "documents-europeens-v1"
+    assert doc["schema_version"] == "documents-europeens-v2"
     assert "CC BY 4.0" in doc["licence_donnees"]
     assert "data.europarl.europa.eu" in doc["licence_donnees"]

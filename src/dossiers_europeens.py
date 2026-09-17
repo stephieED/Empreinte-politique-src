@@ -32,6 +32,16 @@ automatique d'un intitulé législatif produirait un titre que personne n'a écr
 et qu'aucune source ne confirme (§2 règle 2). L'interface affiche ce que le
 Parlement européen a publié.
 
+Chaque dossier dit ses familles OEIL (17/09/2026)
+-------------------------------------------------
+La famille est le premier niveau du code de matière (`6.40.10` → `6`). Son
+libellé est **lu dans le dump**, là où la source publie le premier niveau, sur
+tout le dump et pas sur les seuls dossiers visés : `familles = [{"code": "6",
+"libelle": "External relations of the Union"}]`. En anglais, comme les
+matières : le site OEIL en français ne répond pas à une requête simple, et le
+libellé anglais a été arbitré le 17/09/2026. Une famille sans libellé est
+déclarée dans `familles_non_resolu`.
+
 Le stade est repris de la même table que `textes_portes[]`
 -----------------------------------------------------------
 `normalize_parltrack_dumps.STADE_UE_PAR_LIBELLE_SOURCE` est la seule fabrique de
@@ -66,7 +76,8 @@ DUMP_DOSSIERS = "ep_dossiers.json.zst"
 #: v2 depuis le 16/09/2026 : chaque entrée publie ses `matieres` (#901). Un
 #: champ ajouté change ce qu'un lecteur peut attendre du fichier, et la version
 #: est le seul endroit où il peut le constater sans relire le code.
-SCHEMA_VERSION = "dossiers-europeens-v2"
+#: v3 depuis le 17/09/2026 : chaque entrée publie ses `familles` OEIL (#901).
+SCHEMA_VERSION = "dossiers-europeens-v3"
 DEFAULT_PROFILS_DIR = Path("pivot_data/profiles")
 DEFAULT_SORTIE = Path("pivot_data/dossiers_europeens.json")
 
@@ -212,6 +223,67 @@ def matieres(dossier: dict[str, Any]) -> list[dict[str, Any]]:
                 # publiée sans code plutôt que perdue en silence (§2 règle 5).
                 trouvees[str(entree).strip()] = None
     return [{"code": c, "libelle": trouvees[c]} for c in sorted(trouvees)]
+
+
+def libelles_de_famille(dossier: dict[str, Any]) -> dict[str, str]:
+    """Les libellés de PREMIER niveau que ce dossier publie : `{"6": "External
+    relations of the Union"}`.
+
+    Un dossier ne porte d'ordinaire que des codes profonds (`6.40.10`) ; le
+    premier niveau n'apparaît que sur une minorité — mesuré le 17/09/2026 sur
+    le dump du 17/08 : 437 occurrences sur 23 885 dossiers, qui nomment les huit
+    familles. On les lit donc sur **tout** le dump, pas sur les seuls dossiers
+    visés. Trois formes : la clé d'un dict (`"6"`), une clé qui colle code et
+    libellé (`"3 Community policies"`), une chaîne de liste.
+    """
+    brut = (dossier.get("procedure") or {}).get("subject")
+    paires: list[tuple[str, Optional[str]]] = []
+    if isinstance(brut, dict):
+        paires = [(str(k).strip(), str(v).strip() if v else None) for k, v in brut.items()]
+    elif isinstance(brut, list):
+        paires = [(str(e).strip(), None) for e in brut]
+    familles: dict[str, str] = {}
+    for cle, libelle in paires:
+        if cle.isdigit() and libelle:
+            familles[cle] = libelle
+            continue
+        m = _CODE_MATIERE.match(cle)
+        if m and "." not in m.group("code"):
+            familles[m.group("code")] = m.group("libelle")
+    return familles
+
+
+def choisir_libelles_de_famille(
+    vus: dict[str, dict[str, str]]
+) -> dict[str, str]:
+    """`famille → libellé` : le libellé du dossier mis à jour le plus récemment.
+
+    La nomenclature a changé de mots avec le temps — « Internal market, SLIM »
+    en 2013, « Internal market, single market » depuis. Le plus récent est celui
+    que le Parlement emploie aujourd'hui. `vus` : `famille → {libellé → date
+    la plus récente}` ; à date égale ou absente, l'ordre alphabétique départage,
+    pour que l'index ne change pas d'un run à l'autre.
+    """
+    return {
+        code: max(libelles.items(), key=lambda kv: (kv[1], kv[0]))[0]
+        for code, libelles in vus.items() if libelles
+    }
+
+
+def familles(
+    sujets: list[dict[str, Any]], libelles: dict[str, str]
+) -> tuple[list[dict[str, Any]], Optional[dict[str, Any]]]:
+    """Les familles OEIL d'un dossier — le premier segment du code de chaque
+    matière —, et la déclaration de celles dont le libellé manque."""
+    codes = sorted({
+        str(s["code"]).split(".", 1)[0] for s in sujets
+        if isinstance(s.get("code"), str) and str(s["code"]).split(".", 1)[0].isdigit()
+    }, key=int)
+    publiees = [{"code": c, "libelle": libelles[c]} for c in codes if c in libelles]
+    manquantes = [c for c in codes if c not in libelles]
+    non_resolu = ({"motif": "libelle_famille_oeil_introuvable", "codes": manquantes}
+                  if manquantes else None)
+    return publiees, non_resolu
 
 
 def matieres_non_resolu(
@@ -370,10 +442,19 @@ def construire(
 
     entrees: list[dict[str, Any]] = []
     vues: set[str] = set()
+    libelles_vus: dict[str, dict[str, str]] = {}
     for dossier in iter_dump_zst(Path(chemin)):
         procedure = dossier.get("procedure")
         if not isinstance(procedure, dict):
             continue
+        meta = dossier.get("meta") or {}
+        # Les fiches anciennes du dump n'ont que `created` (2012) : sans ce
+        # repli, « Internal market, SLIM » n'aurait pas de date et perdrait
+        # quand même, mais par hasard.
+        mise_a_jour = str(meta.get("updated") or meta.get("created") or "")
+        for code, libelle in libelles_de_famille(dossier).items():
+            dates = libelles_vus.setdefault(code, {})
+            dates[libelle] = max(dates.get(libelle, ""), mise_a_jour)
         reference = procedure.get("reference")
         if reference not in voulues or reference in vues:
             continue
@@ -405,6 +486,12 @@ def construire(
         if sans_matiere:
             entree["matieres_non_resolu"] = sans_matiere
         entrees.append(entree)
+    libelles = choisir_libelles_de_famille(libelles_vus)
+    for entree in entrees:
+        publiees, non_resolu = familles(entree["matieres"], libelles)
+        entree["familles"] = publiees
+        if non_resolu:
+            entree["familles_non_resolu"] = non_resolu
     entrees.sort(key=lambda e: e["reference"])
     return entrees
 

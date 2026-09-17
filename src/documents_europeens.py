@@ -39,6 +39,15 @@ C'est ce qui distingue cet index de celui des dossiers, dont les intitulés
 restent en anglais faute d'équivalent : EuroVoc est multilingue, et `prefLabel`
 filtré sur `fr` rend « opposition politique », « prisonnier politique »,
 « Azerbaïdjan ».
+
+## Chaque matière dit son domaine (#901, 17/09/2026)
+
+L'interface colore la cascade des textes européens par **domaine EuroVoc**, le
+premier niveau du thésaurus (21 domaines). Le domaine est **lu dans le
+thésaurus** — concept → microthésaurus → domaine —, jamais déduit d'un libellé :
+`matieres[].domaine = {"code": "08", "libelle": "08 RELATIONS INTERNATIONALES"}`.
+Une matière dont le domaine ne se résout pas porte `domaine: null`, et le
+document la déclare dans `domaines_non_resolu`.
 """
 
 from __future__ import annotations
@@ -50,7 +59,8 @@ import time
 from pathlib import Path
 from typing import Any, Iterable, Optional
 
-SCHEMA_VERSION = "documents-europeens-v1"
+#: v2 depuis le 17/09/2026 : chaque matière publie son `domaine` EuroVoc (#901).
+SCHEMA_VERSION = "documents-europeens-v2"
 
 #: Le point SPARQL de l'Office des publications — il sert EuroVoc.
 SPARQL_EUROVOC = "https://publications.europa.eu/webapi/rdf/sparql"
@@ -72,6 +82,21 @@ _REQUETE = """PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 SELECT ?c ?l WHERE {
   VALUES ?c { %s }
   ?c skos:prefLabel ?l . FILTER(lang(?l) = "fr")
+}"""
+
+
+#: Le domaine d'un concept, lu dans le thésaurus et jamais déduit du libellé :
+#: concept → microthésaurus (`skos:inScheme`) → domaine (`eurovoc:domain`).
+#: Un concept est aussi « dans » le thésaurus racine, qui n'a pas de domaine :
+#: le type `MicroThesaurus` l'écarte. Mesuré le 17/09/2026 sur les 980 concepts
+#: publiés : 979 résolus, **aucun** rattaché à deux domaines, 21 domaines.
+_REQUETE_DOMAINES = """PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX ev: <http://eurovoc.europa.eu/schema#>
+SELECT ?c ?dn ?dl WHERE {
+  VALUES ?c { %s }
+  ?c skos:inScheme ?mt .
+  ?mt a ev:MicroThesaurus ; ev:domain ?d .
+  ?d skos:notation ?dn ; skos:prefLabel ?dl . FILTER(lang(?dl) = "fr")
 }"""
 
 
@@ -166,7 +191,52 @@ def resoudre_libelles(
     return libelles
 
 
-def _entree(doceo: str, codes: Optional[list[str]], libelles: dict[str, str]) -> dict[str, Any]:
+def resoudre_domaines(
+    codes: Iterable[str], session: Any, lot: int = LOT_SPARQL
+) -> dict[str, dict[str, str]]:
+    """`code → {"code": "08", "libelle": "08 RELATIONS INTERNATIONALES"}`.
+
+    Le libellé est `skos:prefLabel` tel quel, numéro compris : c'est ainsi que
+    le thésaurus nomme ses domaines. Un concept sans domaine manque simplement du
+    résultat, et l'appelant le déclare (§2 règle 5). Un concept rattaché à
+    plusieurs domaines — aucun ne l'est aujourd'hui — n'en garde **aucun** et se
+    déclare aussi : en choisir un serait une classification de notre fait.
+    """
+    restants = sorted({str(c).strip() for c in codes if str(c).strip()})
+    trouves: dict[str, dict[str, dict[str, str]]] = {}
+    for depart in range(0, len(restants), lot):
+        tranche = restants[depart:depart + lot]
+        requete = _REQUETE_DOMAINES % " ".join(f"<{uri_eurovoc(c)}>" for c in tranche)
+        try:
+            reponse = session.get(
+                SPARQL_EUROVOC,
+                params={"query": requete},
+                headers={"Accept": "application/sparql-results+json"},
+                timeout=TIMEOUT_SPARQL,
+            )
+        except Exception as exc:
+            raise LibellesEurovocIndisponibles(
+                f"EuroVoc injoignable pour les domaines : {exc}.") from exc
+        if reponse.status_code != 200:
+            raise LibellesEurovocIndisponibles(
+                f"EuroVoc a répondu {reponse.status_code} pour les domaines.")
+        for ligne in reponse.json().get("results", {}).get("bindings", []):
+            code = str(ligne["c"]["value"]).rstrip("/").rsplit("/", 1)[-1]
+            domaine = str(ligne["dn"]["value"]).strip()
+            libelle = str(ligne["dl"]["value"]).strip()
+            if domaine and libelle:
+                trouves.setdefault(code, {})[domaine] = {"code": domaine, "libelle": libelle}
+        if depart + lot < len(restants):
+            time.sleep(PAUSE_ENTRE_LOTS)
+    return {c: next(iter(d.values())) for c, d in trouves.items() if len(d) == 1}
+
+
+def _entree(
+    doceo: str,
+    codes: Optional[list[str]],
+    libelles: dict[str, str],
+    domaines: Optional[dict[str, dict[str, str]]] = None,
+) -> dict[str, Any]:
     """Une entrée d'index, avec le motif quand elle ne porte pas de matière."""
     entree: dict[str, Any] = {"id": doceo, "matieres": []}
     if codes is None:
@@ -176,7 +246,18 @@ def _entree(doceo: str, codes: Optional[list[str]], libelles: dict[str, str]) ->
         entree["matieres_non_resolu"] = {"motif": "source_sans_concept"}
         return entree
     connus = [c for c in codes if c in libelles]
-    entree["matieres"] = [{"code": c, "libelle": libelles[c]} for c in connus]
+    domaines = domaines or {}
+    entree["matieres"] = [
+        {"code": c, "libelle": libelles[c], "domaine": domaines.get(c)} for c in connus
+    ]
+    sans_domaine = [c for c in connus if c not in domaines]
+    if sans_domaine:
+        # Le domaine est à `null` sur la matière ET déclaré ici : un lecteur qui
+        # compte par domaine doit savoir ce qu'il n'a pas pu compter.
+        entree["domaines_non_resolu"] = {
+            "motif": "domaine_eurovoc_introuvable",
+            "codes": sans_domaine,
+        }
     manquants = [c for c in codes if c not in libelles]
     if manquants:
         # Le document garde les libellés trouvés ET déclare les autres : une
@@ -198,7 +279,8 @@ def construire(references: Iterable[str], resolveur: Any, session: Any) -> list[
         concepts_par_doc[doceo] = resolveur.concepts_eurovoc(doceo)
     tous = {c for codes in concepts_par_doc.values() if codes for c in codes}
     libelles = resoudre_libelles(tous, session) if tous else {}
-    return [_entree(d, concepts_par_doc[d], libelles) for d in voulues]
+    domaines = resoudre_domaines(set(libelles), session) if libelles else {}
+    return [_entree(d, concepts_par_doc[d], libelles, domaines) for d in voulues]
 
 
 def document(entrees: list[dict[str, Any]]) -> dict[str, Any]:
@@ -234,6 +316,8 @@ def main(argv: Optional[list[str]] = None) -> int:
     print(f"  {len(entrees)} document(s) → {args.out}")
     print(f"  avec au moins une matière : {avec}")
     print(f"  sans : {len(entrees) - avec} (motif déclaré)")
+    sans_domaine = sum(len(e.get("domaines_non_resolu", {}).get("codes", [])) for e in entrees)
+    print(f"  matières sans domaine EuroVoc : {sans_domaine} (déclarées)")
     stats = resolveur.statistiques
     if stats.get("disjoncte"):
         print("  ⚠ la passe s'est ARRÊTÉE en route (portail muet) : la couverture "
