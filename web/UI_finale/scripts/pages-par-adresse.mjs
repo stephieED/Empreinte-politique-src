@@ -50,6 +50,7 @@ import {
   metaGouvernement,
   metaLignee,
 } from './metadonnees-pages.mjs';
+import { avecBloc, blocCandidat, blocGouvernement, blocLignee } from './bloc-sans-js.mjs';
 
 const racineUI = dirname(dirname(fileURLToPath(import.meta.url)));
 const dist = join(racineUI, 'dist');
@@ -121,20 +122,29 @@ function ecrire(chemin, contenu) {
 const cles = Object.keys(PAGES_FIXES_META).sort().join(', ');
 if (cles !== [...PAGES_FIXES].sort().join(', ')) echouer(`les pages fixes n'ont pas toutes leur titre : ${cles}`);
 
-/* Adresse → { titre, description }. Une erreur de texte arrête le build. */
+/* Adresse → { titre, description } et, pour une fiche, le texte lisible sans
+ * JavaScript (#969). Une erreur de texte arrête le build. */
 const metas = new Map();
+const blocs = new Map();
+const dateDuBuild = new Date().toISOString().slice(0, 10);
 try {
   for (const chemin of PAGES_FIXES) metas.set(chemin, PAGES_FIXES_META[chemin]);
   for (const c of manifeste.candidates || []) {
     const profil = JSON.parse(readFileSync(join(dist, 'data', 'profiles', `${c.slug}.pivot.json`), 'utf-8'));
     metas.set(`candidats/${c.slug}`, metaCandidat(c, profil));
+    blocs.set(`candidats/${c.slug}`, blocCandidat(c, profil, dateDuBuild));
   }
   /* La période n'est pas au manifeste : elle se lit dans la vue de lignée. */
   for (const l of manifeste.lignees || []) {
     const vue = JSON.parse(readFileSync(join(dist, 'data', 'lignees', l.fichier), 'utf-8'));
     metas.set(`groupes/${l.id}`, metaLignee(vue));
+    blocs.set(`groupes/${l.id}`, blocLignee(vue, dateDuBuild));
   }
-  for (const g of manifeste.gouvernements || []) metas.set(`gouvernements/${g.id}`, metaGouvernement(g));
+  for (const g of manifeste.gouvernements || []) {
+    metas.set(`gouvernements/${g.id}`, metaGouvernement(g));
+    const profil = JSON.parse(readFileSync(join(dist, 'data', 'gouvernements', g.fichier), 'utf-8'));
+    blocs.set(`gouvernements/${g.id}`, blocGouvernement(profil, dateDuBuild));
+  }
 } catch (erreur) {
   echouer(`texte d'une page impossible à écrire — ${erreur.message}`);
 }
@@ -145,7 +155,8 @@ writeFileSync(join(dist, 'index.html'), gabarit.replace('</head>', `  <link rel=
 
 for (const chemin of publiees) {
   try {
-    ecrire(chemin, appliquerMeta(gabarit, { ...metas.get(chemin), url: `https://${domaine}/${chemin}` }));
+    const page = appliquerMeta(gabarit, { ...metas.get(chemin), url: `https://${domaine}/${chemin}` });
+    ecrire(chemin, blocs.has(chemin) ? avecBloc(page, blocs.get(chemin)) : page);
   } catch (erreur) {
     echouer(`${chemin} : ${erreur.message}`);
   }
@@ -158,5 +169,6 @@ console.log(
   `pages-par-adresse : ${publiees.size + 1} pages publiées répondent 200 — l'accueil, `
   + `${pages.fixes.length} pages fixes, ${pages.candidats.length} fiches candidat (candidats du manifeste), `
   + `${pages.groupes.length} fiches de lignée, ${pages.gouvernements.length} fiches de gouvernement ; `
-  + `${Object.keys(redirections).length} adresses de redirection, canonical vers leur arrivée.`,
+  + `${Object.keys(redirections).length} adresses de redirection, canonical vers leur arrivée ; `
+  + `${blocs.size} fiches portent leurs faits en clair, lisibles sans JavaScript.`,
 );
