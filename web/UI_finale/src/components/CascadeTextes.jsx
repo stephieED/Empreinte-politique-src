@@ -221,7 +221,10 @@ export function Cascade({ cascade, selection, onSelection, rangs = null, dispose
 export function ListeCascade({ cascade, selection, onRaz, ordonnee = true }) {
   const sel = useMemo(() => textesDeLaSelection(cascade, selection), [cascade, selection]);
   const colonnes = useMemo(() => [
-    { cle: 'parlement', textes: sel.filter((t) => !t.projetDeLoi) },
+    /* Un texte européen se range sous « Au Parlement européen », jamais sous
+       « À l'Assemblée » (#901). */
+    { cle: 'pe', textes: sel.filter((t) => t.europeen) },
+    { cle: 'parlement', textes: sel.filter((t) => !t.projetDeLoi && !t.europeen) },
     { cle: 'gouvernement', textes: sel.filter((t) => t.projetDeLoi) },
   ].filter((c) => c.textes.length > 0), [sel]);
   if (!selection) {
@@ -293,7 +296,7 @@ export function ListeCascade({ cascade, selection, onRaz, ordonnee = true }) {
                   {t.stade}
                 </span>
                 <span className="cp-ter-fait">
-                  {t.matiere}{t.an ? ` · ${t.an}` : ''}{t.role ? ` · ${t.role}` : ''}
+                  {t.themes ? t.themes.join(', ') : t.matiere}{t.an ? ` · ${t.an}` : ''}{t.role ? ` · ${t.role}` : ''}
                 </span>
             {/* LE SORT À CÔTÉ DU STADE, JAMAIS À SA PLACE. La pastille du haut
                 dit jusqu'où le texte est allé, celle-ci ce qu'il est devenu, et

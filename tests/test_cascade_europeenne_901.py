@@ -20,8 +20,9 @@ toutes tentantes pour une session qui « harmoniserait » les deux versants :
    sont des propositions de résolution que la source ne rattache à aucun
    dossier : les sortir de la figure viderait la fiche de Florian Philippot, qui
    en porte 500 sur 502.
-4. **Deviner la matière.** La commission saisie au fond vient de
-   `pivot_data/dossiers_europeens.json`, jamais de l'intitulé du texte.
+4. **Deviner la matière.** Le thème vient des domaines EuroVoc de
+   `pivot_data/documents_europeens.json` ou des familles OEIL de
+   `dossiers_europeens.json`, jamais de l'intitulé du texte.
 
 CE QU'ILS NE COUVRENT PAS, et il faut le dire (§2 règle 5) : aucun composant
 React n'est rendu ici, et aucun test ne lit `pivot_data/`. Le rendu — commutateur,
@@ -216,56 +217,146 @@ def test_la_branche_basse_porte_les_textes_sans_dossier(regles) -> None:
 
 
 # ---------------------------------------------------------------------------
-# 5. La matière vient de l'index, jamais de l'intitulé
+# 5. Le thème : les domaines EuroVoc au prorata, jamais un seul, jamais un compte
 # ---------------------------------------------------------------------------
+#
+# ARBITRÉ LE 17/09/2026 (`axe-europeen-prorata-domaines-901`). L'axe « commission
+# au fond », que ces tests verrouillaient jusque-là, ne couvrait que 17 des 383
+# textes portés européens : il est abandonné. Ce qui ne bouge pas : rien ne se
+# déduit de l'intitulé, et aucun libellé n'est écrit à la main.
 
 
-def test_la_matiere_europeenne_est_la_commission_au_fond(regles) -> None:
-    """Le même champ qu'au niveau français, publié par un autre index.
+def _executer(script: str) -> dict:
+    import json
+    import shutil
+    import subprocess
 
-    Une saisine ANCIENNE ne fait pas la matière du texte : la commission
-    dessaisie l'a été, elle ne l'est plus (`trois-saisines-au-fond-europeennes-901`).
-    """
-    bloc = re.search(r"function matiereEuropeenne\((.*?)\n\}", regles, re.DOTALL).group(1)
-    assert "commissions_au_fond" in bloc
-    assert "'au_fond'" in bloc, "la saisine en cours passe avant les anciennes"
-    assert "MATIERE_NON_ETABLIE" in bloc, "sans commission, la matière n'est pas établie"
-    assert "titre" not in bloc, "la matière ne se déduit jamais de l'intitulé (§2 règle 2)"
-
-
-def test_la_matiere_porte_le_nom_publie_et_non_l_acronyme(regles) -> None:
-    """« AFET » ne dit rien à qui ne le connaît pas déjà.
-
-    Côté français, ce que la figure appelle « sigle » est un nom court EN
-    FRANÇAIS — « Lois », « Affaires sociales » — et se lit ; côté européen c'est
-    un acronyme. Le nom complet rétablit la lisibilité (arbitré le 16/09/2026).
-    """
-    bloc = re.search(r"function matiereEuropeenne\((.*?)\n\}", regles, re.DOTALL).group(1)
-    retour = re.search(r"return (.*?);", bloc, re.DOTALL).group(1)
-    assert retour.index("nom") < retour.index("sigle"), (
-        "le nom publié passe avant l'acronyme"
-    )
+    if shutil.which("node") is None:
+        pytest.skip("node absent")
+    entete = f"const u = await import({json.dumps(REGLES.as_uri())});\n"
+    res = subprocess.run(["node", "--input-type=module", "-e", entete + script],
+                         capture_output=True, text=True, check=False)
+    assert res.returncode == 0, res.stderr
+    return json.loads(res.stdout.strip().splitlines()[-1])
 
 
-def test_aucun_nom_de_commission_europeenne_n_est_traduit() -> None:
-    """Le nom reste EN ANGLAIS parce que c'est ce que la source publie.
+_DOCUMENTS = """
+const docs = {
+  'B-8-2014-0056': { matieres: [
+    { code: '1', domaine: { code: '24', libelle: '24 FINANCES' } },
+    { code: '2', domaine: { code: '24', libelle: '24 FINANCES' } },
+    { code: '3', domaine: { code: '24', libelle: '24 FINANCES' } },
+    { code: '4', domaine: { code: '12', libelle: '12 DROIT' } },
+  ] },
+  'B-8-2014-0057': { matieres: [{ code: '9', domaine: null }] },
+};
+const dossiers = {
+  '2021/0136(COD)': { type_procedure: 'COD - Ordinary legislative procedure', familles: [
+    { code: '2', libelle: 'Internal market, single market' },
+    { code: '6', libelle: 'External relations of the Union' },
+  ] },
+  '2014/2717(RSP)': { type_procedure: 'RSP - Resolutions on topical subjects', familles: [] },
+};
+const doc = (id) => docs[id] || null;
+const dos = (r) => dossiers[r] || null;
+const url = (id) => `http://www.europarl.europa.eu/doceo/document/${id}_EN.html`;
+"""
 
-    Le traduire écrirait un libellé que personne n'a publié (§2 règle 2) — la
-    même frontière que les titres de dossiers, eux non plus jamais traduits. Le
-    libellé officiel français existe pourtant, et le corpus le porte ailleurs :
-    181 paires sigle → libellé dans les mandats européens des fiches, « INTA » y
-    valant « Commission du commerce international ». Le jour où l'index le
-    portera, la bascule sera une clé à changer — pas une table à écrire ici.
-    """
-    for fichier in (REGLES, MISE_EN_PAGE, COMPOSANT, FICHE):
-        texte = _sans_commentaires(fichier.read_text(encoding="utf-8"))
-        # Le sigle CITÉ, c'est-à-dire écrit en chaîne : `LIBELLE_SORT` contient
-        # « LIBE » sans nommer aucune commission.
-        cites = set(re.findall(r"['\"](AFET|INTA|ITRE|ENVI|LIBE|IMCO|JURI|BUDG|DEVE)['\"]", texte))
-        assert not cites, (
-            f"{fichier.name} cite la ou les commissions {sorted(cites)} : une table "
-            "de correspondance écrite à la main traduirait ce que la source publie"
-        )
+
+def test_un_texte_repartit_son_unite_entre_ses_domaines() -> None:
+    """3 concepts « Finances » et 1 « Droit » : ¾ et ¼. Le thème minoritaire
+    n'est jamais écrasé — c'est tout l'objet de l'arbitrage."""
+    out = _executer(_DOCUMENTS + """
+      const t = { source_url: url('B-8-2014-0056') };
+      console.log(JSON.stringify(Object.fromEntries(u.themesEuropeens(t, dos, doc))));
+    """)
+    assert out == {"Finances": 0.75, "Droit": 0.25}
+
+
+def test_sans_domaine_les_familles_oeil_partagent_l_unite() -> None:
+    """Un document sans domaine résolu passe aux familles du dossier, en anglais
+    tel que la source les publie, à parts égales."""
+    out = _executer(_DOCUMENTS + """
+      const t = { source_url: url('B-8-2014-0057'), reference_dossier: '2021/0136(COD)' };
+      console.log(JSON.stringify(Object.fromEntries(u.themesEuropeens(t, dos, doc))));
+    """)
+    assert out == {"Internal market, single market": 0.5, "External relations of the Union": 0.5}
+
+
+def test_sans_domaine_ni_famille_la_matiere_n_est_pas_etablie() -> None:
+    out = _executer(_DOCUMENTS + """
+      const t = { source_url: url('B-9-2020-0001') };
+      console.log(JSON.stringify(u.themesEuropeens(t, dos, doc)));
+    """)
+    assert out == [["Matière non établie", 1]]
+
+
+def test_les_stades_comptent_des_textes_entiers() -> None:
+    """Les parts s'additionnent par thème ; par stade, elles redonnent le nombre
+    de textes. Un texte à quatre thèmes reste UN texte à droite."""
+    out = _executer(_DOCUMENTS + """
+      const textes = [
+        { source_url: url('B-8-2014-0056'), stade_procedural_non_resolu: { motif: 'activite_sans_dossier' } },
+        { source_url: url('B-8-2014-0057'), reference_dossier: '2021/0136(COD)', stade_procedural: 'ue_procedure_achevee' },
+      ];
+      const e = u.textesEuropeens(textes, dos, doc);
+      const parStade = {};
+      for (const [, st, n] of e.cascade.flux) parStade[st] = (parStade[st] || 0) + n;
+      console.log(JSON.stringify({ parStade, themes: e.cascade.textes.map((t) => t.themes) }));
+    """)
+    assert out["parStade"] == {"activite_sans_dossier": 1, "ue_procedure_achevee": 1}
+    assert out["themes"] == [["Finances", "Droit"], ["Internal market, single market", "External relations of the Union"]]
+
+
+def test_la_nature_se_lit_dans_le_type_de_procedure() -> None:
+    """Libellés et forme arbitrés le 17/09/2026. Une procédure que la liste ne
+    nomme pas, ou un dossier hors index, n'est rangé dans aucune nature."""
+    out = _executer(_DOCUMENTS + """
+      console.log(JSON.stringify([
+        u.natureEuropeenne({}, dos),
+        u.natureEuropeenne({ reference_dossier: '2021/0136(COD)' }, dos),
+        u.natureEuropeenne({ reference_dossier: '2014/2717(RSP)' }, dos),
+        u.natureEuropeenne({ reference_dossier: '1999/0001(XYZ)' }, dos),
+        u.NATURES_UE.map((n) => n.libelle),
+      ]));
+    """)
+    assert out[:4] == ["sans_dossier", "legislatif", "resolution", None]
+    assert out[4] == [
+        "Législatif",
+        "Rapports d’initiative et institutionnels",
+        "Résolutions d’actualité",
+        "Propositions de résolution sans dossier",
+    ]
+
+
+def test_le_clic_retrouve_un_texte_sous_chacun_de_ses_themes(mise_en_page) -> None:
+    """Demandé le 17/09/2026 : la même mécanique qu'au niveau français. Un texte
+    à deux thèmes est dans la liste de l'un comme de l'autre."""
+    bloc = re.search(r"export function textesDeLaSelection\((.*?)\n\}", mise_en_page, re.DOTALL).group(1)
+    assert "t.themes.includes(selection.matiere)" in bloc
+
+
+def test_aucun_compte_n_est_affiche_par_theme(mise_en_page) -> None:
+    """Une « part de texte » porterait à confusion auprès du public (arbitré le
+    17/09/2026) : ni nombre devant un thème, ni dans l'infobulle d'un ruban."""
+    bloc = re.search(r"export function disposerCascadeUE\((.*?)\n\}", mise_en_page, re.DOTALL).group(1)
+    rubans = bloc[bloc.index("const rubans"):bloc.index("const barres")]
+    assert "l.value}" not in rubans and "texte${" not in rubans
+
+
+def test_aucun_domaine_n_est_ecarte(regles) -> None:
+    """« Géographie » compris (17/09/2026) : l'écarter ne retirait qu'un nœud et
+    aurait été un tri éditorial."""
+    bloc = re.search(r"export function themesEuropeens\((.*?)\n\}", regles, re.DOTALL).group(1)
+    assert "GÉOGRAPHIE" not in bloc and "'72'" not in bloc and "titre" not in bloc
+
+
+def test_l_index_des_documents_europeens_est_copie_puis_charge() -> None:
+    sync = SYNC.read_text(encoding="utf-8")
+    assert "documents_europeens.json" in sync, "sync-data doit copier l'index"
+    assert "/data/documents_europeens.json" in CHARGEUR.read_text(encoding="utf-8")
+    appel = re.search(r"textesPortes\((.*?)\);", ADAPTATEUR.read_text(encoding="utf-8"), re.DOTALL).group(1)
+    assert "documentEuropeen" in appel
 
 
 def test_l_index_des_dossiers_europeens_est_copie_puis_charge() -> None:

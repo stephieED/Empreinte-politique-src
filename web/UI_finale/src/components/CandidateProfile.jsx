@@ -16,7 +16,7 @@ import '../styles/shell.css';
 import './CandidateProfile.css';
 import { BadgeSource, ListeVide } from './Lecture';
 import { teinteMatiere } from '../utils/matiere';
-import { MATIERE_NON_ETABLIE } from '../utils/profilCandidat';
+import { MATIERE_NON_ETABLIE, NATURES_UE } from '../utils/profilCandidat';
 import { Cascade, ListeCascade } from './CascadeTextes';
 import { disposerCascadeUE } from '../utils/cascadeTextes';
 import { Fragment, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -629,12 +629,27 @@ function Propositions({ amendements, textes, causeAmendements, causeTextes, voix
   const [versant, setVersant] = useState(textes.total > 0 ? 'fr' : 'ue');
   // Une sélection est un intervalle de crans : elle ne veut rien dire sur
   // l'autre échelle, et la garder ouvrirait une liste sans rapport.
+  const [nature, setNature] = useState('tous');
   const changerVersant = (v) => {
     setVersant(v);
     setSelTexte(null);
+    setNature('tous');
   };
   const ue = versant === 'ue' || (!deuxVersants && textes.total === 0);
-  const cascade = ue ? europe.cascade : textes.cascade;
+  /* LE FILTRE PAR NATURE (#901, arbitré le 17/09/2026) : une sous-cascade par
+   * nature, calculée sur ses seuls textes. Il ne s'affiche que si la fiche porte
+   * au moins deux natures — une seule redirait « Toutes natures ». */
+  const naturesPresentes = ue && europe.parNature
+    ? NATURES_UE.filter((n) => europe.parNature[n.cle]?.total > 0)
+    : [];
+  const filtreNature = naturesPresentes.length > 1;
+  const choisirNature = (n) => {
+    setNature(n);
+    setSelTexte(null);
+  };
+  const cascade = ue
+    ? (filtreNature && nature !== 'tous' ? europe.parNature[nature].cascade : europe.cascade)
+    : textes.cascade;
   const choisirMatiere = (m) => setMatiere((a) => (a === m ? null : m));
   const dossiersDeLaMatiere = matiere
     ? (amendements.chute?.dossiersParMatiere?.[matiere] || [])
@@ -686,6 +701,23 @@ function Propositions({ amendements, textes, causeAmendements, causeTextes, voix
               >
                 Au niveau européen <b className="cp-num">{formatNumber(europe.total)}</b>
               </button>
+            </div>
+          )}
+          {filtreNature && (
+            <div className="cp-natures" role="group" aria-label="Nature des textes européens">
+              {[{ cle: 'tous', libelle: 'Toutes natures', total: europe.total }]
+                .concat(naturesPresentes.map((n) => ({ ...n, total: europe.parNature[n.cle].total })))
+                .map((n) => (
+                  <button
+                    aria-pressed={nature === n.cle}
+                    className="cp-nature"
+                    key={n.cle}
+                    onClick={() => choisirNature(n.cle)}
+                    type="button"
+                  >
+                    {n.libelle} <b className="cp-num">{formatNumber(n.total)}</b>
+                  </button>
+                ))}
             </div>
           )}
           {cascade && cascade.total > 0 && (

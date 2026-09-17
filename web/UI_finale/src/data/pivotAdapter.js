@@ -272,6 +272,7 @@ export function buildCandidateView(
   tousLesGouvernements = null,
   ficheDuGroupe = null,
   dossiersEuropeens = null,
+  documentsEuropeens = null,
 ) {
   const mandats = pivot.mandats || [];
   const votes = joinVotes(pivot.votes || [], scrutinsIndex);
@@ -311,7 +312,12 @@ export function buildCandidateView(
     positionALaDate,
     commissionDuDossier,
   );
-  const textes = textesPortes(pivot.textes_portes, commissionDuDossier, dossierEuropeen);
+  /* Le document doceo d'un texte porté, résolu dans
+   * `pivot_data/documents_europeens.json` : ses matières EuroVoc et leur
+   * domaine, l'axe de la cascade européenne (#901). */
+  const documentEuropeen = (id) =>
+    (documentsEuropeens && id && documentsEuropeens[id]) || null;
+  const textes = textesPortes(pivot.textes_portes, commissionDuDossier, dossierEuropeen, documentEuropeen);
   const fonctions = fonctionsExercees(mandats);
   const qualite = regimeQualiteOrateur(interventions);
   const questions = directionQuestionsGouvernement(interventions, appartenances);

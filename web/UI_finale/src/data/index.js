@@ -169,6 +169,23 @@ function loadScrutinsDossiers() {
  * Non bloquant et mémoïsé, comme les autres index partagés.
  */
 let dossiersEuropeensPromise = null;
+let documentsEuropeensPromise = null;
+
+/* Les documents européens (#901) : l'identifiant doceo d'un texte porté
+ * (`B-8-2014-0056`) → ses matières EuroVoc, chacune avec son domaine. Même
+ * contrat que l'index des dossiers : absent, les textes sans dossier n'ont
+ * aucun thème, jamais un thème deviné. */
+function loadDocumentsEuropeens() {
+  if (!documentsEuropeensPromise) {
+    documentsEuropeensPromise = fetch('/data/documents_europeens.json')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => (d?.documents
+        ? Object.fromEntries(d.documents.map((x) => [x.id, x]))
+        : null))
+      .catch(() => null);
+  }
+  return documentsEuropeensPromise;
+}
 
 function loadDossiersEuropeens() {
   if (!dossiersEuropeensPromise) {
@@ -301,7 +318,7 @@ export async function getCandidateProfile(id) {
   const manifest = await loadManifest();
   const entry = manifest.candidates.find((c) => c.slug === id);
   if (!entry) return null;
-  const [pivot, scrutins, fichesGroupe, commissions, scrutinsDossiers, dossiersEuropeens] =
+  const [pivot, scrutins, fichesGroupe, commissions, scrutinsDossiers, dossiersEuropeens, documentsEuropeens] =
     await Promise.all([
       fetchJson(`/data/profiles/${entry.slug}.pivot.json`),
       loadScrutins(),
@@ -309,6 +326,7 @@ export async function getCandidateProfile(id) {
       loadCommissionsDossiers(),
       loadScrutinsDossiers(),
       loadDossiersEuropeens(),
+      loadDocumentsEuropeens(),
     ]);
   if (!pivot) return null;
   // L'index des amendements se charge APRÈS le profil : ce sont les
@@ -329,6 +347,7 @@ export async function getCandidateProfile(id) {
     manifest.gouvernements || [],
     ficheDuGroupeAffiche(manifest, entry, pivot),
     dossiersEuropeens,
+    documentsEuropeens,
   );
   return avecSiglesDeSiege(view, manifest);
 }

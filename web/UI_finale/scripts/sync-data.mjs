@@ -114,6 +114,21 @@ if (existsSync(dossiersEuropeensPath)) {
   );
 }
 
+// --- documents_europeens.json (document doceo → matières EuroVoc et leur domaine — #901) ---
+// L'axe de la cascade européenne : le domaine EuroVoc de chaque concept d'un
+// texte porté. Sans lui, les textes sans dossier restent en « matière non
+// établie » ; rien ne se déduit de l'intitulé.
+const documentsEuropeensPath = path.join(repoRoot, 'pivot_data', 'documents_europeens.json');
+if (existsSync(documentsEuropeensPath)) {
+  cpSync(documentsEuropeensPath, path.join(outDir, 'documents_europeens.json'));
+} else {
+  console.warn(
+    `sync-data : ${documentsEuropeensPath} absent — les textes européens sans dossier `
+    + 'n\'auront aucun thème (#901). Construire l\'index : '
+    + 'python3 src/documents_europeens.py',
+  );
+}
+
 // --- candidats.json (roster brut : nom, parti, statut) ---
 cpSync(candidatsPath, path.join(outDir, 'candidats.json'));
 const candidats = JSON.parse(readFileSync(candidatsPath, 'utf-8')).candidats;

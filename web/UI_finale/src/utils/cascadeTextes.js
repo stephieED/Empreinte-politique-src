@@ -401,8 +401,11 @@ export function textesDeLaSelection(cascade, selection) {
   if (selection.procedure493) {
     return (cascade.textes || []).filter((t) => SORTS_PROCEDURE_49_3.has(t.sortCle)).sort(tri);
   }
+  /* Un texte européen touche plusieurs thèmes (`themes`) : il se retrouve sous
+   * CHACUN d'eux, pas sous le seul plus lourd (#901). */
+  const aLeTheme = (t) => (t.themes ? t.themes.includes(selection.matiere) : t.matiere === selection.matiere);
   return (cascade.textes || [])
-    .filter((t) => (!selection.matiere || t.matiere === selection.matiere)
+    .filter((t) => (!selection.matiere || aLeTheme(t))
       && rang(t.stadeCle) >= selection.lo && rang(t.stadeCle) <= selection.hi)
     .sort(tri);
 }
@@ -442,15 +445,23 @@ export function disposerCascadeUE(cascade, largeur, teinteDe) {
    * qui les nomme (§2 règle 5). */
   const basses = new Set(cascade.basses || []);
 
-  const mats = [...new Set(cascade.flux.map((x) => x[0]))];
+  /* L'ordre vient de la cascade — du thème le plus lourd au plus léger — et
+   * non de l'ordre d'apparition dans les flux. */
+  const presents = new Set(cascade.flux.map((x) => x[0]));
+  const mats = [
+    ...(cascade.matieres || []).filter((m) => presents.has(m)),
+    ...[...presents].filter((m) => !(cascade.matieres || []).includes(m)),
+  ];
   const SEP = String.fromCharCode(0);
   const valeur = new Map();
   for (const [m, st, n] of cascade.flux) {
     valeur.set(`${m}${SEP}${st}`, (valeur.get(`${m}${SEP}${st}`) || 0) + n);
   }
-  const totalDuStade = (st) => cascade.flux
+  /* Au prorata, les parts d'un stade s'additionnent en flottants ; le total d'un
+   * stade redevient le nombre entier de textes qu'il est. */
+  const totalDuStade = (st) => Math.round(cascade.flux
     .filter((x) => x[1] === st)
-    .reduce((t, x) => t + x[2], 0);
+    .reduce((t, x) => t + x[2], 0) * 1000) / 1000;
   const vifs = stades.filter((st) => totalDuStade(st) > 0);
   if (!vifs.length) return null;
 
@@ -471,7 +482,7 @@ export function disposerCascadeUE(cascade, largeur, teinteDe) {
    * l'infobulle, comme sur la figure voisine. */
   const nomsLarges = Math.max(...mats.map((m) => m.length)) * CAR + 16;
   const MG = {
-    g: etroit ? GOUT : Math.max(GOUT, Math.min(200, nomsLarges)),
+    g: etroit ? GOUT : Math.max(GOUT, Math.min(230, nomsLarges)),
     h: etroit ? 34 : 18,
     b: 14,
     d: etroit ? 12 : Math.min(230, Math.max(...vifs.map(largeurEtiquette)) + 16),
@@ -505,7 +516,9 @@ export function disposerCascadeUE(cascade, largeur, teinteDe) {
     lo: rang(l.st),
     hi: rang(l.st),
     valeur: l.value,
-    titre: `${l.mat}\n${l.value} texte${l.value > 1 ? 's' : ''} · ${nom(l.st)}`
+    // AUCUN COMPTE : un ruban au prorata vaut des parts de textes, et la
+    // propriétaire a écarté tout nombre par thème (17/09/2026).
+    titre: `${l.mat} · ${nom(l.st)}`
       + (basses.has(l.st) ? '\nAucun stade à interroger : la source ne rattache pas ces textes à un dossier' : ''),
   }));
 
@@ -531,7 +544,7 @@ export function disposerCascadeUE(cascade, largeur, teinteDe) {
         cle: `i${st}-${k}`, etape: rang(st), x: n.x0, y: l.y1 - l.width / 2,
         w: n.x1 - n.x0, h: Math.max(l.width, 1.2), matiere: l.mat,
         lo: rang(st), hi: rang(st), sortie, couleur: null,
-        titre: `${l.mat} · ${nom(st)}\n${l.value} texte${l.value > 1 ? 's' : ''}`,
+        titre: `${l.mat} · ${nom(st)}`,
       });
     }
     etiquettes.push({
