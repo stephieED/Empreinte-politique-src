@@ -1,0 +1,64 @@
+{
+  "schema_version": "1",
+  "type_document": "profil_gouvernement",
+  "gouvernement_id": "gouvernement:FILLON_1",
+  "nom": "Gouvernement Fillon I",
+  "premier_ministre": null,
+  "periode": {
+    "debut": "2007-05-17",
+    "fin": "2007-06-18",
+    "actif": false
+  },
+  "membres": [
+    {
+      "membre_id": "eric-woerth",
+      "nom": "Éric Woerth",
+      "portefeuille": "Ministère du budget, des comptes publics et de la fonction publique",
+      "debut": "2007-05-18",
+      "fin": "2007-06-18",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "xavier-bertrand",
+      "nom": "Xavier Bertrand",
+      "portefeuille": "Ministère du travail, des relations sociales et de la solidarité",
+      "debut": "2007-05-18",
+      "fin": "2007-06-18",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    }
+  ],
+  "textes": [],
+  "comptages": {
+    "par_statut": {
+      "adopte": 0,
+      "adopte_49_3": 0,
+      "adopte_cmp": 0,
+      "depose": 0,
+      "navette_en_cours": 0,
+      "promulgue": 0,
+      "rejete": 0,
+      "rejete_49_3": 0,
+      "retire": 0
+    }
+  },
+  "sources": [
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2960",
+      "synchro_le": "2026-09-17T17:51:37+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267080",
+      "synchro_le": "2026-09-17T17:28:08+0000"
+    }
+  ],
+  "meta": {
+    "schema_version": "1",
+    "genere_le": "2026-09-17T18:51:28+0000",
+    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr",
+    "warnings": []
+  }
+}

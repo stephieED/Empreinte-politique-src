@@ -1,0 +1,129 @@
+{
+  "schema_version": "1",
+  "type_document": "profil_gouvernement",
+  "gouvernement_id": "gouvernement:CAZENEUVE",
+  "nom": "Gouvernement Cazeneuve",
+  "premier_ministre": {
+    "nom": "Bernard Cazeneuve",
+    "acteur_ref": "PA785",
+    "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+  },
+  "periode": {
+    "debut": "2016-12-07",
+    "fin": "2017-05-17",
+    "actif": false
+  },
+  "membres": [
+    {
+      "membre_id": "annick-girardin",
+      "nom": "Annick Girardin",
+      "portefeuille": "Ministère de la fonction publique",
+      "debut": "2016-12-07",
+      "fin": "2017-05-17",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "barbara-pompili",
+      "nom": "Barbara Pompili",
+      "portefeuille": "Secrétariat d'État, auprès du ministère de l'environnement, de l'énergie et de la mer, chargé des relations internationales sur le climat, chargé de la biodiversité",
+      "debut": "2016-12-07",
+      "fin": "2017-05-17",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "bernard-cazeneuve",
+      "nom": "Bernard Cazeneuve",
+      "portefeuille": "Premier ministre",
+      "debut": "2016-12-07",
+      "fin": "2017-05-17",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "ericka-bareigts",
+      "nom": "Ericka Bareigts",
+      "portefeuille": "Ministère des outre-mer",
+      "debut": "2016-12-07",
+      "fin": "2017-05-17",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "segolene-royal",
+      "nom": "Ségolène Royal",
+      "portefeuille": "Ministère de l'environnement, de l'énergie et de la mer, chargé des relations internationales sur le climat",
+      "debut": "2016-12-07",
+      "fin": "2017-05-17",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "stephane-le-foll",
+      "nom": "Stéphane Le Foll",
+      "portefeuille": "Ministère de l'agriculture, de l'agroalimentaire et de la forêt",
+      "debut": "2016-12-07",
+      "fin": "2017-05-17",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    }
+  ],
+  "textes": [],
+  "comptages": {
+    "par_statut": {
+      "adopte": 0,
+      "adopte_49_3": 0,
+      "adopte_cmp": 0,
+      "depose": 0,
+      "navette_en_cours": 0,
+      "promulgue": 0,
+      "rejete": 0,
+      "rejete_49_3": 0,
+      "retire": 0
+    }
+  },
+  "sources": [
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA337633",
+      "synchro_le": "2026-09-17T18:00:21+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA609520",
+      "synchro_le": "2026-09-17T17:52:23+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA785",
+      "synchro_le": "2026-09-17T17:34:06+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA610681",
+      "synchro_le": "2026-09-17T17:56:18+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2650",
+      "synchro_le": "2026-09-17T17:25:02+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA588886",
+      "synchro_le": "2026-09-17T10:15:24+0000"
+    },
+    {
+      "type": "europarl",
+      "url": "https://www.europarl.europa.eu/meps/fr/28162",
+      "synchro_le": "2026-09-17T10:15:33+0000"
+    }
+  ],
+  "meta": {
+    "schema_version": "1",
+    "genere_le": "2026-09-17T18:51:28+0000",
+    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
+    "warnings": []
+  }
+}

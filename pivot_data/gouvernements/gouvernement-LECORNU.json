@@ -1,0 +1,252 @@
+{
+  "schema_version": "1",
+  "type_document": "profil_gouvernement",
+  "gouvernement_id": "gouvernement:LECORNU",
+  "nom": "Gouvernement Lecornu I",
+  "premier_ministre": null,
+  "periode": {
+    "debut": "2025-09-10",
+    "fin": "2025-10-10",
+    "actif": false
+  },
+  "membres": [
+    {
+      "membre_id": "agnes-pannier-runacher",
+      "nom": "Agnès Pannier-Runacher",
+      "portefeuille": "Ministère de la transition écologique, de la biodiversité, de la forêt, de la mer et de la pêche",
+      "debut": "2025-10-05",
+      "fin": "2025-10-10",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "amelie-de-montchalin",
+      "nom": "Amélie de Montchalin",
+      "portefeuille": "Ministère des comptes publics",
+      "debut": "2025-10-05",
+      "fin": "2025-10-10",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "annie-genevard",
+      "nom": "Annie Genevard",
+      "portefeuille": "Ministère de l’agriculture et de la souveraineté alimentaire",
+      "debut": "2025-10-05",
+      "fin": "2025-10-10",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "aurore-berge",
+      "nom": "Aurore Bergé",
+      "portefeuille": "Ministère délégué auprès du Premier ministre, chargé de l’égalité entre les femmes et les hommes et de la lutte contre les discriminations, porte-parole du Gouvernement",
+      "debut": "2025-10-05",
+      "fin": "2025-10-10",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "bruno-le-maire",
+      "nom": "Bruno Le Maire",
+      "portefeuille": "Ministère des armées et des anciens combattants",
+      "debut": "2025-10-05",
+      "fin": "2025-10-10",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "bruno-retailleau",
+      "nom": "Bruno Retailleau",
+      "portefeuille": "Ministère de l'intérieur",
+      "debut": "2025-10-05",
+      "fin": "2025-10-10",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "elisabeth-borne",
+      "nom": "Élisabeth Borne",
+      "portefeuille": "Ministère de l’éducation nationale, de l’enseignement supérieur et de la recherche",
+      "debut": "2025-10-05",
+      "fin": "2025-10-10",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "eric-woerth",
+      "nom": "Éric Woerth",
+      "portefeuille": "Ministère de l’aménagement du territoire, de la décentralisation et du logement",
+      "debut": "2025-10-05",
+      "fin": "2025-10-10",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "gerald-darmanin",
+      "nom": "Gérald Darmanin",
+      "portefeuille": "Ministère de la justice",
+      "debut": "2025-10-05",
+      "fin": "2025-10-10",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "jean-noel-barrot",
+      "nom": "Jean-Noël Barrot",
+      "portefeuille": "Ministère de l’Europe et des affaires étrangères",
+      "debut": "2025-10-05",
+      "fin": "2025-10-10",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "manuel-valls",
+      "nom": "Manuel Valls",
+      "portefeuille": "Ministère des outre-mer",
+      "debut": "2025-10-05",
+      "fin": "2025-10-10",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "marina-ferrari",
+      "nom": "Marina Ferrari",
+      "portefeuille": "Ministère des sports, de la jeunesse et de la vie associative",
+      "debut": "2025-10-05",
+      "fin": "2025-10-10",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "mathieu-lefevre",
+      "nom": "Mathieu Lefèvre",
+      "portefeuille": "Ministère délégué auprès du Premier ministre, chargé des relations avec le Parlement",
+      "debut": "2025-10-05",
+      "fin": "2025-10-10",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "naima-moutchou",
+      "nom": "Naïma Moutchou",
+      "portefeuille": "Ministère de la transformation et la fonction publiques, de l’intelligence artificielle et du numérique",
+      "debut": "2025-10-05",
+      "fin": "2025-10-10",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "roland-lescure",
+      "nom": "Roland Lescure",
+      "portefeuille": "Ministère de l’économie, des finances et de la souveraineté industrielle et énergétique",
+      "debut": "2025-10-05",
+      "fin": "2025-10-10",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    }
+  ],
+  "textes": [],
+  "comptages": {
+    "par_statut": {
+      "adopte": 0,
+      "adopte_49_3": 0,
+      "adopte_cmp": 0,
+      "depose": 0,
+      "navette_en_cours": 0,
+      "promulgue": 0,
+      "rejete": 0,
+      "rejete_49_3": 0,
+      "retire": 0
+    }
+  },
+  "sources": [
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA759832",
+      "synchro_le": "2026-09-13T02:45:02+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721670",
+      "synchro_le": "2026-09-13T02:54:17+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605991",
+      "synchro_le": "2026-09-17T17:52:41+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722046",
+      "synchro_le": "2026-09-13T02:44:31+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA331481",
+      "synchro_le": "2026-09-13T02:45:12+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2538",
+      "synchro_le": "2026-09-17T17:28:50+0000"
+    },
+    {
+      "type": "senat",
+      "url": "https://data.senat.fr/",
+      "synchro_le": "2026-09-14T21:00:14+0000",
+      "licence": "Licence Ouverte / Open Licence (Sénat) — data.senat.fr"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717161",
+      "synchro_le": "2026-09-13T02:44:52+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2960",
+      "synchro_le": "2026-09-17T17:51:37+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607846",
+      "synchro_le": "2026-09-13T02:44:46+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721836",
+      "synchro_le": "2026-09-13T02:49:16+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267622",
+      "synchro_le": "2026-09-17T17:52:53+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795120",
+      "synchro_le": "2026-09-13T02:49:16+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795386",
+      "synchro_le": "2026-09-17T17:59:43+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720908",
+      "synchro_le": "2026-09-17T17:56:21+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721134",
+      "synchro_le": "2026-09-13T02:53:37+0000"
+    }
+  ],
+  "meta": {
+    "schema_version": "1",
+    "genere_le": "2026-09-17T18:51:28+0000",
+    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + Licence Ouverte / Open Licence (Sénat) — data.senat.fr",
+    "warnings": []
+  }
+}

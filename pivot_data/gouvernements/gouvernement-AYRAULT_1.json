@@ -1,0 +1,111 @@
+{
+  "schema_version": "1",
+  "type_document": "profil_gouvernement",
+  "gouvernement_id": "gouvernement:AYRAULT_1",
+  "nom": "Gouvernement Ayrault I",
+  "premier_ministre": null,
+  "periode": {
+    "debut": "2012-05-16",
+    "fin": "2012-06-18",
+    "actif": false
+  },
+  "membres": [
+    {
+      "membre_id": "bernard-cazeneuve",
+      "nom": "Bernard Cazeneuve",
+      "portefeuille": "Ministère chargé des affaires européennes",
+      "debut": "2012-05-17",
+      "fin": "2012-06-18",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "delphine-batho",
+      "nom": "Delphine Batho",
+      "portefeuille": "Ministère auprès de la garde des sceaux, ministre de la justice",
+      "debut": "2012-05-17",
+      "fin": "2012-06-18",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "george-pau-langevin",
+      "nom": "George Pau-Langevin",
+      "portefeuille": "Ministère chargé de la réussite éducative",
+      "debut": "2012-05-17",
+      "fin": "2012-06-18",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "manuel-valls",
+      "nom": "Manuel Valls",
+      "portefeuille": "Ministère de l'intérieur",
+      "debut": "2012-05-17",
+      "fin": "2012-06-18",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "stephane-le-foll",
+      "nom": "Stéphane Le Foll",
+      "portefeuille": "Ministère de l'agriculture et de l'agroalimentaire",
+      "debut": "2012-05-17",
+      "fin": "2012-06-18",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    }
+  ],
+  "textes": [],
+  "comptages": {
+    "par_statut": {
+      "adopte": 0,
+      "adopte_49_3": 0,
+      "adopte_cmp": 0,
+      "depose": 0,
+      "navette_en_cours": 0,
+      "promulgue": 0,
+      "rejete": 0,
+      "rejete_49_3": 0,
+      "retire": 0
+    }
+  },
+  "sources": [
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA785",
+      "synchro_le": "2026-09-17T17:34:06+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335999",
+      "synchro_le": "2026-09-17T17:55:39+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335532",
+      "synchro_le": "2026-09-17T17:55:35+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267622",
+      "synchro_le": "2026-09-17T17:52:53+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA588886",
+      "synchro_le": "2026-09-17T10:15:24+0000"
+    },
+    {
+      "type": "europarl",
+      "url": "https://www.europarl.europa.eu/meps/fr/28162",
+      "synchro_le": "2026-09-17T10:15:33+0000"
+    }
+  ],
+  "meta": {
+    "schema_version": "1",
+    "genere_le": "2026-09-17T18:51:28+0000",
+    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
+    "warnings": []
+  }
+}
