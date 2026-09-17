@@ -116,6 +116,7 @@
   ],
   "textes": [],
   "comptages": {
+    "membres_recenses": 50,
     "par_statut": {
       "adopte": 0,
       "adopte_49_3": 0,
@@ -132,37 +133,37 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA337633",
-      "synchro_le": "2026-09-17T18:00:21+0000"
+      "synchro_le": "2026-09-17T21:32:59+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA609520",
-      "synchro_le": "2026-09-17T17:52:23+0000"
+      "synchro_le": "2026-09-17T21:23:35+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA785",
-      "synchro_le": "2026-09-17T17:34:06+0000"
+      "synchro_le": "2026-09-17T21:07:02+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA610681",
-      "synchro_le": "2026-09-17T17:56:18+0000"
+      "synchro_le": "2026-09-17T21:31:51+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335532",
-      "synchro_le": "2026-09-17T17:55:35+0000"
+      "synchro_le": "2026-09-17T21:26:47+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267622",
-      "synchro_le": "2026-09-17T17:52:53+0000"
+      "synchro_le": "2026-09-17T21:24:02+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2650",
-      "synchro_le": "2026-09-17T17:25:02+0000"
+      "synchro_le": "2026-09-17T20:55:23+0000"
     },
     {
       "type": "assemblee_nationale",
@@ -177,7 +178,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-17T18:51:28+0000",
+    "genere_le": "2026-09-17T22:24:49+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
     "warnings": []
   }
