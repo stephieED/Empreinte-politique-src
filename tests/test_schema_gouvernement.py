@@ -55,7 +55,12 @@ def test_make_empty_periode_defaults():
 
 def test_make_empty_comptages_defaults():
     g = make_empty_profil_gouvernement("gouvernement:LECORNU", "Gouvernement Lecornu")
-    assert g["comptages"] == {"par_statut": make_empty_comptages_statuts()}
+    # #996 : le dénominateur `membres_recenses` naît à `None` — « inconnu »,
+    # pas « zéro membre ».
+    assert g["comptages"] == {
+        "membres_recenses": None,
+        "par_statut": make_empty_comptages_statuts(),
+    }
     for statut in KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL:
         assert g["comptages"]["par_statut"][statut] == 0
 

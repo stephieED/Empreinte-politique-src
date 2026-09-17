@@ -137,6 +137,7 @@ def generate_all(
                 libelle_an=gouvernement.get("libelle_an") or "",
                 periode_debut=periode.get("debut"),
                 periode_fin=periode.get("fin"),
+                membres_recenses=gouvernement.get("membres_recenses"),
                 profils=profils,
                 dossiers_gouvernementaux=dossiers,
                 commissions_par_dossier=commissions_par_dossier,

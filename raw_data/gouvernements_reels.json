@@ -14,6 +14,7 @@
         "debut": "2007-05-17",
         "fin": "2007-06-18"
       },
+      "membres_recenses": 21,
       "fichier": "gouvernement-FILLON_1.json"
     },
     {
@@ -25,6 +26,7 @@
         "debut": "2007-06-18",
         "fin": "2010-11-13"
       },
+      "membres_recenses": 52,
       "fichier": "gouvernement-FILLON_2.json"
     },
     {
@@ -36,6 +38,7 @@
         "debut": "2010-11-14",
         "fin": "2012-05-10"
       },
+      "membres_recenses": 39,
       "fichier": "gouvernement-FILLON_3.json"
     },
     {
@@ -47,6 +50,7 @@
         "debut": "2012-05-16",
         "fin": "2012-06-18"
       },
+      "membres_recenses": 35,
       "fichier": "gouvernement-AYRAULT_1.json"
     },
     {
@@ -58,6 +62,7 @@
         "debut": "2012-06-19",
         "fin": "2014-03-31"
       },
+      "membres_recenses": 40,
       "fichier": "gouvernement-AYRAULT_2.json"
     },
     {
@@ -69,6 +74,7 @@
         "debut": "2014-04-01",
         "fin": "2014-08-25"
       },
+      "membres_recenses": 33,
       "fichier": "gouvernement-VALLS.json"
     },
     {
@@ -80,6 +86,7 @@
         "debut": "2014-08-26",
         "fin": "2016-12-06"
       },
+      "membres_recenses": 50,
       "fichier": "gouvernement-VALLS_2.json"
     },
     {
@@ -91,6 +98,7 @@
         "debut": "2016-12-07",
         "fin": "2017-05-17"
       },
+      "membres_recenses": 38,
       "fichier": "gouvernement-CAZENEUVE.json"
     },
     {
@@ -102,6 +110,7 @@
         "debut": "2017-05-18",
         "fin": "2017-06-19"
       },
+      "membres_recenses": 23,
       "fichier": "gouvernement-PHILIPPE.json"
     },
     {
@@ -113,6 +122,7 @@
         "debut": "2017-06-20",
         "fin": "2020-07-06"
       },
+      "membres_recenses": 50,
       "fichier": "gouvernement-PHILIPPE_2.json"
     },
     {
@@ -124,6 +134,7 @@
         "debut": "2020-07-07",
         "fin": "2022-05-16"
       },
+      "membres_recenses": 43,
       "fichier": "gouvernement-CASTEX.json"
     },
     {
@@ -135,6 +146,7 @@
         "debut": "2022-05-17",
         "fin": "2024-01-09"
       },
+      "membres_recenses": 55,
       "fichier": "gouvernement-BORNE.json"
     },
     {
@@ -146,6 +158,7 @@
         "debut": "2024-01-10",
         "fin": "2024-09-05"
       },
+      "membres_recenses": 35,
       "fichier": "gouvernement-ATTAL.json"
     },
     {
@@ -157,6 +170,7 @@
         "debut": "2024-09-06",
         "fin": "2024-12-13"
       },
+      "membres_recenses": 42,
       "fichier": "gouvernement-BARNIER.json"
     },
     {
@@ -168,6 +182,7 @@
         "debut": "2024-12-14",
         "fin": "2025-09-09"
       },
+      "membres_recenses": 36,
       "fichier": "gouvernement-BAYROU.json"
     },
     {
@@ -179,6 +194,7 @@
         "debut": "2025-09-10",
         "fin": "2025-10-10"
       },
+      "membres_recenses": 19,
       "fichier": "gouvernement-LECORNU.json"
     },
     {
@@ -190,6 +206,7 @@
         "debut": "2025-10-11",
         "fin": null
       },
+      "membres_recenses": 39,
       "fichier": "gouvernement-LECORNU_II.json"
     }
   ]

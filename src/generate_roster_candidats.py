@@ -152,6 +152,7 @@ from typing import Any, Optional
 
 import gha
 from candidate_profile import acteur_ref_to_pseudo_url
+from gouvernement_roster_an import CLE_ROSTER as CLE_ROSTER_GOUVERNEMENTS
 from group_roster import (
     ERREURS_ROSTER,
     ecrire_rosters_bruts,
@@ -225,6 +226,30 @@ def _actifs(groupes: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """
     actifs, _ = partitionner_groupes(groupes)
     return actifs
+
+
+def membres_des_gouvernements(
+    zip_path: Optional[Path] = None,
+    chemin_correspondance: Optional[Path] = None,
+) -> list[dict[str, Any]]:
+    """Les membres des gouvernements d'AMO30, au format des rosters bruts (#996).
+
+    Mesuré le 17/09/2026 : 311 personnes sur 17 gouvernements, 106 slugs repris
+    de la table de correspondance, **205 fabriqués**, aucun acteur sans slug.
+    L'union avec les acteurs de l'index GP est ce qui garantit qu'un ministre et
+    un député homonymes ne reçoivent pas le même slug.
+    """
+    from an_roster import _telecharger_archive, charger_index_gp  # noqa: PLC0415
+    from gouvernement_roster_an import (  # noqa: PLC0415
+        construire_index_gouvernements,
+        deriver_membres,
+        resoudre_slugs_des_membres,
+    )
+
+    index = construire_index_gouvernements(Path(zip_path) if zip_path else _telecharger_archive())
+    slugs, origines, _ = resoudre_slugs_des_membres(
+        index, charger_index_gp(), chemin_correspondance)
+    return deriver_membres(index, slugs, origines)
 
 
 def fetch_rosters_bruts(
@@ -613,6 +638,12 @@ def _build_arg_parser() -> argparse.ArgumentParser:
              "défaut : seul le run CI en a besoin.",
     )
     parser.add_argument(
+        "--sans-gouvernements",
+        action="store_true",
+        help="Ne pas ajouter les membres des gouvernements au roster brut (#996). "
+             "Le roster des groupes est inchangé.",
+    )
+    parser.add_argument(
         "--autoriser-roster-incomplet",
         action="store_true",
         help="Écrire le roster MALGRÉ une collecte incomplète (fetch en échec, "
@@ -744,6 +775,26 @@ def main(argv: Optional[list[str]] = None) -> int:
     # la même seconde. Publier l'un sans l'autre rendrait au consommateur une
     # composition de groupe qui n'est pas celle sur laquelle les profils ont
     # été collectés — le défaut même que ce transit ferme.
+    # #996 lot 2 — les membres des gouvernements entrent dans le roster BRUT,
+    # sous leur propre clé. Ils n'entrent PAS dans `roster_candidats.json` :
+    # ce lot leur donne un identifiant et une entrée de correspondance, la
+    # collecte de leurs profils vient après. Un échec de lecture de l'archive
+    # est non fatal ici : le roster des groupes, lui, est déjà constitué, et
+    # une clé absente vaut mieux qu'une liste vide (§2 règle 5).
+    if args.rosters_bruts_out and not args.sans_gouvernements:
+        try:
+            membres_gouv = membres_des_gouvernements()
+        except Exception as exc:  # noqa: BLE001 — voir le commentaire ci-dessus
+            print(f"  [!] Roster des gouvernements indisponible : {exc}", file=sys.stderr)
+        else:
+            rosters_bruts[CLE_ROSTER_GOUVERNEMENTS] = membres_gouv
+            fabriques_gouv = sum(1 for m in membres_gouv if m["slug_origine"] == "fabrique")
+            print(
+                f"→ {len(membres_gouv)} membre(s) de gouvernement, dont "
+                f"{fabriques_gouv} slug(s) fabriqué(s).",
+                file=sys.stderr,
+            )
+
     if args.rosters_bruts_out:
         chemin_bruts = Path(args.rosters_bruts_out)
         cles_ecrites = ecrire_rosters_bruts(chemin_bruts, rosters_bruts)

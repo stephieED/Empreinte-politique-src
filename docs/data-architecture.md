@@ -743,9 +743,22 @@ l'archive du 17/08/2026, de Fillon I (17/05/2007) à Lecornu II (le seul dont
 17/09/2026, la liste était **écrite à la main** (#209) : 10 fiches, sans Fillon I,
 Ayrault I et II, Valls I et II, Cazeneuve ni Lecornu I. Les dates d'AMO30
 élargissent les périodes des 10 fiches existantes, sans jamais les rétrécir.
-La composition des fiches reste, dans ce lot, celle des profils présents
-(`membres[]` ne liste que les ministres qui ont un profil) : la collecte de tous
-les membres est l'objet des lots suivants de #996.
+La composition des fiches reste celle des profils présents (`membres[]` ne liste
+que les ministres qui ont un profil) ; la collecte de tous les membres est l'objet
+des lots suivants de #996. **`comptages.membres_recenses`** (lot 2) publie le
+**dénominateur** : combien de personnes l'AN recense dans ce gouvernement, qu'elles
+aient un profil ou non — de 19 (Lecornu I) à 55 (Borne), 311 personnes en tout.
+`null` quand la liste ne le porte pas : un dénominateur inventé ferait lire
+« 2 des 2 membres » là où il en manque 19.
+
+**Le roster des gouvernements entre dans `rosters_bruts.json`** (lot 2, non
+committé, produit à chaque run) sous la clé `gouvernements:`, à côté des
+`deputes:<legislature>` : un membre par personne, avec son `slug`, son
+`slug_origine` et ses `mandat_periodes`. C'est ce qui donne un identifiant de
+profil aux ministres jamais députés — mesuré le 17/09/2026 : 311 membres, 106
+slugs repris de la table de correspondance, **205 fabriqués**, aucun bloqué —,
+et ce qui fait créer leurs entrées de correspondance (§5b du portail). Aucun
+profil n'est collecté par ce lot.
 Deux matériaux, jamais mélangés :
 
 - **la composition** — `gouvernement_roster.py`, **aucun appel réseau** : il
