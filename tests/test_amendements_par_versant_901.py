@@ -232,3 +232,12 @@ def test_la_colonne_des_noms_tient_les_intitules_europeens() -> None:
     assert "minmax(120px, 290px) minmax(0, 0.9fr)" in grille[0], (
         "la place vient de la barre voisine, pas de la largeur de la carte"
     )
+
+
+def test_la_liste_des_dossiers_ne_publie_pas_de_zero_sans_sort(fiche) -> None:
+    """« aucun adopté » sous un dossier européen se lisait « rien n'a été
+    adopté » : aucun des dépôts européens ne porte de sort. La ligne ne dit rien
+    de l'adoption quand la population affichée n'a aucun sort publié (§2 règle 5)."""
+    liste = fiche.split("dossiersDeLaMatiere.map")[1].split("</ul>")[0]
+    assert "amdt.sortsPublies === 0 ? null" in liste
+    assert liste.index("amdt.sortsPublies === 0") < liste.index("aucun adopté")
