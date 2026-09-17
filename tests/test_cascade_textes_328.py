@@ -152,11 +152,33 @@ def test_la_cascade_lit_la_meme_table_de_commissions_que_la_chute(regles):
 
     Deux résolutions de matière produiraient deux ordres, donc deux palettes, et
     la section se lirait comme deux sections.
+
+    RÉÉCRIT LE 16/09/2026, ET CE QU'IL TENAIT. Il exigeait la chaîne
+    `export function textesPortes(textes, commissionDuDossier` — la signature
+    exacte, sur une ligne. Le versant européen lui a ajouté un troisième
+    paramètre (`dossierEuropeen`, #901), la signature est passée sur plusieurs
+    lignes, et le test a rougi sans qu'aucune des deux figures ait changé de
+    table. Il vérifie donc l'INTENTION : le paramètre existe, et l'adaptateur
+    passe le même résolveur aux deux figures.
     """
-    assert "export function textesPortes(textes, commissionDuDossier" in regles, (
+    signature = re.search(
+        r"export function textesPortes\(([^)]*)\)", regles, re.DOTALL,
+    )
+    assert signature, "`textesPortes` doit rester une fonction exportée"
+    assert "commissionDuDossier" in signature.group(1), (
         "`textesPortes` doit recevoir le MÊME résolveur de commission que "
         "`agregerAmendements`"
     )
+    adaptateur = (UI / "data" / "pivotAdapter.js").read_text(
+        encoding="utf-8",
+    )
+    assert "agregerAmendements(" in adaptateur and "textesPortes(" in adaptateur
+    for appel in ("agregerAmendements", "textesPortes"):
+        bloc = re.search(rf"{appel}\((.*?)\);", adaptateur, re.DOTALL).group(1)
+        assert "commissionDuDossier" in bloc, (
+            f"`{appel}` doit recevoir `commissionDuDossier`, sans quoi les deux "
+            "figures de la section coloriraient différemment"
+        )
 
 
 def test_la_teinte_vient_de_la_palette_partagee(composant):

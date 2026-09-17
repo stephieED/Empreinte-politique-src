@@ -1010,6 +1010,44 @@ export const NB_DOSSIERS_NOMMES = 3;
  * parce qu'un quatrième compterait moins. Le total est publié à côté. */
 export const NB_COMMISSIONS_MONTREES = 3;
 
+/** L'institution que porte un amendement que l'index ne résout pas (#901). */
+const INSTITUTION_AMENDEMENT_PE = 'parlement_europeen';
+
+/** Un dépôt au Parlement européen. Le test porte sur ce que la donnée dit
+ *  d'elle-même : aucun dépôt européen ne porte d'`amendement_id`, et tous
+ *  portent `amendement_non_resolu.institution`. */
+export const estAmendementEuropeen = (a) =>
+  a?.amendement_non_resolu?.institution === INSTITUTION_AMENDEMENT_PE;
+
+/** Rattache chaque dépôt européen à SON dossier, que `joinAmendements` laisse
+ *  à `null` : la table des dossiers qu'il consulte est celle de l'AN, et une
+ *  référence de procédure européenne (`2021/0136(COD)`) n'y figure pas. Le
+ *  dossier n'est posé que s'il existe vraiment dans l'index européen — sinon la
+ *  matière reste non établie, jamais déduite de l'intitulé (§2 règle 2). */
+export function* rattacheDossierEuropeen(amendementsJoints, dossierEuropeen) {
+  for (const a of amendementsJoints) {
+    const dossier = a.texte_vise ? dossierEuropeen(a.texte_vise) : null;
+    yield dossier
+      ? { ...a, dossier_id: a.texte_vise, dossier_titre: dossier.titre ?? null }
+      : a;
+  }
+}
+
+/** L'axe de la figure européenne : la commission SAISIE AU FOND du dossier,
+ *  sous le nom que le Parlement européen publie — en anglais, comme les
+ *  familles OEIL de la cascade (#901). 3 557 des 3 690 dépôts des candidats
+ *  déclarés en portent une (96 %) ; une saisine conjointe ne vaut qu'à défaut
+ *  d'une saisine au fond, et l'ordre de la source départage le reste. */
+export const commissionAuFondEuropeenne = (dossierEuropeen) => (reference) => {
+  const saisines = dossierEuropeen(reference)?.commissions_au_fond || [];
+  const fond = saisines.find((c) => c.statut === 'au_fond')
+    || saisines.find((c) => c.statut === 'au_fond_conjointe')
+    || saisines[0];
+  if (!fond) return null;
+  const nom = fond.nom || fond.sigle || null;
+  return nom ? { sigle: nom, nom } : null;
+};
+
 /*
  * UNE SEULE PASSE sur les amendements, et jamais de forme plate rematérialisée.
  *
@@ -1312,6 +1350,65 @@ export const LIBELLE_STADE = {
   discute_seance: 'discuté en séance',
   adopte: 'adopté',
   promulgue: 'promulgué',
+  /* LES SEIZE STADES EUROPÉENS, DANS LEUR PROPRE NOMENCLATURE (#901). Ils ne
+     se traduisent pas en stades français — « procédure achevée » recouvre
+     l'adoption comme l'échec, et « procédure rejetée » existe à côté — et ils
+     ne s'ordonnent pas entre eux. Sans libellé, la fiche afficherait
+     `ue_procedure_achevee` tel quel. Chaque ligne suit le libellé de la source
+     (`STADE_UE_PAR_LIBELLE_SOURCE`, `src/normalize_parltrack_dumps.py`), sans
+     rien y ajouter : « achevée » n'est pas « adoptée ». */
+  ue_procedure_achevee: 'procédure achevée',
+  ue_procedure_achevee_acte_delegue_en_vigueur: 'procédure achevée, acte délégué en vigueur',
+  ue_procedure_achevee_acte_delegue_rejete: 'procédure achevée, acte délégué rejeté',
+  ue_procedure_achevee_attente_publication_jo:
+    'procédure achevée, en attente de publication au Journal officiel',
+  ue_procedure_caduque_ou_retiree: 'procédure caduque ou retirée',
+  ue_procedure_rejetee: 'procédure rejetée',
+  ue_phase_preparatoire_parlement: 'phase préparatoire au Parlement',
+  ue_attente_decision_commission: 'en attente d’une décision de la commission',
+  ue_attente_decision_finale: 'en attente de la décision finale',
+  ue_attente_position_parlement_1re_lecture:
+    'en attente de la position du Parlement en 1re lecture',
+  ue_attente_parlement_1re_lecture:
+    'en attente du Parlement — 1re lecture, lecture unique ou 1re étape budgétaire',
+  ue_attente_parlement_2e_lecture: 'en attente du Parlement — 2e lecture',
+  ue_attente_vote_parlement: 'en attente du vote du Parlement',
+  ue_attente_debat_vote_pleniere: 'en attente du débat ou du vote en plénière',
+  ue_attente_position_conseil_1re_lecture: 'en attente de la position du Conseil en 1re lecture',
+  ue_attente_decision_conseil_2e_lecture: 'en attente de la décision du Conseil — 2e lecture',
+};
+
+/* ── Le seuil §6, versant européen ───────────────────────────────────────────
+ *
+ * `STADES_PUBLIES` ci-dessus est un ORDRE : un texte est publié s'il a atteint
+ * au moins l'examen en commission. Aucune valeur européenne n'a de rang dans
+ * cette liste, et leur en donner un publierait un avancement que la source
+ * n'établit pas. `AGENTS.md` §6 pose donc la règle PAR EXCLUSION : tout stade
+ * `ue_` est public SAUF `ue_phase_preparatoire_parlement`, le seul qui dise
+ * « pas encore examiné nulle part » — le contrepoint de `depose`.
+ *
+ * Écrire la règle dans l'autre sens (une liste de stades publiés) ferait
+ * disparaître en silence tout stade que la source ajouterait ensuite ; ici, il
+ * arrive publié, et c'est la conséquence voulue de l'arbitrage du 14/09/2026.
+ */
+export const STADES_UE_NON_PUBLIES = ['ue_phase_preparatoire_parlement'];
+
+export function estStadeUe(stade) {
+  return typeof stade === 'string' && stade.startsWith('ue_');
+}
+
+export function estStadeUePublie(stade) {
+  return estStadeUe(stade) && !STADES_UE_NON_PUBLIES.includes(stade);
+}
+
+/* Pourquoi un texte européen ne porte pas de stade — trois causes, jamais
+ * confondues (`deux-fabriques-textes-portes-europeens-901`). La cascade en
+ * fait autant de branches basses : « la source se tait sur ce dossier » et
+ * « il n'y a pas de dossier » ne sont pas le même fait (§2 règle 5). */
+export const LIBELLE_MOTIF_STADE_UE = {
+  activite_sans_dossier: 'sans dossier rattaché',
+  source_sans_stade: 'stade non publié par la source',
+  stade_source_inconnu: 'stade inconnu de notre table',
 };
 
 export const LIBELLE_ROLE_TEXTE = {
@@ -1427,8 +1524,23 @@ export function institutionDuTexte(texte) {
  * Elle garantit aussi ce dont la mise en page a besoin : les crans vifs
  * forment un préfixe sans trou, donc aucun lien ne vise un nœud absent.
  */
-export function textesPortes(textes, commissionDuDossier = () => null) {
-  const liste = textes || [];
+export function textesPortes(
+  textes,
+  commissionDuDossier = () => null,
+  dossierEuropeen = () => null,
+  documentEuropeen = () => null,
+) {
+  /* DEUX POPULATIONS, DEUX FIGURES, ET AUCUN TOTAL COMMUN (#901).
+   *
+   * Les textes portés au Parlement européen étaient comptés dans `total` et
+   * rangés dans `ecartes` : Emmanuel Maurel publiait « 45 autres textes portés
+   * dont la source ne publie pas le stade », alors que ces 45 sont ses textes
+   * EUROPÉENS, dont 37 portent un stade que la source publie. Le commutateur
+   * de la section les sépare ; les deux jeux de chiffres ne s'additionnent
+   * nulle part. */
+  const toutes = textes || [];
+  const liste = toutes.filter((t) => t.institution !== INSTITUTION_PE_SOURCE);
+  const europeens = toutes.filter((t) => t.institution === INSTITUTION_PE_SOURCE);
   const publies = liste.filter((t) => STADES_PUBLIES.includes(t.stade_procedural));
   const ecartes = liste.filter((t) => !STADES_PUBLIES.includes(t.stade_procedural));
   const parStade = new Map();
@@ -1473,9 +1585,193 @@ export function textesPortes(textes, commissionDuDossier = () => null) {
       sansStade: ecartes.filter((t) => !t.stade_procedural).length,
     },
     cascade: cascadeDesTextes(publies, commissionDuDossier),
+    europe: textesEuropeens(europeens, dossierEuropeen, documentEuropeen),
   };
 }
 
+/* ── Les textes portés au Parlement européen ─────────────────────────────────
+ *
+ * MÊME FIGURE, UNE SEULE PORTE. Le détail de la mise en page vit dans
+ * `cascadeTextes.disposerCascadeUE` ; ici on produit ce qu'elle dessine.
+ *
+ * L'AXE EST LE THÈME, ET UN TEXTE EN A PLUSIEURS (arbitré le 17/09/2026, sur
+ * maquettes rendues sur la cascade réelle — `axe-europeen-prorata-domaines-901`).
+ * La commission saisie au fond, l'axe d'avant, ne couvrait que 17 des 383 textes
+ * portés européens des candidats déclarés. Le thème est désormais :
+ *
+ *   - le DOMAINE EuroVoc de chaque matière du document (`documents_europeens.json`,
+ *     `matieres[].domaine`), tel que le thésaurus le publie, « Géographie »
+ *     comprise — aucun domaine n'est écarté ;
+ *   - à défaut, la FAMILLE OEIL du dossier (`dossiers_europeens.json`,
+ *     `familles[]`), en anglais, telle que la source la publie ;
+ *   - à défaut, la matière n'est pas établie (§2 règle 5).
+ *
+ * UN TEXTE VAUT UNE UNITÉ, RÉPARTIE AU PRORATA DE SES CONCEPTS. Un texte porte
+ * 6,9 concepts EuroVoc en moyenne, et 326 des 345 textes classés touchent au
+ * moins deux domaines : lui choisir UN domaine écrasait le thème minoritaire,
+ * ce que la propriétaire a refusé. Trois concepts « Finances » et un « Droit »
+ * envoient ¾ d'unité depuis Finances et ¼ depuis Droit ; les familles OEIL se
+ * partagent l'unité à parts égales. Les stades à droite comptent donc toujours
+ * des textes entiers.
+ *
+ * AUCUN COMPTE N'EST AFFICHÉ PAR THÈME : une « part de texte » porterait à
+ * confusion auprès d'un public qui ne connaît pas la structure des données
+ * (arbitré le 17/09/2026). Le thème se lit par la largeur de son ruban, et le
+ * clic liste les textes qui le touchent.
+ */
+const CHEMIN_DOCEO = 'www.europarl.europa.eu/doceo/document';
+
+/** `…/doceo/document/RC-9-2024-0227_EN.html` → `RC-9-2024-0227` — la même
+ *  lecture que `src/documents_europeens.py`, schéma retiré : le corpus mêle
+ *  `http://` et `https://`. */
+export function referenceDocumentDoceo(url) {
+  if (typeof url !== 'string' || !url.includes(CHEMIN_DOCEO)) return null;
+  const nom = url.split(CHEMIN_DOCEO)[1].replace(/^\/+|\/+$/g, '').split('.')[0];
+  return nom.replace(/_(EN|FR)$/, '') || null;
+}
+
+/* Le libellé d'un domaine EuroVoc, verbatim, se publie en capitales et numéroté
+ * (« 08 RELATIONS INTERNATIONALES »). L'affichage retire le numéro et la casse ;
+ * il n'écrit aucun mot. */
+function libelleDomaine(libelle) {
+  const nu = String(libelle).replace(/^\d+\s+/, '').toLocaleLowerCase('fr');
+  return nu.charAt(0).toLocaleUpperCase('fr') + nu.slice(1);
+}
+
+/** Les thèmes d'un texte et la part de chacun : `[[thème, part], …]`, parts
+ *  sommant à 1. */
+export function themesEuropeens(texte, dossierEuropeen = () => null, documentEuropeen = () => null) {
+  const document = documentEuropeen(referenceDocumentDoceo(texte.source_url));
+  const domaines = (document?.matieres || [])
+    .map((m) => m.domaine?.libelle)
+    .filter(Boolean)
+    .map(libelleDomaine);
+  if (domaines.length) {
+    const parts = new Map();
+    for (const d of domaines) parts.set(d, (parts.get(d) || 0) + 1 / domaines.length);
+    return [...parts.entries()];
+  }
+  const dossier = texte.reference_dossier ? dossierEuropeen(texte.reference_dossier) : null;
+  const familles = (dossier?.familles || []).map((f) => f.libelle).filter(Boolean);
+  if (familles.length) return familles.map((f) => [f, 1 / familles.length]);
+  return [[MATIERE_NON_ETABLIE, 1]];
+}
+
+/* LA NATURE D'UN TEXTE, lue dans le type de procédure que la source publie pour
+ * son dossier — jamais dans l'intitulé. Libellés et forme arbitrés le
+ * 17/09/2026 : des puces au-dessus de la figure, « Toutes natures » par défaut. */
+export const NATURES_UE = [
+  { cle: 'legislatif', libelle: 'Législatif', procedures: ['COD', 'CNS', 'INL', 'DEA'] },
+  { cle: 'rapport', libelle: 'Rapports d’initiative et institutionnels', procedures: ['INI', 'INS'] },
+  { cle: 'resolution', libelle: 'Résolutions d’actualité', procedures: ['RSP'] },
+  { cle: 'sans_dossier', libelle: 'Propositions de résolution sans dossier', procedures: [] },
+];
+/* Un dossier hors index, ou d'une procédure que la liste ne nomme pas, n'est
+ * rangé dans aucune nature : il reste dans « Toutes natures », et nulle part
+ * ailleurs (§2 règle 5). */
+export function natureEuropeenne(texte, dossierEuropeen = () => null) {
+  if (!texte.reference_dossier) return 'sans_dossier';
+  const procedure = String(dossierEuropeen(texte.reference_dossier)?.type_procedure || '').slice(0, 3);
+  return NATURES_UE.find((n) => n.procedures.includes(procedure))?.cle ?? null;
+}
+
+export function textesEuropeens(
+  textes,
+  dossierEuropeen = () => null,
+  documentEuropeen = () => null,
+  parNature = true,
+) {
+  const liste = textes || [];
+  const nonPublies = liste.filter((t) => STADES_UE_NON_PUBLIES.includes(t.stade_procedural));
+  const dessines = liste.filter((t) => !STADES_UE_NON_PUBLIES.includes(t.stade_procedural));
+  const issueDe = (t) => (estStadeUePublie(t.stade_procedural)
+    ? t.stade_procedural
+    : t.stade_procedural_non_resolu?.motif || 'source_sans_stade');
+  const libelleIssue = (cle) => LIBELLE_MOTIF_STADE_UE[cle] || LIBELLE_STADE[cle] || cle;
+
+  const flux = new Map();
+  const poids = new Map();
+  let sansMatiere = 0;
+  const textesListe = dessines.map((t) => {
+    const themes = themesEuropeens(t, dossierEuropeen, documentEuropeen);
+    if (themes.length === 1 && themes[0][0] === MATIERE_NON_ETABLIE) sansMatiere += 1;
+    const issue = issueDe(t);
+    for (const [theme, part] of themes) {
+      const cle = `${theme}${SEPARATEUR_FLUX}${issue}`;
+      flux.set(cle, (flux.get(cle) || 0) + part);
+      poids.set(theme, (poids.get(theme) || 0) + part);
+    }
+    return {
+      titre: t.titre,
+      // Le thème le plus lourd sert de clé de tri ; la SÉLECTION lit `themes`,
+      // pour qu'un texte se retrouve sous chacun de ses thèmes.
+      matiere: [...themes].sort((a, b) => b[1] - a[1])[0][0],
+      themes: themes.map(([theme]) => theme),
+      stadeCle: issue,
+      stade: libelleIssue(issue),
+      sortCle: t.sort ?? null,
+      sortMotif: t.sort_non_resolu?.motif ?? null,
+      role: LIBELLE_ROLE_TEXTE[t.role] || t.role || null,
+      url: t.source_url ?? null,
+      an: t.date_max ? String(t.date_max).slice(0, 4) : null,
+      // Aucun texte européen n'est un projet de loi : la liste garde donc une
+      // seule colonne, et `ListeCascade` n'en ouvre pas une vide.
+      projetDeLoi: false,
+      europeen: true,
+    };
+  });
+
+  /* L'ORDRE DES ISSUES N'EST PAS UNE ÉCHELLE — c'est l'ordre d'affichage, et
+   * il sert d'index à la sélection. Les branches basses d'abord, pour que le
+   * rang 0 soit ce qui n'a pas de stade ; les stades publiés ensuite, dans
+   * l'ordre du schéma, pour que deux fiches ne les empilent pas différemment. */
+  const basses = Object.keys(LIBELLE_MOTIF_STADE_UE)
+    .filter((m) => textesListe.some((t) => t.stadeCle === m));
+  const hautes = Object.keys(LIBELLE_STADE)
+    .filter((st) => estStadeUePublie(st) && textesListe.some((t) => t.stadeCle === st));
+
+  return {
+    total: liste.length,
+    publies: dessines.filter((t) => estStadeUePublie(t.stade_procedural)).length,
+    // Comptés, et dits : un texte que §6 ne publie pas n'est pas un texte absent.
+    horsSeuil: nonPublies.length,
+    // Une sous-cascade par nature, pour le filtre ; chacune calculée sur ses
+    // seuls textes, jamais découpée dans la figure entière.
+    parNature: parNature
+      ? Object.fromEntries(NATURES_UE.map(({ cle }) => [
+        cle,
+        textesEuropeens(
+          liste.filter((t) => natureEuropeenne(t, dossierEuropeen) === cle),
+          dossierEuropeen,
+          documentEuropeen,
+          false,
+        ),
+      ]))
+      : null,
+    cascade: {
+      total: dessines.length,
+      stades: [...basses, ...hautes],
+      basses,
+      // Le vocabulaire voyage avec la figure : la mise en page ne connaît ni
+      // les motifs d'absence, ni la nomenclature européenne.
+      libelles: Object.fromEntries([...basses, ...hautes].map((cle) => [cle, libelleIssue(cle)])),
+      // Du thème le plus lourd au plus léger ; « non établie » en dernier.
+      matieres: [...poids.keys()].sort(
+        (a, b) => (a === MATIERE_NON_ETABLIE) - (b === MATIERE_NON_ETABLIE)
+          || poids.get(b) - poids.get(a) || a.localeCompare(b, 'fr'),
+      ),
+      flux: [...flux.entries()].map(([cle, n]) => {
+        const [matiere, issue] = cle.split(SEPARATEUR_FLUX);
+        return [matiere, issue, n];
+      }),
+      sansMatiere,
+      // Le 49.3 est une procédure française : la figure européenne n'en porte
+      // aucun, et le bouton ne s'affiche pas.
+      procedure493: 0,
+      textes: textesListe,
+    },
+  };
+}
 /*
  * La cascade : un flux par (matière, cran d'arrêt), et la liste des textes qui
  * le composent. La MATIÈRE est la commission saisie au fond du dossier, la
@@ -1485,6 +1781,8 @@ export function textesPortes(textes, commissionDuDossier = () => null) {
  * commission dans la table, tombe sous « matière non établie » — compté,
  * jamais réparti au prorata ni déduit de l'intitulé.
  */
+const SEPARATEUR_FLUX = String.fromCharCode(0);
+
 function cascadeDesTextes(publies, commissionDuDossier) {
   const matiereDuTexte = (t) => {
     const commission = t.dossier_id ? commissionDuDossier(t.dossier_id) : null;

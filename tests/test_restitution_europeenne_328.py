@@ -114,7 +114,10 @@ def test_le_compte_d_adoptes_n_est_publie_que_si_un_sort_l_est():
     assert "sortsPublies," in regles, "`sortsPublies` n'est pas rendu à la vue."
 
     composant = sans_commentaires(COMPOSANT.read_text(encoding="utf-8"))
-    assert "amendements.sortsPublies === 0" in composant, (
+    # La garde porte désormais sur la population AFFICHÉE (`amdt`), depuis que
+    # la section sépare les deux parlements (`amendements-deux-parlements-901`) :
+    # le fait tenu est le même, le porteur a changé de nom.
+    assert "amdt.sortsPublies === 0" in composant, (
         "La ligne de tête publie encore un `0` quand la source ne dit rien du "
         "sort : les 7 303 amendements européens affichaient « 0 adopté »."
     )

@@ -1807,6 +1807,45 @@
 
 /* Ce qui restait en trois `cp-bloc` — la forme des GRANDS CHIFFRES — tient sous
    la légende de la cascade, à la taille d'une légende. */
+/* LE COMMUTATEUR DES DEUX VERSANTS (#901). Le jaune signal marque la
+   sélection — c'est son emploi posé par `DESIGN_SYSTEM.md` §3, celui de la
+   barre des candidats et des puces de position. Aucun état par la seule
+   graisse : `aria-pressed` porte l'état, la teinte le montre. */
+.cp-bascule {
+  display: inline-flex;
+  gap: 2px;
+  margin: 14px 0 2px;
+  padding: 3px;
+  border: 1px solid var(--border-strong, #e7e4df);
+  border-radius: 999px;
+  background: var(--bg);
+}
+
+.cp-bascule-bouton {
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 14px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cp-bascule-bouton b {
+  font-weight: 800;
+}
+
+.cp-bascule-bouton[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--ink);
+}
+
+.cp-bascule-bouton:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
 .cp-chute-mentions {
   margin: 10px 0 0;
   font-size: 12px;
@@ -1868,7 +1907,13 @@
 }
 .cp-mr {
   display: grid;
-  grid-template-columns: minmax(120px, 200px) minmax(0, 1.2fr) 74px 74px minmax(0, 0.55fr) 78px;
+  /* La colonne des noms monte à 290 px, et la barre qui la suit rend la place
+     (1.2fr → 0.9fr) : les commissions du Parlement européen s'écrivent en
+     entier — « Environment, Public Health and Food Safety » fait 41 signes, là
+     où « Finances » en fait 8 — et la troncature qui coupait quatre noms sur
+     dix-neuf disparaît. La colonne ne s'élargit qu'autant que son contenu le
+     demande : côté français, les intitulés courts la laissent à 120 px. */
+  grid-template-columns: minmax(120px, 290px) minmax(0, 0.9fr) 74px 74px minmax(0, 0.5fr) 78px;
   gap: 12px;
   align-items: center;
   font-size: 12.5px;
@@ -1979,4 +2024,42 @@
   .cp-signal-dl dd {
     margin-bottom: 10px;
   }
+}
+
+/* ── Le filtre par nature des textes européens (#901) ──
+   Des puces sous le commutateur : la sélection passe à l'encre, pour ne pas
+   rivaliser avec le jaune du commutateur au-dessus. */
+.cp-natures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 4px;
+}
+
+.cp-nature {
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong, #e7e4df);
+  background: var(--card, #fff);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.cp-nature b {
+  font-weight: 800;
+  margin-left: 4px;
+}
+
+.cp-nature[aria-pressed='true'] {
+  background: var(--dark, #14151a);
+  border-color: var(--dark, #14151a);
+  color: #fff;
+}
+
+.cp-nature:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
 }

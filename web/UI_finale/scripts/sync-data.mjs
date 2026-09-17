@@ -98,6 +98,37 @@ if (existsSync(scrutinsDossiersPath)) {
   );
 }
 
+// --- dossiers_europeens.json (référence → titre, stade, commission au fond — #901) ---
+// Le pendant européen de `commissions_dossiers.json`. Sans lui, la cascade du
+// versant européen n'a pas de matière et les amendements européens n'ont pas de
+// dossier nommé : ni l'une ni l'autre ne se déduit d'un intitulé (§2 règle 1).
+const dossiersEuropeensPath = path.join(repoRoot, 'pivot_data', 'dossiers_europeens.json');
+if (existsSync(dossiersEuropeensPath)) {
+  cpSync(dossiersEuropeensPath, path.join(outDir, 'dossiers_europeens.json'));
+} else {
+  console.warn(
+    `sync-data : ${dossiersEuropeensPath} absent — la cascade européenne n'affichera `
+    + 'aucune matière (#901). Construire l\'index : '
+    + 'python3 src/dossiers_europeens.py --profils-dir pivot_data/profiles '
+    + '--out pivot_data/dossiers_europeens.json',
+  );
+}
+
+// --- documents_europeens.json (document doceo → matières EuroVoc et leur domaine — #901) ---
+// L'axe de la cascade européenne : le domaine EuroVoc de chaque concept d'un
+// texte porté. Sans lui, les textes sans dossier restent en « matière non
+// établie » ; rien ne se déduit de l'intitulé.
+const documentsEuropeensPath = path.join(repoRoot, 'pivot_data', 'documents_europeens.json');
+if (existsSync(documentsEuropeensPath)) {
+  cpSync(documentsEuropeensPath, path.join(outDir, 'documents_europeens.json'));
+} else {
+  console.warn(
+    `sync-data : ${documentsEuropeensPath} absent — les textes européens sans dossier `
+    + 'n\'auront aucun thème (#901). Construire l\'index : '
+    + 'python3 src/documents_europeens.py',
+  );
+}
+
 // --- candidats.json (roster brut : nom, parti, statut) ---
 cpSync(candidatsPath, path.join(outDir, 'candidats.json'));
 const candidats = JSON.parse(readFileSync(candidatsPath, 'utf-8')).candidats;

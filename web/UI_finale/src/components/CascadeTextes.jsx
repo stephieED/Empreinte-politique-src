@@ -55,7 +55,11 @@ function useLargeur() {
  * porte une autre figure des mêmes matières et qu'une commission doit garder
  * sa couleur d'une figure à l'autre (fiche de lignée, #329). Une matière
  * absente de `rangs` prend les rangs suivants, dans l'ordre de la cascade. */
-export function Cascade({ cascade, selection, onSelection, rangs = null }) {
+/* `disposer` (facultatif) : la mise en page à employer. Le versant européen a
+ * la sienne — `disposerCascadeUE`, un seul palier, parce que les seize stades
+ * européens ne s'ordonnent pas (#901). Le rendu, lui, ne change pas : c'est la
+ * même figure, les mêmes teintes de matière, le même clic. */
+export function Cascade({ cascade, selection, onSelection, rangs = null, disposer = disposerCascade }) {
   const [ref, largeur] = useLargeur();
   const rang = useMemo(() => {
     if (!rangs) return new Map((cascade.matieres || []).map((m, i) => [m, i]));
@@ -68,8 +72,8 @@ export function Cascade({ cascade, selection, onSelection, rangs = null }) {
     [rang],
   );
   const vue = useMemo(
-    () => (largeur ? disposerCascade(cascade, largeur, teinteDe) : null),
-    [cascade, largeur, teinteDe],
+    () => (largeur ? disposer(cascade, largeur, teinteDe) : null),
+    [cascade, disposer, largeur, teinteDe],
   );
 
   const choisir = (matiere, lo, hi) => {
@@ -210,10 +214,17 @@ export function Cascade({ cascade, selection, onSelection, rangs = null }) {
   );
 }
 
-export function ListeCascade({ cascade, selection, onRaz }) {
+/* `ordonnee` : vrai quand les stades forment une ÉCHELLE. « examiné en
+ * commission, et non discuté en séance » n'a de sens que là ; sur le versant
+ * européen, une issue ne se lit pas par rapport à la suivante — il n'y a pas de
+ * suivante. La liste nomme alors l'issue, et rien d'autre. */
+export function ListeCascade({ cascade, selection, onRaz, ordonnee = true }) {
   const sel = useMemo(() => textesDeLaSelection(cascade, selection), [cascade, selection]);
   const colonnes = useMemo(() => [
-    { cle: 'parlement', textes: sel.filter((t) => !t.projetDeLoi) },
+    /* Un texte européen se range sous « Au Parlement européen », jamais sous
+       « À l'Assemblée » (#901). */
+    { cle: 'pe', textes: sel.filter((t) => t.europeen) },
+    { cle: 'parlement', textes: sel.filter((t) => !t.projetDeLoi && !t.europeen) },
     { cle: 'gouvernement', textes: sel.filter((t) => t.projetDeLoi) },
   ].filter((c) => c.textes.length > 0), [sel]);
   if (!selection) {
@@ -224,9 +235,12 @@ export function ListeCascade({ cascade, selection, onRaz }) {
     );
   }
   const fin = cascade.stades.length - 1;
-  const nomDe = (i) => LIBELLE_STADE[cascade.stades[i]] || cascade.stades[i];
+  const nomDe = (i) => cascade.libelles?.[cascade.stades[i]]
+    || LIBELLE_STADE[cascade.stades[i]] || cascade.stades[i];
   const ou = selection.procedure493
     ? 'adoptés sans vote, par engagement de responsabilité'
+    : !ordonnee
+    ? (selection.lo === selection.hi ? nomDe(selection.lo) : 'tous stades')
     : selection.lo === selection.hi
     ? (selection.lo === fin ? nomDe(fin) : `${nomDe(selection.lo)}, et non ${nomDe(selection.lo + 1)}`)
     : (selection.lo === 0 ? 'publiés' : `${nomDe(selection.lo)} ou au-delà`);
@@ -273,12 +287,16 @@ export function ListeCascade({ cascade, selection, onRaz }) {
                 </span>
                 <span
                   className="cp-ter-pastille"
-                  style={{ '--pastille': encreDeLEtape(cascade.stades.indexOf(t.stadeCle), fin) }}
+                  style={{
+                    '--pastille': ordonnee
+                      ? encreDeLEtape(cascade.stades.indexOf(t.stadeCle), fin)
+                      : encreDeLEtape(fin, fin),
+                  }}
                 >
                   {t.stade}
                 </span>
                 <span className="cp-ter-fait">
-                  {t.matiere}{t.an ? ` · ${t.an}` : ''}{t.role ? ` · ${t.role}` : ''}
+                  {t.themes ? t.themes.join(', ') : t.matiere}{t.an ? ` · ${t.an}` : ''}{t.role ? ` · ${t.role}` : ''}
                 </span>
             {/* LE SORT À CÔTÉ DU STADE, JAMAIS À SA PLACE. La pastille du haut
                 dit jusqu'où le texte est allé, celle-ci ce qu'il est devenu, et
