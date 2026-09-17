@@ -187,3 +187,22 @@ def test_eurovoc_muet_se_declare(tmp_path):
                           _resolveur(tmp_path, {"TA-8-2018-0286": REPONSE_TA}), _Muet())
 
     assert entrees[0]["domaines_non_resolu"] == {"motif": "eurovoc_injoignable"}
+
+
+def test_le_budget_en_temps_arrete_la_passe_quel_que_soit_le_plafond(tmp_path):
+    """Le run 35231390627 : 1 500 requêtes à 3,5 s en CI, 88 minutes, job annulé.
+    Le budget en temps coupe la passe même si le plafond n'est pas atteint."""
+    entrees = [_entree("A-AMENDE"), _entree("B-VOTE")]
+    resolveur = _resolveur(tmp_path, {"TA-8-2018-0286": REPONSE_TA, "TA-9-2020-0001": REPONSE_TA})
+    documents = {"A-AMENDE": ["TA-8-2018-0286"], "B-VOTE": ["TA-9-2020-0001"]}
+    temps = iter([0.0, 0.0, 1300.0, 1300.0, 1300.0])  # début, 1er dossier, 2e dossier…
+
+    compteurs = domaines_des_dossiers(
+        entrees, documents, resolveur, _SessionSparql({}, domaines=DOMAINES),
+        prioritaires={"A-AMENDE"}, plafond=10_000, budget_secondes=1200,
+        horloge=lambda: next(temps))
+
+    assert entrees[0]["domaines_document"] == "TA-8-2018-0286"
+    assert entrees[1]["domaines_non_resolu"] == {"motif": "question_non_posee"}
+    assert resolveur.session.demandes == ["TA-8-2018-0286"]
+    assert compteurs["requetes"] == 1

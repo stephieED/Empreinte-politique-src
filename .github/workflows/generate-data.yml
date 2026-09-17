@@ -3155,6 +3155,20 @@ jobs:
             --profils-dir pivot_data/profiles \
             --out pivot_data/dossiers_europeens.json
 
+      # #901 — le cache du portail est SAUVEGARDÉ ICI, sans attendre la fin du
+      # job. `actions/cache` n'enregistre qu'en cas de succès : le run
+      # 35231390627 a été annulé au dépassement des 120 minutes, et les 1 501
+      # réponses apprises par la passe des domaines ont été perdues avec lui.
+      # Clé distincte de celle du post-job (suffixe `-dossiers`), pour que les
+      # deux sauvegardes coexistent : le préfixe de restauration prend la plus
+      # récente, donc celle du post-job quand le run réussit, celle-ci sinon.
+      - name: Sauvegarder le cache du portail européen (même si la suite échoue)
+        if: ${{ always() && !inputs.cold_start }}
+        uses: actions/cache/save@v5
+        with:
+          path: .cache/europarl
+          key: public-data-cache-europarl-documents-v3-${{ github.run_id }}-dossiers
+
       # #901 — l'index des documents européens : `doceo` → matières EuroVoc.
       # Après l'index des dossiers, et pour ce qu'il ne couvre pas : 628 des 694
       # textes portés européens ne citent AUCUN dossier — des résolutions

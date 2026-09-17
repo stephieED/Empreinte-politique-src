@@ -107,6 +107,12 @@ INVENTAIRE_STEPS = {
     # qui pose `.cache/europarl/documents_doceo.json`. Il sauvegarde donc ce
     # qu'il remplit, ce qu'exige la règle de #505.
     ("merge-and-pivot", 1): True,
+    # #901 : la même clé européenne, sauvegardée TÔT (`actions/cache/save`, en
+    # `if: always()`) juste après la passe des domaines EuroVoc des dossiers.
+    # Le run 35231390627 a été annulé au-delà des 120 minutes, et le post-job,
+    # qui n'enregistre qu'en cas de succès, a perdu 1 501 réponses. Toujours le
+    # même écrivain, sous une clé suffixée `-dossiers`.
+    ("merge-and-pivot", 2): True,
 }
 
 # Jobs autorisés à cacher `.cache` EN BLOC. Le seul l'était `extract-senat`,

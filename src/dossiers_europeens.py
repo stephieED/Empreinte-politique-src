@@ -62,7 +62,7 @@ import re
 import sys
 import time
 from pathlib import Path
-from typing import Any, Iterable, Optional
+from typing import Any, Callable, Iterable, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -456,8 +456,20 @@ def references_visees(profils_dir: Path, *, amendees: Optional[set[str]] = None)
 #: domaines des dossiers (#901, arbitré le 17/09/2026). Les réponses déjà en
 #: cache ne comptent pas : le cache `.cache/europarl` se cumule d'un run à
 #: l'autre, et la couverture complète s'atteint en quelques runs sans jamais
-#: presser le portail. 1 500 requêtes à 0,6 s de pause ≈ 25 min au plus.
+#: presser le portail.
+#:
+#: **C'est le budget en TEMPS qui borne la passe, pas ce plafond.** Le run
+#: `35231390627` (17/09/2026) a consommé ses 1 500 requêtes en **88 minutes**,
+#: soit 3,5 s par requête en CI (0,9 s mesurée depuis un poste) : le job
+#: `merge-and-pivot` a dépassé ses 120 minutes, a été annulé, et n'a rien
+#: commité — ni le corpus, ni le cache, qui ne s'enregistre qu'en cas de succès.
+#: Un débit ne se prévoit pas ; une durée, si.
 PLAFOND_REQUETES_PAR_RUN = 1500
+
+#: Durée maximale de la passe des domaines, en secondes. Au débit mesuré en CI,
+#: ~340 requêtes : de quoi couvrir les dossiers amendés au premier run, puis
+#: avancer sur les votés run après run.
+BUDGET_SECONDES_PAR_RUN = 1200
 
 _REFERENCE_SEANCE = re.compile(r"^(?:(?P<rc>RC-B)|(?P<type>[ABT]))(?P<terme>\d+)-(?P<num>\d{4})/(?P<annee>\d{4})")
 
@@ -506,6 +518,8 @@ def domaines_des_dossiers(
     *,
     prioritaires: Iterable[str] = (),
     plafond: int = PLAFOND_REQUETES_PAR_RUN,
+    budget_secondes: float = BUDGET_SECONDES_PAR_RUN,
+    horloge: Callable[[], float] = time.monotonic,
 ) -> dict[str, int]:
     """Pose `domaines` sur chaque entrée, en place, et rend les compteurs.
 
@@ -522,13 +536,14 @@ def domaines_des_dossiers(
     Motifs d'absence, qui ne se confondent pas (§2 règle 5) :
       aucun_document_de_seance    : le dump ne cite aucun document de séance
       documents_non_classes       : le portail a répondu, sans concept EuroVoc
-      question_non_posee          : plafond atteint, portail muet ou hors ligne
+      question_non_posee          : budget ou plafond atteint, portail muet, hors ligne
       eurovoc_injoignable         : les concepts sont là, EuroVoc n'a pas répondu
       domaine_eurovoc_introuvable : les concepts sont là, sans domaine
     """
     prioritaires = set(prioritaires)
     ordre = sorted(entrees, key=lambda e: (e["reference"] not in prioritaires, e["reference"]))
     depart = resolveur.statistiques.get("requetes", 0)
+    debut = horloge()
     hors_ligne_initial = getattr(resolveur, "hors_ligne", False)
     concepts_par_doc: dict[str, list[str]] = {}
     etat: dict[str, Any] = {}
@@ -537,8 +552,9 @@ def domaines_des_dossiers(
         if not candidats:
             etat[entree["reference"]] = "aucun_document_de_seance"
             continue
-        if resolveur.statistiques.get("requetes", 0) - depart >= plafond:
-            # Au-delà du plafond, le cache répond encore ; rien d'autre.
+        if (resolveur.statistiques.get("requetes", 0) - depart >= plafond
+                or horloge() - debut >= budget_secondes):
+            # Au-delà du budget, le cache répond encore ; rien d'autre.
             resolveur.hors_ligne = True
         trouve, non_pose = None, False
         for doceo in candidats[:ESSAIS_PAR_DOSSIER]:
@@ -589,6 +605,7 @@ def domaines_des_dossiers(
             entree["domaines_non_resolu"] = {"motif": motif}
             compteurs[motif] = compteurs.get(motif, 0) + 1
     compteurs["requetes"] = resolveur.statistiques.get("requetes", 0) - depart
+    compteurs["secondes"] = int(horloge() - debut)
     return compteurs
 
 
@@ -686,6 +703,8 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--out", type=Path, default=DEFAULT_SORTIE)
     parser.add_argument("--force-download", action="store_true",
                         help="re-télécharger le dump même si un cache existe")
+    parser.add_argument("--budget-secondes", type=int, default=BUDGET_SECONDES_PAR_RUN,
+                        help="durée maximale de la passe des domaines EuroVoc, par run")
     parser.add_argument("--plafond-requetes", type=int, default=PLAFOND_REQUETES_PAR_RUN,
                         help="requêtes nouvelles au portail du Parlement pour les domaines EuroVoc, par run")
     parser.add_argument("--sans-domaines", action="store_true",
@@ -707,7 +726,8 @@ def main(argv: Optional[list[str]] = None) -> int:
         resolveur = resolveur_par_defaut()
         compteurs = domaines_des_dossiers(
             entrees, documents, resolveur, requests.Session(),
-            prioritaires=amendees, plafond=args.plafond_requetes)
+            prioritaires=amendees, plafond=args.plafond_requetes,
+            budget_secondes=args.budget_secondes)
         resolveur.enregistrer()
         print(f"  domaines EuroVoc : {compteurs}")
         if resolveur.statistiques.get("disjoncte"):

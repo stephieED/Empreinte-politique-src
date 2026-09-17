@@ -233,9 +233,9 @@ intitulé, type, stade, familles OEIL et domaines EuroVoc, pour les dossiers que
 les amendements, les textes portés et les votes européens citent. C'est ce qui
 donne un titre lisible derrière « 2021/0136(COD) ».
 
-Les domaines EuroVoc interrogent le portail du Parlement, **1 500 requêtes
-nouvelles au plus par run** (`--plafond-requetes N`), le cache répondant sans
-compter. `--sans-domaines` construit l'index sans aucune requête réseau.
+Les domaines EuroVoc interrogent le portail du Parlement **20 minutes au plus par
+run** (`--budget-secondes N`, défaut 1200), dans la limite de `--plafond-requetes N`
+requêtes nouvelles (défaut 1 500), le cache répondant sans compter. `--sans-domaines` construit l'index sans aucune requête réseau.
 
 ### L'index des documents européens (matières EuroVoc)
 
