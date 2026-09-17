@@ -3234,6 +3234,15 @@ jobs:
       # place. Faire échouer tout le job priverait le run du commit des
       # profils de candidats et de groupes, qui eux sont corrects. L'échec
       # reste visible dans la liste des steps et dans le résumé (#427).
+      # #996 — la liste des gouvernements est lue dans AMO30 à chaque run, au
+      # lieu d'être écrite à la main (#209 en listait 10 ; AMO30 en publie 17
+      # depuis 2007). PAS de continue-on-error : une archive illisible lève
+      # avant toute écriture, et la liste committée reste en place.
+      #   entrée   : src/gouvernements_amo30.py
+      #   produit  : raw_data/gouvernements_reels.json
+      - name: Lister les gouvernements depuis AMO30
+        run: python3 src/gouvernements_amo30.py --out raw_data/gouvernements_reels.json
+
       - name: Générer les profils de gouvernement
         continue-on-error: true
         run: |
@@ -3817,7 +3826,7 @@ jobs:
           # `resolutions_candidats.json` N'entre PAS : c'est un intermédiaire de
           # run, comme `rosters_bruts.json`, et le committer ferait bouger un
           # fichier à chaque exécution sans que personne ne le lise.
-          git add raw_data/candidats.json raw_data/profiles raw_data/correspondance_acteurs_an.json pivot_data/profiles pivot_data/groupes pivot_data/gouvernements pivot_data/scrutins.json pivot_data/scrutins_europeens.json pivot_data/dossiers_europeens.json pivot_data/documents_europeens.json pivot_data/amendements
+          git add raw_data/candidats.json raw_data/profiles raw_data/correspondance_acteurs_an.json raw_data/gouvernements_reels.json pivot_data/profiles pivot_data/groupes pivot_data/gouvernements pivot_data/scrutins.json pivot_data/scrutins_europeens.json pivot_data/dossiers_europeens.json pivot_data/documents_europeens.json pivot_data/amendements
           # Table des commissions saisies au fond (#328), ajoutée seulement si
           # elle existe : `git add` sur un chemin absent échoue, et le step qui
           # la produit est non bloquant. Un run sans archive lisible ne doit pas
