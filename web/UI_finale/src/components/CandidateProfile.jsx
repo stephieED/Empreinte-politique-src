@@ -125,11 +125,11 @@ function BarreFiltre({ saisie, onSaisie }) {
         <path d="M11 11l3.5 3.5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.6" />
       </svg>
       <input
-        aria-label="Filtrer la fiche par un mot des intitulés"
+        aria-label="Rechercher sur cette page"
         autoComplete="off"
         id="cp-filtre-mot"
         onChange={(e) => onSaisie(e.target.value)}
-        placeholder="Filtrer la fiche par un mot des intitulés"
+        placeholder="Rechercher sur cette page"
         type="search"
         value={saisie}
       />
