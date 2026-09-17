@@ -25,6 +25,14 @@ portail du Parlement (`is_about`), dans la réponse que `ResolveurDocuments`
 télécharge déjà. EuroVoc n'est interrogé que pour **traduire un identifiant en
 mot lisible** — sans quoi une fiche afficherait « 2155 ».
 
+**Le portail classe des documents, pas des procédures, et pas tous les documents.**
+Un dossier (`2010/0310M(NLE)`) n'a aucun concept EuroVoc ; son **texte adopté**
+(`TA-8-2018-0286`) en a 8, son **rapport de commission** (`A-8-2018-0224`) aucun.
+Mesuré le 17/09/2026 sur les 367 dossiers amendés par les candidats déclarés : le
+texte adopté porte les concepts dans 281 cas, le rapport dans 11 ; 59 dossiers,
+surtout d'avant 2016, n'ont aucun document classé. C'est pourquoi un dossier reçoit
+ses domaines de son document de séance, texte adopté d'abord.
+
 **Nous ne classons rien nous-mêmes.** La matière d'un document est un fait du
 Parlement, pas une lecture que nous ferions de son titre. C'est la condition
 pour qu'elle soit publiable (§2 règles 2 et 8).

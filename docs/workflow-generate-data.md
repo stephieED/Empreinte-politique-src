@@ -812,7 +812,19 @@ dump des dossiers **en entier**, et pas seulement les dossiers cités : le libel
 d'une famille OEIL (`6` → « External relations of the Union ») n'apparaît que sur
 437 occurrences des 23 885 dossiers, et il faut le trouver où il est (v3, 17/09/2026).
 
-**La troisième interroge le réseau, et c'est la seule.** Elle lit
+**Depuis la v4 (17/09/2026), `dossiers_europeens.py` interroge aussi le réseau**,
+pour les **domaines EuroVoc** d'un dossier : EuroVoc est attaché à un document, pas
+à une procédure. Il lit les documents de séance du dossier dans le dump, demande au
+portail du Parlement les concepts du **texte adopté** d'abord (le rapport de
+commission n'est presque jamais classé), puis leurs domaines par SPARQL. **Plafond :
+1 500 requêtes nouvelles par run** (`--plafond-requetes`), les dossiers amendés en
+premier ; le cache `.cache/europarl`, restauré et cumulé d'un run à l'autre, répond
+sans compter. Au-delà du plafond, un dossier porte
+`domaines_non_resolu.motif = "question_non_posee"` et attend le run suivant. Coût
+mesuré sur l'essai du 17/09/2026 : 438 requêtes, 0 refus, pour 367 dossiers ; au
+plus ~25 min par run au plafond (0,6 s de pause par requête).
+
+**La troisième interroge le réseau elle aussi.** Elle lit
 `src/europarl_documents.py` pour les concepts EuroVoc d'un document — dans la
 réponse que le résolveur télécharge **déjà** pour l'existence et le titre, donc
 sans requête de plus au Parlement — puis résout les libellés **et les domaines** chez l'Office des

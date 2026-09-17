@@ -66,6 +66,11 @@ from typing import Any, Iterable, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from documents_europeens import (  # noqa: E402
+    LICENCE as LICENCE_PORTAIL_ET_EUROVOC,
+    LibellesEurovocIndisponibles,
+    resoudre_domaines,
+)
 from licences import LICENCE_PARLTRACK  # noqa: E402
 from normalize_parltrack_dumps import _stade_procedural_ue  # noqa: E402
 from parltrack_dumps import ensure_dump, iter_dump_zst  # noqa: E402
@@ -77,7 +82,8 @@ DUMP_DOSSIERS = "ep_dossiers.json.zst"
 #: champ ajouté change ce qu'un lecteur peut attendre du fichier, et la version
 #: est le seul endroit où il peut le constater sans relire le code.
 #: v3 depuis le 17/09/2026 : chaque entrée publie ses `familles` OEIL (#901).
-SCHEMA_VERSION = "dossiers-europeens-v3"
+#: v4 depuis le 17/09/2026 : chaque entrée publie ses `domaines` EuroVoc (#901).
+SCHEMA_VERSION = "dossiers-europeens-v4"
 DEFAULT_PROFILS_DIR = Path("pivot_data/profiles")
 DEFAULT_SORTIE = Path("pivot_data/dossiers_europeens.json")
 
@@ -375,7 +381,7 @@ def commissions_au_fond_non_resolu(
     return {"motif": MOTIF_SANS_COMMISSION}
 
 
-def references_visees(profils_dir: Path) -> set[str]:
+def references_visees(profils_dir: Path, *, amendees: Optional[set[str]] = None) -> set[str]:
     """Les références de dossier européen que les profils publiés citent.
 
     DEUX sources, et la seconde manquait (#901, 16/09/2026).
@@ -422,6 +428,8 @@ def references_visees(profils_dir: Path) -> set[str]:
             vise = non_resolu.get("texte_vise")
             if isinstance(vise, str) and vise:
                 refs.add(vise)
+                if amendees is not None:
+                    amendees.add(vise)
         for texte in profil.get("textes_portes") or []:
             if not isinstance(texte, dict):
                 continue
@@ -444,10 +452,151 @@ def references_visees(profils_dir: Path) -> set[str]:
     return refs
 
 
+#: Plafond de requêtes NOUVELLES au portail du Parlement, par run, pour les
+#: domaines des dossiers (#901, arbitré le 17/09/2026). Les réponses déjà en
+#: cache ne comptent pas : le cache `.cache/europarl` se cumule d'un run à
+#: l'autre, et la couverture complète s'atteint en quelques runs sans jamais
+#: presser le portail. 1 500 requêtes à 0,6 s de pause ≈ 25 min au plus.
+PLAFOND_REQUETES_PAR_RUN = 1500
+
+_REFERENCE_SEANCE = re.compile(r"^(?:(?P<rc>RC-B)|(?P<type>[ABT]))(?P<terme>\d+)-(?P<num>\d{4})/(?P<annee>\d{4})")
+
+
+def documents_de_seance(dossier: dict[str, Any]) -> list[str]:
+    """Les documents de séance d'un dossier, en identifiants `doceo`, dans
+    l'ordre où les interroger.
+
+    EuroVoc est attaché à un DOCUMENT, jamais à une procédure : ni le dump
+    ParlTrack (0 dossier sur 23 885), ni la fiche « procédure » du portail ne le
+    publient. Le dossier le reçoit donc de ses documents de séance, lus dans
+    `docs[]` et `events[]` du dump.
+
+    L'ordre vient de l'essai du 17/09/2026 sur les 367 dossiers amendés par les
+    candidats déclarés : le portail classe le **texte adopté** (`T8-0286/2018` →
+    `TA-8-2018-0286`, 281 dossiers), presque jamais le rapport de commission
+    (`A8-…`, 11). Texte adopté d'abord, puis proposition de résolution, puis
+    rapport.
+    """
+    titres: list[str] = []
+    for bloc in list(dossier.get("docs") or []) + list(dossier.get("events") or []):
+        if isinstance(bloc, dict):
+            titres += [str(d.get("title")) for d in bloc.get("docs") or [] if isinstance(d, dict)]
+    identifiants: list[str] = []
+    for titre in titres:
+        m = _REFERENCE_SEANCE.match(titre.strip())
+        if not m:
+            continue
+        prefixe = "RC" if m.group("rc") else {"A": "A", "B": "B", "T": "TA"}[m.group("type")]
+        doceo = f"{prefixe}-{m.group('terme')}-{m.group('annee')}-{m.group('num')}"
+        if doceo not in identifiants:
+            identifiants.append(doceo)
+    rang = {"TA": 0, "B": 1, "RC": 1, "A": 2}
+    return sorted(identifiants, key=lambda d: rang[d.split("-", 1)[0]])
+
+
+#: Documents essayés par dossier. Au-delà, la mesure n'a rien trouvé de plus.
+ESSAIS_PAR_DOSSIER = 2
+
+
+def domaines_des_dossiers(
+    entrees: list[dict[str, Any]],
+    documents: dict[str, list[str]],
+    resolveur: Any,
+    session: Any,
+    *,
+    prioritaires: Iterable[str] = (),
+    plafond: int = PLAFOND_REQUETES_PAR_RUN,
+) -> dict[str, int]:
+    """Pose `domaines` sur chaque entrée, en place, et rend les compteurs.
+
+    `domaines = [{code, libelle, concepts}]`, triés par nombre de concepts puis
+    par code, et `domaines_document` nomme le document qui les porte. Le poids
+    est un fait de la source : combien de concepts du document tombent dans le
+    domaine. Aucun domaine n'est « le » domaine du dossier : le choisir est une
+    lecture, qui appartient à l'interface.
+
+    Les dossiers `prioritaires` (ceux que les amendements visent) passent
+    d'abord : quand le plafond coupe la passe, ce sont les votes qui attendent
+    le run suivant.
+
+    Motifs d'absence, qui ne se confondent pas (§2 règle 5) :
+      aucun_document_de_seance    : le dump ne cite aucun document de séance
+      documents_non_classes       : le portail a répondu, sans concept EuroVoc
+      question_non_posee          : plafond atteint, portail muet ou hors ligne
+      eurovoc_injoignable         : les concepts sont là, EuroVoc n'a pas répondu
+      domaine_eurovoc_introuvable : les concepts sont là, sans domaine
+    """
+    prioritaires = set(prioritaires)
+    ordre = sorted(entrees, key=lambda e: (e["reference"] not in prioritaires, e["reference"]))
+    depart = resolveur.statistiques.get("requetes", 0)
+    hors_ligne_initial = getattr(resolveur, "hors_ligne", False)
+    concepts_par_doc: dict[str, list[str]] = {}
+    etat: dict[str, Any] = {}
+    for entree in ordre:
+        candidats = documents.get(entree["reference"]) or []
+        if not candidats:
+            etat[entree["reference"]] = "aucun_document_de_seance"
+            continue
+        if resolveur.statistiques.get("requetes", 0) - depart >= plafond:
+            # Au-delà du plafond, le cache répond encore ; rien d'autre.
+            resolveur.hors_ligne = True
+        trouve, non_pose = None, False
+        for doceo in candidats[:ESSAIS_PAR_DOSSIER]:
+            concepts = resolveur.concepts_eurovoc(doceo)
+            if concepts is None:
+                non_pose = True
+                continue
+            if concepts:
+                trouve = doceo
+                concepts_par_doc[doceo] = concepts
+                break
+        etat[entree["reference"]] = trouve or ("question_non_posee" if non_pose else "documents_non_classes")
+    resolveur.hors_ligne = hors_ligne_initial
+
+    tous = {c for concepts in concepts_par_doc.values() for c in concepts}
+    domaines: Optional[dict[str, dict[str, str]]] = {}
+    if tous:
+        try:
+            domaines = resoudre_domaines(tous, session)
+        except LibellesEurovocIndisponibles as exc:
+            print(f"  ⚠ domaines EuroVoc des dossiers non publiés : {exc}", file=sys.stderr)
+            domaines = None
+
+    compteurs: dict[str, int] = {}
+    for entree in entrees:
+        resultat = etat.get(entree["reference"], "aucun_document_de_seance")
+        entree["domaines"] = []
+        if resultat not in concepts_par_doc:
+            motif = resultat
+        elif domaines is None:
+            motif = "eurovoc_injoignable"
+        else:
+            poids: dict[str, int] = {}
+            for concept in concepts_par_doc[resultat]:
+                if concept in domaines:
+                    code = domaines[concept]["code"]
+                    poids[code] = poids.get(code, 0) + 1
+            libelles = {d["code"]: d["libelle"] for d in domaines.values()}
+            entree["domaines"] = [
+                {"code": c, "libelle": libelles[c], "concepts": n}
+                for c, n in sorted(poids.items(), key=lambda kv: (-kv[1], kv[0]))
+            ]
+            motif = None if entree["domaines"] else "domaine_eurovoc_introuvable"
+        if entree["domaines"]:
+            entree["domaines_document"] = resultat
+            compteurs["avec_domaines"] = compteurs.get("avec_domaines", 0) + 1
+        else:
+            entree["domaines_non_resolu"] = {"motif": motif}
+            compteurs[motif] = compteurs.get(motif, 0) + 1
+    compteurs["requetes"] = resolveur.statistiques.get("requetes", 0) - depart
+    return compteurs
+
+
 def construire(
     references: Iterable[str],
     force_download: bool = False,
     dump_path: Optional[Path] = None,
+    documents: Optional[dict[str, list[str]]] = None,
 ) -> list[dict[str, Any]]:
     """Les entrées d'index pour les références visées, triées par référence."""
     voulues = {r for r in references if r}
@@ -462,6 +611,8 @@ def construire(
     entrees: list[dict[str, Any]] = []
     vues: set[str] = set()
     libelles_vus: dict[str, dict[str, str]] = {}
+    if documents is None:
+        documents = {}
     for dossier in iter_dump_zst(Path(chemin)):
         procedure = dossier.get("procedure")
         if not isinstance(procedure, dict):
@@ -478,6 +629,9 @@ def construire(
         if reference not in voulues or reference in vues:
             continue
         vues.add(reference)
+        # Rempli pour l'appelant qui en a besoin : les domaines se cherchent
+        # ensuite, par le réseau, et le dump ne se relit pas pour autant.
+        documents[reference] = documents_de_seance(dossier)
         # Le stade passe par la table de `textes_portes[]` — une seule fabrique
         # de cette correspondance, sans quoi les deux divergeraient le jour où
         # la source ajoute une valeur.
@@ -520,7 +674,7 @@ def document(entrees: list[dict[str, Any]]) -> dict[str, Any]:
     return {
         "schema_version": SCHEMA_VERSION,
         "genere_le": time.strftime("%Y-%m-%dT%H:%M:%S"),
-        "licence_donnees": LICENCE_PARLTRACK,
+        "licence_donnees": f"{LICENCE_PARLTRACK} ; {LICENCE_PORTAIL_ET_EUROVOC}",
         "dossiers": entrees,
     }
 
@@ -532,14 +686,32 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--out", type=Path, default=DEFAULT_SORTIE)
     parser.add_argument("--force-download", action="store_true",
                         help="re-télécharger le dump même si un cache existe")
+    parser.add_argument("--plafond-requetes", type=int, default=PLAFOND_REQUETES_PAR_RUN,
+                        help="requêtes nouvelles au portail du Parlement pour les domaines EuroVoc, par run")
+    parser.add_argument("--sans-domaines", action="store_true",
+                        help="ne pas chercher les domaines EuroVoc (aucune requête réseau)")
     return parser
 
 
 def main(argv: Optional[list[str]] = None) -> int:
     args = _build_arg_parser().parse_args(argv)
-    refs = references_visees(args.profils_dir)
+    amendees: set[str] = set()
+    refs = references_visees(args.profils_dir, amendees=amendees)
     print(f"→ {len(refs)} référence(s) de dossier citée(s) par les amendements, textes portés et votes publiés")
-    entrees = construire(refs, force_download=args.force_download)
+    documents: dict[str, list[str]] = {}
+    entrees = construire(refs, force_download=args.force_download, documents=documents)
+    if not args.sans_domaines:
+        import requests  # noqa: PLC0415
+        from europarl_documents import resolveur_par_defaut  # noqa: PLC0415
+
+        resolveur = resolveur_par_defaut()
+        compteurs = domaines_des_dossiers(
+            entrees, documents, resolveur, requests.Session(),
+            prioritaires=amendees, plafond=args.plafond_requetes)
+        resolveur.enregistrer()
+        print(f"  domaines EuroVoc : {compteurs}")
+        if resolveur.statistiques.get("disjoncte"):
+            print("  ⚠ le portail s'est tu : la passe des domaines s'est ARRÊTÉE en route.")
     manquantes = sorted(refs - {e["reference"] for e in entrees})
     if manquantes:
         print(f"  [!] {len(manquantes)} non résolue(s) dans le dump — déclarées "
