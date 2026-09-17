@@ -10,6 +10,8 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LIBELLE_SORT_TEXTE, VOTE_STYLE, formatNumber } from '../utils/lecture';
+import { MATIERE_NON_ETABLIE as NON_ETABLIE, NATURES_UE } from '../utils/profilCandidat';
+import { teinteThemeUe } from '../utils/matiere';
 import { libellePosition, MATIERE_NON_ETABLIE } from '../utils/profilCandidat';
 import {
   LIBELLE_ORIGINE,
@@ -45,6 +47,7 @@ function titreDePeriode(periode) {
 }
 
 function libelleCourtDePeriode(periode) {
+  if (periode.libelle) return periode.groupes?.length ? periode.groupes.join(', ') : periode.libelle;
   const banc = periode.banc ? libellePosition(periode.banc) : 'banc non publié';
   return periode.gouvernement ? `${banc} · ${periode.gouvernement}` : banc;
 }
@@ -97,7 +100,7 @@ function total(part) {
   return part.gouvernement + part.parlement;
 }
 
-function BlocPeriode({ periode, portee, garde, matiere, onMatiere }) {
+function BlocPeriode({ periode, portee, garde, matiere, onMatiere, ue = false }) {
   const lignes = matieresDePeriode(periode, garde);
 
   if (!lignes.length) {
@@ -112,7 +115,7 @@ function BlocPeriode({ periode, portee, garde, matiere, onMatiere }) {
   return (
     <>
       <div className="vp-tete">
-        <h3 className="vp-titre">{titreDePeriode(periode)}</h3>
+        <h3 className="vp-titre">{periode.libelle ?? titreDePeriode(periode)}</h3>
         <span className="vp-quand">
           {mois(periode.debut)} → {mois(periode.fin)}
           {periode.groupes.length ? ` · ${periode.groupes.join(', ')}` : ''}
@@ -152,10 +155,11 @@ function BlocPeriode({ periode, portee, garde, matiere, onMatiere }) {
 
       <p className="vp-echelle">
         <span>← {formatNumber(portee)} textes</span>
-        {/* Sous un mot du filtre, la figure n'a qu'une période, le cumul : il
-            n'y a pas d'autre période à qui l'échelle serait commune. */}
+        {/* Sous un mot du filtre, la figure n'a qu'une période, le cumul ; côté
+            européen, il n'y a jamais de période — mais l'échelle reste commune
+            aux filtres, qui retirent de la masse sans redimensionner. */}
         <span className="vp-echelle-mid">
-          {periode.cumul ? '' : 'même échelle pour toutes les périodes'}
+          {periode.cumul ? '' : ue ? 'même échelle quel que soit le filtre' : 'même échelle pour toutes les périodes'}
         </span>
         <span>{formatNumber(portee)} textes →</span>
       </p>
@@ -170,7 +174,7 @@ function BlocPeriode({ periode, portee, garde, matiere, onMatiere }) {
  * attend un clic pour dire quelque chose laisse un tiers de la page vide tant
  * qu'on n'a pas deviné le geste.
  */
-function Colonnes({ votes, positions, matiere, onIsoler, onToutAfficher }) {
+function Colonnes({ votes, positions, matiere, onIsoler, onToutAfficher, ue = false }) {
   const colonnes = POSITIONS_ORDONNEES.filter((p) => positions.has(p));
   const seule = colonnes.length === 1;
 
@@ -222,7 +226,7 @@ function Colonnes({ votes, positions, matiere, onIsoler, onToutAfficher }) {
                       </span>
                       <span className="vp-li-f">
                         {jour(v.date)} · {v.matiere || MATIERE_NON_ETABLIE.toLowerCase()} ·{' '}
-                        {LIBELLE_SORT_TEXTE[v.statutTexte] ?? 'sort non établi'}
+                        {ue ? v.meta : (LIBELLE_SORT_TEXTE[v.statutTexte] ?? 'sort non établi')}
                         {v.procedure49_3 && <b className="vp-49-3">49.3</b>}
                       </span>
                     </li>
@@ -244,20 +248,29 @@ function Colonnes({ votes, positions, matiere, onIsoler, onToutAfficher }) {
   );
 }
 
-/* `etiquette` (#979) : le rappel du mot du filtre, en tête de la carte. */
-export default function VotesParPeriode({ periodes, portee, reperes, regle, etiquette = null }) {
+/* `etiquette` (#979) : le rappel du mot du filtre, en tête de la carte.
+ * `ue` (#901) : le versant européen — ni période, ni origine de texte. */
+export default function VotesParPeriode({ periodes, portee, reperes, regle, etiquette = null, ue = false }) {
   const [index, setIndex] = useState(0);
   const [positions, setPositions] = useState(() => new Set(POSITIONS_ORDONNEES));
   const [origine, setOrigine] = useState(null);
   const [matiere, setMatiere] = useState(null);
+  // Le filtre par nature des textes votés au Parlement européen (#901).
+  const [nature, setNature] = useState('tous');
 
   const periode = periodes[Math.min(index, periodes.length - 1)];
+  const LIBELLE_NATURE_VOTE = { sans_dossier: 'Sans dossier' };
+  const naturesPresentes = ue
+    ? NATURES_UE.filter((n) => (periode?.votes || []).some((v) => v.natureCle === n.cle))
+    : [];
+  const filtreNature = naturesPresentes.length > 1;
 
   const garde = useMemo(
     () => (v) =>
       positions.has(v.position)
+      && (nature === 'tous' || v.natureCle === nature)
       && (!origine || (v.origine === ORIGINE_GOUVERNEMENT ? ORIGINE_GOUVERNEMENT : ORIGINE_PARLEMENT) === origine),
-    [positions, origine],
+    [positions, origine, nature],
   );
 
   const visibles = useMemo(
@@ -309,7 +322,30 @@ export default function VotesParPeriode({ periodes, portee, reperes, regle, etiq
       <div className="cp-carte cp-bloc vp-carte">
         {etiquette}
         {regle && <p className="vp-regle">{regle}</p>}
-        {!periode.cumul && (
+        {filtreNature && (
+          <div className="cp-natures" role="group" aria-label="Nature des textes votés">
+            {[{ cle: 'tous', libelle: 'Toutes natures', total: new Set((periode.votes || []).map((v) => v.scrutinId)).size }]
+              .concat(naturesPresentes.map((n) => ({
+                ...n,
+                libelle: LIBELLE_NATURE_VOTE[n.cle] || n.libelle,
+                total: new Set((periode.votes || []).filter((v) => v.natureCle === n.cle).map((v) => v.scrutinId)).size,
+              })))
+              .map((n) => (
+                <button
+                  aria-pressed={nature === n.cle}
+                  className="cp-nature"
+                  key={n.cle}
+                  onClick={() => { setNature(n.cle); setMatiere(null); }}
+                  type="button"
+                >
+                  {n.libelle} <b className="cp-num">{formatNumber(n.total)}</b>
+                </button>
+              ))}
+          </div>
+        )}
+        {/* Aucune navigation côté européen : il n'y a pas de période (#901), et
+            aucune sous un mot du filtre, où la figure est le cumul (#979). */}
+        {!periode.cumul && !ue && (
         <NavigationPeriodes
           periodes={periodes}
           index={Math.min(index, periodes.length - 1)}
@@ -324,6 +360,7 @@ export default function VotesParPeriode({ periodes, portee, reperes, regle, etiq
         />
         )}
         <BlocPeriode
+          ue={ue}
           periode={periode}
           portee={portee}
           garde={garde}
@@ -346,13 +383,13 @@ export default function VotesParPeriode({ periodes, portee, reperes, regle, etiq
             <i />
             {LIBELLE_POSITION[p]}{' '}
             <span className="vp-chip-n">
-              {formatNumber((periode.votes || []).filter((v) => v.position === p).length)}
+              {formatNumber(new Set((periode.votes || []).filter((v) => v.position === p).map((v) => v.scrutinId)).size)}
             </span>
           </button>
         ))}
-        <span className="vp-sep" />
-        <span className="vp-filtres-quoi">Origine</span>
-        {[null, ORIGINE_PARLEMENT, ORIGINE_GOUVERNEMENT].map((o) => (
+        {!ue && <span className="vp-sep" />}
+        {!ue && <span className="vp-filtres-quoi">Origine</span>}
+        {!ue && [null, ORIGINE_PARLEMENT, ORIGINE_GOUVERNEMENT].map((o) => (
           <button
             type="button"
             key={o ?? 'tous'}
@@ -377,6 +414,7 @@ export default function VotesParPeriode({ periodes, portee, reperes, regle, etiq
       </p>
 
       <Colonnes
+        ue={ue}
         votes={visibles}
         positions={positions}
         matiere={matiere}
@@ -391,7 +429,14 @@ export default function VotesParPeriode({ periodes, portee, reperes, regle, etiq
           ne vaut que de cette personne et n'a de sens que sous sa figure ;
           l'explication du rattachement est la même sur les 30 fiches, et un
           paragraphe recopié trente fois se lit zéro fois. */}
-      {reperes && (
+      {reperes && ue && (
+        <p className="cp-note vp-couverture">
+          <b>Ce que cette figure ne sait pas.</b> Sur ses {formatNumber(reperes.total)} textes votés
+          au Parlement européen, {formatNumber(reperes.total - reperes.matiere)} ne disent pas quelle
+          commission a examiné le texte — ils restent en « matière non établie ».
+        </p>
+      )}
+      {reperes && !ue && (
         <p className="cp-note vp-couverture">
           <b>Ce que cette figure ne sait pas.</b> Sur ses {formatNumber(reperes.total)} positions
           de dernière lecture, {formatNumber(reperes.total - reperes.matiere)} ne disent pas quelle

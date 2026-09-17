@@ -1211,7 +1211,7 @@ Le mentionnent sans le gouverner : [`gouvernement-premier-ministre-portefeuille`
 
 ## `src/scrutins_europeens.py`
 
-Le mentionnent sans le gouverner : [`cascade-europeenne-une-porte-901`](decisions/cascade-europeenne-une-porte-901.md), [`index-scrutins-europeens-901`](decisions/index-scrutins-europeens-901.md), [`pas-d-ecarts-groupe-europeens-901`](decisions/pas-d-ecarts-groupe-europeens-901.md).
+Le mentionnent sans le gouverner : [`cascade-europeenne-une-porte-901`](decisions/cascade-europeenne-une-porte-901.md), [`index-scrutins-europeens-901`](decisions/index-scrutins-europeens-901.md), [`lecture-europeenne-themes-et-votes-901`](decisions/lecture-europeenne-themes-et-votes-901.md), [`pas-d-ecarts-groupe-europeens-901`](decisions/pas-d-ecarts-groupe-europeens-901.md).
 
 ## `src/scrutins_index.py`
 

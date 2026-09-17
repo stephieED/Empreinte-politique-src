@@ -190,6 +190,21 @@ function loadDocumentsEuropeens() {
   return documentsEuropeensPromise;
 }
 
+/* Les scrutins nominatifs du Parlement européen, par NUMÉRO (#901) : c'est la
+ * clé que portent les positions du profil, avec leur date. */
+let scrutinsEuropeensPromise = null;
+function loadScrutinsEuropeens() {
+  if (!scrutinsEuropeensPromise) {
+    scrutinsEuropeensPromise = fetch('/data/scrutins_europeens.json')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => (d?.scrutins
+        ? Object.fromEntries(d.scrutins.map((x) => [x.numero_scrutin, x]))
+        : null))
+      .catch(() => null);
+  }
+  return scrutinsEuropeensPromise;
+}
+
 function loadDossiersEuropeens() {
   if (!dossiersEuropeensPromise) {
     dossiersEuropeensPromise = fetch('/data/dossiers_europeens.json')
@@ -327,7 +342,7 @@ export async function chargerSourcesCandidat(id) {
   const manifest = await loadManifest();
   const entry = manifest.candidates.find((c) => c.slug === id);
   if (!entry) return null;
-  const [pivot, scrutins, fichesGroupe, commissions, scrutinsDossiers, dossiersEuropeens, documentsEuropeens] =
+  const [pivot, scrutins, fichesGroupe, commissions, scrutinsDossiers, dossiersEuropeens, documentsEuropeens, scrutinsEuropeens] =
     await Promise.all([
       fetchJson(`/data/profiles/${entry.slug}.pivot.json`),
       loadScrutins(),
@@ -336,6 +351,7 @@ export async function chargerSourcesCandidat(id) {
       loadScrutinsDossiers(),
       loadDossiersEuropeens(),
       loadDocumentsEuropeens(),
+      loadScrutinsEuropeens(),
     ]);
   if (!pivot) return null;
   // L'index des amendements se charge APRÈS le profil : ce sont les
@@ -343,7 +359,7 @@ export async function chargerSourcesCandidat(id) {
   const amendements = await loadAmendementsPour(pivot);
   return {
     manifest, entry, pivot, scrutins, fichesGroupe, commissions, scrutinsDossiers,
-    dossiersEuropeens, documentsEuropeens, amendements,
+    dossiersEuropeens, documentsEuropeens, scrutinsEuropeens, amendements,
   };
 }
 
@@ -378,7 +394,7 @@ export function vueCandidat(sources, mot = '') {
   if (!sources) return null;
   const {
     manifest, entry, scrutins, fichesGroupe, commissions, scrutinsDossiers,
-    dossiersEuropeens, documentsEuropeens, amendements,
+    dossiersEuropeens, documentsEuropeens, scrutinsEuropeens, amendements,
   } = sources;
   const pivot = filtrerProfil(sources.pivot, mot, lecteursDIntitule(sources));
   const view = buildCandidateView(
@@ -397,6 +413,7 @@ export function vueCandidat(sources, mot = '') {
     ficheDuGroupeAffiche(manifest, entry, sources.pivot),
     dossiersEuropeens,
     documentsEuropeens,
+    scrutinsEuropeens,
   );
   if (!view || !motsDuFiltre(mot).length) return avecSiglesDeSiege(view, manifest);
   /* SOUS UN MOT, « Ce qu'il a voté » cumule ses périodes (`periodeCumulee`) :

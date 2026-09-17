@@ -71,38 +71,40 @@ def test_les_votes_europeens_non_resolus_sont_comptes():
     )
 
 
-def test_le_motif_europeen_ne_se_declenche_que_si_tous_les_votes_le_sont():
-    """Sur une fiche mixte, la section doit continuer d'afficher l'Assemblée."""
-    code = sans_commentaires(COMPOSANT.read_text(encoding="utf-8"))
-    assert "votes.nonResolusEuropeens === votes.total" in code, (
-        "La condition doit porter sur la TOTALITÉ des votes : sur Maurel, "
-        "Mélenchon ou Le Pen, les votes de l'Assemblée s'affichent et le motif "
-        "européen serait faux."
-    )
+def test_les_votes_europeens_ne_sont_plus_declares_hors_de_portee():
+    """CE QUE CE TEST TENAIT, ET CE QU'IL TIENT MAINTENANT (#901, 17/09/2026).
 
+    Il verrouillait le message qui remplaçait la figure sur une fiche dont TOUS
+    les votes sont européens : « ses N positions au Parlement européen sont
+    collectées, mais aucune n'est rattachée à un scrutin identifié ». La cause
+    était la nôtre — l'index de l'Assemblée ne résout pas ces positions — et le
+    message le disait, avec la bonne cause (`couvert`, pas `non_collecte`).
 
-def test_la_cause_du_vide_europeen_reste_couvert():
-    """Le test le plus important : le premier jet se contredisait lui-même.
-
-    `cause="non_collecte"` affichait « Non collecté » au-dessus d'une phrase
-    disant « sont collectées » — la contradiction que ce correctif retire.
+    Ces positions sont désormais rattachées par NUMÉRO + DATE à
+    `pivot_data/scrutins_europeens.json`, et la fiche les AFFICHE. Le message
+    n'a plus d'objet, et le garder serait publier un manque qui n'existe pas
+    (§2 règle 5). Ce que le test tient désormais : la phrase a disparu, et la
+    figure européenne a pris sa place.
     """
     code = sans_commentaires(COMPOSANT.read_text(encoding="utf-8"))
-    bloc = re.search(
-        r"votes\.nonResolusEuropeens === votes\.total \?(.*?)\) : votes\.surEnsemble === 0 \?",
-        code,
-        re.DOTALL,
+    assert "rattachée à un scrutin identifié" not in code
+    assert "votes.nonResolusEuropeens === votes.total" not in code
+    bloc = code.split("function Votes({")[1].split("function VotesFrancais")[0]
+    assert "europe.periodes" in bloc, (
+        "Le versant européen des votes doit être servi par sa propre figure."
     )
-    assert bloc, "Le bloc du cas européen a disparu ou changé de forme."
-    assert 'cause="couvert"' in bloc.group(1), (
-        "Ces positions SONT collectées — le tableau « ce que chaque liste "
-        "porte » les compte. Déclarer `non_collecte` recréerait la "
-        "contradiction (§2 règle 2)."
+    assert "dernier vote retenu pour chaque texte" in bloc, (
+        "La règle de sélection se dit à côté du chiffre, comme la dernière "
+        "lecture côté français (#711)."
     )
-    assert "rattachée à un scrutin identifié" in bloc.group(1), (
-        "Le motif doit nommer la cause réelle : notre index ne rattache pas, "
-        "la personne n'y est pour rien."
-    )
+
+
+def test_le_compte_des_votes_europeens_non_rattaches_reste_calcule():
+    """`nonResolusEuropeens` ne sert plus de motif, mais il mesure encore ce que
+    l'index ne résout pas : un compte retiré est un compte qu'on ne peut plus
+    surveiller."""
+    regles = sans_commentaires(MODULE_REGLES.read_text(encoding="utf-8"))
+    assert "nonResolusEuropeens" in regles
 
 
 def test_le_compte_d_adoptes_n_est_publie_que_si_un_sort_l_est():
