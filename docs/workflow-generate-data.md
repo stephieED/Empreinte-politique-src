@@ -819,13 +819,19 @@ d'une famille OEIL (`6` → « External relations of the Union ») n'apparaît q
 pour les **domaines EuroVoc** d'un dossier : EuroVoc est attaché à un document, pas
 à une procédure. Il lit les documents de séance du dossier dans le dump, demande au
 portail du Parlement les concepts du **texte adopté** d'abord (le rapport de
-commission n'est presque jamais classé), puis leurs domaines par SPARQL. **Plafond :
-1 500 requêtes nouvelles par run** (`--plafond-requetes`), les dossiers amendés en
-premier ; le cache `.cache/europarl`, restauré et cumulé d'un run à l'autre, répond
-sans compter. Au-delà du plafond, un dossier porte
-`domaines_non_resolu.motif = "question_non_posee"` et attend le run suivant. Coût
-mesuré sur l'essai du 17/09/2026 : 438 requêtes, 0 refus, pour 367 dossiers ; au
-plus ~25 min par run au plafond (0,6 s de pause par requête).
+commission n'est presque jamais classé), puis leurs domaines par SPARQL. **Budget : 20 minutes
+par run** (`--budget-secondes`, borne haute `--plafond-requetes` 1 500), les dossiers
+amendés en premier ; le cache `.cache/europarl`, restauré et cumulé d'un run à
+l'autre, répond sans compter. Au-delà du budget, un dossier porte
+`domaines_non_resolu.motif = "question_non_posee"` et attend le run suivant.
+
+**Le budget est en temps, et le cache est sauvegardé tout de suite après l'étape.**
+Le run `35231390627` (17/09/2026) a consommé 1 500 requêtes en **88 minutes** —
+3,5 s par requête en CI, contre 0,9 s depuis un poste —, `merge-and-pivot` a
+dépassé ses 120 minutes et a été annulé sans rien commiter, et le cache, que
+`actions/cache` n'enregistre qu'en cas de succès, a été perdu. D'où le step
+« Sauvegarder le cache du portail européen », en `if: always()`, sous une clé
+suffixée `-dossiers`. Au débit mesuré, 20 minutes valent ~340 requêtes.
 
 **La troisième interroge le réseau elle aussi.** Elle lit
 `src/europarl_documents.py` pour les concepts EuroVoc d'un document — dans la
