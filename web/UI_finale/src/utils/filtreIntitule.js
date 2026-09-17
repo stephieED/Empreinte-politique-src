@@ -97,3 +97,38 @@ export function periodeCumulee(periodes) {
     sansRepere: false,
   };
 }
+
+/* ── Le mot surligné dans un verbatim (#979) ────────────────────────────────
+ *
+ * Une intervention retenue par son PROPOS peut porter un sujet sans rapport
+ * avec le mot : sans le surligner, le lecteur ne voit pas pourquoi elle est là.
+ * La comparaison est celle du filtre — sans casse ni accents —, mais le texte
+ * rendu est celui du compte rendu, caractère pour caractère : on repère les
+ * positions sur la forme normalisée et on découpe l'original. */
+export function segmentsSurlignes(texte, saisie) {
+  const source = String(texte ?? '');
+  const mots = motsDuFiltre(saisie);
+  if (!mots.length || !source) return [{ texte: source, marque: false }];
+  // Forme normalisée, et pour chacun de ses caractères l'indice d'origine.
+  let norm = '';
+  const origine = [];
+  for (let i = 0; i < source.length; i += 1) {
+    const n = normaliserIntitule(source[i]);
+    for (const c of n) { norm += c; origine.push(i); }
+  }
+  const marque = Array.from({ length: source.length }, () => false);
+  for (const m of mots) {
+    let k = norm.indexOf(m);
+    while (k !== -1) {
+      for (let j = k; j < k + m.length; j += 1) marque[origine[j]] = true;
+      k = norm.indexOf(m, k + m.length);
+    }
+  }
+  const out = [];
+  for (let i = 0; i < source.length; i += 1) {
+    const dernier = out[out.length - 1];
+    if (dernier && dernier.marque === marque[i]) dernier.texte += source[i];
+    else out.push({ texte: source[i], marque: marque[i] });
+  }
+  return out;
+}

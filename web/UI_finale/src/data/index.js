@@ -348,11 +348,11 @@ export async function chargerSourcesCandidat(id) {
   };
 }
 
-/* Les intitulés que le filtre compare, lus là où la fiche les affiche : le
- * titre de texte d'un vote (`titreDuTexteVote`, le même que « Ce qu'il a
- * voté »), le dossier d'un amendement (index par législature côté Assemblée,
+/* Ce que le filtre compare, lu là où la fiche l'affiche : le titre de texte
+ * d'un vote (`titreDuTexteVote`, le même que « Ce qu'il a voté »), le dossier
+ * d'un amendement (index par législature côté Assemblée,
  * `dossiers_europeens.json` côté Parlement européen), le chemin du point de
- * séance d'une intervention. */
+ * séance d'une intervention ET son verbatim. */
 function lecteursDIntitule(sources) {
   const { scrutins, amendements, dossiersEuropeens } = sources;
   return {
@@ -368,7 +368,10 @@ function lecteursDIntitule(sources) {
       const texteVise = index?.amendements?.[a.amendement_id]?.texte_vise;
       return (texteVise && index?.textes?.[texteVise]?.titre) || null;
     },
-    intituleDeLIntervention: cheminDuPoint,
+    /* Le sujet OU le propos : la barre dit « Rechercher sur cette page », et
+     * les verbatims sont sur la page. Arbitré le 17/09/2026 — « nucléaire »
+     * ne trouvait aucune des 5 interventions où Maurel en parle. */
+    intituleDeLIntervention: (i) => [cheminDuPoint(i), i.texte].filter(Boolean).join('\n'),
   };
 }
 

@@ -111,7 +111,7 @@ function Section({ numero, titre, critere, pied, children }) {
  *   amendements sur 4 dossiers » sur « finances » ; une section non filtrée
  *   entre des sections filtrées se lirait comme filtrée ; la couverture
  *   décrirait les lacunes du filtre, pas celles de la collecte ;
- * - chaque figure porte le mot EN TÊTE (`EtiquetteFiltre`), pour qu'une capture
+ * - chaque figure porte le mot EN TÊTE (`EtiquetteFiltre`, « Contenant « … » »), pour qu'une capture
  *   de la figure seule ne circule pas sans lui ;
  * - les listes se DÉPLIENT sans clic ;
  * - un mot qui ne trouve rien laisse la section EN PLACE, avec un message du
@@ -145,7 +145,7 @@ function BarreFiltre({ saisie, onSaisie }) {
 function EtiquetteFiltre({ mot }) {
   return (
     <p className="cp-filtre-etiquette">
-      Intitulés contenant <mark>« {mot} »</mark>
+      Contenant <mark>« {mot} »</mark>
     </p>
   );
 }
@@ -1013,7 +1013,7 @@ function Propositions({ amendements, amendementsParVersant, textes, causeAmendem
  */
 function Paroles({ interventions, cause, mot = '' }) {
   if (!interventions.total && mot) {
-    return <VideDuFiltre mot={mot}>Aucune intervention dont le sujet contient {MOT(mot)}.</VideDuFiltre>;
+    return <VideDuFiltre mot={mot}>Aucune intervention dont le sujet ou le propos contient {MOT(mot)}.</VideDuFiltre>;
   }
   if (!interventions.total) {
     return (
@@ -1037,6 +1037,7 @@ function Paroles({ interventions, cause, mot = '' }) {
   return (
     <ParolesParPeriode
       deplie={Boolean(mot)}
+      mot={mot}
       etiquette={mot ? <EtiquetteFiltre mot={mot} /> : null}
       qualites={interventions.qualites}
       plafondPeriode={interventions.plafondPeriode}

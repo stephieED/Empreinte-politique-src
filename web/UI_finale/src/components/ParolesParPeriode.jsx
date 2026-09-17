@@ -23,7 +23,8 @@
  * et la première phrase visible deviendrait, de fait, une phrase mise en avant,
  * ce qu'aucune règle ne nous autorise à faire (§2 règle 1).
  */
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
+import { segmentsSurlignes } from '../utils/filtreIntitule';
 import { Link } from 'react-router-dom';
 import { formatNumber } from '../utils/lecture';
 import { libellePosition, TYPES_INTERVENTION } from '../utils/profilCandidat';
@@ -83,7 +84,7 @@ function naturesDuLot(interventions) {
   return lignes.filter((l) => l.n > 0 || connus.has(l.cles[0]));
 }
 
-function Intervention({ i }) {
+function Intervention({ i, mot = '' }) {
   return (
     <li className="pp-item">
       <div className="pp-quand">
@@ -107,7 +108,13 @@ function Intervention({ i }) {
           </p>
         )}
         {i.verbatim ? (
-          <blockquote className="pp-verbatim">{i.verbatim}</blockquote>
+          <blockquote className="pp-verbatim">
+            {mot
+              ? segmentsSurlignes(i.verbatim, mot).map((s, k) => (s.marque
+                ? <mark className="pp-mot" key={k}>{s.texte}</mark>
+                : <Fragment key={k}>{s.texte}</Fragment>))
+              : i.verbatim}
+          </blockquote>
         ) : (
           <p className="pp-sans-verbatim">
             {i.themeSeul
@@ -131,7 +138,7 @@ function Intervention({ i }) {
  * fouille pas. Sans mot, rien ne change. `etiquette` : le rappel du mot, posé
  * en tête du cadre pour qu'une capture de la figure ne le perde pas. */
 export default function ParolesParPeriode({
-  qualites, plafondPeriode, plafondEnsemble, couverture, deplie = false, etiquette = null,
+  qualites, plafondPeriode, plafondEnsemble, couverture, deplie = false, etiquette = null, mot = '',
 }) {
   /* LA QUALITÉ D'ABORD, LA PÉRIODE ENSUITE (#328).
    *
@@ -363,6 +370,7 @@ export default function ParolesParPeriode({
               <ul className="pp-liste">
                 {visibles.slice(0, limite).map((i) => (
                   <Intervention
+                    mot={mot}
                     key={i.id ?? `${i.date}-${i.chemin}`}
                     i={{
                       ...i,

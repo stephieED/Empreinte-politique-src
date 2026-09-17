@@ -18,7 +18,10 @@ d'Emmanuel Maurel :
 5. **Un mot qui ne trouve rien laisse la section en place, avec un message du
    filtre** — jamais « Non collecté », que la fiche affichait sans lui : faux,
    puisque la collecte n'est pas vide (§2 règle 5).
-6. **Sans casse, sans accents, sans traduction.** « énergie » ne trouve pas
+6. **Les interventions se cherchent aussi dans leur verbatim**, et le mot y est
+   surligné : la barre dit « Rechercher sur cette page ». Sur le sujet seul,
+   « nucléaire » ne trouvait aucune des 5 interventions de Maurel qui en parlent.
+7. **Sans casse, sans accents, sans traduction.** « énergie » ne trouve pas
    « energy » : les intitulés des dossiers amendés européens sont en anglais, et
    le message le dit.
 
@@ -35,7 +38,7 @@ CE QU'ILS NE COUVRENT PAS (§2 règle 5) : aucun composant React n'est rendu, et
 — les sections retirées, les cinq étiquettes, les listes dépliées, les cinq
 messages — a été vérifié hors dépôt sur le serveur de développement, sur Maurel
 avec « finances », « énergie » et « numérique », et sans mot. Le temps de
-recalcul, mesuré en développement le 17/09/2026 : 86 à 240 ms par mot sur
+recalcul, mesuré en développement le 17/09/2026 : 109 à 307 ms (verbatims compris) par mot sur
 Ruffin, Mélenchon, Faure et Maurel.
 """
 
@@ -249,7 +252,7 @@ def test_les_intitules_compares_sont_ceux_que_la_fiche_affiche():
     source = _lire(CHARGEUR)
     assert "titreDuTexteVote(brut)" in source
     assert "dossiersEuropeens?.[europeen.texte_vise]?.titre" in source
-    assert "intituleDeLIntervention: cheminDuPoint" in source
+    assert "intituleDeLIntervention: (i) => [cheminDuPoint(i), i.texte]" in source
 
 
 # ---------------------------------------------------------------------------
@@ -282,7 +285,7 @@ def test_chaque_figure_porte_le_mot():
         "Aucun vote affiché dont l’intitulé contient",
         "mais aucune n’est rattachée à un scrutin identifié",
         "Aucun scrutin comparable avec son groupe dont l’intitulé contient",
-        "Aucune intervention dont le sujet contient",
+        "Aucune intervention dont le sujet ou le propos contient",
     ],
 )
 def test_un_mot_sans_resultat_a_son_message(message):
@@ -326,3 +329,34 @@ def test_une_cascade_non_dessinee_montre_tous_ses_textes():
     assert "selTexte ?? (toutVoir ? selectionDeTousLesTextes(cascade) : null)" in fiche
     # « Tout afficher » ne s'affiche que s'il retire une sélection.
     assert "{onRaz && <button" in _lire(LISTE_CASCADE)
+
+
+# ---------------------------------------------------------------------------
+# 7. Le mot surligné dans un verbatim
+
+
+def test_le_surlignage_rend_le_texte_du_compte_rendu_a_l_identique():
+    """Repéré sans casse ni accents, mais découpé dans l'original : rien n'est
+    réécrit, et la concaténation redonne le verbatim caractère pour caractère."""
+    verbatim = (
+        "consommait une quantité d’électricité équivalente à la production annuelle "
+        "d’un réacteur nucléaire. Les plateformes mobilisent"
+    )
+    rendu = _executer(
+        f"const s = f.segmentsSurlignes({json.dumps(verbatim)}, 'NUCLEAIRE');"
+        f"console.log(JSON.stringify({{ s, meme: s.map((x) => x.texte).join('') === {json.dumps(verbatim)} }}));"
+    )
+    assert rendu["meme"] is True
+    assert [x["texte"] for x in rendu["s"] if x["marque"]] == ["nucléaire"]
+
+
+def test_sans_mot_rien_n_est_surligne():
+    rendu = _executer("console.log(JSON.stringify(f.segmentsSurlignes('Très bien !', '  ')));")
+    assert rendu == [{"texte": "Très bien !", "marque": False}]
+
+
+def test_le_verbatim_porte_le_surlignage_sous_un_mot():
+    paroles = _lire(PAROLES)
+    assert "segmentsSurlignes(i.verbatim, mot)" in paroles
+    assert 'className="pp-mot"' in paroles
+    assert "mot={mot}" in _lire(FICHE)
