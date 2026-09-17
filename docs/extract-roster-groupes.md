@@ -192,7 +192,7 @@ flowchart TD
     GR --> RC
 
     RC --> RCJ["raw_data/roster_candidats.json\n(non committe, produit UNE fois par run)"]
-    RC --> RBJ["raw_data/rosters_bruts.json\n(--rosters-bruts-out : la MEME collecte, avant filtrage)"]
+    RC --> RBJ["raw_data/rosters_bruts.json\n(--rosters-bruts-out : la MEME collecte, avant filtrage)\n+ cle gouvernements: depuis #996"]
 
     RCJ --> ART["artifact : roster-candidats\n(prepare-roster-matrix -> 8 shards + merge-and-pivot)"]
     RBJ --> ART
@@ -260,6 +260,26 @@ flowchart TD
 > `roster_limit`).
 
 ---
+
+
+## Les membres des gouvernements passent par le même fichier (#996)
+
+Depuis le lot 2 de #996, `generate_roster_candidats.py` écrit AUSSI, dans
+`rosters_bruts.json`, une clé `gouvernements:` : un membre par personne ayant
+siégé dans un organe `GOUVERNEMENT` d'AMO30, avec son `slug`, son
+`slug_origine` et ses `mandat_periodes`. Mesuré le 17/09/2026 : **311 membres,
+106 slugs repris de la table de correspondance, 205 fabriqués, aucun bloqué**.
+
+Deux choses que ce roster-là ne fait pas. Il **n'entre pas** dans
+`roster_candidats.json` : aucun de ces profils n'est collecté par les shards,
+c'est le lot 3. Et il ne remplace pas le rattachement des fiches de
+gouvernement, qui lit encore le libellé des mandats des profils présents.
+
+Les slugs sont résolus par `an_roster.resoudre_slugs`, sur l'**union** des
+acteurs des deux index : sans elle, un ministre et un député homonymes
+pourraient recevoir le même slug le même jour. `--sans-gouvernements` débranche
+la passe ; une archive illisible n'écrit pas la clé et laisse le roster des
+groupes intact.
 
 ## Logique d'extraction (chaîne interne)
 
