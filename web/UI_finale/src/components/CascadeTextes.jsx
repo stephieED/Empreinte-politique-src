@@ -252,7 +252,9 @@ export function ListeCascade({ cascade, selection, onRaz, ordonnee = true }) {
           {ou} — {formatNumber(sel.length)} texte
           {sel.length > 1 ? 's' : ''}
         </span>
-        <button className="cp-chute-raz" onClick={onRaz} type="button">Tout afficher</button>
+        {/* Sans `onRaz`, la liste montre déjà tout : un « Tout afficher » n'y
+            ferait rien (diagramme non dessiné, filtre de la fiche — #979). */}
+        {onRaz && <button className="cp-chute-raz" onClick={onRaz} type="button">Tout afficher</button>}
       </div>
       {/* DEUX COLONNES, PARCE QUE CE SONT DEUX QUALITÉS.
           Un projet de loi est signé comme MINISTRE, une proposition déposée

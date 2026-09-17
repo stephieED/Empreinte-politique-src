@@ -23,7 +23,8 @@
  * et la première phrase visible deviendrait, de fait, une phrase mise en avant,
  * ce qu'aucune règle ne nous autorise à faire (§2 règle 1).
  */
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
+import { segmentsSurlignes } from '../utils/filtreIntitule';
 import { Link } from 'react-router-dom';
 import { formatNumber } from '../utils/lecture';
 import { libellePosition, TYPES_INTERVENTION } from '../utils/profilCandidat';
@@ -83,7 +84,7 @@ function naturesDuLot(interventions) {
   return lignes.filter((l) => l.n > 0 || connus.has(l.cles[0]));
 }
 
-function Intervention({ i }) {
+function Intervention({ i, mot = '' }) {
   return (
     <li className="pp-item">
       <div className="pp-quand">
@@ -107,7 +108,13 @@ function Intervention({ i }) {
           </p>
         )}
         {i.verbatim ? (
-          <blockquote className="pp-verbatim">{i.verbatim}</blockquote>
+          <blockquote className="pp-verbatim">
+            {mot
+              ? segmentsSurlignes(i.verbatim, mot).map((s, k) => (s.marque
+                ? <mark className="pp-mot" key={k}>{s.texte}</mark>
+                : <Fragment key={k}>{s.texte}</Fragment>))
+              : i.verbatim}
+          </blockquote>
         ) : (
           <p className="pp-sans-verbatim">
             {i.themeSeul
@@ -125,7 +132,14 @@ function Intervention({ i }) {
   );
 }
 
-export default function ParolesParPeriode({ qualites, plafondPeriode, plafondEnsemble, couverture }) {
+/* `deplie` (#979) : un mot est tapé dans le filtre de la fiche. Toutes les
+ * périodes sont montrées d'emblée, et le fil de tous les sujets s'affiche sans
+ * qu'il faille en choisir un — la fiche réduite à ce mot se lit, elle ne se
+ * fouille pas. Sans mot, rien ne change. `etiquette` : le rappel du mot, posé
+ * en tête du cadre pour qu'une capture de la figure ne le perde pas. */
+export default function ParolesParPeriode({
+  qualites, plafondPeriode, plafondEnsemble, couverture, deplie = false, etiquette = null, mot = '',
+}) {
   /* LA QUALITÉ D'ABORD, LA PÉRIODE ENSUITE (#328).
    *
    * On ne parle pas du même endroit selon qu'on siège à Paris, qu'on gouverne
@@ -141,7 +155,7 @@ export default function ParolesParPeriode({ qualites, plafondPeriode, plafondEns
      ranger ces interventions produisait le « gouvernement Attal » de Raphaël
      Glucksmann. La sélection des périodes disparaît donc, et le dit. */
   const sansDecoupage = periodes.length === 1 && periodes[0].sansDecoupage;
-  const [index, setIndex] = useState(periodes.length - 1);
+  const [index, setIndex] = useState(deplie && !sansDecoupage ? null : periodes.length - 1);
   const [natures, setNatures] = useState(() => new Set());
   const [sujet, setSujet] = useState(null);
   const [tousSujets, setTousSujets] = useState(false);
@@ -178,10 +192,10 @@ export default function ParolesParPeriode({ qualites, plafondPeriode, plafondEns
   const visibles = useMemo(
     () =>
       lot
-        .filter((i) => passeNature(i) && sujet && (i.sujet || SUJET_NON_PUBLIE) === sujet)
+        .filter((i) => passeNature(i) && (sujet ? (i.sujet || SUJET_NON_PUBLIE) === sujet : deplie))
         .slice()
         .reverse(),
-    [lot, clesRetenues, sujet],
+    [lot, clesRetenues, sujet, deplie],
   );
 
   const libelleNature = (type) =>
@@ -247,6 +261,7 @@ export default function ParolesParPeriode({ qualites, plafondPeriode, plafondEns
       )}
 
       <div className="cp-carte cp-bloc pp-cadre">
+        {etiquette}
         <div className="pp-tete">
           <h3 className="pp-titre">
             {tout ? 'Toutes les périodes' : titreDePeriode(periodeCourante)}
@@ -333,7 +348,7 @@ export default function ParolesParPeriode({ qualites, plafondPeriode, plafondEns
       </div>
 
       <div className="pp-fil">
-        {!sujet ? (
+        {!sujet && !deplie ? (
           <p className="pp-invite">
             <b>Choisissez un sujet</b> pour lire ce qui a été dit —{' '}
             {formatNumber(lot.filter(passeNature).length)} interventions sous la sélection.
@@ -342,17 +357,20 @@ export default function ParolesParPeriode({ qualites, plafondPeriode, plafondEns
           <>
             <div className="pp-fil-tete">
               <span className="pp-fil-quoi">
-                {sujet} — {formatNumber(visibles.length)} intervention
+                {sujet || 'Tous les sujets'} — {formatNumber(visibles.length)} intervention
                 {visibles.length > 1 ? 's' : ''}
               </span>
-              <button type="button" className="pp-raz" onClick={() => setSujet(null)}>
-                Toute la période
-              </button>
+              {sujet && (
+                <button type="button" className="pp-raz" onClick={() => setSujet(null)}>
+                  Toute la période
+                </button>
+              )}
             </div>
             {visibles.length ? (
               <ul className="pp-liste">
                 {visibles.slice(0, limite).map((i) => (
                   <Intervention
+                    mot={mot}
                     key={i.id ?? `${i.date}-${i.chemin}`}
                     i={{
                       ...i,

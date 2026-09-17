@@ -421,3 +421,10 @@
 .pp-qualite--an[aria-pressed='true'] { background: var(--parl); }
 .pp-qualite--gouv[aria-pressed='true'] { background: var(--gouv); }
 .pp-qualite--pe[aria-pressed='true'] { background: var(--pe); }
+
+/* Le mot de la recherche dans un verbatim (#979) : le surlignage des titres de
+ * section, sur le bas des lettres — le jaune ne porte jamais le texte. */
+.pp-mot {
+  background: linear-gradient(transparent 62%, var(--accent) 62%);
+  color: inherit;
+}

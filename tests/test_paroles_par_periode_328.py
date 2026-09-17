@@ -241,14 +241,23 @@ def test_le_fil_est_ferme_par_defaut(composant: str) -> None:
 
 
 def test_le_fil_ne_s_ouvre_que_sur_un_sujet(composant: str) -> None:
-    """Un clic sur une nature ne doit pas rouvrir 1 294 interventions."""
+    """Un clic sur une nature ne doit pas rouvrir 1 294 interventions.
+
+    Une seule exception, et elle est nommée : `deplie`, quand un mot est tapé
+    dans le filtre de la fiche (#979, arbitré le 17/09/2026) — la fiche est
+    alors déjà réduite à ce que le mot porte."""
     bloc = composant[composant.index("const visibles = useMemo") :]
     bloc = bloc[: bloc.index("[lot,")]
-    assert "sujet &&" in bloc, "le fil ne dépend pas du sujet retenu"
+    assert "sujet ? (i.sujet || SUJET_NON_PUBLIE) === sujet : deplie" in bloc, (
+        "le fil ne dépend pas du sujet retenu, ou s'ouvre hors filtre"
+    )
+    assert "deplie = false" in composant, "le dépliage n'est pas l'état par défaut"
 
 
 def test_la_periode_la_plus_recente_est_celle_du_depart(composant: str) -> None:
-    assert "useState(periodes.length - 1)" in composant
+    """Sauf sous un mot du filtre de la fiche, où toutes les périodes sont
+    montrées d'emblée (#979)."""
+    assert "useState(deplie && !sansDecoupage ? null : periodes.length - 1)" in composant
 
 
 # ── Règle 6 : ce que la source ne dit pas est publié, jamais deviné ──────────

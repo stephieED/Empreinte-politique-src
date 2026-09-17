@@ -32,6 +32,7 @@ const mois = (d) => (d ? `${d.slice(0, 4)}/${d.slice(5, 7)}` : '');
  * qui compléterait le repère manquant par celui de la période voisine
  * inventerait un fait (§2 règle 5). */
 function titreDePeriode(periode) {
+  if (periode.cumul) return 'Toutes les périodes';
   if (!periode.banc && !periode.gouvernement) return REPERE_NON_PUBLIE;
   // Le repère manquant est NOMMÉ, pas escamoté : un titre qui n'écrit que le
   // gouvernement laisse croire que le banc n'existait pas, alors qu'il n'est
@@ -151,7 +152,11 @@ function BlocPeriode({ periode, portee, garde, matiere, onMatiere }) {
 
       <p className="vp-echelle">
         <span>← {formatNumber(portee)} textes</span>
-        <span className="vp-echelle-mid">même échelle pour toutes les périodes</span>
+        {/* Sous un mot du filtre, la figure n'a qu'une période, le cumul : il
+            n'y a pas d'autre période à qui l'échelle serait commune. */}
+        <span className="vp-echelle-mid">
+          {periode.cumul ? '' : 'même échelle pour toutes les périodes'}
+        </span>
         <span>{formatNumber(portee)} textes →</span>
       </p>
     </>
@@ -239,7 +244,8 @@ function Colonnes({ votes, positions, matiere, onIsoler, onToutAfficher }) {
   );
 }
 
-export default function VotesParPeriode({ periodes, portee, reperes, regle }) {
+/* `etiquette` (#979) : le rappel du mot du filtre, en tête de la carte. */
+export default function VotesParPeriode({ periodes, portee, reperes, regle, etiquette = null }) {
   const [index, setIndex] = useState(0);
   const [positions, setPositions] = useState(() => new Set(POSITIONS_ORDONNEES));
   const [origine, setOrigine] = useState(null);
@@ -301,7 +307,9 @@ export default function VotesParPeriode({ periodes, portee, reperes, regle }) {
   return (
     <div className="vp">
       <div className="cp-carte cp-bloc vp-carte">
+        {etiquette}
         {regle && <p className="vp-regle">{regle}</p>}
+        {!periode.cumul && (
         <NavigationPeriodes
           periodes={periodes}
           index={Math.min(index, periodes.length - 1)}
@@ -314,6 +322,7 @@ export default function VotesParPeriode({ periodes, portee, reperes, regle }) {
           unite="textes"
           uniteSingulier="texte"
         />
+        )}
         <BlocPeriode
           periode={periode}
           portee={portee}

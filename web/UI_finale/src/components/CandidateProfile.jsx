@@ -18,7 +18,7 @@ import { BadgeSource, ListeVide } from './Lecture';
 import { teinteMatiere } from '../utils/matiere';
 import { MATIERE_NON_ETABLIE, NATURES_UE } from '../utils/profilCandidat';
 import { Cascade, ListeCascade } from './CascadeTextes';
-import { disposerCascadeUE } from '../utils/cascadeTextes';
+import { cascadeDessinee, disposerCascadeUE, selectionDeTousLesTextes } from '../utils/cascadeTextes';
 import { Fragment, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LAST_READING_LABEL, formatNumber } from '../utils/lecture';
@@ -100,6 +100,67 @@ function Section({ numero, titre, critere, pied, children }) {
     </section>
   );
 }
+
+/* ── Le filtre par intitulé (#979) ───────────────────────────────────────────
+ *
+ * UNE BARRE EN TÊTE DE FICHE, et la fiche se recalcule sur ce que le mot porte
+ * (`vueCandidat`). Arbitré sur maquette le 17/09/2026 :
+ *
+ * - « En bref », « Les fonctions exercées » et « Ce qu'on n'a pas pu lire » se
+ *   RETIRENT tant qu'un mot est tapé : recalculé, « En bref » publiait « 259
+ *   amendements sur 4 dossiers » sur « finances » ; une section non filtrée
+ *   entre des sections filtrées se lirait comme filtrée ; la couverture
+ *   décrirait les lacunes du filtre, pas celles de la collecte ;
+ * - chaque figure porte le mot EN TÊTE (`EtiquetteFiltre`, « Contenant « … » »), pour qu'une capture
+ *   de la figure seule ne circule pas sans lui ;
+ * - les listes se DÉPLIENT sans clic ;
+ * - un mot qui ne trouve rien laisse la section EN PLACE, avec un message du
+ *   filtre (`VideDuFiltre`) — jamais le message d'une collecte vide, « Non
+ *   collecté », qui serait faux (§2 règle 5). */
+function BarreFiltre({ saisie, onSaisie }) {
+  return (
+    <div className="cp-filtre" role="search">
+      <svg aria-hidden="true" height="16" viewBox="0 0 16 16" width="16">
+        <circle cx="7" cy="7" fill="none" r="5" stroke="currentColor" strokeWidth="1.6" />
+        <path d="M11 11l3.5 3.5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.6" />
+      </svg>
+      <input
+        aria-label="Rechercher sur cette page"
+        autoComplete="off"
+        id="cp-filtre-mot"
+        onChange={(e) => onSaisie(e.target.value)}
+        placeholder="Rechercher sur cette page"
+        type="search"
+        value={saisie}
+      />
+      {saisie && (
+        <button className="cp-filtre-raz" onClick={() => onSaisie('')} type="button">
+          Effacer
+        </button>
+      )}
+    </div>
+  );
+}
+
+function EtiquetteFiltre({ mot }) {
+  return (
+    <p className="cp-filtre-etiquette">
+      Contenant <mark>« {mot} »</mark>
+    </p>
+  );
+}
+
+function VideDuFiltre({ mot, children, tete = null }) {
+  return (
+    <div className="cp-carte">
+      <EtiquetteFiltre mot={mot} />
+      {tete}
+      <p className="cp-note cp-filtre-vide">{children}</p>
+    </div>
+  );
+}
+
+const MOT = (mot) => <mark className="cp-filtre-mot">« {mot} »</mark>;
 
 /*
  * Une pastille de position déclarée. Elle accompagne TOUJOURS le chiffre
@@ -649,7 +710,8 @@ function CommutateurVersant({ ue, onFr, onUe, compteFr, compteUe, libelle }) {
   );
 }
 
-function Propositions({ amendements, amendementsParVersant, textes, causeAmendements, causeTextes, voix }) {
+function Propositions({ amendements, amendementsParVersant, textes, causeAmendements, causeTextes, voix, filtre = null }) {
+  const mot = filtre?.mot || '';
   const [matiere, setMatiere] = useState(null);
   const [selTexte, setSelTexte] = useState(null);
   const europe = textes.europe || { total: 0, publies: 0, cascade: null };
@@ -691,19 +753,31 @@ function Propositions({ amendements, amendementsParVersant, textes, causeAmendem
   const deuxVersantsAmdt = amdtFr.totalAuteur > 0 && amdtUe.totalAuteur > 0;
   const commutateur = deuxVersants || deuxVersantsAmdt;
   const amdt = ue ? amdtUe : amdtFr;
-  const dossiersDeLaMatiere = matiere
-    ? (amdt.chute?.dossiersParMatiere?.[matiere] || [])
+  /* Sous un mot, la liste des dossiers est dépliée sur toutes les commissions
+   * (#979) : la fiche réduite se lit sans chercher la commission du bon dossier. */
+  const dossiersDeLaMatiere = matiere || mot
+    ? (matiere
+        ? (amdt.chute?.dossiersParMatiere?.[matiere] || [])
+        : Object.values(amdt.chute?.dossiersParMatiere || {}).flat())
         .slice()
         .sort((a, b) => b.n - a.n)
     : [];
+  /* Une cascade non dessinée, ou un mot tapé : la liste montre tous les textes
+   * sans attendre de clic (#979). Un clic dans la cascade reste une sélection. */
+  const disposer = ue ? disposerCascadeUE : undefined;
+  const toutVoir = cascade && (Boolean(mot) || !cascadeDessinee(cascade, disposer));
+  const selectionTextes = selTexte ?? (toutVoir ? selectionDeTousLesTextes(cascade) : null);
   return (
     <>
-      {textes.total === 0 && europe.total === 0 ? (
+      {textes.total === 0 && europe.total === 0 && mot ? (
+        <VideDuFiltre mot={mot}>Aucun texte porté dont l’intitulé contient {MOT(mot)}.</VideDuFiltre>
+      ) : textes.total === 0 && europe.total === 0 ? (
         <div className="cp-carte">
           <ListeVide cause={causeTextes} source="Textes portés comme auteur ou rapporteur" />
         </div>
       ) : (
         <div className="cp-carte cp-textes">
+          {mot && <EtiquetteFiltre mot={mot} />}
           <div className="cp-gouv-tete">
             <span className="cp-gouv-nom">
               Les textes {voix.quil} a portés
@@ -754,15 +828,15 @@ function Propositions({ amendements, amendementsParVersant, textes, causeAmendem
             <>
               <Cascade
                 cascade={cascade}
-                disposer={ue ? disposerCascadeUE : undefined}
+                disposer={disposer}
                 onSelection={setSelTexte}
                 selection={selTexte}
               />
               <ListeCascade
                 cascade={cascade}
-                onRaz={() => setSelTexte(null)}
+                onRaz={selTexte ? () => setSelTexte(null) : null}
                 ordonnee={!ue}
-                selection={selTexte}
+                selection={selectionTextes}
               />
             </>
           )}
@@ -779,6 +853,7 @@ function Propositions({ amendements, amendementsParVersant, textes, causeAmendem
 
       {amdt.totalAuteur === 0 ? (
         <div className="cp-carte">
+          {mot && <EtiquetteFiltre mot={mot} />}
           {/* Un versant vide DIT de quel parlement il parle : sans commutateur
               ni titre, « aucun amendement » se lirait comme un vide de
               collecte, alors que l'autre versant en porte des milliers. */}
@@ -798,13 +873,25 @@ function Propositions({ amendements, amendementsParVersant, textes, causeAmendem
               ue={ue}
             />
           )}
-          <ListeVide
-            cause={causeAmendements}
-            source={`Amendements déposés comme auteur principal ${ue ? 'au Parlement européen' : 'à l’Assemblée nationale'}`}
-          />
+          {/* Sous un mot, ce vide est celui du FILTRE : « non collecté » y
+              serait faux (§2 règle 5, #979). */}
+          {mot ? (
+            <p className="cp-note cp-filtre-vide">
+              Aucun dossier amendé dont l’intitulé contient {MOT(mot)}.
+              {filtre.amendementsEuropeens && amdtUe.totalAuteur === 0
+                ? ' Au Parlement européen, ces intitulés sont publiés en anglais.'
+                : ''}
+            </p>
+          ) : (
+            <ListeVide
+              cause={causeAmendements}
+              source={`Amendements déposés comme auteur principal ${ue ? 'au Parlement européen' : 'à l’Assemblée nationale'}`}
+            />
+          )}
         </div>
       ) : amdt.chute && (
         <div className="cp-carte">
+          {mot && <EtiquetteFiltre mot={mot} />}
           <div className="cp-gouv-tete">
             <span className="cp-gouv-nom">
               Les amendements dont {voix.sujet} est l’auteur
@@ -853,16 +940,18 @@ function Propositions({ amendements, amendementsParVersant, textes, causeAmendem
                 .join(' · ')}
             </p>
           )}
-          {matiere && (
+          {(matiere || mot) && (
             <div className="cp-chute-liste">
               <div className="cp-chute-liste-tete">
                 <span className="cp-chute-liste-quoi">
-                  {matiere} — {formatNumber(dossiersDeLaMatiere.length)} dossier
+                  {matiere || 'Toutes les commissions'} — {formatNumber(dossiersDeLaMatiere.length)} dossier
                   {dossiersDeLaMatiere.length > 1 ? 's' : ''}
                 </span>
-                <button className="cp-chute-raz" onClick={() => setMatiere(null)} type="button">
-                  Tout afficher
-                </button>
+                {matiere && (
+                  <button className="cp-chute-raz" onClick={() => setMatiere(null)} type="button">
+                    Tout afficher
+                  </button>
+                )}
               </div>
               <ul>
                 {dossiersDeLaMatiere.map((d) => (
@@ -922,7 +1011,10 @@ function Propositions({ amendements, amendementsParVersant, textes, causeAmendem
  * délégué »), là où elle qualifie un fait plutôt qu'une carrière. Ce que la
  * section ne sait pas est publié sous la figure.
  */
-function Paroles({ interventions, cause }) {
+function Paroles({ interventions, cause, mot = '' }) {
+  if (!interventions.total && mot) {
+    return <VideDuFiltre mot={mot}>Aucune intervention dont le sujet ou le propos contient {MOT(mot)}.</VideDuFiltre>;
+  }
   if (!interventions.total) {
     return (
       <div className="cp-carte">
@@ -944,6 +1036,9 @@ function Paroles({ interventions, cause }) {
 
   return (
     <ParolesParPeriode
+      deplie={Boolean(mot)}
+      mot={mot}
+      etiquette={mot ? <EtiquetteFiltre mot={mot} /> : null}
       qualites={interventions.qualites}
       plafondPeriode={interventions.plafondPeriode}
       plafondEnsemble={interventions.plafondEnsemble}
@@ -953,7 +1048,22 @@ function Paroles({ interventions, cause }) {
 }
 
 /* ── § 5 — ce qu'il a voté ─────────────────────────────────────────────────── */
-function Votes({ votes, cause }) {
+function Votes({ votes, cause, mot = '' }) {
+  /* Sous un mot, un vote qui ne s'affiche pas n'est pas un vote qui n'existe
+   * pas : les positions européennes non rattachées portent un intitulé que le
+   * filtre trouve, et la fiche ne les montre pas davantage sans lui. Le message
+   * le dit, avec leur nombre (§2 règle 5). */
+  if (mot && votes.derniereLectureDisponible !== false && (!votes.textes || !votes.periodes?.length)) {
+    const europeennes = votes.nonResolusEuropeens || 0;
+    return (
+      <VideDuFiltre mot={mot}>
+        Aucun vote affiché dont l’intitulé contient {MOT(mot)}.
+        {europeennes > 0
+          ? ` ${formatNumber(europeennes)} position${europeennes > 1 ? 's' : ''} au Parlement européen le contien${europeennes > 1 ? 'nent' : 't'}, mais aucune n’est rattachée à un scrutin identifié : ${europeennes > 1 ? 'elles ne sont pas affichées' : 'elle n’est pas affichée'}.`
+          : ''}
+      </VideDuFiltre>
+    );
+  }
   if (!votes.total) {
     return (
       <div className="cp-carte">
@@ -1031,6 +1141,7 @@ function Votes({ votes, cause }) {
           {votes.periodes?.length ? (
             <>
               <VotesParPeriode
+                etiquette={mot ? <EtiquetteFiltre mot={mot} /> : null}
                 periodes={votes.periodes}
                 portee={votes.portee}
                 reperes={votes.reperes}
@@ -1429,8 +1540,9 @@ const LIMITES_DU_PARCOURS = new Set([
   'mandats-anterieurs',
 ]);
 
-export default function CandidateProfile({ candidate }) {
+export default function CandidateProfile({ candidate, mot = '', saisie = '', onSaisie = () => {} }) {
   const c = candidate;
+  const filtre = mot ? c.filtre : null;
   const limitesDuParcours = (c.limites || []).filter((l) => LIMITES_DU_PARCOURS.has(l.cle));
   const limitesDeCollecte = (c.limites || []).filter((l) => !LIMITES_DU_PARCOURS.has(l.cle));
 
@@ -1481,12 +1593,15 @@ export default function CandidateProfile({ candidate }) {
 
           Il est dense — c'est assumé — donc repliable : il ne doit pas s'imposer
           avant que le lecteur ait choisi de le lire. */}
-      <GrandsChiffres chiffres={c.grandsChiffres} parcours={c.parcours} />
+      <BarreFiltre onSaisie={onSaisie} saisie={saisie} />
+
+      {!filtre && <GrandsChiffres chiffres={c.grandsChiffres} parcours={c.parcours} />}
 
       {/* La frise ET le détail daté vivent dans « En bref », au-dessus : les
           republier ici était de la redondance pure. Ce qui reste est ce que
           personne d'autre ne porte — les fonctions qu'on choisit d'exercer —
           et le titre le dit. */}
+      {!filtre && (
       <Section
         numero="1"
         titre="Les fonctions exercées"
@@ -1506,6 +1621,7 @@ export default function CandidateProfile({ candidate }) {
           <Fonctions fonctions={c.fonctions} />
         )}
       </Section>
+      )}
 
       {/* PAS DE CHAPEAU SUR CETTE SECTION. Il annonçait la règle avant qu'on
           ait rien lu — « une seule liste, quel que soit le banc… » — et faisait
@@ -1515,6 +1631,8 @@ export default function CandidateProfile({ candidate }) {
           calendrier et qu'aucun rapport n'est calculé. */}
       <Section numero="2" titre={c.voix.titres.propose}>
         <Propositions
+          filtre={filtre}
+          key={`propose-${mot}`}
           amendements={c.amendements}
           amendementsParVersant={c.amendementsParVersant}
           textes={c.textes}
@@ -1528,7 +1646,7 @@ export default function CandidateProfile({ candidate }) {
         numero="3"
         titre={c.voix.titres.vote}
       >
-        <Votes cause={c.causes.votes} votes={c.votes} />
+        <Votes cause={c.causes.votes} key={`vote-${mot}`} mot={mot} votes={c.votes} />
       </Section>
 
       <Section
@@ -1536,7 +1654,17 @@ export default function CandidateProfile({ candidate }) {
         titre={c.voix.titres.ecarts}
         critere="Sa position à côté de celle de son groupe, scrutin par scrutin. Jamais totalisée."
       >
-        <EcartsGroupe ecarts={c.ecarts} voix={c.voix} />
+        {mot && !c.ecarts.bande.length ? (
+          <VideDuFiltre mot={mot}>
+            Aucun scrutin comparable avec son groupe dont l’intitulé contient {MOT(mot)}.
+          </VideDuFiltre>
+        ) : (
+          <EcartsGroupe
+            ecarts={c.ecarts}
+            etiquette={mot ? <EtiquetteFiltre mot={mot} /> : null}
+            voix={c.voix}
+          />
+        )}
       </Section>
 
       <Section
@@ -1544,9 +1672,10 @@ export default function CandidateProfile({ candidate }) {
         titre={c.voix.titres.dit}
         critere="Ses interventions par période politique, puis par nature et par sujet. Le verbatim est celui du compte rendu."
       >
-        <Paroles cause={c.causes.interventions} interventions={c.interventions} />
+        <Paroles cause={c.causes.interventions} interventions={c.interventions} key={`dit-${mot}`} mot={mot} />
       </Section>
 
+      {!filtre && (
       <Section
         numero="6"
         titre="Ce qu’on n’a pas pu lire"
@@ -1557,6 +1686,7 @@ export default function CandidateProfile({ candidate }) {
           collecte={limitesDeCollecte}
         />
       </Section>
+      )}
 
       {/* La licence SEULE. La phrase de refus qui l'accompagnait était la
           troisième occurrence de « aucun score, aucun classement » sur la même
