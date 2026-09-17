@@ -27,6 +27,10 @@
  * 200 et désigne la page à indexer, sans que la même fiche soit indexée deux
  * fois. L'application fait la redirection elle-même, ancre comprise.
  *
+ * CHAQUE PAGE PORTE SON TITRE ET SA DESCRIPTION, balises `og:` et `twitter:`
+ * comprises, et une balise `canonical` vers sa propre adresse (une recherche
+ * `?mot=` n'est pas une autre page). Le texte vit dans `metadonnees-pages.mjs`.
+ *
  * Le script ÉCHOUE plutôt que d'omettre en silence : un identifiant qu'on ne
  * peut pas écrire en nom de fichier, une redirection vers une page qui
  * n'existe pas, une collision de noms.
@@ -39,6 +43,13 @@ import {
   DEFAULT_GOVERNMENT_ID,
   DEFAULT_GROUP_ID,
 } from '../src/data/adressesParDefaut.js';
+import {
+  PAGES_FIXES_META,
+  appliquerMeta,
+  metaCandidat,
+  metaGouvernement,
+  metaLignee,
+} from './metadonnees-pages.mjs';
 
 const racineUI = dirname(dirname(fileURLToPath(import.meta.url)));
 const dist = join(racineUI, 'dist');
@@ -107,7 +118,38 @@ function ecrire(chemin, contenu) {
   writeFileSync(cible, contenu);
 }
 
-for (const chemin of publiees) ecrire(chemin, gabarit);
+const cles = Object.keys(PAGES_FIXES_META).sort().join(', ');
+if (cles !== [...PAGES_FIXES].sort().join(', ')) echouer(`les pages fixes n'ont pas toutes leur titre : ${cles}`);
+
+/* Adresse → { titre, description }. Une erreur de texte arrête le build. */
+const metas = new Map();
+try {
+  for (const chemin of PAGES_FIXES) metas.set(chemin, PAGES_FIXES_META[chemin]);
+  for (const c of manifeste.candidates || []) {
+    const profil = JSON.parse(readFileSync(join(dist, 'data', 'profiles', `${c.slug}.pivot.json`), 'utf-8'));
+    metas.set(`candidats/${c.slug}`, metaCandidat(c, profil));
+  }
+  /* La période n'est pas au manifeste : elle se lit dans la vue de lignée. */
+  for (const l of manifeste.lignees || []) {
+    const vue = JSON.parse(readFileSync(join(dist, 'data', 'lignees', l.fichier), 'utf-8'));
+    metas.set(`groupes/${l.id}`, metaLignee(vue));
+  }
+  for (const g of manifeste.gouvernements || []) metas.set(`gouvernements/${g.id}`, metaGouvernement(g));
+} catch (erreur) {
+  echouer(`texte d'une page impossible à écrire — ${erreur.message}`);
+}
+
+/* L'accueil garde son texte (celui d'`index.html`) et reçoit sa canonical ici,
+ * APRÈS la copie vers `404.html` : une page introuvable ne désigne pas l'accueil. */
+writeFileSync(join(dist, 'index.html'), gabarit.replace('</head>', `  <link rel="canonical" href="https://${domaine}/" />\n  </head>`));
+
+for (const chemin of publiees) {
+  try {
+    ecrire(chemin, appliquerMeta(gabarit, { ...metas.get(chemin), url: `https://${domaine}/${chemin}` }));
+  } catch (erreur) {
+    echouer(`${chemin} : ${erreur.message}`);
+  }
+}
 for (const [depuis, vers] of Object.entries(redirections)) {
   ecrire(depuis, gabarit.replace('</head>', `  <link rel="canonical" href="https://${domaine}/${vers}" />\n  </head>`));
 }

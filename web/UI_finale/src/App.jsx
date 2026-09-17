@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import ConstructionBanner from './components/ConstructionBanner';
+import TitreDeLaPage from './components/TitreDeLaPage';
 import ExplorerLayout from './components/ExplorerLayout';
 import LandingPage from './pages/LandingPage';
 import CandidateProfilePage from './pages/CandidateProfilePage';
@@ -18,6 +19,7 @@ function App() {
     // souvent par un lien direct sur un profil sans voir la landing.
     <>
       <ConstructionBanner />
+      <TitreDeLaPage />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         {/* Layout route sans path propre : les enfants gardent leurs URLs actuelles
