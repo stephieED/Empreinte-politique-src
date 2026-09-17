@@ -194,6 +194,8 @@ SITES_UI: dict[tuple[str, str], str] = {
     ("scripts/sync-data.mjs", "lignee"): GROUPE,
     ("scripts/vue-lignee.mjs", "lignee"): GROUPE,
     ("src/components/LigneeProfile.jsx", "lignee"): GROUPE,
+    # #969 : le titre d'une fiche de lignée nomme sa chambre, lue sur la projection.
+    ("scripts/metadonnees-pages.mjs", "lignee"): GROUPE,
     ("src/components/GovernmentProfile.jsx", "texte"): GROUPE,
     # #328 : la fiche candidat lit la chambre SUR LE MANDAT, jamais sur le
     # profil. `siegesElectifs` regroupe les enregistrements en sièges et
