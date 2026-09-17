@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 351 décisions
+gouverne sans avoir à fouiller les 352 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -1051,7 +1051,11 @@ Le mentionnent sans le gouverner : [`doublons-europarl-729`](decisions/doublons-
 | [Purge des mandats hérités dupliqués : appariement prudent (#387) (2026-08-17)](decisions/purge-mandats-dupliques-prudence.md) | `_PREFIXES_NATURE` |
 | [280 des 406 mandats sans estampille sont portés par un référentiel vivant, et aucun n'est introuvable (#839, lot B) (2026-09-12)](decisions/reproductibilite-mandats-sans-estampille-839.md) | `_normalize_label` |
 
-Le mentionnent sans le gouverner : [`categorie-source-des-mandats-718`](decisions/categorie-source-des-mandats-718.md), [`collecte-vs-publie-545`](decisions/collecte-vs-publie-545.md), [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`point-de-sauvegarde-dans-les-profils-518`](decisions/point-de-sauvegarde-dans-les-profils-518.md).
+Le mentionnent sans le gouverner : [`categorie-source-des-mandats-718`](decisions/categorie-source-des-mandats-718.md), [`collecte-vs-publie-545`](decisions/collecte-vs-publie-545.md), [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`point-de-sauvegarde-dans-les-profils-518`](decisions/point-de-sauvegarde-dans-les-profils-518.md), [`purge-mandats-nosdeputes-718`](decisions/purge-mandats-nosdeputes-718.md).
+
+## `src/purge_mandats_nosdeputes.py`
+
+Le mentionnent sans le gouverner : [`purge-mandats-nosdeputes-718`](decisions/purge-mandats-nosdeputes-718.md).
 
 ## `src/rafraichir_dossiers_actifs.py`
 
