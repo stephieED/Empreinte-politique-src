@@ -19,9 +19,11 @@ import {
   appartenancesGouvernementales,
   bornesDuParcours,
   causeListeVide,
+  commissionAuFondEuropeenne,
   couvertureDesListes,
   directionQuestionsGouvernement,
   essentiel,
+  estAmendementEuropeen,
   grandsChiffres,
   fonctionsExercees,
   limitesDeclarees,
@@ -30,6 +32,7 @@ import {
   siegesElectifs,
   textesPortes,
   voixDuProfil,
+  rattacheDossierEuropeen,
   votesDuProfil,
 } from '../utils/profilCandidat';
 import { LIBELLE_SORT_TEXTE, legislatureDeAmendementId } from '../utils/lecture';
@@ -307,11 +310,45 @@ export function buildCandidateView(
   const dossierEuropeen = (reference) =>
     (dossiersEuropeens && reference && dossiersEuropeens[reference]) || null;
 
+  /* ── LES AMENDEMENTS, DEUX POPULATIONS (#901) ──────────────────────────────
+   *
+   * Un amendement déposé à l'Assemblée et un amendement déposé au Parlement
+   * européen ne se comptent pas ensemble, et surtout ils ne se rangent pas sur
+   * le même axe : la figure trie par COMMISSION, et le référentiel des
+   * commissions de l'AN ne connaît aucun dossier européen. Mêlés, les 2 609
+   * dépôts européens d'Emmanuel Maurel tombaient dans « Matière non établie »
+   * — 2 615 lignes grises sur 2 944, pour un fait que la source publie
+   * parfaitement : sa commission au fond.
+   *
+   * LE PARTAGE SE LIT DANS LA DONNÉE, PAS DANS UNE HEURISTIQUE. Un dépôt
+   * français porte un `amendement_id` qui résout dans l'index partagé ; un
+   * dépôt européen n'en a aucun et porte `amendement_non_resolu.institution`
+   * (172 244 contre 7 303 chez les candidats déclarés au 17/09/2026).
+   *
+   * `amendements` reste la population ENTIÈRE : « les grands chiffres » et « En
+   * bref » la consomment, et les ranger par institution est un autre lot —
+   * aujourd'hui les dépôts européens y sont comptés sous « À l'Assemblée »,
+   * défaut antérieur à ce lot, qui n'est pas aggravé ici. */
   const amendements = agregerAmendements(
     joinAmendements(pivot.amendements || [], amendementsIndex),
     positionALaDate,
     commissionDuDossier,
   );
+  const amendementsParVersant = {
+    francais: agregerAmendements(
+      joinAmendements((pivot.amendements || []).filter((a) => !estAmendementEuropeen(a)), amendementsIndex),
+      positionALaDate,
+      commissionDuDossier,
+    ),
+    europeens: agregerAmendements(
+      rattacheDossierEuropeen(
+        joinAmendements((pivot.amendements || []).filter(estAmendementEuropeen), amendementsIndex),
+        dossierEuropeen,
+      ),
+      positionALaDate,
+      commissionAuFondEuropeenne(dossierEuropeen),
+    ),
+  };
   /* Le document doceo d'un texte porté, résolu dans
    * `pivot_data/documents_europeens.json` : ses matières EuroVoc et leur
    * domaine, l'axe de la cascade européenne (#901). */
@@ -435,6 +472,7 @@ export function buildCandidateView(
     parcours: { roles, nbLignes, bornes },
     fonctions,
     amendements,
+    amendementsParVersant,
     textes,
     /* `natures` a disparu d'ici avec #328 : la nature de l'intervention est
      * devenue une FACETTE de la section, comptée sous la période et le sujet

@@ -22,6 +22,7 @@ import { disposerCascadeUE } from '../utils/cascadeTextes';
 import { Fragment, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LAST_READING_LABEL, formatNumber } from '../utils/lecture';
+import { LIBELLE_QUALITE, QUALITE_AN, QUALITE_PE } from '../utils/parolesParPeriode';
 import ParolesParPeriode from './ParolesParPeriode';
 import VotesParPeriode from './VotesParPeriode';
 import EcartsGroupe from './EcartsGroupe';
@@ -621,7 +622,34 @@ function Matieres({ chute, matiere, onMatiere }) {
  * bouton qui ne mène qu'à une liste vide est du mobilier, et la carte dit alors
  * d'elle-même de quel parlement elle parle.
  */
-function Propositions({ amendements, textes, causeAmendements, causeTextes, voix }) {
+/* ── LE COMMUTATEUR DE VERSANT (#901, arbitré le 17/09/2026) ─────────────────
+ *
+ * IL PORTE LES MOTS ET LA FORME DE « CE QU'IL A DIT » — pastille de
+ * l'institution, étiquette, effectif après un point médian. La fiche compte
+ * déjà un commutateur qui distingue les deux parlements, celui des
+ * interventions : en inventer un second vocabulaire aurait fait lire deux
+ * mécaniques différentes là où il n'y en a qu'une. Les classes viennent donc de
+ * `ParolesParPeriode.css`, et la puce n'est PAS redéfinie ici : une seule
+ * définition de l'objet (#672).
+ */
+function CommutateurVersant({ ue, onFr, onUe, compteFr, compteUe, libelle }) {
+  return (
+    <div className="pp-qualites" role="group" aria-label={libelle}>
+      <button aria-pressed={!ue} className="pp-qualite pp-qualite--an" onClick={onFr} type="button">
+        <i aria-hidden="true" />
+        {LIBELLE_QUALITE[QUALITE_AN]}
+        <span>· {formatNumber(compteFr)}</span>
+      </button>
+      <button aria-pressed={ue} className="pp-qualite pp-qualite--pe" onClick={onUe} type="button">
+        <i aria-hidden="true" />
+        {LIBELLE_QUALITE[QUALITE_PE]}
+        <span>· {formatNumber(compteUe)}</span>
+      </button>
+    </div>
+  );
+}
+
+function Propositions({ amendements, amendementsParVersant, textes, causeAmendements, causeTextes, voix }) {
   const [matiere, setMatiere] = useState(null);
   const [selTexte, setSelTexte] = useState(null);
   const europe = textes.europe || { total: 0, publies: 0, cascade: null };
@@ -634,6 +662,9 @@ function Propositions({ amendements, textes, causeAmendements, causeTextes, voix
     setVersant(v);
     setSelTexte(null);
     setNature('tous');
+    // « Finances » et « Legal Affairs » ne vivent pas dans le même référentiel :
+    // garder la matière choisie ouvrirait une liste de dossiers sans rapport.
+    setMatiere(null);
   };
   const ue = versant === 'ue' || (!deuxVersants && textes.total === 0);
   /* LE FILTRE PAR NATURE (#901, arbitré le 17/09/2026) : une sous-cascade par
@@ -651,8 +682,17 @@ function Propositions({ amendements, textes, causeAmendements, causeTextes, voix
     ? (filtreNature && nature !== 'tous' ? europe.parNature[nature].cascade : europe.cascade)
     : textes.cascade;
   const choisirMatiere = (m) => setMatiere((a) => (a === m ? null : m));
+  /* UN SEUL VERSANT POUR TOUTE LA SECTION, COMMANDÉ DEPUIS DEUX ENDROITS. Les
+   * amendements suivent les textes portés : le commutateur du haut et celui
+   * posé au-dessus des amendements règlent le même état, pour qu'on puisse
+   * changer de parlement sans remonter d'un écran. */
+  const amdtFr = amendementsParVersant?.francais || amendements;
+  const amdtUe = amendementsParVersant?.europeens || { totalAuteur: 0 };
+  const deuxVersantsAmdt = amdtFr.totalAuteur > 0 && amdtUe.totalAuteur > 0;
+  const commutateur = deuxVersants || deuxVersantsAmdt;
+  const amdt = ue ? amdtUe : amdtFr;
   const dossiersDeLaMatiere = matiere
-    ? (amendements.chute?.dossiersParMatiere?.[matiere] || [])
+    ? (amdt.chute?.dossiersParMatiere?.[matiere] || [])
         .slice()
         .sort((a, b) => b.n - a.n)
     : [];
@@ -683,25 +723,15 @@ function Propositions({ amendements, textes, causeAmendements, causeTextes, voix
               )}
             </span>
           </div>
-          {deuxVersants && (
-            <div className="cp-bascule" role="group" aria-label="Niveau des textes portés">
-              <button
-                aria-pressed={!ue}
-                className="cp-bascule-bouton"
-                onClick={() => changerVersant('fr')}
-                type="button"
-              >
-                Au niveau français <b className="cp-num">{formatNumber(textes.total)}</b>
-              </button>
-              <button
-                aria-pressed={ue}
-                className="cp-bascule-bouton"
-                onClick={() => changerVersant('ue')}
-                type="button"
-              >
-                Au niveau européen <b className="cp-num">{formatNumber(europe.total)}</b>
-              </button>
-            </div>
+          {commutateur && (
+            <CommutateurVersant
+              compteFr={textes.total}
+              compteUe={europe.total}
+              libelle="Parlement des textes portés"
+              onFr={() => changerVersant('fr')}
+              onUe={() => changerVersant('ue')}
+              ue={ue}
+            />
           )}
           {filtreNature && (
             <div className="cp-natures" role="group" aria-label="Nature des textes européens">
@@ -747,29 +777,64 @@ function Propositions({ amendements, textes, causeAmendements, causeTextes, voix
         </div>
       )}
 
-      {amendements.totalAuteur === 0 ? (
+      {amdt.totalAuteur === 0 ? (
         <div className="cp-carte">
-          <ListeVide cause={causeAmendements} source="Amendements déposés comme auteur principal" />
+          {/* Un versant vide DIT de quel parlement il parle : sans commutateur
+              ni titre, « aucun amendement » se lirait comme un vide de
+              collecte, alors que l'autre versant en porte des milliers. */}
+          <div className="cp-gouv-tete">
+            <span className="cp-gouv-nom">
+              Les amendements dont {voix.sujet} est l’auteur
+              {commutateur ? '' : ue ? ' au Parlement européen' : ''}
+            </span>
+          </div>
+          {commutateur && (
+            <CommutateurVersant
+              compteFr={amdtFr.totalAuteur}
+              compteUe={amdtUe.totalAuteur}
+              libelle="Parlement des amendements"
+              onFr={() => changerVersant('fr')}
+              onUe={() => changerVersant('ue')}
+              ue={ue}
+            />
+          )}
+          <ListeVide
+            cause={causeAmendements}
+            source={`Amendements déposés comme auteur principal ${ue ? 'au Parlement européen' : 'à l’Assemblée nationale'}`}
+          />
         </div>
-      ) : amendements.chute && (
+      ) : amdt.chute && (
         <div className="cp-carte">
           <div className="cp-gouv-tete">
-            <span className="cp-gouv-nom">Les amendements dont {voix.sujet} est l’auteur</span>
+            <span className="cp-gouv-nom">
+              Les amendements dont {voix.sujet} est l’auteur
+              {commutateur ? '' : ue ? ' au Parlement européen' : ''}
+            </span>
             <span className="cp-gouv-periode cp-num">
-              {formatNumber(amendements.totalAuteur)} amendements ·{' '}
-              {formatNumber(amendements.dossiers?.distincts ?? amendements.chute.totalDossiers)}{' '}
+              {formatNumber(amdt.totalAuteur)} amendements ·{' '}
+              {formatNumber(amdt.dossiers?.distincts ?? amdt.chute.totalDossiers)}{' '}
               dossiers ·{' '}
               {/* Un `0` n'est publiable que si la source dit quelque chose du
                   sort. Aucun des 7 303 amendements européens n'en porte : « 0
                   adopté » s'y lisait « aucun n'a été adopté » quand la vérité
                   est que rien n'est publié (§2 règle 5). */}
-              {amendements.sortsPublies === 0
+              {amdt.sortsPublies === 0
                 ? 'sort non publié'
-                : `${formatNumber(amendements.adoptes)} adopté${amendements.adoptes > 1 ? 's' : ''}`}
+                : `${formatNumber(amdt.adoptes)} adopté${amdt.adoptes > 1 ? 's' : ''}`}
             </span>
           </div>
+          {commutateur && (
+            <CommutateurVersant
+              compteFr={amdtFr.totalAuteur}
+              compteUe={amdtUe.totalAuteur}
+              libelle="Parlement des amendements"
+              onFr={() => changerVersant('fr')}
+              onUe={() => changerVersant('ue')}
+              ue={ue}
+            />
+          )}
           <Matieres
-            chute={amendements.chute}
+            chute={amdt.chute}
             matiere={matiere}
             onMatiere={choisirMatiere}
           />
@@ -779,9 +844,11 @@ function Propositions({ amendements, textes, causeAmendements, causeTextes, voix
               totaux de la fiche, pour un fait qui se lit sous la légende. Aucun
               n'est perdu — ils sont ici, à la suite de la figure qu'ils
               qualifient, et sans accent. */}
-          {amendements.irrecevabilites.length > 0 && (
+          {/* Les articles 40 et 45 sont une règle de l'Assemblée : côté
+              européen, la liste est vide et la mention ne s'affiche pas. */}
+          {amdt.irrecevabilites.length > 0 && (
             <p className="cp-chute-mentions">
-              {amendements.irrecevabilites
+              {amdt.irrecevabilites
                 .map((b) => `${formatNumber(b.n)} ${b.titre}`)
                 .join(' · ')}
             </p>
@@ -1445,6 +1512,7 @@ export default function CandidateProfile({ candidate }) {
       <Section numero="2" titre={c.voix.titres.propose}>
         <Propositions
           amendements={c.amendements}
+          amendementsParVersant={c.amendementsParVersant}
           textes={c.textes}
           causeAmendements={c.causes.amendements}
           causeTextes={c.causes.textes_portes}

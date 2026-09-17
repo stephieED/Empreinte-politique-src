@@ -1010,6 +1010,44 @@ export const NB_DOSSIERS_NOMMES = 3;
  * parce qu'un quatrième compterait moins. Le total est publié à côté. */
 export const NB_COMMISSIONS_MONTREES = 3;
 
+/** L'institution que porte un amendement que l'index ne résout pas (#901). */
+const INSTITUTION_AMENDEMENT_PE = 'parlement_europeen';
+
+/** Un dépôt au Parlement européen. Le test porte sur ce que la donnée dit
+ *  d'elle-même : aucun dépôt européen ne porte d'`amendement_id`, et tous
+ *  portent `amendement_non_resolu.institution`. */
+export const estAmendementEuropeen = (a) =>
+  a?.amendement_non_resolu?.institution === INSTITUTION_AMENDEMENT_PE;
+
+/** Rattache chaque dépôt européen à SON dossier, que `joinAmendements` laisse
+ *  à `null` : la table des dossiers qu'il consulte est celle de l'AN, et une
+ *  référence de procédure européenne (`2021/0136(COD)`) n'y figure pas. Le
+ *  dossier n'est posé que s'il existe vraiment dans l'index européen — sinon la
+ *  matière reste non établie, jamais déduite de l'intitulé (§2 règle 2). */
+export function* rattacheDossierEuropeen(amendementsJoints, dossierEuropeen) {
+  for (const a of amendementsJoints) {
+    const dossier = a.texte_vise ? dossierEuropeen(a.texte_vise) : null;
+    yield dossier
+      ? { ...a, dossier_id: a.texte_vise, dossier_titre: dossier.titre ?? null }
+      : a;
+  }
+}
+
+/** L'axe de la figure européenne : la commission SAISIE AU FOND du dossier,
+ *  sous le nom que le Parlement européen publie — en anglais, comme les
+ *  familles OEIL de la cascade (#901). 3 557 des 3 690 dépôts des candidats
+ *  déclarés en portent une (96 %) ; une saisine conjointe ne vaut qu'à défaut
+ *  d'une saisine au fond, et l'ordre de la source départage le reste. */
+export const commissionAuFondEuropeenne = (dossierEuropeen) => (reference) => {
+  const saisines = dossierEuropeen(reference)?.commissions_au_fond || [];
+  const fond = saisines.find((c) => c.statut === 'au_fond')
+    || saisines.find((c) => c.statut === 'au_fond_conjointe')
+    || saisines[0];
+  if (!fond) return null;
+  const nom = fond.nom || fond.sigle || null;
+  return nom ? { sigle: nom, nom } : null;
+};
+
 /*
  * UNE SEULE PASSE sur les amendements, et jamais de forme plate rematérialisée.
  *

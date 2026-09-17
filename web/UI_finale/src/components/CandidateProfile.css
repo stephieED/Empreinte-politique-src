@@ -1907,7 +1907,13 @@
 }
 .cp-mr {
   display: grid;
-  grid-template-columns: minmax(120px, 200px) minmax(0, 1.2fr) 74px 74px minmax(0, 0.55fr) 78px;
+  /* La colonne des noms monte à 290 px, et la barre qui la suit rend la place
+     (1.2fr → 0.9fr) : les commissions du Parlement européen s'écrivent en
+     entier — « Environment, Public Health and Food Safety » fait 41 signes, là
+     où « Finances » en fait 8 — et la troncature qui coupait quatre noms sur
+     dix-neuf disparaît. La colonne ne s'élargit qu'autant que son contenu le
+     demande : côté français, les intitulés courts la laissent à 120 px. */
+  grid-template-columns: minmax(120px, 290px) minmax(0, 0.9fr) 74px 74px minmax(0, 0.5fr) 78px;
   gap: 12px;
   align-items: center;
   font-size: 12.5px;
