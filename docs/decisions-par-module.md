@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 357 décisions
+gouverne sans avoir à fouiller les 358 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -41,10 +41,10 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 | `src/perimetre_candidats.py` | 4 |
 | `src/audit_pipeline.py` | 3 |
 | `src/budget_collecte.py` | 3 |
+| `src/dossiers_europeens.py` | 3 |
 | `src/purge_mandats_dupliques.py` | 3 |
 | `src/audit_gouvernement_dataset.py` | 2 |
 | `src/avertissements.py` | 2 |
-| `src/dossiers_europeens.py` | 2 |
 | `src/fetch_candidats_declares.py` | 2 |
 | `src/gouvernement_profile.py` | 2 |
 | `src/titres_europeens.py` | 2 |
@@ -499,10 +499,11 @@ Le mentionnent sans le gouverner : [`domaines-eurovoc-familles-oeil-901`](decisi
 
 ## `src/dossiers_europeens.py`
 
-2 décision(s) le gouvernent ; le module en cite 0.
+3 décision(s) le gouvernent ; le module en cite 0.
 
 | Décision | Nomme |
 | --- | --- |
+| [L'index des dossiers européens lit aussi les dossiers que les votes citent (#901) (2026-09-17)](decisions/dossiers-europeens-votes-901.md) | `references_visees` |
 | [L'index européen ne lisait que les amendements, et 34 références ne résolvaient nulle part (#901) (2026-09-16)](decisions/index-europeen-lit-aussi-les-textes-portes-901.md) | `references_visees` |
 | [Les quatre saisines au fond européennes se distinguent, elles ne se fondent pas (#901) (2026-09-14)](decisions/trois-saisines-au-fond-europeennes-901.md) | `KNOWN_STATUTS_COMMISSION_AU_FOND`, `commissions_au_fond_non_resolu` |
 

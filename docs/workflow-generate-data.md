@@ -803,7 +803,7 @@ Trois étapes, entre les passes pivot et la génération des fiches de groupe.
 | Étape | Produit | Volumétrie |
 |---|---|---|
 | `src/scrutins_europeens.py` | `pivot_data/scrutins_europeens.json` | **5 571** scrutins, 3,8 Mo (14/09/2026) |
-| `src/dossiers_europeens.py` | `pivot_data/dossiers_europeens.json` | **389** dossiers (16/09/2026) |
+| `src/dossiers_europeens.py` | `pivot_data/dossiers_europeens.json` | **389** dossiers (16/09/2026) ; ~**4 642** attendus une fois les dossiers votés inclus (estimation du 17/09/2026 sur le dump du 17/08) |
 | `src/documents_europeens.py` | `pivot_data/documents_europeens.json` | **335** documents cités (16/09/2026) |
 
 **Les deux premières ne collectent rien** : les dumps ParlTrack sont déjà en
@@ -822,7 +822,7 @@ de payer un `TIMEOUT` par document, et le résumé du job le dit.
 
 **Pourquoi après les passes pivot, et pas avant.** Leur périmètre est *ce que les
 profils publiés citent* — les `numero_scrutin` des votes pour le premier, les
-`texte_vise` des amendements **et les `reference_dossier` des textes portés**
+`texte_vise` des amendements, **les `reference_dossier` des textes portés et ceux des votes**
 pour le deuxième, les `source_url` doceo des textes portés européens pour le
 troisième. Les construire avant indexerait le corpus d'hier. C'est le même choix que `pivot_data/scrutins.json` côté Assemblée :
 l'index suit le corpus, il ne le précède pas.
