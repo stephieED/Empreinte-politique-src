@@ -229,8 +229,13 @@ python3 src/dossiers_europeens.py --profils-dir pivot_data/profiles \
 ```
 
 Produit : `pivot_data/dossiers_europeens.json` — référence de procédure →
-intitulé, type et stade, pour les dossiers que les amendements européens
-visent. C'est ce qui donne un titre lisible derrière « 2021/0136(COD) ».
+intitulé, type, stade, familles OEIL et domaines EuroVoc, pour les dossiers que
+les amendements, les textes portés et les votes européens citent. C'est ce qui
+donne un titre lisible derrière « 2021/0136(COD) ».
+
+Les domaines EuroVoc interrogent le portail du Parlement, **1 500 requêtes
+nouvelles au plus par run** (`--plafond-requetes N`), le cache répondant sans
+compter. `--sans-domaines` construit l'index sans aucune requête réseau.
 
 ### L'index des documents européens (matières EuroVoc)
 

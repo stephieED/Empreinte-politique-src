@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 359 décisions
+gouverne sans avoir à fouiller les 360 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -37,11 +37,11 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 
 | Module | Décisions qui le gouvernent |
 | --- | ---: |
+| `src/dossiers_europeens.py` | 4 |
 | `src/parse_syceron.py` | 4 |
 | `src/perimetre_candidats.py` | 4 |
 | `src/audit_pipeline.py` | 3 |
 | `src/budget_collecte.py` | 3 |
-| `src/dossiers_europeens.py` | 3 |
 | `src/purge_mandats_dupliques.py` | 3 |
 | `src/audit_gouvernement_dataset.py` | 2 |
 | `src/avertissements.py` | 2 |
@@ -499,10 +499,11 @@ Le mentionnent sans le gouverner : [`domaines-eurovoc-familles-oeil-901`](decisi
 
 ## `src/dossiers_europeens.py`
 
-3 décision(s) le gouvernent ; le module en cite 0.
+4 décision(s) le gouvernent ; le module en cite 0.
 
 | Décision | Nomme |
 | --- | --- |
+| [Un dossier européen reçoit ses domaines EuroVoc de son texte adopté (#901) (2026-09-17)](decisions/domaines-eurovoc-des-dossiers-901.md) | `documents_de_seance` |
 | [L'index des dossiers européens lit aussi les dossiers que les votes citent (#901) (2026-09-17)](decisions/dossiers-europeens-votes-901.md) | `references_visees` |
 | [L'index européen ne lisait que les amendements, et 34 références ne résolvaient nulle part (#901) (2026-09-16)](decisions/index-europeen-lit-aussi-les-textes-portes-901.md) | `references_visees` |
 | [Les quatre saisines au fond européennes se distinguent, elles ne se fondent pas (#901) (2026-09-14)](decisions/trois-saisines-au-fond-europeennes-901.md) | `KNOWN_STATUTS_COMMISSION_AU_FOND`, `commissions_au_fond_non_resolu` |
@@ -521,11 +522,12 @@ Le mentionnent sans le gouverner : [`budget-collecte-interventions`](decisions/b
 
 ## `src/europarl_documents.py`
 
-5 décision(s) le gouvernent ; le module en cite 3.
+6 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
 | [Un portail muet coûtait 2 h 20 de run pour rien (#901) (2026-09-16)](decisions/disjoncteur-portail-europeen-901.md) | `MAX_ECHECS_CONSECUTIFS`, `PAUSE_ENTRE_REQUETES` |
+| [Un dossier européen reçoit ses domaines EuroVoc de son texte adopté (#901) (2026-09-17)](decisions/domaines-eurovoc-des-dossiers-901.md) | `ResolveurDocuments` |
 | [628 textes européens sans dossier, et le portail les classait déjà (#901) (2026-09-16)](decisions/matieres-eurovoc-documents-901.md) | `DOCEO_BASE`, `ResolveurDocuments` |
 | [Le titre français cherchait sa référence là où elle n'est jamais (#901) (2026-09-16)](decisions/titre-francais-lu-dans-source-url-901.md) | `reference_doceo` |
 | [Le titre français était téléchargé puis jeté (#901) (2026-09-16)](decisions/titre-francais-textes-europeens-901.md) | `ResolveurDocuments` |

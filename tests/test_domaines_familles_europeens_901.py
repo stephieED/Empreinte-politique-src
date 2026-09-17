@@ -124,5 +124,5 @@ def test_de_bout_en_bout_le_libelle_vient_d_un_autre_dossier_du_dump(tmp_path):
     assert [e["reference"] for e in entrees] == ["2009/2213(INI)"]
     assert entrees[0]["familles"] == [{"code": "6", "libelle": "External relations of the Union"}]
     assert "familles_non_resolu" not in entrees[0]
-    assert document_dossiers(entrees)["schema_version"] == "dossiers-europeens-v3"
+    assert document_dossiers(entrees)["schema_version"] == "dossiers-europeens-v4"
     json.dumps(entrees)  # sérialisable tel quel
