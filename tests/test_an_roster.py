@@ -172,6 +172,14 @@ def test_inactif_refuse_au_lieu_de_rendre_une_liste_vide(appel):
 APPELANTS_ATTENDUS = {
     # L'aiguillage lui-même : `fetch_full_roster` délègue la clé `deputes`.
     "group_roster.py",
+    # #996 lot 2 : le roster des gouvernements réutilise `resoudre_slugs` au
+    # lieu de le recopier — c'est ce qui garantit que la table de
+    # correspondance passe devant et que l'univers de collision des slugs
+    # reste entier, ministres et députés confondus.
+    "gouvernement_roster_an.py",
+    # #996 lot 2 : le producteur du roster brut télécharge l'archive et charge
+    # l'index GP pour cette union.
+    "generate_roster_candidats.py",
     # `group_profile.py` n'y est PLUS depuis #529. Il lisait le drapeau pour
     # choisir entre deux rédactions du `meta.warnings` de fraîcheur — celle
     # d'AMO30 et celle de NosDéputés. Le repli retiré, il n'y a plus qu'une

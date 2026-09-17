@@ -390,7 +390,10 @@ def test_build_profile_aucun_taux_calcule_dans_comptages():
         assert isinstance(valeur, int) and not isinstance(valeur, bool)
     assert "taux" not in json.dumps(profil["comptages"])
     assert "pourcentage" not in json.dumps(profil["comptages"])
-    assert set(profil["comptages"].keys()) == {"par_statut"}
+    # #996 : `membres_recenses` est un DÉNOMINATEUR brut, pas un taux — la fiche
+    # écrit « 2 des 21 membres recensés », jamais « 10 % de couverture ».
+    assert set(profil["comptages"].keys()) == {"par_statut", "membres_recenses"}
+    assert profil["comptages"]["membres_recenses"] is None  # non fourni ici
 
 
 def test_build_profile_dossier_deux_fois_dans_le_meme_fetch_non_double_compte():

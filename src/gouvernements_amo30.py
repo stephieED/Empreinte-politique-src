@@ -61,6 +61,24 @@ class GouvernementsIndisponibles(RuntimeError):
     Levée avant toute écriture, pour que la liste committée reste en place."""
 
 
+def compter_membres(zip_path: Path) -> dict[str, int]:
+    """`organe_ref → nombre de personnes distinctes ayant siégé" (#996).
+
+    Le dénominateur de `membres[]` : une fiche peut alors écrire « 2 des 21
+    membres recensés » au lieu de « 2 membres ». Personnes distinctes, sur toute
+    la vie du gouvernement — un ministre qui change de portefeuille compte une
+    fois. Mesuré le 17/09/2026 : 311 personnes sur les 17 gouvernements, de 19
+    (Lecornu I) à 55 (Borne).
+    """
+    from gouvernement_roster_an import construire_index_gouvernements  # noqa: PLC0415
+
+    index = construire_index_gouvernements(zip_path)
+    return {
+        organe_ref: len({acteur for acteur, _debut, _fin in entrees})
+        for organe_ref, entrees in (index.get("mandats") or {}).items()
+    }
+
+
 def lire_organes_gouvernement(zip_path: Path) -> list[dict[str, Any]]:
     """Les organes `GOUVERNEMENT` de l'archive, triés par date de début."""
     organes: list[dict[str, Any]] = []
@@ -115,7 +133,9 @@ def nom_gouvernement(libelle_an: str, libelles: Iterable[str]) -> str:
     return f"Gouvernement {nom} {_ROMAINS.get(num, str(num))}"
 
 
-def construire(organes: list[dict[str, Any]]) -> dict[str, Any]:
+def construire(
+    organes: list[dict[str, Any]], membres_recenses: Optional[dict[str, int]] = None
+) -> dict[str, Any]:
     """Le document `gouvernements_reels.json`, entête comprise."""
     libelles = [o["libelle_an"] for o in organes]
     entrees = []
@@ -127,6 +147,9 @@ def construire(organes: list[dict[str, Any]]) -> dict[str, Any]:
             "libelle_an": organe["libelle_an"],
             "organe_ref": organe["organe_ref"],
             "periode": {"debut": organe["debut"], "fin": organe["fin"]},
+            # Le dénominateur que la fiche publie : combien de personnes l'AN
+            # recense dans ce gouvernement, qu'elles aient un profil ou non.
+            "membres_recenses": (membres_recenses or {}).get(organe["organe_ref"]),
             "fichier": f"gouvernement-{identifiant}.json",
         })
     return {
@@ -174,7 +197,9 @@ def main(argv: Optional[list[str]] = None) -> int:
             f"Aucun organe GOUVERNEMENT dans {zip_path} : archive tronquée ou format changé.")
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(json.dumps(construire(organes), ensure_ascii=False, indent=2) + "\n",
+    args.out.write_text(
+        json.dumps(construire(organes, compter_membres(Path(zip_path))),
+                   ensure_ascii=False, indent=2) + "\n",
                         encoding="utf-8")
     print(f"→ {len(organes)} gouvernement(s) écrit(s) dans {args.out}, "
           f"de {organes[0]['libelle_an']} ({organes[0]['debut']}) "

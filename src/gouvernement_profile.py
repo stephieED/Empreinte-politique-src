@@ -356,6 +356,7 @@ def build_gouvernement_profile(
     periode_fin: Optional[str],
     profils: list[dict[str, Any]],
     dossiers_gouvernementaux: list[dict[str, Any]],
+    membres_recenses: Optional[int] = None,
     licence_donnees: str = "",
     commissions_par_dossier: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -433,6 +434,10 @@ def build_gouvernement_profile(
     profil_gouvernement["membres"] = membres
     profil_gouvernement["textes"] = textes
     profil_gouvernement["comptages"]["par_statut"] = par_statut
+    # #996 — le dénominateur de `membres[]` : ce que l'AN recense, profil ou
+    # non. `None` quand la liste ne le porte pas : un dénominateur inventé
+    # ferait lire « 2 des 2 membres » là où il en manque 19 (§2 règle 5).
+    profil_gouvernement["comptages"]["membres_recenses"] = membres_recenses
     profil_gouvernement["sources"] = sources
     # `licence_donnees` : dérivée de `sources[]` quand l'appelant n'impose rien
     # (#530, lot 6). Le pipeline ne passe pas `--licence`, et les 10 fiches
@@ -528,6 +533,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         libelle_an=entry.get("libelle_an") or "",
         periode_debut=periode.get("debut"),
         periode_fin=periode.get("fin"),
+        membres_recenses=entry.get("membres_recenses"),
         profils=profils,
         dossiers_gouvernementaux=dossiers_result["dossiers"],
         licence_donnees=args.licence,

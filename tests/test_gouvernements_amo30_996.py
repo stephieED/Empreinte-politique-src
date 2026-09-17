@@ -111,3 +111,36 @@ def test_la_liste_du_depot_couvre_fillon_i_a_lecornu_ii():
     libelles = {g["libelle_an"] for g in payload["gouvernements"]}
     assert {"FILLON 1", "AYRAULT 1", "AYRAULT 2", "VALLS", "VALLS 2", "CAZENEUVE", "LECORNU"} <= libelles
     assert all(g.get("organe_ref", "").startswith("PO") for g in payload["gouvernements"])
+
+
+def test_le_comptage_des_membres_recenses_accompagne_chaque_gouvernement(tmp_path):
+    """Le dénominateur de `membres[]` : « 2 des 21 membres recensés »."""
+    import zipfile
+
+    chemin = _zip(tmp_path, ORGANES[:2])
+    with zipfile.ZipFile(chemin, "a") as zf:
+        for uid, organe, debut, fin in [
+            ("PA1", "PO382939", "2007-05-18", "2007-06-18"),
+            ("PA2", "PO382939", "2007-05-18", "2007-06-18"),
+            ("PA2", "PO384206", "2007-06-19", "2010-11-13"),  # même personne, deux gouvernements
+        ]:
+            zf.writestr(f"json/acteur/{uid}-{organe}.json", json.dumps({"acteur": {
+                "uid": uid, "etatCivil": {"ident": {"prenom": "A", "nom": uid}},
+                "mandats": {"mandat": [{"typeOrgane": "GOUVERNEMENT",
+                                        "organes": {"organeRef": organe},
+                                        "dateDebut": debut, "dateFin": fin}]}}}))
+
+    from gouvernements_amo30 import compter_membres
+
+    comptes = compter_membres(chemin)
+    doc = construire(lire_organes_gouvernement(chemin), comptes)
+    par_id = {g["gouvernement_id"]: g for g in doc["gouvernements"]}
+
+    assert par_id["gouvernement:FILLON_1"]["membres_recenses"] == 2
+    assert par_id["gouvernement:FILLON_2"]["membres_recenses"] == 1
+
+
+def test_un_gouvernement_sans_comptage_porte_none(tmp_path):
+    """Un dénominateur inventé ferait lire « 2 des 2 membres »."""
+    doc = construire(lire_organes_gouvernement(_zip(tmp_path, ORGANES)), {})
+    assert all(g["membres_recenses"] is None for g in doc["gouvernements"])

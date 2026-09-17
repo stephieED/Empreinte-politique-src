@@ -102,6 +102,11 @@ Format d'un profil de gouvernement v1 :
 
     "comptages": {                           # entiers bruts uniquement — aucun taux, pourcentage
                                               # ou classement (règle AGENTS.md §2.1)
+        # #996 : combien de personnes l'AN recense dans ce gouvernement, qu'elles
+        # aient un profil chez nous ou non. C'est le DÉNOMINATEUR de `membres[]`,
+        # pas un taux : la fiche écrit « 2 des 21 membres recensés ». `null`
+        # quand la liste des gouvernements ne le porte pas.
+        "membres_recenses": 21,
         "par_statut": {
             "depose": 0,
             "navette_en_cours": 0,
@@ -328,6 +333,7 @@ def make_empty_profil_gouvernement(gouvernement_id: str, nom: str) -> dict[str, 
         "membres": [],
         "textes": [],
         "comptages": {
+            "membres_recenses": None,
             "par_statut": make_empty_comptages_statuts(),
         },
         "sources": [],
