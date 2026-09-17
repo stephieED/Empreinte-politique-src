@@ -870,7 +870,11 @@ function Propositions({ amendements, amendementsParVersant, textes, causeAmendem
                     <span className="cp-chute-titre">{d.nom || 'Dossier non nommé par la source'}</span>
                     <span className="cp-chute-fait">
                       {formatNumber(d.n)} amendement{d.n > 1 ? 's' : ''} déposé{d.n > 1 ? 's' : ''}
-                      {d.adoptes > 0 ? (
+                      {/* Aucun sort publié sur la population affichée — les
+                          dépôts européens n'en portent aucun : « aucun adopté »
+                          y publiait un zéro là où la source ne dit rien (§2
+                          règle 5). L'en-tête dit déjà « sort non publié ». */}
+                      {amdt.sortsPublies === 0 ? null : d.adoptes > 0 ? (
                         <>
                           , <b className="cp-chute-oui">{formatNumber(d.adoptes)} adopté{d.adoptes > 1 ? 's' : ''}</b>
                         </>
