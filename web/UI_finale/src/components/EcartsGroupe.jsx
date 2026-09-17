@@ -238,12 +238,14 @@ function Vide({ ecarts, voix }) {
   );
 }
 
-export default function EcartsGroupe({ ecarts, voix }) {
+/* `etiquette` (#979) : le rappel du mot du filtre, en tête de la première carte. */
+export default function EcartsGroupe({ ecarts, voix, etiquette = null }) {
   const { bande, fiches } = ecarts;
 
   return (
     <>
       <div className="cp-carte eg-carte">
+        {etiquette}
         {bande.length ? (
           <>
             <div className="eg-bloc">

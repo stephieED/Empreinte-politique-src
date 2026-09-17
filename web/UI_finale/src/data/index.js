@@ -1,4 +1,8 @@
 import { INSTITUTION_PARLEMENT, sigleDuSiege } from '../utils/profilCandidat';
+import { filtrerProfil, motsDuFiltre, periodeCumulee } from '../utils/filtreIntitule';
+import { porteeCommune } from '../utils/votesParPeriode';
+import { titreDuTexteVote } from '../utils/lecture';
+import { cheminDuPoint } from '../utils/parolesParPeriode';
 import {
   buildCandidateView,
   buildGovernmentView,
@@ -314,7 +318,13 @@ function ficheDuGroupeAffiche(manifest, entry, pivot) {
   return { id: recente.lignee ?? recente.id, nom: recente.nom, legislature: recente.legislature };
 }
 
-export async function getCandidateProfile(id) {
+/* ── CHARGER UNE FOIS, CALCULER À CHAQUE MOT (#979) ──────────────────────────
+ *
+ * Le filtre par intitulé reconstruit la fiche sur un profil réduit : il ne
+ * doit rien retélécharger. `chargerSourcesCandidat` rassemble ce que la fiche
+ * lit — profil, index, chronologie —, `vueCandidat` la calcule, avec ou sans
+ * mot. `getCandidateProfile` reste la composition des deux, sans mot. */
+export async function chargerSourcesCandidat(id) {
   const manifest = await loadManifest();
   const entry = manifest.candidates.find((c) => c.slug === id);
   if (!entry) return null;
@@ -332,6 +342,43 @@ export async function getCandidateProfile(id) {
   // L'index des amendements se charge APRÈS le profil : ce sont les
   // identifiants du mapping qui disent quelles législatures aller chercher.
   const amendements = await loadAmendementsPour(pivot);
+  return {
+    manifest, entry, pivot, scrutins, fichesGroupe, commissions, scrutinsDossiers,
+    dossiersEuropeens, documentsEuropeens, amendements,
+  };
+}
+
+/* Les intitulés que le filtre compare, lus là où la fiche les affiche : le
+ * titre de texte d'un vote (`titreDuTexteVote`, le même que « Ce qu'il a
+ * voté »), le dossier d'un amendement (index par législature côté Assemblée,
+ * `dossiers_europeens.json` côté Parlement européen), le chemin du point de
+ * séance d'une intervention. */
+function lecteursDIntitule(sources) {
+  const { scrutins, amendements, dossiersEuropeens } = sources;
+  return {
+    intituleDuVote: (v) => {
+      const scrutin = (scrutins && v.scrutin_id && scrutins[v.scrutin_id]) || v.scrutin_non_resolu || null;
+      const brut = scrutin?.texte ?? scrutin?.titre ?? null;
+      return titreDuTexteVote(brut) || brut;
+    },
+    intituleDeLAmendement: (a) => {
+      const europeen = a.amendement_non_resolu;
+      if (europeen) return dossiersEuropeens?.[europeen.texte_vise]?.titre ?? null;
+      const index = amendements?.[legislatureDeAmendementId(a.amendement_id)];
+      const texteVise = index?.amendements?.[a.amendement_id]?.texte_vise;
+      return (texteVise && index?.textes?.[texteVise]?.titre) || null;
+    },
+    intituleDeLIntervention: cheminDuPoint,
+  };
+}
+
+export function vueCandidat(sources, mot = '') {
+  if (!sources) return null;
+  const {
+    manifest, entry, scrutins, fichesGroupe, commissions, scrutinsDossiers,
+    dossiersEuropeens, documentsEuropeens, amendements,
+  } = sources;
+  const pivot = filtrerProfil(sources.pivot, mot, lecteursDIntitule(sources));
   const view = buildCandidateView(
     pivot,
     entry,
@@ -345,11 +392,32 @@ export async function getCandidateProfile(id) {
     // demande la chronologie entière. Les dates vivent déjà dans le manifeste,
     // aucune fiche supplémentaire n'est téléchargée.
     manifest.gouvernements || [],
-    ficheDuGroupeAffiche(manifest, entry, pivot),
+    ficheDuGroupeAffiche(manifest, entry, sources.pivot),
     dossiersEuropeens,
     documentsEuropeens,
   );
-  return avecSiglesDeSiege(view, manifest);
+  if (!view || !motsDuFiltre(mot).length) return avecSiglesDeSiege(view, manifest);
+  /* SOUS UN MOT, « Ce qu'il a voté » cumule ses périodes (`periodeCumulee`) :
+   * la figure montre alors ce que sa liste montre. L'échelle est recalculée sur
+   * ce seul cumul. `filtre` porte ce que les messages « aucun résultat » disent
+   * de la fiche ENTIÈRE, que le profil réduit ne sait plus. */
+  const cumul = periodeCumulee(view.votes.periodes);
+  return avecSiglesDeSiege({
+    ...view,
+    votes: {
+      ...view.votes,
+      periodes: cumul ? [cumul] : [],
+      portee: cumul ? porteeCommune([cumul]) : view.votes.portee,
+    },
+    filtre: {
+      mot: mot.trim(),
+      amendementsEuropeens: (sources.pivot.amendements || []).some((a) => a.amendement_non_resolu),
+    },
+  }, manifest);
+}
+
+export async function getCandidateProfile(id) {
+  return vueCandidat(await chargerSourcesCandidat(id));
 }
 
 /* Le sigle de chaque siège, lu sur les fiches de groupe du manifeste quand

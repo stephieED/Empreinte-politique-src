@@ -616,3 +616,23 @@ export function disposerCascadeUE(cascade, largeur, teinteDe) {
     },
   };
 }
+
+/* ── Règle : UNE CASCADE NON DESSINÉE LAISSE VOIR SA LISTE (#979) ───────────
+ *
+ * Sous trois flux, `disposerCascade` ne dessine rien, et la carte l'écrit :
+ * « la liste ci-dessous les porte tous ». Or la liste n'existait qu'après un
+ * clic DANS le diagramme — qui n'était pas là. Les textes étaient annoncés et
+ * inaccessibles ; le filtre par mot de la fiche, qui réduit souvent une fiche
+ * à deux ou trois textes, rendait le cas courant.
+ *
+ * La mise en page ne dépend de la largeur que pour sa géométrie : la tester à
+ * une largeur quelconque dit si quelque chose sera dessiné. */
+export function cascadeDessinee(cascade, disposer = disposerCascade) {
+  if (!cascade || !cascade.total) return false;
+  return disposer(cascade, 1000, () => null) !== null;
+}
+
+/** La sélection qui retient tous les textes de la cascade, tous stades. */
+export function selectionDeTousLesTextes(cascade) {
+  return { matiere: null, lo: 0, hi: Math.max(0, (cascade?.stades || []).length - 1) };
+}

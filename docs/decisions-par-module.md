@@ -507,7 +507,7 @@ Le mentionnent sans le gouverner : [`domaines-eurovoc-familles-oeil-901`](decisi
 | [L'index européen ne lisait que les amendements, et 34 références ne résolvaient nulle part (#901) (2026-09-16)](decisions/index-europeen-lit-aussi-les-textes-portes-901.md) | `references_visees` |
 | [Les quatre saisines au fond européennes se distinguent, elles ne se fondent pas (#901) (2026-09-14)](decisions/trois-saisines-au-fond-europeennes-901.md) | `KNOWN_STATUTS_COMMISSION_AU_FOND`, `commissions_au_fond_non_resolu` |
 
-Le mentionnent sans le gouverner : [`cascade-europeenne-une-porte-901`](decisions/cascade-europeenne-une-porte-901.md), [`domaines-eurovoc-familles-oeil-901`](decisions/domaines-eurovoc-familles-oeil-901.md), [`index-dossiers-europeens-901`](decisions/index-dossiers-europeens-901.md), [`matieres-eurovoc-documents-901`](decisions/matieres-eurovoc-documents-901.md).
+Le mentionnent sans le gouverner : [`cascade-europeenne-une-porte-901`](decisions/cascade-europeenne-une-porte-901.md), [`domaines-eurovoc-familles-oeil-901`](decisions/domaines-eurovoc-familles-oeil-901.md), [`filtre-par-intitule-fiche-candidat-979`](decisions/filtre-par-intitule-fiche-candidat-979.md), [`index-dossiers-europeens-901`](decisions/index-dossiers-europeens-901.md), [`matieres-eurovoc-documents-901`](decisions/matieres-eurovoc-documents-901.md).
 
 ## `src/download_watchdog.py`
 
