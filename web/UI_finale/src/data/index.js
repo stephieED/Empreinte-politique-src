@@ -531,5 +531,15 @@ export async function getGovernmentProfile(id) {
   if (!gouvernement) return null;
   // Les groupes du manifest, pas leurs fiches : seules la position déclarée et
   // les bornes servent ici (#330).
-  return buildGovernmentView(gouvernement, manifest.groupes || []);
+  //
+  // LE LIEN VERS LE PREMIER MINISTRE NE SE POSE QUE SI LA PAGE EXISTE. Seules
+  // les fiches de candidats déclarés sont publiées : 4 des 17 Premiers
+  // ministres en ont une — Attal, Cazeneuve et Philippe (deux gouvernements).
+  // Les 13 autres nommaient une adresse qui rend « Aucun candidat trouvé ».
+  // Même règle que `ficheDuGroupeAffiche` : un lien mène là où le texte dit.
+  const pm = gouvernement.premier_ministre?.nom;
+  const fiche = pm
+    ? (manifest.candidates || []).find((c) => c.nom === pm)
+    : null;
+  return buildGovernmentView(gouvernement, manifest.groupes || [], fiche?.slug ?? null);
 }
