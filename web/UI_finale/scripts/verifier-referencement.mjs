@@ -10,11 +10,28 @@
  *
  *   node scripts/verifier-referencement.mjs [https://empreinte-politique.fr]
  *
+ * Chaque JSON-LD est aussi VALIDÉ contre le vocabulaire de schema.org (#1008),
+ * téléchargé au lancement. `--sans-vocabulaire` saute cette étape ; un
+ * téléchargement qui échoue ne fait pas échouer le contrôle du site, il se dit.
+ *
  * Il interroge un SITE SERVI, jamais `dist/` : ce qui est mesuré ici, c'est ce
  * que le serveur répond — `vite preview` ne reproduit pas le comportement de
  * GitHub Pages, et c'est précisément ce comportement qui a fait le défaut.
  */
-const base = (process.argv[2] || 'https://empreinte-politique.fr').replace(/\/$/, '');
+import { anomalies, chargerVocabulaire } from './vocabulaire-schema-org.mjs';
+
+const arguments_ = process.argv.slice(2);
+const sansVocabulaire = arguments_.includes('--sans-vocabulaire');
+const base = (arguments_.find((a) => !a.startsWith('--')) || 'https://empreinte-politique.fr').replace(/\/$/, '');
+
+let vocabulaire = null;
+if (!sansVocabulaire) {
+  try {
+    vocabulaire = await chargerVocabulaire();
+  } catch (erreur) {
+    console.error(`vocabulaire schema.org indisponible (${erreur.message}) — validation sautée.`);
+  }
+}
 
 const sansBalises = (html) => {
   const corps = html.replace(/<script[\s\S]*?<\/script>/g, '').match(/<body>([\s\S]*)<\/body>/);
@@ -47,8 +64,15 @@ for (const url of adresses) {
     /* #1008 : le balisage doit être présent ET analysable — un JSON cassé ne
      * se voit pas à l'œil, et aucune machine ne le lit. */
     jsonld: [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
-      .map((m) => { try { return JSON.parse(m[1])['@type']; } catch { return 'ILLISIBLE'; } }),
+      .map((m) => { try { return JSON.parse(m[1]); } catch { return null; } }),
   });
+}
+
+for (const l of lignes) {
+  l.types = l.jsonld.map((o) => (o ? o['@type'] : 'ILLISIBLE'));
+  l.anomalies = vocabulaire
+    ? l.jsonld.flatMap((o) => (o ? anomalies(vocabulaire, o) : [])).map((a) => `${l.url} ${a}`)
+    : [];
 }
 
 const fiches = lignes.filter((l) => /\/(candidats|groupes|gouvernements)\//.test(l.url));
@@ -62,20 +86,23 @@ const defauts = [
   ...[...titres].filter(([titre, n]) => titre && n > 1).map(([titre, n]) => `${n} pages portent le titre « ${titre} »`),
   ...fiches.filter((l) => l.texte < 100).map((l) => `${l.url} : ${l.texte} caractères lisibles sans JavaScript`),
   ...fiches.filter((l) => l.statut === 200 && l.jsonld.length === 0).map((l) => `${l.url} : aucun balisage Schema.org`),
-  ...lignes.filter((l) => l.jsonld.includes('ILLISIBLE')).map((l) => `${l.url} : balisage Schema.org illisible`),
+  ...lignes.filter((l) => l.types.includes('ILLISIBLE')).map((l) => `${l.url} : balisage Schema.org illisible`),
+  ...lignes.flatMap((l) => l.anomalies),
   ...(robotsTxt === null ? [`${base}/robots.txt : absent`] : []),
   ...(robotsTxt && !robotsTxt.includes('/sitemap.xml') ? [`${base}/robots.txt ne désigne pas le sitemap`] : []),
 ];
 
 for (const l of lignes) {
   console.log(
-    `${l.statut} ${String(l.texte).padStart(6)} car.  ${l.jsonld.join(',') || '—'}  ${l.url}`
+    `${l.statut} ${String(l.texte).padStart(6)} car.  ${l.types.join(',') || '—'}  ${l.url}`
     + `\n         ${l.titre ?? '— aucun titre —'}`,
   );
 }
 console.log(
   `\n${lignes.length} adresses du sitemap, dont ${fiches.length} fiches ; `
-  + `${lignes.filter((l) => l.statut === 200).length} en 200, ${titres.size} titres distincts.`,
+  + `${lignes.filter((l) => l.statut === 200).length} en 200, ${titres.size} titres distincts ; `
+  + `${lignes.reduce((n, l) => n + l.jsonld.length, 0)} objets JSON-LD, `
+  + (vocabulaire ? 'validés contre le vocabulaire de schema.org.' : 'non validés (vocabulaire non chargé).'),
 );
 if (defauts.length) {
   console.error(`\n${defauts.length} défaut(s) :\n  - ${defauts.join('\n  - ')}`);
