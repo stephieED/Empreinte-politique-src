@@ -206,10 +206,17 @@ Puis tous les gouvernements de cette liste :
 
 ```bash
 python3 src/generate_gouvernement_profiles.py --validate \
+    --rosters-bruts raw_data/rosters_bruts.json \
     --commissions-dossiers pivot_data/commissions_dossiers.json
 ```
 
 Produit : `pivot_data/gouvernements/gouvernement-<ID>.json`.
+
+`--rosters-bruts` rattache les membres par `organe_ref` (#996 lot 4) au lieu de
+comparer le libellé de leurs mandats à celui de la config. Le fichier est
+produit par la commande précédente et n'est **pas committé** : sans lui, le
+repli par libellé s'applique et les fiches sont produites quand même — la
+sortie dit laquelle des deux voies a servi.
 
 `--commissions-dossiers` (défaut `pivot_data/commissions_dossiers.json`) donne
 l'index d'où chaque texte tire sa **commission saisie au fond** (#689) — la

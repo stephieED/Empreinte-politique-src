@@ -270,10 +270,29 @@ siégé dans un organe `GOUVERNEMENT` d'AMO30, avec son `slug`, son
 `slug_origine` et ses `mandat_periodes`. Mesuré le 17/09/2026 : **311 membres,
 106 slugs repris de la table de correspondance, 205 fabriqués, aucun bloqué**.
 
-Deux choses que ce roster-là ne fait pas. Il **n'entre pas** dans
-`roster_candidats.json` : aucun de ces profils n'est collecté par les shards,
-c'est le lot 3. Et il ne remplace pas le rattachement des fiches de
-gouvernement, qui lit encore le libellé des mandats des profils présents.
+**Les deux réserves de ce paragraphe sont tombées avec les lots 3 et 4**, et
+elles sont ce que ce roster fait désormais :
+
+- **Lot 3** — les membres entrent dans `roster_candidats.json`, sous
+  `statut: "roster_gouvernement"`, donc **les shards les collectent comme un
+  membre de groupe** : une chambre, collecte allégée, interventions réduites au
+  thème. Un slug déjà porté par un roster de groupe n'est pas repris — une
+  personne à la fois députée et ministre reste `roster_groupe`, sans quoi elle
+  sortirait de la cohésion de son groupe. La passe tourne **après** le portail
+  d'anomalies du roster et **avant** l'écriture des deux fichiers, pour qu'un
+  roster de groupe incomplet ne déclenche pas un téléchargement d'AMO30 de plus
+  et que les deux décrivent la même collecte à la même seconde (#518).
+- **Lot 4** — `generate_gouvernement_profiles.py` relit ce même fichier
+  (`--rosters-bruts`) pour rattacher les membres aux fiches **par
+  `organe_ref`**, au lieu de comparer `mandats[].label` au libellé de la
+  config. Sans lui, le repli par libellé s'applique et les fiches sont produites
+  quand même.
+
+Ce fichier est donc lu par **trois** consommateurs dans un run : la passe de
+correspondance (§5b du portail), les shards de collecte, et la génération des
+fiches de gouvernement.
+→ `docs/decisions/provenance-roster-gouvernement-996.md`,
+  `docs/decisions/rattachement-des-membres-par-organe-996.md`
 
 Les slugs sont résolus par `an_roster.resoudre_slugs`, sur l'**union** des
 acteurs des deux index : sans elle, un ministre et un député homonymes
