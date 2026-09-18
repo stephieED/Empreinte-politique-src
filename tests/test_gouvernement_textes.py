@@ -293,9 +293,20 @@ def test_statut_retire():
 
 
 def test_statut_navette_en_cours_quand_deja_examine_sans_decision():
+    """L'intention de ce test est juste, sa fixture ne l'était pas (#997).
+
+    Elle portait `AN1-COM` **daté du 2024-02-01**. Or, sur les archives XV à
+    XVII, `AN1-COM` est un conteneur d'étape : 6 418 occurrences, **aucune
+    datée**. La fixture décrivait donc un monde que la source ne produit pas,
+    et c'est elle qui faisait croire que `navette_en_cours` était atteint par
+    un renvoi en commission.
+
+    `AN1-COM-FOND-REUNION` est le code réel d'un examen — 3 672 occurrences
+    sur les mêmes archives.
+    """
     dossier = _dossier("TEST-NAVETTE", "Projet de loi ordinaire test", [
         _acte("AN1-DEPOT", "2024-01-10"),
-        _acte("AN1-COM", "2024-02-01"),
+        _acte("AN1-COM-FOND-REUNION", "2024-02-01"),
     ])
     record = parse_dossier_gouvernemental(dossier)
     assert record["statut"] == "navette_en_cours"
@@ -309,6 +320,70 @@ def test_statut_depose_quand_seul_le_depot_existe():
     record = parse_dossier_gouvernemental(dossier)
     assert record["statut"] == "depose"
     assert record["warnings"] == []
+
+
+def test_statut_depose_malgre_la_saisine_automatique_de_commission():
+    """LE défaut de #997, dans la forme exacte où il se produit.
+
+    Copié de `DLR5L16N49329` (proposition de loi de Marine Le Pen), relu dans
+    l'archive XVI le 18/09/2026 : le dépôt et la saisine portent **la même
+    date**, et rien d'autre ne suit. La saisine est automatique au dépôt ; la
+    traiter comme un acte franchi rendait `"depose"` inatteignable — 279 des
+    728 dossiers d'origine gouvernementale étaient publiés `navette_en_cours`.
+    """
+    dossier = _dossier("TEST-SAISIE", "Projet de loi ordinaire test", [
+        _acte("AN1-DEPOT", "2024-01-25"),
+        _acte("AN1-COM-FOND-SAISIE", "2024-01-25"),
+    ])
+    record = parse_dossier_gouvernemental(dossier)
+    assert record["statut"] == "depose"
+    assert record["warnings"] == []
+
+
+def test_statut_depose_malgre_la_nomination_d_un_rapporteur():
+    """L'option A, écartée le 18/09/2026 : une nomination dit que la commission
+    s'organise, pas qu'elle a examiné."""
+    dossier = _dossier("TEST-NOMIN", "Projet de loi ordinaire test", [
+        _acte("AN1-DEPOT", "2024-01-10"),
+        _acte("AN1-COM-FOND-NOMIN", "2024-01-20"),
+    ])
+    record = parse_dossier_gouvernemental(dossier)
+    assert record["statut"] == "depose"
+
+
+def test_le_rapport_de_commission_vaut_examen_comme_la_reunion():
+    """B retient les deux signaux, et `-AVIS` à côté de `-FOND` : une
+    commission saisie pour avis qui se réunit a examiné le texte."""
+    for code in ("AN1-COM-FOND-RAPPORT", "AN1-COM-AVIS-REUNION",
+                 "CMP-COM-RAPPORT-AN", "SN1-COM-FOND-REUNION"):
+        dossier = _dossier(f"TEST-{code}", "Projet de loi ordinaire test", [
+            _acte("AN1-DEPOT", "2024-01-10"),
+            _acte(code, "2024-02-01"),
+        ])
+        assert parse_dossier_gouvernemental(dossier)["statut"] == "navette_en_cours", code
+
+
+def test_une_motion_est_un_acte_et_non_un_conteneur():
+    """`MOTION` est le seul `codeActe` sans tiret qui porte une date — 8
+    occurrences, 8 datées, mesuré sur les archives XV à XVII. Les 16 autres
+    codes nus n'en portent jamais : ce sont des conteneurs d'étape, présents
+    dès le dépôt. Sans cette exception, une motion ne compterait pas."""
+    dossier = _dossier("TEST-MOTION", "Projet de loi ordinaire test", [
+        _acte("AN1-DEPOT", "2024-01-10"),
+        _acte("MOTION", "2024-02-01"),
+    ])
+    assert parse_dossier_gouvernemental(dossier)["statut"] == "navette_en_cours"
+
+
+def test_un_conteneur_d_etape_n_atteste_rien():
+    """`AN1`, `PROM`, `CMP`… sans tiret et sans date : ils portent les actes de
+    leur étape, ils n'en sont pas un."""
+    for code in ("AN1", "SN1", "ANLUNI", "CMP", "AN20"):
+        dossier = _dossier(f"TEST-{code}", "Projet de loi ordinaire test", [
+            _acte("AN1-DEPOT", "2024-01-10"),
+            _acte(code, None),
+        ])
+        assert parse_dossier_gouvernemental(dossier)["statut"] == "depose", code
 
 
 # ---------------------------------------------------------------------------

@@ -72,6 +72,7 @@ from gouvernement_textes import (
     _determine_statut,
     DOSSIERS_CACHE_DIR,
     ensure_dossiers_zips_downloaded,
+    est_examen_en_commission,
     iter_dossiers_bruts,
     nature_texte_depose,
 )
@@ -3209,8 +3210,20 @@ def _stade_from_code_acte(code_acte: Optional[str], statut_libelle: Optional[str
         return "discute_seance"
     if "DEBATS" in code_acte:
         return "discute_seance"
+    # #997 — `"COM" in code_acte` rendait `examine_commission` pour la saisine
+    # de commission, qui est AUTOMATIQUE au dépôt : 6 808 des 10 764 dossiers
+    # des archives XV à XVII étaient qualifiés « examiné » sans l'avoir été, et
+    # la branche `DEPOT` ci-dessous était morte. `est_examen_en_commission`
+    # porte l'arbitrage (réunion ou rapport) — voir `gouvernement_textes.py`.
     if "COM" in code_acte:
-        return "examine_commission"
+        if est_examen_en_commission(code_acte):
+            return "examine_commission"
+        # Saisine, nomination de rapporteur, conteneur : le texte a été
+        # RENVOYÉ en commission, pas examiné. Le dépôt reste à qualifier par
+        # l'acte `-DEPOT` du même dossier, d'où `None` plutôt que `"depose"` —
+        # `_collect_dossier_facts` retient le stade le plus avancé de tous les
+        # actes, et c'est lui qui conclura.
+        return None
     if "DEPOT" in code_acte:
         return "depose"
     return None
