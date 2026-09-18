@@ -310,3 +310,93 @@ def test_repository_gouvernements_reels_json_is_valid():
     payload = json.loads(config_path.read_text(encoding="utf-8"))
     assert isinstance(payload.get("gouvernements"), list)
     assert payload["gouvernements"]
+
+
+# ---------------------------------------------------------------------------
+# #1020 — la parole agrégée, par le CHEMIN RÉEL
+# ---------------------------------------------------------------------------
+#
+# Ces deux cas existent parce que les leurs n'ont pas suffi. `tags_thematiques_agreges`
+# a été publié `[]` sur les 17 fiches, et `comptages.membres_avec_interventions`
+# à `0`, pendant un run entier : `load_profils_from_dir` projette les profils
+# sur cinq blocs (#635) et `interventions` n'en fait pas partie, donc
+# l'agrégation lisait un bloc absent.
+#
+# `tests/test_agregat_parole_gouvernement_1020.py` ne pouvait pas le voir : il
+# fabrique ses profils, avec leurs interventions dedans, et les passe
+# directement à `agreger_tags_thematiques`. Un test qui contourne le chemin
+# réel ne prouve rien de ce chemin. Ici les profils sont ÉCRITS SUR DISQUE et
+# c'est `generate_all` qui les lit.
+
+
+def _pivot_avec_interventions(id_: str, nom: str, mandats: list, interventions: list) -> dict:
+    profil = _pivot(id_, nom, mandats)
+    profil["interventions"] = interventions
+    return profil
+
+
+def _interv(date: str, theme: str) -> dict:
+    return {"intervention_id": f"syceron_{theme}_{date}", "date": date,
+            "theme_officiel": theme, "mots_cles": []}
+
+
+def _fetch_sans_dossier():
+    return {"dossiers": [], "warnings": [], "legislatures_ingerees": _toutes_legislatures()}
+
+
+def test_les_tags_agreges_traversent_la_lecture_des_profils(tmp_path, monkeypatch):
+    """La fiche produite par `generate_all` porte les étiquettes de ses membres.
+
+    Le profil écrit ici porte ses `interventions` ; la projection les retire de
+    la liste chargée, et seule une lecture à la demande peut les retrouver.
+    """
+    profiles_dir = tmp_path / "profiles"
+    profiles_dir.mkdir()
+    (profiles_dir / "a.pivot.json").write_text(json.dumps(_pivot_avec_interventions(
+        "a", "A",
+        [_mandat_gouv("Gouvernement (BAYROU)", "2024-12-24", "2025-09-09")],
+        [_interv("2025-02-01", "budget"), _interv("2025-03-01", "outre-mer")],
+    )), encoding="utf-8")
+    (profiles_dir / "b.pivot.json").write_text(json.dumps(_pivot_avec_interventions(
+        "b", "B",
+        [_mandat_gouv("Gouvernement (BAYROU)", "2024-12-24", "2025-09-09")],
+        [_interv("2025-02-02", "budget")],
+    )), encoding="utf-8")
+    out_dir = tmp_path / "gouvernements"
+    out_dir.mkdir()
+
+    monkeypatch.setattr(
+        "generate_gouvernement_profiles.fetch_dossiers_gouvernementaux", _fetch_sans_dossier)
+
+    echecs = generate_all([_gouvernement_bayrou()], profiles_dir=profiles_dir,
+                          out_dir=out_dir, validate=True)
+
+    assert echecs == 0
+    fiche = json.loads((out_dir / "gouvernement-BAYROU.json").read_text(encoding="utf-8"))
+    assert [(t["tag"], t["nb_membres_porteurs"]) for t in fiche["tags_thematiques_agreges"]] == [
+        ("budget", 2), ("outre-mer", 1),
+    ]
+    assert fiche["comptages"]["membres_avec_interventions"] == 2
+
+
+def test_une_intervention_hors_fenetre_du_membre_ne_traverse_pas_non_plus(tmp_path, monkeypatch):
+    """Le filtre de #1020 s'applique bien sur le chemin réel, pas seulement
+    dans la fonction : le cas Braun-Pivet, en miniature."""
+    profiles_dir = tmp_path / "profiles"
+    profiles_dir.mkdir()
+    (profiles_dir / "a.pivot.json").write_text(json.dumps(_pivot_avec_interventions(
+        "a", "A",
+        [_mandat_gouv("Gouvernement (BAYROU)", "2024-12-24", "2025-01-05")],
+        [_interv("2025-01-02", "outre-mer"), _interv("2025-06-01", "budget")],
+    )), encoding="utf-8")
+    out_dir = tmp_path / "gouvernements"
+    out_dir.mkdir()
+
+    monkeypatch.setattr(
+        "generate_gouvernement_profiles.fetch_dossiers_gouvernementaux", _fetch_sans_dossier)
+
+    generate_all([_gouvernement_bayrou()], profiles_dir=profiles_dir, out_dir=out_dir)
+
+    fiche = json.loads((out_dir / "gouvernement-BAYROU.json").read_text(encoding="utf-8"))
+    assert [t["tag"] for t in fiche["tags_thematiques_agreges"]] == ["outre-mer"]
+    assert any("hors de la fenêtre" in w for w in fiche["meta"]["warnings"])

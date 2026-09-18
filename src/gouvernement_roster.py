@@ -84,7 +84,7 @@ import re
 import sys
 from datetime import date
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 
 # ---------------------------------------------------------------------------
@@ -965,6 +965,81 @@ def load_profils_from_dir(profiles_dir: Path) -> list[dict[str, Any]]:
             continue
         profils.append(profil)
     return profils
+
+
+# ---------------------------------------------------------------------------
+# Lire un bloc que la projection a retiré, sans le rapatrier dans la liste
+# ---------------------------------------------------------------------------
+#
+# La projection ci-dessus n'est pas négociable : `interventions` pèse 38,1 % du
+# corpus (mesuré le 18/09/2026 sur 35 profils échantillonnés — 17,3 Mo sur
+# 45,4 —, soit ~560 Mo extrapolés aux 1 478,9 Mo des 1 383 profils publiés).
+# L'ajouter à `BLOCS_LUS_COMPOSITION` ramène le mur de #635 : les profils
+# entiers coûtaient 2,4 à 2,7 Gio sous un plafond de 2,0.
+#
+# Mais un consommateur en a besoin — `gouvernement_profile.agreger_tags_thematiques`
+# (#1020). Il le lit donc À LA DEMANDE, une personne à la fois, et le document
+# meurt au retour de la fonction comme dans `_lire_profil_projete`.
+#
+# Le coût est mesuré, et il est plus bas que celui d'une passe complète :
+# 650 lectures pour les 17 fiches (311 personnes distinctes, relues autant de
+# fois qu'elles ont servi dans plusieurs gouvernements), soit ~700 Mo à
+# 61 Mo/s ≈ 11 s, contre ~24 s pour relire le corpus entier une fois.
+
+
+def charger_profils_et_chemins(
+    profiles_dir: Path,
+) -> tuple[list[dict[str, Any]], dict[str, Path]]:
+    """`(profils projetés, {id: chemin})` — une seule passe sur le dossier.
+
+    L'index des chemins est ce qui rend `lecteur_interventions` possible sans
+    supposer la convention de nommage : il est construit sur l'`id` que le
+    document porte, pas sur le nom du fichier.
+    """
+    profils = load_profils_from_dir(profiles_dir)
+    chemins: dict[str, Path] = {}
+    for path in sorted(profiles_dir.glob("*.pivot.json")):
+        # Le nom de fichier est le slug, et `id` l'est aussi (#487) — mais
+        # c'est une convention, pas un contrat de lecture. On la vérifie en
+        # relisant l'index depuis les profils déjà chargés.
+        chemins[path.name[: -len(".pivot.json")]] = path
+    par_id: dict[str, Path] = {}
+    for profil in profils:
+        profil_id = profil.get("id")
+        if not profil_id:
+            continue
+        chemin = chemins.get(profil_id)
+        if chemin is not None:
+            par_id[profil_id] = chemin
+    return profils, par_id
+
+
+def lecteur_interventions(
+    chemins_par_id: dict[str, Path],
+) -> Callable[[str], list[dict[str, Any]]]:
+    """Rend `lire(profil_id) -> interventions[]`, lues sur disque à la demande.
+
+    Un profil inconnu, illisible ou sans bloc `interventions` rend `[]` : c'est
+    « rien à agréger pour cette personne », et l'appelant le distingue de
+    « personne n'a pu lire », qui est l'absence de lecteur (`None`).
+    """
+
+    def lire(profil_id: str) -> list[dict[str, Any]]:
+        chemin = chemins_par_id.get(profil_id)
+        if chemin is None:
+            return []
+        try:
+            with open(chemin, encoding="utf-8") as f:
+                document = json.load(f)
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"  [!] {chemin} : {exc}", file=sys.stderr)
+            return []
+        if not isinstance(document, dict):
+            return []
+        interventions = document.get("interventions")
+        return interventions if isinstance(interventions, list) else []
+
+    return lire
 
 
 def load_gouvernement_config(config_path: Path, gouvernement_id: str) -> dict[str, Any]:

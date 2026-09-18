@@ -784,6 +784,20 @@ législature : un gouvernement dure quelques mois, rien ne permet d'y placer une
 entrée non datée (§2 règle 5).
 → [`docs/decisions/agregat-parole-gouvernement-1020.md`](./decisions/agregat-parole-gouvernement-1020.md)
 
+**La matière vient d'une lecture à la demande, pas de `profils`.** Les profils
+chargés par le job sont **projetés** sur cinq blocs (#635) et ne portent pas
+`interventions` — 38,1 % du volume du corpus, mesuré le 18/09/2026. L'agrégation
+les lit donc **une personne à la fois** sur disque
+(`gouvernement_roster.lecteur_interventions`), et le document meurt à chaque
+retour : 650 lectures pour 311 personnes distinctes, 13,5 s et 0,22 Gio de RSS
+pour les 17 fiches. Avant ce correctif, les 17 fiches publiaient `[]` et un
+`membres_avec_interventions` à `0`. Sans lecteur, l'agrégat n'est **pas
+calculé** : le comptage vaut `null` et un warning le dit, plutôt qu'un zéro qui
+se lirait « aucun membre n'a parlé ». **Les zéros qui restent sont des faits** —
+les interventions collectées commencent le 28/06/2017, donc les neuf
+gouvernements antérieurs à Philippe II n'ont rien à agréger.
+→ [`docs/decisions/lecture-a-la-demande-des-interventions-1020.md`](./decisions/lecture-a-la-demande-des-interventions-1020.md)
+
 **Deux comptages, deux populations.** `comptages.membres_recenses` (lot 2)
 compte les **personnes** que l'AN recense, qu'elles aient un profil ou non ;
 `comptages.membres_distincts` (lot 4) compte les personnes que `membres[]`
