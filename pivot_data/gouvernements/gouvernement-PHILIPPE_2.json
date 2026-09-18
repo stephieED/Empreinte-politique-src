@@ -7491,11 +7491,256 @@
       }
     }
   ],
-  "tags_thematiques_agreges": [],
+  "tags_thematiques_agreges": [
+    {
+      "tag": "attentat de marseille",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "isf",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "projet de loi de finances pour 2019",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "accueil des gens du voyage dans le sud de la métropole lilloise",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "aires marines protégées",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "assises des outre-mer",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "attentat de strasbourg",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "avenir des services publics",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "bien-être animal dans la filière porcine",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "bilan de la rentrée scolaire",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "compensation de la baisse de l’aide personnalisée au logement",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "conséquences du brexit sur la pêche bretonne",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "cop24",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "coupures d’énergie et de chauffage",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "création de réseaux d’initiative publique d’infrastructures télécom mobile",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "création d’un barreau autoroutier dans la métropole de lyon",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "destruction d’un monument à châtellerault",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "dotations aux collectivités territoriales",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "dysfonctionnement de l’interface pajemploi",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "décharges sauvages",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "défrichement en lozère",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "efficacité énergétique",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "enjeux de la francophonie",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "expropriation foncière sur le site du cap la houssaye-éperon",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "fermeture du site ford de blanquefort",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "fin de la recherche et de l’exploitation des hydrocarbures",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "finances des communes des collectivités d’outre-mer",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "fiscalité franco-luxembourgeoise",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "frais bancaires",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "fret ferroviaire dans la vallée de la brévenne",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "fusion alstom-siemens",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "fusion de deux epci à la réunion",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "gouvernance maritime en méditerranée",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "horaires d’ouverture des bibliothèques",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "hébergement d’urgence dans les territoires",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "intempéries de novembre 2019 dans la drôme",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "lutte contre la radicalisation islamiste",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "lutte contre le gaspillage et économie circulaire",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "lutte contre le terrorisme",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "mal-logement en seine-saint-denis",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "mesures annoncées pour le pouvoir d’achat",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "mesures d’urgence économique et sociale",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "mesures en faveur des policiers",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "mesures fiscales et sociales d’urgence",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "parcours judiciaire des victimes de violences conjugales",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "prise en charge des frais liés au cancer du sein",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "programmation 2018-2022 et réforme de la justice - renforcement de l’organisation des juridictions",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "projet de destruction, à mourenx, de la tour dite des célibataires",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "projet de loi de financement de la sécurité sociale pour 2018 (suite)",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "projet de loi de finances pour 2018",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "recueil des données biométriques dans la manche",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "rentes versées aux victimes de la shoah",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "réduction de loyer de solidarité",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "réforme des institutions",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "régime de sécurité sociale minière",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "réhabilitation des friches urbaines en logements",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "réseau ter à béziers et narbonne",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "situation en espagne",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "taxation des géants du numérique",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "équipement des véhicules en hiver",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "évaluation de l’application de la convention d’istanbul",
+      "nb_membres_porteurs": 1
+    }
+  ],
   "comptages": {
     "membres_recenses": 50,
     "membres_distincts": 50,
-    "membres_avec_interventions": 0,
+    "membres_avec_interventions": 50,
     "par_statut": {
       "adopte": 95,
       "adopte_49_3": 1,
@@ -7512,264 +7757,266 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722086",
-      "synchro_le": "2026-09-18T13:18:43+0000"
+      "synchro_le": "2026-09-18T15:58:04+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717153",
-      "synchro_le": "2026-09-18T13:25:39+0000"
+      "synchro_le": "2026-09-18T16:05:34+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA759832",
-      "synchro_le": "2026-09-18T13:18:24+0000"
+      "synchro_le": "2026-09-18T15:57:35+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721670",
-      "synchro_le": "2026-09-18T13:26:51+0000"
+      "synchro_le": "2026-09-18T16:06:05+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA337633",
-      "synchro_le": "2026-09-18T13:26:48+0000"
+      "synchro_le": "2026-09-18T16:06:00+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721560",
-      "synchro_le": "2026-09-18T13:26:51+0000"
+      "synchro_le": "2026-09-18T16:06:04+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721872",
-      "synchro_le": "2026-09-18T13:26:35+0000"
+      "synchro_le": "2026-09-18T16:05:31+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA331481",
-      "synchro_le": "2026-09-18T13:18:35+0000"
+      "synchro_le": "2026-09-18T15:57:51+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA764388",
-      "synchro_le": "2026-09-18T13:25:40+0000"
+      "synchro_le": "2026-09-18T16:05:35+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719660",
-      "synchro_le": "2026-09-18T13:18:36+0000"
+      "synchro_le": "2026-09-18T15:57:53+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605131",
-      "synchro_le": "2026-09-18T13:18:35+0000"
+      "synchro_le": "2026-09-18T15:57:51+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA744078",
-      "synchro_le": "2026-09-18T13:27:16+0000"
+      "synchro_le": "2026-09-18T16:06:07+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA415452",
-      "synchro_le": "2026-09-18T13:27:29+0000"
+      "synchro_le": "2026-09-18T16:06:37+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA345619",
-      "synchro_le": "2026-09-18T13:25:40+0000"
+      "synchro_le": "2026-09-18T16:04:58+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717161",
-      "synchro_le": "2026-09-18T13:18:26+0000"
+      "synchro_le": "2026-09-18T15:57:12+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA759830",
-      "synchro_le": "2026-09-18T13:19:40+0000"
+      "synchro_le": "2026-09-18T15:58:34+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA205600",
-      "synchro_le": "2026-09-18T13:19:40+0000"
+      "synchro_le": "2026-09-18T15:58:34+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335758",
-      "synchro_le": "2026-09-18T13:25:40+0000"
+      "synchro_le": "2026-09-18T16:04:49+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA332747",
-      "synchro_le": "2026-09-18T13:25:24+0000"
+      "synchro_le": "2026-09-18T16:05:17+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717155",
-      "synchro_le": "2026-09-18T13:25:40+0000"
+      "synchro_le": "2026-09-18T16:05:37+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717159",
-      "synchro_le": "2026-09-18T13:19:10+0000"
+      "synchro_le": "2026-09-18T15:58:40+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722190",
-      "synchro_le": "2026-09-18T13:18:25+0000"
+      "synchro_le": "2026-09-18T15:57:10+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719914",
-      "synchro_le": "2026-09-18T13:25:34+0000"
+      "synchro_le": "2026-09-18T16:04:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607846",
-      "synchro_le": "2026-09-18T13:17:40+0000"
+      "synchro_le": "2026-09-18T15:56:48+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA906",
-      "synchro_le": "2026-09-18T13:19:08+0000"
+      "synchro_le": "2026-09-18T15:58:36+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA227076",
-      "synchro_le": "2026-09-18T13:27:40+0000"
+      "synchro_le": "2026-09-18T16:06:23+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA415482",
-      "synchro_le": "2026-09-18T13:27:29+0000"
+      "synchro_le": "2026-09-18T16:06:38+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722236",
-      "synchro_le": "2026-09-18T13:19:17+0000"
+      "synchro_le": "2026-09-18T15:58:10+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA703535",
-      "synchro_le": "2026-09-18T13:19:10+0000"
+      "synchro_le": "2026-09-18T15:58:40+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717157",
-      "synchro_le": "2026-09-18T13:25:46+0000"
+      "synchro_le": "2026-09-18T16:05:42+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1051",
-      "synchro_le": "2026-09-18T13:25:46+0000"
+      "synchro_le": "2026-09-18T16:05:06+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1872",
-      "synchro_le": "2026-09-18T13:19:40+0000"
+      "synchro_le": "2026-09-18T15:58:36+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA729332",
-      "synchro_le": "2026-09-18T13:25:46+0000"
+      "synchro_le": "2026-09-18T16:05:43+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717171",
-      "synchro_le": "2026-09-18T13:27:30+0000"
+      "synchro_le": "2026-09-18T16:06:39+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA759834",
-      "synchro_le": "2026-09-18T13:25:46+0000"
+      "synchro_le": "2026-09-18T16:05:43+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720512",
-      "synchro_le": "2026-09-18T13:25:29+0000"
+      "synchro_le": "2026-09-18T16:05:21+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719938",
-      "synchro_le": "2026-09-18T13:27:13+0000"
+      "synchro_le": "2026-09-18T16:06:21+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717163",
-      "synchro_le": "2026-09-18T13:27:30+0000"
+      "synchro_le": "2026-09-18T16:06:39+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717167",
-      "synchro_le": "2026-09-18T13:19:41+0000"
+      "synchro_le": "2026-09-18T15:58:21+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717169",
-      "synchro_le": "2026-09-18T13:19:14+0000"
+      "synchro_le": "2026-09-18T15:58:44+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA729330",
-      "synchro_le": "2026-09-18T13:19:59+0000"
+      "synchro_le": "2026-09-18T15:58:50+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/197494",
-      "synchro_le": "2026-09-18T13:20:36+0000"
+      "synchro_le": "2026-09-18T15:59:13+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717147",
-      "synchro_le": "2026-09-18T13:19:14+0000"
+      "synchro_le": "2026-09-18T15:58:45+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA702191",
-      "synchro_le": "2026-09-18T13:25:46+0000"
+      "synchro_le": "2026-09-18T16:05:44+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA330357",
-      "synchro_le": "2026-09-18T13:24:24+0000"
+      "synchro_le": "2026-09-18T16:04:10+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA642788",
-      "synchro_le": "2026-09-18T13:17:52+0000"
+      "synchro_le": "2026-09-18T15:56:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA758792",
-      "synchro_le": "2026-09-18T13:19:14+0000"
+      "synchro_le": "2026-09-18T15:58:45+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643210",
-      "synchro_le": "2026-09-18T13:26:30+0000"
+      "synchro_le": "2026-09-18T16:06:13+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA764386",
-      "synchro_le": "2026-09-18T13:20:37+0000"
+      "synchro_le": "2026-09-18T15:59:14+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717165",
-      "synchro_le": "2026-09-18T13:19:14+0000"
+      "synchro_le": "2026-09-18T15:58:45+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607395",
-      "synchro_le": "2026-09-18T13:26:01+0000"
+      "synchro_le": "2026-09-18T16:05:07+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-18T14:15:48+0000",
+    "genere_le": "2026-09-18T16:57:11+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
     "warnings": [
+      "gouvernement_profile: tags_thematiques_agreges — 53764 intervention(s) écartée(s) : hors de la fenêtre de passage du membre dans ce gouvernement.",
+      "gouvernement_profile: tags_thematiques_agreges — 5 intervention(s) écartée(s) : sans date, donc non plaçable dans la période (AGENTS.md §2 règle 5).",
       "gouvernement_textes: dossier DLR5L14N34217 : fam_code inconnu 'TSORTF04' — statut non déterminé."
     ]
   }

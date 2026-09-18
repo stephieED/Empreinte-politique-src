@@ -5108,11 +5108,2748 @@
       }
     }
   ],
-  "tags_thematiques_agreges": [],
+  "tags_thematiques_agreges": [
+    {
+      "tag": "outils de gestion de la crise sanitaire",
+      "nb_membres_porteurs": 6
+    },
+    {
+      "tag": "différenciation, décentralisation, déconcentration et simplification de l’action publique locale",
+      "nb_membres_porteurs": 4
+    },
+    {
+      "tag": "déclaration du gouvernementrelative à la décision de la russie de faire la guerre à l’ukraine",
+      "nb_membres_porteurs": 4
+    },
+    {
+      "tag": "pouvoir d’achat",
+      "nb_membres_porteurs": 4
+    },
+    {
+      "tag": "respect des principes de la république",
+      "nb_membres_porteurs": 4
+    },
+    {
+      "tag": "crise à la frontière entre la pologne et la biélorussie",
+      "nb_membres_porteurs": 3
+    },
+    {
+      "tag": "déclaration du gouvernement relative à la présidence française du conseil de l’union européenne, suivie d’un débat",
+      "nb_membres_porteurs": 3
+    },
+    {
+      "tag": "hausse des prix",
+      "nb_membres_porteurs": 3
+    },
+    {
+      "tag": "hausse des prix de l’énergie",
+      "nb_membres_porteurs": 3
+    },
+    {
+      "tag": "médecins intérimaires",
+      "nb_membres_porteurs": 3
+    },
+    {
+      "tag": "projet de loi de finances rectificative pour 2021",
+      "nb_membres_porteurs": 3
+    },
+    {
+      "tag": "renforcement du droit à l’avortement",
+      "nb_membres_porteurs": 3
+    },
+    {
+      "tag": "situation des hôpitaux",
+      "nb_membres_porteurs": 3
+    },
+    {
+      "tag": "situation en ukraine",
+      "nb_membres_porteurs": 3
+    },
+    {
+      "tag": "vigilance sanitaire",
+      "nb_membres_porteurs": 3
+    },
+    {
+      "tag": "accès transparent au marché de l’assurance emprunteur",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "améliorer la protection des lanceurs d’alerte-rôle du défenseur des droits en matière d’alerte",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "application de la loi visant à agir contre les violences au sein de la famille",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "attractivité économique de la france",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "choix du nom issu de la filiation",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "combattre le harcèlement scolaire",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "contrôle parental de l’accès à internet",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "cop26",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "difficultés dans les ehpad",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "différenciation, décentralisation, déconcentrationet simplification de l’action publique locale",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "dispositif maprimerénov’",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "droit de révocation des élus",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "déclaration du gouvernement relative à l’engagement de la france au sahel",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "déficit commercial de la france",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "démocratiser le sport en france",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "dépistage de la covid-19",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "désertification médicale",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "fermeture des lieux culturels",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "forfait patient urgences",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "gestion de la crise sanitaire",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "hausse des prix des carburants",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "lutte contre la maltraitance animale",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "lutte contre la radicalisation",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "lutte contre l’exclusion financière et plafonnement des frais bancaires",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "nutri-score",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "one ocean summit",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "plan de relance",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "plan france 2030",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "politique du logement",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "politique énergétique",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "prix des carburants",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "profits des entreprises du cac40",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "projet de loi de financement de la sécurité sociale pour 2022",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "projet de loi de financement de la sécurité socialepour 2022",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "protocole sanitaire dans les écoles",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "présidence française de l’union européenne",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "référendum en nouvelle-calédonie",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "situation au mali",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "situation dans les ehpad",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "situation des migrants à calais",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "situation des sages-femmes",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "situation en guadeloupe",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "situation sanitaire",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "situation sanitaire à la réunion",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "stratégie vaccinale contre la covid-19",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "train intercités de nuit le pyrénéen",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "violences contre les forces de l’ordre",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "école inclusive",
+      "nb_membres_porteurs": 2
+    },
+    {
+      "tag": "abrogation des régimes d’exception",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "accidents du travail",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "accompagnants des élèves en situation de handicap",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "accompagnement des territoires face aux risques littoraux",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "accompagnement des élèves en situation de handicap",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "accord france-qatar relatif au statut des forces",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "accord france-république de maurice en matière de défense",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "accord sur la chronologie des médias",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "accorder l’asile politique à julian assange et faciliter l’accès au statut de réfugié pour les lanceurs d’alerte étrangers",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "accroissement des inégalités",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "accueil des migrants au sein de l’union européenne et réforme du règlement dublin iii",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "accès aux services publics en seine-saint-denis",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "accès aux soins dans le pays de caux",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "accès aux œuvres culturelles à l’ère numérique",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "accès universel à la vaccination",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "accès à la pma pour toutes",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "accès à un médecin traitant dans les déserts médicaux",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "accélérer l’égalité économique et professionnelle",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "acquisition d’un terrain militaire par la communauté d’agglomération du pays ajaccien",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "actionnariat salarié et transmission d’entreprise",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "activité du groupe agir ensemble",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "activité professionnelle indépendante",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "agenda rural",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "agenda rural européen",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "agents de la fonction publique hospitalière en seine-saint-denis",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "agriculture lotoise",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "aide au retour volontaire",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "aide à domicile en milieu rural",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "aide à la rénovation énergétique des logements",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "air austral",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "aménagement de la rn57 dans le secteur de besançon",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "aménagement du rhône",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "anniversaire de la loi veil",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "annulation de l’élection de mme lamia el aaraje",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "appauvrissement des retraités",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "appel au meurtre de policiers",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "application de la loi améliorant l’efficacité de la justice de proximité et de la réponse pénale",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "application de la loppsi à la réunion",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "application de la réforme des droits voisins",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "application du nutri-score aux fromages",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "artificialisation des sols et loi sru",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "assises du commerce",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "association de taïwan aux travaux des organisations internationales",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "assurance récolte",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "ateliers et chantiers d’insertion et financement européen",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "attractivité des métiers du handicap",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "attractivité du secteur médico-social",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "attractivité industrielle de la france",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "atténuer les inégalités d’accès à l’enseignement supérieur générées par parcoursup",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "augmentation des frais d’inscription dans les universités",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "augmentation du salaire minimum",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "avenant à la convention fiscale france-argentine",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "avenir de la filière nucléaire",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "avenir de la pêche française",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "avenir de l’hôpital",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "avenir de l’hôpital public et des secteurs grand âge-autonomie et médico-social",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "avenir de l’industrie en alsace",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "avenir de l’élevage",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "avenir du secteur aéronautique",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "avenir institutionnel et politique de la nouvelle-calédonie",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "baisse du pouvoir d’achat",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "bilan de la cop26",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "bilan de la cop26 pour les pays les moins développés",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "bilan de la politique culturelle du gouvernement",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "bilan de la politique de sécurité",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "bilan de la politique du gouvernement en matière de santé",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "bilan de la politique du gouvernement en matière d’emploi",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "bilan de la politique du gouvernement en matière d’environnement",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "bilan de la politique environnementale du gouvernement",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "bilan du g20",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "bilan du gouvernement",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "bilan du gouvernement en matière de justice",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "bilan du plan de relance",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "bilan du réseau france services",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "blocage des prix",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "blocage des prix des produits de première nécessité",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "brigade anticriminalité dans le nord",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "calcul de la retraite des auto-entrepreneurs",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "campagne présidentielle",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "candidats de l’enseignement admis sur liste complémentaire",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "cdi « quatre saisons » en corse",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "centre hospitalier de bastia",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "centre hospitalier de sotteville-lès-rouen",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "centre pénitentiaire de condé-sur-sarthe",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "centres de vaccination contre le covid",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "centres des finances publiques",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "certification biologique des producteurs de sel",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "certification de cybersécurité des plateformes numériques destinée au grand public",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "certification européenne du sel biologique",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "chu de caen",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "chèque inflation",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "cigarettes électroniques jetables",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "code de la justice pénale des mineurs",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "comité interministériel du handicap",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "communication des données entre l’urssaf et pôle emploi",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "compétences de la collectivité européenne d’alsace",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "condamnation des crimes perpétrés contre les ouïghours",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "condamnation du régime d’alexandre loukachenko",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "conditions de travail dans les ehpad",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "conditions de travail dans les entreprises du bâtiment",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "confiance dans l’institution judiciaire",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "conflit militaire russo-ukrainien",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "congrès des maires",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "conseil économique, social et environnemental",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "consommation de produits contenant des additifs nitrés",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "construction d’un nouveau pont sur la garonne",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "conséquence des féminicides pour les familles",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "contournement de la non-brevetabilité des logiciels",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "contractualisation dans l’agriculture",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "contrat d’engagement jeune",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "contribution sur le transport routier dans le grand est",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "contrôle migratoire à calais",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "convention du conseil de l’europe contre le trafic d’organes humains",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "coopération hospitalière transfrontalière",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "coupures d’accès à internet dans le val-d’oise",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "crise de l’eau à mayotte",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "crise de l’hôpital public",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "crise de l’école",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "crise de l’élevage porcin en bretagne",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "crise des hôpitaux",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "crise des sous-marins australiens",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "crise du système de santé français",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "crise sanitaire",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "crise sanitaire en outre-mer",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "création de la fonction de directeur d’école",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "création de la fonction de directrice ou de directeur d’école",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "création de l’organisation internationale pour les aides à la navigation maritime",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "création du conseiller territorial",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "cumul emploi-retraite des personnels soignants",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "cybersécurité",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "cyclone batsirai à la réunion",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "dangers du protoxyde d’azote",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "destruction du théâtre national de nice",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "dette de la france",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "devoir de vigilance des multinationales",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "difficultés administratives liées aux demandes de permis de construire",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "difficultés au sein des établissements pour personnes en situation de handicap",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "difficultés des artisans",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "difficultés persistantes dans la mise en place des zones à faibles émissions",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "dissolution du groupe « nantes révoltée »",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "dotation globale de fonctionnement des communes",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "droit opposable à la garde des jeunes enfants",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "droit voisin",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "droits d’inscription à l’université",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "droits fondamentaux des migrants",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "dysfonctionnements et manquements de la politique pénitentiaire",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "débat public sur le nucléaire",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "déclaration du gouvernementrelative à l’évolution de la situation sanitaire",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "déclaration du gouvernementrelative à l’évolution de la situation sanitaire (suite)",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "déclinaison du ségur de la santé dans le rhône",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "déconjugalisation de l’allocation aux adultes handicapés",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "déficit commercial",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "dégradation des finances publiques",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "dégradation du mémorial du mont valérien",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "délais de jugement des divorces contentieux",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "démarches administratives pour les étrangers",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "démographie médicale dans les deux-sèvres",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "dénonciation du coup d’état militaire en birmanie",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "dépistage du covid-19 à l’école",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "déprogrammation de soins à l’hôpital",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "déremboursement des médicaments homéopathiques",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "désertification en zones rurales",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "désertification médicale en ariège",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "déserts médicaux",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "désindustrialisation",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "développement de la participation citoyenne",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "effectifs de la police nationale sur le terrain",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "effectifs de personnel au commissariat de saint-quentin",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "effectifs de police à rouen-elbeuf",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "effectifs du gouvernement et des cabinets ministériels",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "ehpad de pressac",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "emploi de vacataires dans les hôpitaux",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "emploi des personnes en situation de handicap",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "emploi des travailleurs expérimentés",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "emploi des travailleurs expérimentés jusqu’à la retraite",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "engagement de la réserve sanitaire et des pharmaciens",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "engagements de la france pour la transition écologique et la protection de la biodiversité",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "engorgement des juridictions de haute-garonne",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "enseignement des langues régionales",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "enseignement des mathématiques au lycée",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "enseignement français à l’étranger",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "enseignement à la martinique",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "enseignements de spécialité au lycée",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "entreprises de décolletage",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "erasmus pour tous",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "extraterritorialité des lois extra-européennes",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "exécution des peines de prison",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "fauteuils roulants",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "favoriser l’implantation locale des parlementaires",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "fermeture de l’usine maxam tan",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "fermeture du service de médecine interne à l’hôpital joseph-ducuing de toulouse",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "fermetures d’écoles",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "filière canne-sucre-énergie à la réunion",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "filière des biocarburants",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "filière nucléaire",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "filière nucléaire française",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "filière ostréicole",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "fin de l’offre femtocell d’orange",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "financement de la psychiatrie privée",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "financement de la transition écologique",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "financement des urgences pédiatriques",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "finances locales",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "finances publiques",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "fiscalité des droits de succession et de donation",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "fiscalité écologique",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "fièvre catarrhale",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "flux migratoires vers le royaume-uni",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "fonction publique",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "fonctionnaires et militaires originaires d’outre-mer",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "fonctionnement de l’office français de la biodiversité",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "formation professionnelle",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "formation professionnelle dans le bassin franco-luxembourgeois",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "fournisseurs d’électricité aux entreprises",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "français de l’étranger",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "fusion entre tf1 et m6",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "fêtes clandestines",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "garde à vue d’une élue en seine-maritime",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "gestion de l’eau en charente-maritime et dans la vienne",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "gestion des eaux de pluie",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "gestion des flux migratoires",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "gestion des flux migratoires à calais",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "gestion des populations de loups",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "gestion des risques climatiques en agriculture",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "gouvernance de l’agence pour l’enseignement français à l’étranger",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "grippe aviaire",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "grippe aviaire dans les élevages avicoles",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "hausse de salaire des fonctionnaires",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "hausse des prix du carburant",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "hausse du prix de l’énergie",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "hausse du prix des carburants",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "hausse du prix du pain",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "haut-karabakh",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "hommage aux anciens combattants",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "hommage à joséphine baker",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "hommage à samuel paty",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "hémochromatose",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "hôpital de bar-le-duc",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "hôpital public",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "hôpitaux de proximité",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "implantation des éoliennes",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "implantation d’electrosteel en france",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "implantations d’éoliennes",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "incendie de l’usine de tri recyclage concept 13",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "inclusion des enfants handicapés",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "inclusion des personnes handicapées",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "indemnisations des sinistrés à la martinique",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "influence de la diplomatie française",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "inscription de la lutte pour le climat dans la constitution",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "inscription sur les listes électorales",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "insertion professionnelle des athlètes de haut niveau",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "instruction en famille",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "insécurité",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "interdiction de la vente de fleurs et feuilles de cannabis",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "interdiction des pratiques visant à modifier l’orientation sexuelle",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "interdiction du glyphosate",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "interruptions volontaires de grossesse réalisées par les sages-femmes",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "interview du ministre de l’intérieur",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "intégrité territoriale de l’ukraine",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "intérêt social des entreprises",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "investissements dans la filière hydrogène",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "irresponsabilité pénale et lieu d’hospitalisation",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "irresponsabilité pénale et prise en charge des malades psychiatriques",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "justice pénale des mineurs",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "justice sociale",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "les hijabeuses",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "levée des mesures sanitaires",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "liaison est-ouest dans le vaucluse",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "liaison ferroviaire clermont-ferrand-paris",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "libre choix des communes en matière d’eau et d’assainissement",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "libération de ramy shaath",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "licornes françaises",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "ligne 15 du grand paris express",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "liste complémentaire pour le recrutement des professeurs des écoles",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "locations meublées touristiques",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "lois de financement de la sécurité sociale",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "lotos associatifs",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "lutte contre la banalisation des discours de haine dans le débat public",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "lutte contre la contrefaçon",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "lutte contre la covid-19 dans les écoles",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "lutte contre la fraude aux passes sanitaires",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "lutte contre la pollution plastique",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "lutte contre la précarité des accompagnants d’élèves handicapés",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "lutte contre le banditisme en corse",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "lutte contre le diabète",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "lutte contre le harcèlement scolaire",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "lutte contre le mal-logement",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "lutte contre le mal-logement et la pauvreté",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "lutte contre le réchauffement climatique",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "lutte contre le sida",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "lutte contre le terrorisme",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "lutte contre les déserts médicaux",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "lutte contre les féminicides",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "lutte contre les soumissions chimiques",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "lutte contre les violences conjugales",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "lutte contre les violences faites aux femmes",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "lutte contre les violences sexuelles sur les enfants",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "lutte contre l’illettrisme dans l’enseignement",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "légalisation du cannabis : évolutions européennes,blocages français",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "légalisation du cannabis sous le contrôle de l’état",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "législation sur la fin de vie",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "maisons fissurées",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "mal-logement",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "manque de logements en vendée",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "manque de moyens des établissements scolaires",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "maprimerénov’",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "massacre de dauphins dans l’archipel des îles féroé",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "maternité des hôpitaux de saint-maurice",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "menaces du président azerbaïdjanais",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "menaces et agressions à l’égard des élus",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "menaces et violences contre les élus",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "menaces à l’encontre d’ophélie meunier et d’amine elbahi",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "mesures de justice sociale",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "mesures en faveur de l’hôtellerie-restauration et de l’événementiel",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "mesures en faveur de l’événementiel",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "mesures en faveur du pouvoir d’achat",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "mobilités dans le département de la loire",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "modalités de représentation des travailleurs indépendants recourant aux plateformes",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "modernisation de la gestion des finances publiques-haut conseil des finances publiques",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "modernisation des services consulaires",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "modification de la loi sru",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "modification du mécanisme européen de stabilité",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "mon espace santé",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "moratoire sur les éoliennes",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "mouvements d’extrême droite",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "mouvements sociaux aux antilles",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "moyens alloués à la politique d’éducation prioritaire",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "moyens pour la justice",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "musiciens intervenants",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "mutualité sociale agricole",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "métiers du secteur social et médico-social",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "nationalisation des sociétés concessionnaires d’autoroutes",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "naufrage de migrants dans la manche",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "neutralité religieuse dans le sport",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "nombre de postes à l’hôpital",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "nommer les enfants nés sans vie",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "non-remplacement des personnels enseignants",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "nouveaux contrats de ville",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "nouvelle politique agricole commune",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "nucléaire",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "nucléaire et stratégie nationale bas-carbone",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "nuisances provoquées par la lgv bretagne-pays de la loire",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "nécessaire adaptation de la loi elan au cirque de mafate",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "nécessité d’un meilleur financement de la rénovation du bâti existant",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "négociations franco-anglaises sur la pêche",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "occupation du site gazier de balhaf au yémen",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "office national des forêts",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "offre de soins en santé mentale",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "opérateur orange",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "opération sirli en égypte",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "opération « stop camion » et qualité de l’air",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "ordre public dans les outre-mer",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "organisation de l’élection présidentielle",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "orpea",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "oubliés du ségur de la santé",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "pacte de glasgow et cop 26",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "papeterie chapelle-darblay",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "parité dans le bloc communal",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "parquet européen et justice pénale spécialisée",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "parrainage des candidats à l’élection présidentielle",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "passe sanitaire dans les bibliothèques",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "passe vaccinal",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "pathologies psychiatriques dans les ehpad",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "patrimoine culturel afghan",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "places d’hébergement d’urgence dans le val-de-marne",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "places en instituts médico-éducatifs",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "plafonnement des frais bancaires",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "plaintes du roi du maroc contre des médias français",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "plan contre la prostitution des mineurs",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "plan de soutien à la filière automobile",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "plan d’accompagnement du phénomène de vieillissement accéléré de la martinique",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "plateforme de référencement et de prise en chargedes malades chroniques de la covid-19",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "plurilinguisme au sein des instances européennes",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "plus-values placées en report d’imposition",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "points de rencontre médiatisés de l’oise",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "politique de la ville",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "politique de réindustrialisation",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "politique du gouvernement en faveur de l’inclusion",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "politique du gouvernement en faveur de l’égalité",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "politique en faveur des personnes âgées dépendantes",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "politique en matière d’apprentissage",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "politique française au sahel",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "politique migratoire européenne",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "politique pénitentiaire",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "politique sanitaire",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "pollution marine par les plastiques",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "postes de conseillers principaux d’éducation",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "pour la conservation et l’utilisation durable de l’océan",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "pour une santé accessible à tous et contre la désertification médicale",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "pouvoir d’achat des français",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "pouvoir d’achat en outre-mer",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "prescriptions médicamenteuses pour des enfants autistes",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "prime d’exercice en soins critiques",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "prime exceptionnelle de pouvoir d’achat",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "prime ségur dans les secteurs sanitaire et médico-social",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "prime ségur pour l’ensemble des personnels de santé",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "prise en charge des enfants handicapés en ille-et-vilaine",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "prise en charge des fauteuils roulants",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "prise en compte de la parole de l’enfant victime d’inceste",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "prises de rendez-vous auprès du service des étrangers des préfectures",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "prises de rendez-vous en préfecture en seine-saint-denis",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "prix agricoles",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "prix de la baguette",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "prix de l’électricité",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "prix des matières premières",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "problématiques des agriculteurs français",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "procédure contre un magistrat",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "procédure de divorce des travailleurs frontaliers",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "projet de loi 3ds",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "projet de loi de finances pour 2021",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "projet de loi de finances pour 2022",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "projet de loi de vigilance sanitaire",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "projet de téléphérique entre lyon et francheville",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "projet hercule",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "projets de loi pour mayotte",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "projets de santé dans les territoires",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "projets éoliens dans la haute-vienne",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "protection de l’enfance",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "protection des enfants",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "protection des insectes pollinisateurs",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "protection des lanceurs d’alerte -rôle du défenseur des droits en matière de signalement d’alerte",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "protocole sanitaire dans les écoles et droits d’inscription à l’université",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "prévention de la diffusion en ligne de contenus à caractère terroriste",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "punaises de lit",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "purificateurs d’air",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "pénurie de don du sang",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "pénurie de logements",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "pénurie de médecins",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "pénurie de médecins généralistes",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "pêche",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "radicalisation dans le sport",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "rapport sauvé sur les abus sexuels dans l’église",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "rdvpermis",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "recettes du bloc communal en 2021",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "reconnaissance de l’endométriose comme une affection de longue durée",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "reconnaissance de l’état de catastrophe naturelle",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "reconnaissance des ambulanciers",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "reconnaissance du génocide des kurdes en irak",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "reconnaissance du vote blanc",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "reconnaissance et réparation des préjudices subis par les harkis",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "recrutement dans le secteur de l’animation",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "recrutements dans les hôpitaux publics",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "recueil de plaintes chez autrui en nouvelle-calédonie",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "redressement des comptes publics",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "rejet de la proposition de loi pour une santé accessible à tous",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "relations entre l’algérie et la france",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "relations franco-algériennes",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "relocalisation d’electrosteel en france",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "remplacement des enseignants à la réunion",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "remplacement des rafale de l’armée de l’air",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "remplacements dans l’éducation nationale en seine-saint-denis",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "renforcement du protocole sanitaire à l’école",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "renouveau du bassin minier",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "repos hebdomadaire pendant les vendanges et les moissons",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "représentation plus juste des français à l’assemblée nationale",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "respect du droit européen par la pologne",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "respect éthique du don d’organes",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "responsabilité des maires",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "responsabilité pénale et sécurité intérieure",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "restitution des biens culturels des victimes de persécutions antisémites",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "retraite des policiers municipaux",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "retraites agricoles",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "revalorisation des missions de contrôle et d’évaluation du parlement",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "revalorisation des pensions agricoles",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "revalorisation des pensions de retraite",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "revalorisation des salaires dans le secteur médico-social",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "revalorisation du smic",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "revalorisation salariale dans le secteur médico-social",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "risque de rupture énergétique en corse",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "risque d’épuisement administratif des français",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "rn88 et bretelle de lescure",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "roubaix aujourd’hui",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "route nationale 4",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "route nationale 7 dans l’allier",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "réduction de l’artificialisation des sols",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "réforme de la fiscalité locale",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "réforme de la sécurité sociale",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "réforme de la taxe foncière",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "réforme de l’adoption",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "réforme de l’assurance chômage",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "réforme de l’assurance récolte",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "réforme de l’espace schengen",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "réforme de l’indemnisation des catastrophes naturelles",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "réforme des outils de gestion des risques climatiques en agriculture",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "réforme du système de santé",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "référendum sur le climat",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "référendum sur l’autodétermination en nouvelle-calédonie",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "référentiels dans la viticulture",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "régulation de l’accès au foncier agricole",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "régulation du marché de l’art",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "régulation environnementale du numérique",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "réhabilitation des militaires « fusillés pour l’exemple »",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "réindustrialisation",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "rémunération des médecins intérimaires",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "rénovation énergétique dans les quartiers de la politique de la ville",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "répartition des richesses",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "réquisition des données de connexion",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "résolution de l’onu sur jérusalem",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "sahara occidental",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "saison touristique hivernale",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "salariés « oubliés » du ségur",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "santé au travail",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "santé des étudiants",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "santé environnementale",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "santé à l’école dans la sarthe",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "scolarisation des enfants handicapés",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "scolarisation d’enfants en situation de handicap en belgique",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "septième programme d’actions national nitrates",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "service national universel",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "service public de la santé dans l’ariège",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "services d’urgences hospitalières",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "situation au nicaragua",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "situation au sein des instituts médico-sociaux en isère",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "situation dans les ehpad à but lucratif",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "situation dans les outre-mer",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "situation dans les écoles",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "situation de la corse",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "situation de la psychiatrie dans la sarthe",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "situation de la pêche après le brexit",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "situation de l’hôpital de cosne-cours-sur-loire",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "situation des agriculteurs",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "situation des agriculteurs sarthois",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "situation des dumistes",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "situation des hôpitaux de proximité",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "situation des migrants dans le pas-de-calais",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "situation des soignants suspendus",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "situation des sous-traitants de grandes entreprises",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "situation des urgences hospitalières",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "situation des urgentistes de l’hôpital d’oloron-sainte-marie",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "situation du secteur social et médico-social",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "situation fiscale de français résidant en grèce et en italie",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "situation militaire au sahel et en ukraine",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "smur du pas-de-calais",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "sommet afrique-france",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "sous-traitants de l’automobile",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "soutien au secteur de la culture",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "soutien au secteur de l’événementiel",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "soutien au secteur des hôtels, cafés et restaurants",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "soutien aux communes de saint-pierre-et-miquelon",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "soutien aux entreprises",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "soutien aux entreprises fragilisées par la hausse du prix de l’énergie",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "soutien aux entreprises françaises à l’étranger",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "soutien aux entreprises pénalisées par la crise sanitaire",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "soutien aux personnes en situation de handicap",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "soutien aux ports",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "soutien à l’arménie",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "sport dans les qpv",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "stations-service indépendantes",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "statut de l’entrepreneur individuel",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "stratégie de l’union européenne pour la décarbonation de l’électricité (suite)",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "stratégie française pour l’intelligence artificielle",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "stratégie énergétique de la france",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "subventions européennes",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "suicides de policiers",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "surconsommation de protoxyde d’azote",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "suspension d’un enseignant à l’iep de grenoble",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "sécurité civile et valorisation du volontariat des sapeurs-pompiers",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "sécurité à mayotte",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "ségur de la santé",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "séparatisme et enseignement scolaire",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "séparatisme à l’école",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "tarifs de l’énergie et collectivités locales",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "taxe d’habitation des associations",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "taxes foncières",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "taxes sur les carburants",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "tensions sur le marché du travail",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "tensions à la frontière polonaise",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "territoires ruraux",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "tissu industriel français",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "tourisme et sommet « destination france »",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "toxicomanes déplacés porte de la villette",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "trafic d’organes humains",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "traitement des maladies rares",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "traité du quirinal",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "transfert de la gestion des routes nationales aux départements",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "transition écologique",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "transports ferroviaires",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "travailleurs frontaliers de l’usine ford",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "tribunal judiciaire de caen",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "troubles dys",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "tuk-tuk havrais",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "télétravail et santé au travail",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "union nationale du sport scolaire en outre-mer",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "université d’angers",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "urgence contre la désertification médicale",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "urgences pédiatriques de douai",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "utilisation des animaux à des fins scientifiques",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "vacances répit familles",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "vaccination anti-covid",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "vaccination contre le covid-19",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "vaccination des jeunes de 12 à 17 ans",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "verbalisations sans interpellation",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "versement de l’indemnité inflationaux travailleurs transfrontaliers de moselle",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "veuves d’anciens combattants",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "violences conjugales",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "violences dans le débat public",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "violences entre bandes de jeunes",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "violences intrafamiliales",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "violences obstétricales",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "violences sexuelles faites aux enfants",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "vote par correspondance",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "voyages scolaires en temps de covid",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "zones de non-traitement",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "écoles de production",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "éloge funèbre de marielle de sarnez",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "éloge funèbre d’olivier dassault",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "énergie et pouvoir d’achat",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "énergies renouvelables",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "épidémie de tuberculose bovine",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "établissement français du sang du grand est",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "établissement pénitentiaire de donchery",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "établissements publics d’accueil des personnes en perte d’autonomie dans les bouches-du-rhône",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "états généraux de la justice",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "étiquetage des produits alimentaires",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "étude prospective de rte",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "étudiants en santé",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "évaluation de la loi pour la liberté de choisir son avenir professionnel",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "évaluation des politiques de prévention en santé publique",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "évaluation du plan gouvernemental l’état plus fort en seine-saint-denis",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "évolution de la formation de sage-femme",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "évolution de la santé psychique",
+      "nb_membres_porteurs": 1
+    },
+    {
+      "tag": "évolution statutaire de la collectivité de corse",
+      "nb_membres_porteurs": 1
+    }
+  ],
   "comptages": {
     "membres_recenses": 43,
     "membres_distincts": 43,
-    "membres_avec_interventions": 0,
+    "membres_avec_interventions": 43,
     "par_statut": {
       "adopte": 33,
       "adopte_49_3": 0,
@@ -5129,224 +7866,226 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722086",
-      "synchro_le": "2026-09-18T13:18:43+0000"
+      "synchro_le": "2026-09-18T15:58:04+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA759832",
-      "synchro_le": "2026-09-18T13:18:24+0000"
+      "synchro_le": "2026-09-18T15:57:35+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA773451",
-      "synchro_le": "2026-09-18T13:27:05+0000"
+      "synchro_le": "2026-09-18T16:05:59+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721670",
-      "synchro_le": "2026-09-18T13:26:51+0000"
+      "synchro_le": "2026-09-18T16:06:05+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA337633",
-      "synchro_le": "2026-09-18T13:26:48+0000"
+      "synchro_le": "2026-09-18T16:06:00+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA609520",
-      "synchro_le": "2026-09-18T13:18:19+0000"
+      "synchro_le": "2026-09-18T15:57:03+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720242",
-      "synchro_le": "2026-09-18T13:18:41+0000"
+      "synchro_le": "2026-09-18T15:58:01+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA608083",
-      "synchro_le": "2026-09-18T13:18:35+0000"
+      "synchro_le": "2026-09-18T15:57:51+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643184",
-      "synchro_le": "2026-09-18T13:26:01+0000"
+      "synchro_le": "2026-09-18T16:05:07+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA331481",
-      "synchro_le": "2026-09-18T13:18:35+0000"
+      "synchro_le": "2026-09-18T15:57:51+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA764388",
-      "synchro_le": "2026-09-18T13:25:40+0000"
+      "synchro_le": "2026-09-18T16:05:35+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA774109",
-      "synchro_le": "2026-09-18T13:18:25+0000"
+      "synchro_le": "2026-09-18T15:57:11+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717161",
-      "synchro_le": "2026-09-18T13:18:26+0000"
+      "synchro_le": "2026-09-18T15:57:12+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA773449",
-      "synchro_le": "2026-09-18T13:27:16+0000"
+      "synchro_le": "2026-09-18T16:06:08+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA759830",
-      "synchro_le": "2026-09-18T13:19:40+0000"
+      "synchro_le": "2026-09-18T15:58:34+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA773443",
-      "synchro_le": "2026-09-18T13:19:06+0000"
+      "synchro_le": "2026-09-18T15:58:33+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA205600",
-      "synchro_le": "2026-09-18T13:19:40+0000"
+      "synchro_le": "2026-09-18T15:58:34+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335758",
-      "synchro_le": "2026-09-18T13:25:40+0000"
+      "synchro_le": "2026-09-18T16:04:49+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717159",
-      "synchro_le": "2026-09-18T13:19:10+0000"
+      "synchro_le": "2026-09-18T15:58:40+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722190",
-      "synchro_le": "2026-09-18T13:18:25+0000"
+      "synchro_le": "2026-09-18T15:57:10+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719914",
-      "synchro_le": "2026-09-18T13:25:34+0000"
+      "synchro_le": "2026-09-18T16:04:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607846",
-      "synchro_le": "2026-09-18T13:17:40+0000"
+      "synchro_le": "2026-09-18T15:56:48+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA227076",
-      "synchro_le": "2026-09-18T13:27:40+0000"
+      "synchro_le": "2026-09-18T16:06:23+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722236",
-      "synchro_le": "2026-09-18T13:19:17+0000"
+      "synchro_le": "2026-09-18T15:58:10+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA703535",
-      "synchro_le": "2026-09-18T13:19:10+0000"
+      "synchro_le": "2026-09-18T15:58:40+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA773441",
-      "synchro_le": "2026-09-18T13:19:40+0000"
+      "synchro_le": "2026-09-18T15:58:35+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717157",
-      "synchro_le": "2026-09-18T13:25:46+0000"
+      "synchro_le": "2026-09-18T16:05:42+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1872",
-      "synchro_le": "2026-09-18T13:19:40+0000"
+      "synchro_le": "2026-09-18T15:58:36+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267336",
-      "synchro_le": "2026-09-18T13:17:56+0000"
+      "synchro_le": "2026-09-18T15:56:48+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA729332",
-      "synchro_le": "2026-09-18T13:25:46+0000"
+      "synchro_le": "2026-09-18T16:05:43+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720512",
-      "synchro_le": "2026-09-18T13:25:29+0000"
+      "synchro_le": "2026-09-18T16:05:21+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719938",
-      "synchro_le": "2026-09-18T13:27:13+0000"
+      "synchro_le": "2026-09-18T16:06:21+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717163",
-      "synchro_le": "2026-09-18T13:27:30+0000"
+      "synchro_le": "2026-09-18T16:06:39+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722054",
-      "synchro_le": "2026-09-18T13:24:49+0000"
+      "synchro_le": "2026-09-18T16:04:34+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720924",
-      "synchro_le": "2026-09-18T13:19:49+0000"
+      "synchro_le": "2026-09-18T15:58:33+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721764",
-      "synchro_le": "2026-09-18T13:18:29+0000"
+      "synchro_le": "2026-09-18T15:57:15+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA330357",
-      "synchro_le": "2026-09-18T13:24:24+0000"
+      "synchro_le": "2026-09-18T16:04:10+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA642788",
-      "synchro_le": "2026-09-18T13:17:52+0000"
+      "synchro_le": "2026-09-18T15:56:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA332",
-      "synchro_le": "2026-09-18T13:19:56+0000"
+      "synchro_le": "2026-09-18T15:58:44+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA758792",
-      "synchro_le": "2026-09-18T13:19:14+0000"
+      "synchro_le": "2026-09-18T15:58:45+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720002",
-      "synchro_le": "2026-09-18T13:19:23+0000"
+      "synchro_le": "2026-09-18T15:58:17+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643210",
-      "synchro_le": "2026-09-18T13:26:30+0000"
+      "synchro_le": "2026-09-18T16:06:13+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717165",
-      "synchro_le": "2026-09-18T13:19:14+0000"
+      "synchro_le": "2026-09-18T15:58:45+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-18T14:15:48+0000",
+    "genere_le": "2026-09-18T16:57:12+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr",
     "warnings": [
+      "gouvernement_profile: tags_thematiques_agreges — 68995 intervention(s) écartée(s) : hors de la fenêtre de passage du membre dans ce gouvernement.",
+      "gouvernement_profile: tags_thematiques_agreges — 5 intervention(s) écartée(s) : sans date, donc non plaçable dans la période (AGENTS.md §2 règle 5).",
       "gouvernement_textes: dossier DLR5L14N34217 : fam_code inconnu 'TSORTF04' — statut non déterminé."
     ]
   }
