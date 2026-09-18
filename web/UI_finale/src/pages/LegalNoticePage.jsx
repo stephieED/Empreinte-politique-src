@@ -52,13 +52,46 @@ const SECTIONS = [
     ),
   },
   {
-    heading: 'Propriété intellectuelle — code et contenu éditorial',
+    /* TROIS RÉGIMES, ET ILS NE SE CONFONDENT PAS (#1032, arbitré le 18/09/2026).
+       Le paragraphe précédent disait « à préciser » pour les trois à la fois,
+       pendant que /a-propos annonçait un code public : deux pages qui ne
+       disaient pas la même chose sur la même question. */
+    heading: 'Propriété intellectuelle — code, contenu éditorial et données',
     body: (
-      <p>
-        Le code source, la charte graphique et les textes rédigés pour ce site sont à préciser, sauf
-        mention contraire pour les données présentées (voir « Sources et licences des données »
-        ci-dessous).
-      </p>
+      <>
+        <p>
+          <strong>Le code source</strong> de ce site est publié sous licence{' '}
+          <a
+            href="https://github.com/stephieED/Empreinte-politique-src/blob/main/LICENSE"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            GNU Affero General Public License v3.0
+          </a>{' '}
+          (AGPL-3.0). Il peut être utilisé, étudié, modifié et redistribué à cette condition : qui
+          met en ligne un service fondé sur une version modifiée doit en publier le code source sous
+          la même licence. Le dépôt est à l’adresse{' '}
+          <a
+            href="https://github.com/stephieED/Empreinte-politique-src"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            github.com/stephieED/Empreinte-politique-src
+          </a>
+          .
+        </p>
+        <p>
+          <strong>Les textes rédigés pour ce site et sa charte graphique</strong> — pages
+          éditoriales, libellés, identité visuelle, logotype — sont protégés par le droit d’auteur
+          et <strong>tous droits réservés</strong>. Une licence de logiciel ne les couvre pas : elle
+          porte sur le code, pas sur la prose ni sur la marque.
+        </p>
+        <p>
+          <strong>Les données présentées</strong> ne relèvent d’aucun de ces deux régimes : elles
+          proviennent de sources publiques et restent sous leurs licences propres, détaillées dans
+          « Sources et licences des données » ci-dessous.
+        </p>
+      </>
     ),
   },
   {

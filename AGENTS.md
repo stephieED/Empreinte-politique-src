@@ -209,6 +209,12 @@ profile the day that profile stops carrying anything from Regards Citoyens.
 Never hardcode a licence label elsewhere; import it from `src/licences.py`, and keep
 `AGENTS.md` §7, `sources.config.js` and `LegalNoticePage.jsx` saying the same thing.
 
+**The code is AGPL-3.0 since 18/09/2026 (#1032), and it changes nothing here.** `LICENSE`
+covers the code only: the editorial texts and the graphic identity are all rights reserved, and
+the data keep their sources' licences — a software licence does not reach them. What the AGPL
+does add is an obligation on us: the deployed site must correspond to the published code, its
+section 13 being the reason `/a-propos` carries the link to the repository.
+
 Site HTML = ODbL "Produced Work" (attribution sufficient). Downloadable raw data → share-alike.
 Full details: `docs/decisions/licences.md`, `docs/decisions/licence-lot-6-530.md`.
 

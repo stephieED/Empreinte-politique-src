@@ -49,8 +49,11 @@ import './AboutPage.css';
  * contradiction, et un test le refuse.
  */
 
-/* Le dépôt est public, et c'est un fait vérifiable ; « open source » attendra
- * qu'il porte un fichier de licence. */
+/* LE LIEN VERS LE DÉPÔT EST AUSSI L'OFFRE DE SOURCE que l'AGPL-3.0 attend d'un
+ * service en réseau (sa section 13) : le lecteur qui utilise le site doit
+ * pouvoir atteindre le code de la version qu'il utilise. « Open source » est
+ * exact depuis que le dépôt porte son fichier `LICENSE` — avant, le dépôt était
+ * seulement public, c'est-à-dire visible et tous droits réservés. */
 const DEPOT = 'https://github.com/stephieED/Empreinte-politique-src';
 
 const MANIFESTE = [
@@ -101,7 +104,7 @@ export default function AboutPage() {
                 organisation ; aucun financement extérieur, aucune publicité. Les coûts sont portés
                 sur fonds propres, et{' '}
                 <a href={DEPOT} target="_blank" rel="noopener noreferrer">
-                  le code est public
+                  le code est publié en open source, sous licence AGPL-3.0
                 </a>
                 .
               </p>

@@ -286,3 +286,19 @@ fixtures figées de `tests/fixtures/`.
 Ce projet agrège des faits et des sources primaires. Il ne produit ni classement,
 ni score, ni appréciation des positions politiques. L'ensemble des règles :
 [`AGENTS.md`](AGENTS.md).
+
+## Licence
+
+**Le code est sous AGPL-3.0** ([`LICENSE`](LICENSE)) : utilisable, modifiable et
+redistribuable, à une condition — qui met en ligne un service fondé sur une
+version modifiée doit en publier le code sous la même licence.
+
+**Les textes rédigés pour le site et la charte graphique sont tous droits
+réservés** : une licence de logiciel porte sur le code, pas sur la prose ni sur
+la marque.
+
+**Les données, elles, gardent les licences de leurs sources** — et elles ne sont
+pas les mêmes d'un champ à l'autre : l'obligation de partage à l'identique de
+l'ODbL vit sur certains, pas sur tous (`AGENTS.md` §7, et
+[`docs/decisions/licences.md`](docs/decisions/licences.md)). La licence du code
+n'y change rien.
