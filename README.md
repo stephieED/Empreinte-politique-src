@@ -182,9 +182,24 @@ où ils se lisaient comme des faits sur la personne affichée (#328).
   18/05/2007, et les
   mandats 2002-2007 de Xavier Bertrand manquent dans une période que sa fiche
   dit couverte : #859.
+  **Leur composition est complète depuis le 18/09/2026** : les 205 membres qui
+  n'avaient pas de profil ont été collectés, et les **650 personnes recensées
+  sur les 17 fiches sont toutes rattachées** — par `organe_ref`, plus par
+  comparaison de libellés entre deux sources (#996, lots 3 et 4).
+  `membres[]` porte une entrée **par période**, pas par personne : un ministre
+  qui change de portefeuille en a plusieurs. Les deux comptes sont publiés
+  côte à côte, `comptages.membres_distincts` et `membres_recenses`, et
+  `len(membres)` n'est ni l'un ni l'autre.
   `membres[].portefeuille` et `premier_ministre` restent `null` quand aucun
   pivot local ne les porte — jamais un « Ministre » générique ni un nom déduit
   du libellé du gouvernement.
+  **Sur quoi les membres ont pris la parole** : `tags_thematiques_agreges`
+  (#1020) ne retient que ce qui a été dit **pendant le passage de chacun**, pas
+  pendant toute la période du gouvernement — sans quoi la parole d'un ministre
+  de trois jours devenu président de l'Assemblée serait comptée comme celle du
+  gouvernement. Sa couverture se lit dans `comptages.membres_avec_interventions`,
+  et elle est partielle tant que tous les membres n'ont pas leurs interventions
+  collectées.
 - **Membres des groupes** : l'extraction pilotée par roster vise la couverture
   quasi complète des membres des groupes configurés, mais elle n'est pas encore
   atteinte. Tant qu'elle ne l'est pas, `web/UI_finale` affiche un état « pas de
@@ -192,6 +207,16 @@ où ils se lisaient comme des faits sur la personne affichée (#328).
   → [`docs/decisions/seuil-couverture-groupe.md`](docs/decisions/seuil-couverture-groupe.md)
 - **Votes AN** : open data officiel, 14<sup>e</sup> à 17<sup>e</sup> législature
   selon les dumps disponibles.
+- **Textes portés et textes d'un gouvernement** : les archives de dossiers
+  législatifs de l'Assemblée, **XIV<sup>e</sup> à XVII<sup>e</sup>** depuis
+  #1019 — la borne recule ainsi au **20/06/2012**, première séance de la XIV<sup>e</sup>.
+  Les XII<sup>e</sup> et XIII<sup>e</sup> **ne sont pas publiées** (404 au
+  18/09/2026) : les gouvernements **Fillon I, II et III** restent hors
+  couverture, et leur `textes: []` est une absence de source, jamais « aucun
+  texte porté ». **Ayrault I aussi**, sa période s'achevant avant l'ouverture
+  de la XIV<sup>e</sup>. L'interface porte la même borne
+  (`GOVERNMENT_TEXTS_COVERAGE_START`), et un test la tient alignée sur le code.
+  → [`docs/decisions/archive-dossiers-xiv-1019.md`](docs/decisions/archive-dossiers-xiv-1019.md)
 - **Sénat** : **les appartenances, jamais l'activité** (#885, 13/09/2026). Le job
   `extract-senat` collecte mandats, groupes et commissions depuis `data.senat.fr`,
   datés au jour près — 133 appartenances sur 2 candidats déclarés. Le jeu ne porte
@@ -215,12 +240,16 @@ où ils se lisaient comme des faits sur la personne affichée (#328).
   d'identifiants d'acteur nus reste livrée inactive (#510) — une collecte
   fraîche ne rend donc que les questions officielles. Les prises de parole déjà
   publiées sont conservées par la fusion additive.
-- **Mandats locaux** : aucun n'est publié — ni maire, ni conseiller municipal,
-  régional ou départemental. Ce n'était pas un refus éditorial mais une absence
-  de source ; le Répertoire national des élus en est une, et **10 des 32
-  candidats déclarés** y sont appariés avec certitude (#922, non priorisé).
-  Le **portefeuille ministériel hors AN** reste, lui, hors périmètre.
-  → [`docs/decisions/hors-perimetre.md`](docs/decisions/hors-perimetre.md)
+- **Mandats locaux** : publiés depuis #922 — **35 mandats sur 15 profils**,
+  mesuré le 18/09/2026. Cette ligne disait « aucun n'est publié », ce que la
+  table des sources ci-dessus contredisait quinze lignes plus haut. La
+  couverture **commence en 2020** : les jeux complets de 2014 et 2020 ne
+  déclarent aucune licence, et une absence avant cette borne se lit « non
+  couvert », jamais « aucun mandat local ». La source ne publie **aucune date
+  de fin** (#966). Le **portefeuille ministériel hors AN** reste, lui, hors
+  périmètre.
+  → [`docs/decisions/collecte-mandats-locaux-rne-922.md`](docs/decisions/collecte-mandats-locaux-rne-922.md),
+  [`docs/decisions/hors-perimetre.md`](docs/decisions/hors-perimetre.md)
 - **Biais de couverture** : un ancien parlementaire laisse des traces bien plus
   riches qu'un candidat qui ne l'a jamais été.
 

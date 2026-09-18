@@ -23,7 +23,7 @@ Ce fichier existe pour être lu **avant** d'ouvrir
 | `extract-roster-groupes` | les quatre `extract-*` + `prepare-roster-matrix` | l'artifact `roster-candidats`, les mêmes sources | un artifact `raw-profiles-roster-groupes-<shard>` par shard |
 | `extract-senat` | — | `export_sens.zip` de `data.senat.fr` (#885) | artifact `raw-profiles-senat`, cache `public-data-cache-senat-<date>` |
 | `extract-mandats-locaux` | — | le Répertoire national des élus et les sortants 2026, par `tabular-api.data.gouv.fr` (#922) | artifact `raw-profiles-mandats-locaux`, **aucun cache** |
-| `merge-and-pivot` | `extract-an`, `extract-ue-officiel`, `extract-parltrack`, `extract-roster-groupes`, `extract-senat` | tous les artifacts ci-dessus | le contrôle du transport, la fusion, les deux passes pivot, les quatre contrôles, le commit et le push |
+| `merge-and-pivot` | `extract-an`, `extract-ue-officiel`, `extract-parltrack`, `extract-roster-groupes`, `extract-senat` | tous les artifacts ci-dessus, et les **quatre archives de dossiers** (XIV à XVII, deux formats depuis #1019) | le contrôle du transport, la fusion, les deux passes pivot, les fiches de groupe, de lignée et **de gouvernement** (rattachement par `organe_ref`, #996 lot 4), les quatre contrôles, le commit et le push |
 
 Sept jobs n'ont aucun `needs:` et démarrent ensemble (`rafraichir-candidats` en
 fait partie depuis #757, `extract-senat` depuis #885, `extract-mandats-locaux`
@@ -414,11 +414,36 @@ RSS** mesurés pour les 10 lignées), **la liste des gouvernements lue dans AMO3
 (`gouvernements_amo30.py`, #996 — réécrit `raw_data/gouvernements_reels.json`, 17
 gouvernements depuis 2007 ; sans `continue-on-error` : une archive illisible lève
 avant toute écriture et la liste committée reste), profils
-de gouvernement ; `check_quality_gate.py` ; les **quatre contrôles** de la §8 ;
+de gouvernement (`generate_gouvernement_profiles.py` → `gouvernement_profile.py`
++ `gouvernement_roster.py` ; **`--rosters-bruts raw_data/rosters_bruts.json`
+depuis #996 lot 4**, qui rattache les membres par `organe_ref` au lieu de
+comparer `mandats[].label` au libellé de la config — sans ce fichier le repli
+par libellé s'applique et les fiches sont produites quand même, la sortie
+disant laquelle des deux voies a servi) ; `check_quality_gate.py` ; les **quatre contrôles** de la §8 ;
 la vérification que `src/` et `raw_data/*.json` n'ont pas bougé sur la branche
 pendant le run ; le commit et le push ; **le signal disant si ce commit
 déclenchera `tests.yml`** (#685, §6) ; la fenêtre de rétention de l'historique
 de données ; le déclenchement de `deploy-pages.yml`.
+
+**Quatre archives de dossiers depuis #1019, et deux formats.** `AN_DOSSIERS_ARCHIVES`
+(`couverture_dossiers.py`) liste les législatures XIV à XVII. La XIV est
+**monolithique** — un seul JSON de 36 Mo décompressés, les objets dans deux
+tableaux — là où les autres portent un fichier par objet ;
+`gouvernement_textes._entrees_monolithiques` lit cette forme, détectée sur la
+FORME de l'archive et jamais sur son numéro. Ce qui en dépend dans ce job : la
+table des commissions, celle des scrutins, l'index des textes portés et les
+fiches de gouvernement. Conséquence pour le lecteur : la **borne de couverture
+recule au 2012-06-20**, et quatre gouvernements cessent de publier `textes: []`.
+Les XII et XIII répondent 404 — Fillon I, II et III restent hors couverture.
+
+**Trois index de ce job portent un numéro de version**, et il change dès que
+leur CONTENU change, pas seulement leur forme : `index_acteur_textes_v5`,
+`index_texte_dossier_v2`, `index_dossier_commission_v2`. Le cache
+`.cache/dossiers_an` est restauré d'une semaine sur l'autre par ses
+`restore-keys` : un correctif qui ne change pas la clé ne change rien, ce qui a
+coûté trois runs sur #997.
+→ `docs/decisions/archive-dossiers-xiv-1019.md`,
+  `docs/decisions/cle-index-textes-portes-997.md`
 
 **Deux tables se dérivent des mêmes archives de dossiers**, l'une après l'autre.
 Après la table des commissions saisies au fond, une seconde étape marche **le
