@@ -576,14 +576,19 @@ function limitesDeLaFiche(government) {
   if (couverture.statut === 'hors_couverture') {
     lignes.push({
       quoi: 'Textes déposés',
+      /* LA BORNE SE LIT, ELLE NE S'ÉCRIT PAS DEUX FOIS. Elle a reculé du
+         21 juin 2017 au 20 juin 2012 le jour où l'archive de la XIVe a été
+         lue (#1019) : trois phrases la citaient en dur, et elles ont menti
+         jusqu'à ce commit. Elle vient désormais de `textesCouverture.borne`,
+         d'où `governmentTextsCoverage` la tire aussi. */
       texte: government.textes.length
-        ? `Les archives de dossiers de l’Assemblée nationale commencent au 21 juin 2017, après la fin de ce gouvernement. ${government.textes.length === 1 ? 'Le texte affiché vient' : 'Les textes affichés viennent'} de la traîne d’une archive plus récente : la liste n’est pas complète.`
-        : 'Les archives de dossiers de l’Assemblée nationale commencent au 21 juin 2017, après la fin de ce gouvernement. Rien n’en est lisible, et ce n’est pas « aucun texte déposé ».',
+        ? `Les archives de dossiers de l’Assemblée nationale commencent au ${jour(couverture.borne)}, après la fin de ce gouvernement. ${government.textes.length === 1 ? 'Le texte affiché vient' : 'Les textes affichés viennent'} de la traîne d’une archive plus récente : la liste n’est pas complète.`
+        : `Les archives de dossiers de l’Assemblée nationale commencent au ${jour(couverture.borne)}, après la fin de ce gouvernement. Rien n’en est lisible, et ce n’est pas « aucun texte déposé ».`,
     });
   } else if (couverture.statut === 'partielle') {
     lignes.push({
       quoi: 'Textes déposés',
-      texte: `Les archives de dossiers de l’Assemblée nationale commencent au 21 juin 2017. Ce gouvernement était en fonction depuis le ${jour(government.periode.debut)} : ${duree(government.periode.debut, couverture.borne)} de son activité n’est pas couvert.`,
+      texte: `Les archives de dossiers de l’Assemblée nationale commencent au ${jour(couverture.borne)}. Ce gouvernement était en fonction depuis le ${jour(government.periode.debut)} : ${duree(government.periode.debut, couverture.borne)} de son activité n’est pas couvert.`,
     });
   }
 
