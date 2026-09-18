@@ -11,15 +11,16 @@ import './EnTeteSite.css';
  * stable (voir ExplorerLayout.jsx). Elle se lit dans `--entete-hauteur`, que les
  * enfants — le panneau des listes — reprennent pour se poser dessous.
  *
- * `children` s'ajoute après les liens : l'explorateur y met « Changer de fiche »
- * et son panneau.
+ * `children` s'ajoute après les liens : l'explorateur y met son tiroir.
+ * `navProps` passe à la barre des pages : l'explorateur y pose l'outil qui
+ * remplace l'onglet courant (#1025).
  */
-export default function EnTeteSite({ children, ref }) {
+export default function EnTeteSite({ children, ref, navProps = null }) {
   return (
     <header className="entete-site" ref={ref}>
       <Brand />
       <div className="entete-site-actions">
-        <NavigationSite />
+        <NavigationSite {...(navProps || {})} />
         {children}
       </div>
     </header>

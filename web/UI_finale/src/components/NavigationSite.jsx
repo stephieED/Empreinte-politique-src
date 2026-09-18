@@ -8,9 +8,14 @@ import './NavigationSite.css';
  * courante en encre soulignée de jaune. Le jaune est un TRAIT sous le mot,
  * jamais la couleur du texte — 1,05:1 sur le fond clair (DESIGN_SYSTEM §2).
  *
- * Sous 720 px les quatre liens ne tiennent plus à côté du logo et du bouton
- * « Changer de fiche » : ils passent dans un menu.
-
+ * Sous 720 px les quatre liens ne tiennent plus à côté du logo et du tiroir :
+ * ils passent dans un menu.
+ *
+ * L'ONGLET DE LA PAGE COURANTE PEUT CÉDER SA PLACE À UN OUTIL (#1025).
+ * L'explorateur y pose son tiroir : sur une fiche, « Explorateur » était déjà
+ * la page courante, et son clic renvoyait à la fiche par défaut. Le lien reste
+ * partout ailleurs, où il sert. C'est un remplacement, jamais un ajout : la
+ * barre porte quatre entrées, pas cinq.
  */
 const PAGES = [
   { libelle: 'Explorateur', vers: '/candidats', racines: ['/candidats', '/groupes', '/gouvernements'] },
@@ -22,7 +27,7 @@ const PAGES = [
 const estCourante = (page, pathname) =>
   page.racines.some((r) => pathname === r || pathname.startsWith(`${r}/`));
 
-export default function NavigationSite() {
+export default function NavigationSite({ outilExplorateur = null }) {
   const { pathname } = useLocation();
   const [menuOuvert, setMenuOuvert] = useState(false);
   const menuRef = useRef(null);
@@ -50,6 +55,13 @@ export default function NavigationSite() {
   const liens = (className) =>
     PAGES.map((page) => {
       const courante = estCourante(page, pathname);
+      // L'outil prend la place du lien dans la barre ; dans le menu replié, il
+      // n'y a rien à mettre — le bouton est à côté de « Menu », pas dedans.
+      if (outilExplorateur && page.libelle === 'Explorateur' && courante) {
+        return className === 'nav-site-lien'
+          ? <span key={page.libelle} className="nav-site-outil">{outilExplorateur}</span>
+          : null;
+      }
       return (
         <Link
           key={page.libelle}

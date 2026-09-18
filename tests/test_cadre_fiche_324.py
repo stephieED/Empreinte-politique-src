@@ -20,6 +20,15 @@ Ce que ces garde-fous protègent :
    visites. Un seuil à 1 600 px aurait exclu les écrans 1 600 × 900 eux-mêmes,
    dont la fenêtre fait 1 585 px.
 
+CE QUE #1025 A CHANGÉ, LE 18/09/2026, ET QUI RÉÉCRIT LA MOITIÉ DE CE FICHIER :
+les listes ont QUITTÉ la page. Elles y vivaient en double — dépliées sous le
+bandeau à l'arrivée, puis rappelées dans un bouton du bandeau une fois
+franchies. Un seul endroit reste, le tiroir, et il porte aussi la recherche.
+Trois garde-fous d'ici tombent donc, non pas parce qu'ils étaient faux, mais
+parce que ce qu'ils protégeaient n'existe plus : `.explorer-bars`,
+`.explorer-changer` et sa visibilité réglée au défilement. Ce qui les remplace
+est plus simple à tenir — plus aucune lecture de la position de défilement.
+
 CE QU'ILS NE COUVRENT PAS (§2 règle 5) : aucun composant React n'est rendu ici.
 Le comportement — repli au défilement, rappel des listes, suivi de la section
 lue, largeur du contenu — a été vérifié hors dépôt à 1920×1080, 1536×864,
@@ -48,6 +57,11 @@ ENTETE_CSS = SRC / "components" / "EnTeteSite.css"
 SOMMAIRE = SRC / "components" / "SommaireSections.jsx"
 SOMMAIRE_CSS = SRC / "components" / "SommaireSections.css"
 FICHE = SRC / "components" / "CandidateProfile.jsx"
+LIGNEE = SRC / "components" / "LigneeProfile.jsx"
+NAV = SRC / "components" / "NavigationSite.jsx"
+NAV_CSS = SRC / "components" / "NavigationSite.css"
+PAGE_CANDIDAT = SRC / "pages" / "CandidateProfilePage.jsx"
+PAGE_GROUPE = SRC / "pages" / "GroupProfilePage.jsx"
 
 SEUIL_SOMMAIRE = "1440px"
 
@@ -85,66 +99,71 @@ def _bloc(css: str, selecteur: str) -> str:
     return css.split(f"{selecteur} {{")[1].split("}")[0]
 
 
-def test_les_barres_ne_sont_plus_collees(layout_css: str, entete_css: str) -> None:
+def test_les_listes_ne_sont_plus_dans_la_page(layout: str, layout_css: str, entete_css: str) -> None:
     """357 px collés sur tous les supports : c'est ce que #324 a corrigé.
 
-    Depuis #951, seule la rangée du logo se colle. Les listes défilent avec la
-    page, et ne reviennent que dans le panneau.
+    #951 n'avait gardé collée que la rangée du logo, les listes défilant avec la
+    page. #1025 les en retire : elles y faisaient 425 px et la fiche ne
+    commençait qu'à 577 px du haut de la page, pour un contenu que le tiroir
+    redonnait de toute façon. `.explorer-bars` n'existe plus, ni dans le
+    composant ni dans la feuille.
     """
-    assert "position: sticky" not in _bloc(layout_css, ".explorer-bars")
+    assert "explorer-bars" not in layout
+    assert "explorer-bars" not in layout_css
     entete = _bloc(entete_css, ".entete-site")
     assert "position: sticky" in entete and "top: 0" in entete
 
 
-def test_la_mise_en_page_ne_change_pas_au_defilement(layout: str) -> None:
-    """L'en-tête de #324 RETIRAIT les listes au-delà de 180 px de défilement.
+def test_plus_rien_ne_lit_le_defilement(layout: str) -> None:
+    """Deux mécaniques ont été payées ici, et aucune n'a plus d'objet.
 
-    La page raccourcissait de 385 px, le navigateur ramenait le défilement à 0,
-    les listes revenaient : une boucle, mesurée le 16/09/2026 sur la fiche de
-    Jérôme Guedj. Franchir les listes ne change plus qu'une visibilité, et les
-    listes de la page ne portent aucun rendu conditionnel.
+    L'en-tête de #324 RETIRAIT les listes au-delà de 180 px : la page
+    raccourcissait, le navigateur ramenait le défilement à 0, les listes
+    revenaient — une boucle. #951 l'a remplacée par une simple visibilité, lue à
+    chaque défilement plutôt que par un `IntersectionObserver`, qui manquait les
+    sauts directs (une ancre, un lien partagé). Les listes ayant quitté la page,
+    le tiroir est là dès l'arrivée : il n'y a plus rien à franchir, donc plus
+    rien à mesurer.
     """
     assert "SEUIL_REPLI" not in layout
-    barres = layout.split('<div className="explorer-bars">')[1].split("</div>")[0]
-    assert "&&" not in barres and "hidden" not in barres
-    assert "explorer-changer--visible" in layout
-
-
-def test_la_position_se_lit_au_defilement_pas_par_un_observateur(layout: str) -> None:
-    """Un IntersectionObserver ne signale qu'un franchissement.
-
-    Un saut direct — une ancre, un lien partagé — passe les listes sans les
-    croiser : mesuré sur maquette à 390 px, le bouton restait caché.
-    """
     assert "IntersectionObserver" not in layout
-    assert "getBoundingClientRect().top" in layout
-    assert "addEventListener('scroll'" in layout
+    assert "addEventListener('scroll'" not in layout
+    assert "getBoundingClientRect" not in layout
+    assert "explorer-repere" not in layout
 
 
-def test_le_bouton_garde_sa_place(layout_css: str) -> None:
-    """Invisible tant que les listes sont à l'écran, mais sa place est réservée,
-    et ses deux libellés occupent la même case : les liens ne glissent jamais."""
-    bouton = _bloc(layout_css, ".explorer-changer")
-    assert "visibility: hidden" in bouton and "display: none" not in bouton
-    assert "grid-area: 1 / 1" in _bloc(layout_css, ".explorer-changer-libelle")
+def test_l_outil_remplace_l_onglet_et_ne_s_y_ajoute_pas(layout: str) -> None:
+    """Sur une fiche, « Explorateur » était déjà la page courante, et son clic
+    renvoyait à `/candidats` — donc à la fiche par défaut, que personne n'avait
+    demandée. Le tiroir prend sa place ; la barre garde quatre entrées.
+
+    Un seul bouton est rendu, pas un pour le bureau et un pour le mobile : deux
+    boutons pour un même geste, c'est le défaut que #1025 corrige.
+    """
+    nav = sans_commentaires(NAV.read_text(encoding="utf-8"))
+    assert "outilExplorateur" in nav
+    assert "page.libelle === 'Explorateur' && courante" in nav
+    # Replié dans « Menu », l'entrée disparaît : le bouton est à côté, pas dedans.
+    assert "className === 'nav-site-lien'" in nav
+    assert layout.count('className="explorer-outil"') == 1
 
 
 def test_l_attribut_hidden_a_sa_regle_css(layout_css: str) -> None:
     """`display: flex` l'emporte sur `[hidden]` de la feuille du navigateur.
 
-    Sans cette règle, l'attribut est posé et le panneau reste affiché — une
+    Sans cette règle, l'attribut est posé et le tiroir reste affiché — une
     mesure qui lit `element.hidden` le déclare pourtant corrigé.
     """
-    assert "display: none" in _bloc(layout_css, ".explorer-panneau[hidden]")
+    assert "display: none" in _bloc(layout_css, ".explorer-tiroir[hidden]")
 
 
-def test_l_entete_et_le_panneau_sont_opaques(layout_css: str, entete_css: str) -> None:
+def test_l_entete_et_le_tiroir_sont_opaques(layout_css: str, entete_css: str) -> None:
     """Un fond translucide laissait lire le contenu à travers les listes.
 
     Le flou d'arrière-plan est un raffinement qui ne survit pas partout ;
     l'opacité est un fait.
     """
-    for css, selecteur in ((entete_css, ".entete-site"), (layout_css, ".explorer-panneau")):
+    for css, selecteur in ((entete_css, ".entete-site"), (layout_css, ".explorer-tiroir")):
         bloc = _bloc(css, selecteur)
         fond = [l for l in bloc.splitlines() if l.strip().startswith("background")]
         assert fond, f"{selecteur} doit déclarer un fond"
@@ -152,12 +171,51 @@ def test_l_entete_et_le_panneau_sont_opaques(layout_css: str, entete_css: str) -
         assert "background: var(--bg);" in bloc
 
 
-def test_sous_720_px_les_listes_quittent_la_page(layout_css: str) -> None:
-    """Elles faisaient 1 277 px sur un 390 px de large : deux écrans avant la
-    fiche. Le bandeau seul reste, et le bouton est là dès l'arrivée."""
-    media = layout_css.split("@media (max-width: 720px)")[1].split("@media")[0]
-    assert ".explorer-bars {\n    display: none;" in media.replace("\r\n", "\n")
-    assert "visibility: visible" in _bloc(media, ".explorer-changer")
+def test_sous_720_px_la_barre_ne_porte_que_l_outil(layout_css: str) -> None:
+    """Les quatre liens passent dans « Menu », et l'outil reste à l'écran —
+    après le bouton « Menu », pas avant : c'est l'ordre retenu sur maquette.
+
+    Son libellé long ne tient pas : « Chercher ou changer de fiche » mesure
+    226 px sur les 390 px d'un mobile, et la rangée débordait de 4 px.
+    """
+    nav_css = sans_commentaires(NAV_CSS.read_text(encoding="utf-8"))
+    media = nav_css.split("@media (max-width: 720px)")[1]
+    assert "display: none" in _bloc(media, ".nav-site-lien")
+    assert "order: 2" in _bloc(media, ".nav-site")
+    assert "order: 1" in _bloc(media, ".nav-site-menu")
+    media_layout = layout_css.split("@media (max-width: 720px)")[1].split("@media")[0]
+    assert "display: none" in _bloc(media_layout, ".explorer-outil-long")
+    assert "display: inline" in _bloc(media_layout, ".explorer-outil-court")
+
+
+def test_le_champ_n_existe_que_la_ou_il_filtre(layout: str) -> None:
+    """Une barre qui ne filtre rien est du mobilier.
+
+    Les fiches candidat et de lignée lisent `?mot=` ; la fiche de gouvernement
+    ne le lit pas encore, et les pages éditoriales n'ont pas de filtre. Le
+    tiroir se renomme alors, et ne porte pas de champ (§2 règle 5 : on ne fait
+    pas semblant).
+    """
+    assert "const FICHES_FILTRABLES = ['/candidats', '/groupes']" in layout
+    assert "{filtrable && (" in layout
+    assert "filtrable ? 'Chercher ou changer de fiche' : 'Changer de fiche'" in layout
+
+
+def test_la_barre_a_quitte_le_corps_des_fiches(layout: str) -> None:
+    """« Rechercher sur cette page » vivait dans la fiche, sous le nom (#979).
+
+    Elle est dans le tiroir depuis #1025. Ce qui n'a PAS bougé : le mot vit dans
+    l'adresse, et c'est la page qui le lit — monter le champ ne déplace qu'un
+    champ, la mécanique du filtre n'est pas touchée. Les deux pages de fiche
+    n'écrivent donc plus `?mot=`, elles le lisent.
+    """
+    assert "BarreFiltre" in layout
+    for composant in (FICHE, LIGNEE):
+        assert "BarreFiltre" not in sans_commentaires(composant.read_text(encoding="utf-8"))
+    for page in (PAGE_CANDIDAT, PAGE_GROUPE):
+        source = sans_commentaires(page.read_text(encoding="utf-8"))
+        assert "params.get('mot')" in source
+        assert "setParams" not in source, "le champ du bandeau est seul à écrire le mot"
 
 
 # ── L'ordre des listes ──────────────────────────────────────────────────────
@@ -165,9 +223,9 @@ def test_sous_720_px_les_listes_quittent_la_page(layout_css: str) -> None:
 
 def test_l_ordre_est_candidats_groupes_gouvernements(layout: str) -> None:
     """Une fiche s'atteint par un NOM ; les deux autres listes sont du contexte."""
-    ordre = [m for m in re.findall(r"<(CandidatesBar|GroupsBar|GovernmentsBar)\s*/>", layout)]
-    # Deux fois le même ordre : dans le panneau, puis dans la page.
-    assert ordre == ["CandidatesBar", "GroupsBar", "GovernmentsBar"] * 2, ordre
+    ordre = re.findall(r"<(CandidatesBar|GroupsBar|GovernmentsBar)\s*/>", layout)
+    # Une seule fois : depuis #1025, les listes ne vivent que dans le tiroir.
+    assert ordre == ["CandidatesBar", "GroupsBar", "GovernmentsBar"], ordre
 
 
 # ── Le sommaire ─────────────────────────────────────────────────────────────

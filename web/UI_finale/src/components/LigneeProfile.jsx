@@ -17,7 +17,7 @@
  * méthodologie derrière un renvoi — jamais un paragraphe sur la fiche.
  */
 import { createContext, useContext, useMemo, useState } from 'react';
-import { BarreFiltre, EtiquetteFiltre, MOT } from './Recherche';
+import { EtiquetteFiltre, MOT } from './Recherche';
 import { Link } from 'react-router-dom';
 import '../styles/shell.css';
 import './LigneeProfile.css';
@@ -1162,7 +1162,7 @@ function EnPile({ lignee, cle, Composant }) {
     </Filtre.Provider>
   ));
 }
-export default function LigneeProfile({ lignee, mot = '', saisie = '', onSaisie = () => {} }) {
+export default function LigneeProfile({ lignee, mot = '' }) {
   const aujourdhui = lignee.genereLe || new Date().toISOString().slice(0, 10);
   const noms = [];
   for (const m of lignee.maillons) if (!noms.includes(m.nom)) noms.push(m.nom);
@@ -1182,7 +1182,6 @@ export default function LigneeProfile({ lignee, mot = '', saisie = '', onSaisie 
         <p className="lp-qui">{noms.join(' → ')} · {depuis}</p>
       </header>
 
-      <BarreFiltre onSaisie={onSaisie} saisie={saisie} />
 
       {!mot && (
       <section className="lp-section lp-section--bref" data-section="En bref" id="section-bref">

@@ -1,4 +1,5 @@
 import { Fragment } from 'react';
+import Baseline from '../Baseline';
 import { SOURCE_BADGE_VERIFIED } from '../../utils/lecture';
 import './landing.css';
 
@@ -71,7 +72,11 @@ export default function Hero() {
   return (
     <section className="landing-section landing-hero" aria-label="Présentation">
       <h1>L'explorateur neutre et sourcé des parcours politiques pour la présidentielle 2027.</h1>
-      <p>Des faits sourcés, sans note ni classement — à consulter par candidat, par groupe ou par gouvernement.</p>
+      {/* LA BASELINE (#1026) remplace la sous-ligne « Des faits sourcés, sans
+          note ni classement — à consulter par candidat, par groupe ou par
+          gouvernement » : elle disait deux des trois traits, et la liste des
+          candidats juste dessous dit déjà par où entrer. */}
+      <Baseline className="baseline--bandeau" />
 
       <div className="hero-pipeline">
         <p className="hero-pipeline-caption">Le concept</p>

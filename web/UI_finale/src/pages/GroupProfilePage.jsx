@@ -19,17 +19,11 @@ export default function GroupProfilePage() {
   }, [groupId]);
 
   /* LA RECHERCHE (#979) : le mot vit dans l'adresse, comme sur la fiche
-   * candidat. Les débats complets ne se chargent qu'au premier mot tapé. */
-  const [params, setParams] = useSearchParams();
+   * candidat, et le champ dans le bandeau depuis #1025 — la page lit `?mot=`,
+   * elle ne l'écrit plus. Les débats complets ne se chargent qu'au premier mot
+   * tapé. */
+  const [params] = useSearchParams();
   const saisie = params.get('mot') ?? '';
-  const changerMot = (valeur) => {
-    setParams((p) => {
-      const suivant = new URLSearchParams(p);
-      if (valeur) suivant.set('mot', valeur);
-      else suivant.delete('mot');
-      return suivant;
-    }, { replace: true });
-  };
   const motDiffere = useDeferredValue(saisie);
   const cherche = motDiffere.trim().length > 0;
   const { data: debats } = useAsyncData(
@@ -47,12 +41,6 @@ export default function GroupProfilePage() {
     return <NotFoundProfile message={`Aucun groupe trouvé pour l'identifiant « ${groupId} ».`} />;
   }
   return (
-    <LigneeProfile
-      key={lignee.id}
-      lignee={lignee}
-      mot={motDiffere.trim()}
-      onSaisie={changerMot}
-      saisie={saisie}
-    />
+    <LigneeProfile key={lignee.id} lignee={lignee} mot={motDiffere.trim()} />
   );
 }

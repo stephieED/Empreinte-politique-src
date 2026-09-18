@@ -9,19 +9,12 @@ export default function CandidateProfilePage() {
   const { candidateId } = useParams();
   const { data: sources, loading } = useAsyncData(() => chargerSourcesCandidat(candidateId), [candidateId]);
 
-  /* LE MOT VIT DANS L'ADRESSE (#979) : `?mot=finances` se recharge, se
-   * partage et revient avec le bouton précédent. `replace` : chaque lettre
-   * tapée n'est pas une page de l'historique. */
-  const [params, setParams] = useSearchParams();
+  /* LE MOT VIT DANS L'ADRESSE (#979), ET LE CHAMP DANS LE BANDEAU (#1025) :
+   * la page LIT `?mot=finances`, elle ne l'écrit plus — c'est le tiroir de
+   * l'en-tête qui le fait (ExplorerLayout). Un lien partagé, un rechargement
+   * ou le bouton précédent la ramènent donc au même filtre. */
+  const [params] = useSearchParams();
   const mot = params.get('mot') ?? '';
-  const changerMot = (valeur) => {
-    setParams((p) => {
-      const suivant = new URLSearchParams(p);
-      if (valeur) suivant.set('mot', valeur);
-      else suivant.delete('mot');
-      return suivant;
-    }, { replace: true });
-  };
   /* La fiche se recalcule sur le mot DIFFÉRÉ : le champ suit la frappe, le
    * recalcul suit quand il peut. */
   const motDiffere = useDeferredValue(mot);
@@ -34,12 +27,6 @@ export default function CandidateProfilePage() {
   }
 
   return (
-    <CandidateProfile
-      key={candidate.id}
-      candidate={candidate}
-      mot={motDiffere.trim()}
-      saisie={mot}
-      onSaisie={changerMot}
-    />
+    <CandidateProfile key={candidate.id} candidate={candidate} mot={motDiffere.trim()} />
   );
 }

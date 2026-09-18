@@ -116,12 +116,29 @@
   background: var(--accent);
 }
 
+/* L'outil qui remplace l'onglet courant (#1025) garde la barre pour lui seul
+   sous 720 px : les liens passent dans « Menu », l'outil reste à l'écran. */
+.nav-site-outil {
+  display: inline-flex;
+}
+
 @media (max-width: 720px) {
-  .nav-site {
+  .nav-site-lien {
     display: none;
+  }
+
+  /* La barre ne porte plus que l'outil, et passe À DROITE du bouton « Menu » :
+     un seul élément rendu, deux mises en page. */
+  .nav-site:not(:has(.nav-site-outil)) {
+    display: none;
+  }
+
+  .nav-site {
+    order: 2;
   }
 
   .nav-site-menu {
     display: block;
+    order: 1;
   }
 }

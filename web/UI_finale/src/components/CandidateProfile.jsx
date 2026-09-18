@@ -15,7 +15,7 @@
 import '../styles/shell.css';
 import './CandidateProfile.css';
 import { BadgeSource, ListeVide } from './Lecture';
-import { BarreFiltre, EtiquetteFiltre, MOT, VideDuFiltre } from './Recherche';
+import { EtiquetteFiltre, MOT, VideDuFiltre } from './Recherche';
 import { teinteMatiere, teinteThemeUe } from '../utils/matiere';
 import { MATIERE_NON_ETABLIE, NATURES_UE } from '../utils/profilCandidat';
 import { Cascade, ListeCascade } from './CascadeTextes';
@@ -1565,7 +1565,7 @@ const LIMITES_DU_PARCOURS = new Set([
   'mandats-anterieurs',
 ]);
 
-export default function CandidateProfile({ candidate, mot = '', saisie = '', onSaisie = () => {} }) {
+export default function CandidateProfile({ candidate, mot = '' }) {
   const c = candidate;
   const filtre = mot ? c.filtre : null;
   const limitesDuParcours = (c.limites || []).filter((l) => LIMITES_DU_PARCOURS.has(l.cle));
@@ -1618,8 +1618,6 @@ export default function CandidateProfile({ candidate, mot = '', saisie = '', onS
 
           Il est dense — c'est assumé — donc repliable : il ne doit pas s'imposer
           avant que le lecteur ait choisi de le lire. */}
-      <BarreFiltre onSaisie={onSaisie} saisie={saisie} />
-
       {!filtre && <GrandsChiffres chiffres={c.grandsChiffres} parcours={c.parcours} />}
 
       {/* La frise ET le détail daté vivent dans « En bref », au-dessus : les
