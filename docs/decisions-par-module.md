@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 383 décisions
+gouverne sans avoir à fouiller les 384 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -866,7 +866,7 @@ Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambr
 
 ## `src/merge_profile.py`
 
-65 décision(s) le gouvernent ; le module en cite 5.
+66 décision(s) le gouvernent ; le module en cite 5.
 
 | Décision | Nomme |
 | --- | --- |
@@ -895,6 +895,7 @@ Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambr
 | [Borner l'historique de données : ce que ça rend vraiment, et quand (#434) (2026-08-20)](decisions/fenetre-historique-donnees.md) | `merge_raw_profile` |
 | [Un filtre de publication posé avant la fusion ne filtre rien (#641, réouverture) (2026-08-31)](decisions/filtre-publication-apres-fusion-641.md) | `FILTRES_PUBLICATION_IDENTITE`, `_composer_identite`, `bloc_sans_fond`, `deriver_provenance_champs`, `filtrer_identite_publiee`, `merge_pivot_profile` |
 | [Extension de la stabilité des horodatages aux profils groupe/gouvernement/parti (#343, complet) (2026-08-17)](decisions/freshness-timestamps-groupes-gouvernements-partis.md) | `load_existing_document`, `preserve_stable_freshness_timestamps` |
+| [Un dossier déjà collecté n'apprenait plus rien : au brut aussi, la neuve gagne (#997) (2026-09-18)](decisions/fusion-dossiers-brut-la-neuve-gagne-997.md) | `CHAMPS_PROTEGES_DU_VIDE`, `_dossier_key`, `backfill_dossier_nature`, `backfill_sort_texte_porte`, `merge_dossier_records`, `merge_lists_by_key`, `merge_raw_profile` |
 | [Profils de gouvernement : ne jamais réécrire sur une collecte incomplète, et cache dossiers dédié (#427) (2026-08-18)](decisions/gouvernement-textes-non-ecrasement.md) | `preserve_stable_freshness_timestamps` |
 | [L'`id` d'un profil pivot est le slug : le préfixe de provenance était instable (#487) (2026-08-20)](decisions/id-pivot-sans-prefixe.md) | `merge_pivot_profile`, `merge_raw_profile` |
 | [Index amendements shardé par acteur (#392) (2026-08-17)](decisions/index-amendements-sharde-par-acteur.md) | `_amendement_key` |

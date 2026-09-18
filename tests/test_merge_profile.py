@@ -1139,3 +1139,81 @@ def test_la_scene_de_crime_du_run_33262372122_ne_se_rejoue_plus():
     assert final["meta"]["synchro_sources"]["assemblee_nationale"] == "2026-08-29T16:22:05+0000"
     assert final["meta"]["warnings"] == []
     assert len(final["mandats"]) == 1
+
+
+# ---------------------------------------------------------------------------
+# #997 — un dossier déjà collecté apprend de la régénération
+# ---------------------------------------------------------------------------
+#
+# `dossiers_legislatifs[]` se fusionnait en ADDITIF PUR : l'entrée ancienne
+# était conservée inchangée et la neuve de même clé ignorée. Le correctif de
+# stade de #997 a traversé QUATRE runs sans atteindre le corpus pour cette
+# seule raison — le pivot, lui, faisait bien gagner la neuve, mais il
+# normalise depuis le brut, donc il recevait la vieille valeur et n'avait rien
+# à écraser. Les deux étages étaient d'accord sur une donnée périmée.
+#
+# Mesuré le 18/09/2026, collecte réelle contre brut publié d'Édouard Philippe :
+# 290 dossiers de part et d'autre, exactement les mêmes clés, AUCUN champ
+# perdu, et 118 transitions `examine_commission` → `depose`.
+#
+# Rien ne verrouillait l'ancienne politique : toute la suite passait avant ce
+# changement comme après. Ces deux cas sont la garde qui manquait.
+
+
+def _dossier_brut(id_: str, **champs):
+    base = {
+        "id": id_, "titre": f"Dossier {id_}", "role": "auteur",
+        "type_rapport": None, "stade_procedural": "examine_commission",
+        "sort": "navette_en_cours", "date_min": "2024-01-01",
+        "date_max": "2024-06-01", "legislature": "17",
+        "source_url": f"https://www.assemblee-nationale.fr/dyn/17/dossiers/{id_}",
+        "nature_texte": "projet_de_loi",
+    }
+    base.update(champs)
+    return base
+
+
+def test_un_stade_corrige_atteint_le_profil_brut():
+    """Le cas de #997 : le dossier est déjà là, seul son stade a changé."""
+    old = {"slug": "x", "votes": [], "interventions": [], "mandats": [],
+           "dossiers_legislatifs": [_dossier_brut("DLR5L17N1")]}
+    new = {"slug": "x", "votes": [], "interventions": [], "mandats": [],
+           "dossiers_legislatifs": [_dossier_brut("DLR5L17N1", stade_procedural="depose",
+                                                  sort="navette_en_cours")]}
+
+    merged = merge_raw_profile(old, new)
+
+    assert len(merged["dossiers_legislatifs"]) == 1
+    assert merged["dossiers_legislatifs"][0]["stade_procedural"] == "depose"
+
+
+def test_un_dossier_que_la_collecte_ne_rend_plus_reste_publie():
+    """L'autre moitié du contrat : la neuve gagne, mais elle ne retire rien.
+
+    Un texte porté dont l'AN ne sert plus le dossier garde ce qu'il avait —
+    une absence n'est pas une correction (§2 règle 5).
+    """
+    old = {"slug": "x", "votes": [], "interventions": [], "mandats": [],
+           "dossiers_legislatifs": [_dossier_brut("DLR5L17N1"), _dossier_brut("DLR5L17N2")]}
+    new = {"slug": "x", "votes": [], "interventions": [], "mandats": [],
+           "dossiers_legislatifs": [_dossier_brut("DLR5L17N1", stade_procedural="depose")]}
+
+    merged = merge_raw_profile(old, new)
+
+    par_id = {d["id"]: d for d in merged["dossiers_legislatifs"]}
+    assert set(par_id) == {"DLR5L17N1", "DLR5L17N2"}
+    assert par_id["DLR5L17N1"]["stade_procedural"] == "depose"
+    assert par_id["DLR5L17N2"]["stade_procedural"] == "examine_commission"
+
+
+def test_une_collecte_vide_ne_remplace_rien():
+    """`CHAMPS_PROTEGES_DU_VIDE` en amont : rien collecté, rien remplacé."""
+    old = {"slug": "x", "votes": [], "interventions": [], "mandats": [],
+           "dossiers_legislatifs": [_dossier_brut("DLR5L17N1")]}
+    new = {"slug": "x", "votes": [], "interventions": [], "mandats": [],
+           "dossiers_legislatifs": []}
+
+    merged = merge_raw_profile(old, new)
+
+    assert [d["id"] for d in merged["dossiers_legislatifs"]] == ["DLR5L17N1"]
+    assert merged["dossiers_legislatifs"][0]["stade_procedural"] == "examine_commission"
