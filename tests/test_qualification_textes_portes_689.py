@@ -165,9 +165,22 @@ def test_le_cache_disque_change_de_version():
     """Un index construit avant #689 ne porte pas `nature_texte` : le relire
     republierait « auteur » sur les 316 projets de loi du corpus sans qu'aucune
     étape n'échoue. L'existence d'un cache n'est pas la preuve de sa conformité
-    (même règle que pour les amendements #440 et les scrutins #639)."""
+    (même règle que pour les amendements #440 et les scrutins #639).
+
+    **`_v4` depuis #997**, et la démonstration a été faite en vrai : le run
+    35324142500 portait le correctif du stade et a republié les 21
+    `examine_commission` de Marine Le Pen **à l'identique**, parce que
+    `.cache/dossiers_an` restaure l'index de la semaine précédente
+    (`restore-keys: public-data-cache-dossiers-`). Le `stade` est calculé par
+    `_collect_acteur_roles` **au moment de construire l'index**, donc il y est
+    figé.
+
+    Aucune version antérieure ne doit subsister dans le source : c'est ce que
+    les trois `not in` tiennent.
+    """
     source = Path(candidate_profile.__file__).read_text(encoding="utf-8")
-    assert "index_acteur_textes_v3.json" in source
+    assert "index_acteur_textes_v4.json" in source
+    assert "index_acteur_textes_v3.json" not in source
     assert "index_acteur_textes_v2.json" not in source
 
 

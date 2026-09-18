@@ -3318,7 +3318,21 @@ def _build_acteur_textes_portes_index() -> dict[str, list[dict[str, Any]]]:
         # conformité (même règle que pour les caches d'amendements et de
         # scrutins). Le relire ferait republier « auteur » sur les 316 projets
         # de loi du corpus, sans qu'aucune étape n'échoue.
-        index_path = DOSSIERS_CACHE_DIR / "index_acteur_textes_v3.json"  # cf. #400, #689
+        #
+        # `_v4` depuis #997, et EXACTEMENT pour la même raison. Le `stade` est
+        # calculé ICI, par `_collect_acteur_roles`, puis figé dans le fichier :
+        # le correctif qui a retiré `examine_commission` à 6 808 dossiers
+        # n'atteint donc rien tant que l'ancien index est relu. Et il l'est :
+        # `.cache/dossiers_an` est restauré en CI par une clé hebdomadaire dont
+        # les `restore-keys` acceptent la semaine précédente
+        # (`public-data-cache-dossiers-`). Mesuré le 18/09/2026 — le run
+        # 35324142500 portait le correctif et a republié les 21
+        # `examine_commission` de Marine Le Pen à l'identique.
+        #
+        # La règle, une fois de plus : **un cache porte le code qui l'a écrit.**
+        # Un correctif qui change ce qu'un index CONTIENT change sa clé, sans
+        # quoi il ne change rien.
+        index_path = DOSSIERS_CACHE_DIR / "index_acteur_textes_v4.json"  # cf. #400, #689, #997
         if index_path.is_file():
             try:
                 with open(index_path, encoding="utf-8") as f:
