@@ -3,7 +3,11 @@
   "type_document": "profil_gouvernement",
   "gouvernement_id": "gouvernement:BAYROU",
   "nom": "Gouvernement Bayrou",
-  "premier_ministre": null,
+  "premier_ministre": {
+    "nom": "François Bayrou",
+    "acteur_ref": "PA410",
+    "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+  },
   "periode": {
     "debut": "2024-12-14",
     "fin": "2025-09-09",
@@ -74,6 +78,15 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "catherine-vautrin",
+      "nom": "Catherine Vautrin",
+      "portefeuille": "Ministère du travail, de la santé, des solidarités et des familles",
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "charlotte-parmentier-lecocq",
       "nom": "Charlotte Parmentier-Lecocq",
       "portefeuille": "Ministère délégué auprès de la ministre du travail, de la santé, de la solidarité et des familles, chargé de l'autonomie et du handicap",
@@ -83,9 +96,63 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "clara-chappaz",
+      "nom": "Clara Chappaz",
+      "portefeuille": "Ministère délégué auprès du ministre de l’économie, des finances et de la souveraineté industrielle et numérique, chargé de l’intelligence artificielle et du numérique",
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "elisabeth-borne",
       "nom": "Élisabeth Borne",
       "portefeuille": "Ministère de l’éducation nationale, de l’enseignement supérieur et de la recherche",
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "eric-lombard",
+      "nom": "Éric Lombard",
+      "portefeuille": "Ministère de l’économie, des finances et de la souveraineté industrielle et numérique",
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "francois-bayrou",
+      "nom": "François Bayrou",
+      "portefeuille": "Premier ministre",
+      "debut": "2024-12-14",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "francois-noel-buffet",
+      "nom": "François-Noël Buffet",
+      "portefeuille": "Ministère auprès du ministre d’État, ministre de l’intérieur",
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "francois-rebsamen",
+      "nom": "François Rebsamen",
+      "portefeuille": "Ministère de l’aménagement du territoire et de la décentralisation",
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "francoise-gatel",
+      "nom": "Françoise Gatel",
+      "portefeuille": "Ministère délégué auprès du ministre de l’aménagement du territoire et de la décentralisation, chargé de la ruralité",
       "debut": "2024-12-24",
       "fin": "2025-09-09",
       "actif": false,
@@ -104,6 +171,15 @@
       "membre_id": "jean-noel-barrot",
       "nom": "Jean-Noël Barrot",
       "portefeuille": "Ministère de l’Europe et des affaires étrangères",
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "juliette-meadel",
+      "nom": "Juliette Méadel",
+      "portefeuille": "Ministère délégué auprès du ministre de l’aménagement du territoire et de la décentralisation, chargé de la ville",
       "debut": "2024-12-24",
       "fin": "2025-09-09",
       "actif": false,
@@ -146,6 +222,24 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "marie-barsacq",
+      "nom": "Marie Barsacq",
+      "portefeuille": "Ministère des sports, de la jeunesse et de la vie associative",
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nathalie-delattre",
+      "nom": "Nathalie Delattre",
+      "portefeuille": "Ministère délégué auprès du ministre de l’économie, des finances et de la souveraineté industrielle et numérique, chargé du tourisme",
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "patricia-miralles",
       "nom": "Patricia Mirallès",
       "portefeuille": "Ministère délégué auprès du ministre des armées, chargé de la mémoire et des anciens combattants",
@@ -158,6 +252,60 @@
       "membre_id": "patrick-mignola",
       "nom": "Patrick Mignola",
       "portefeuille": "Ministère délégué auprès du Premier ministre, chargé des relations avec le Parlement",
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "philippe-baptiste",
+      "nom": "Philippe Baptiste",
+      "portefeuille": "Ministère auprès de la ministre d’État, ministre de l’éducation nationale, de l’enseignement supérieur et de la recherche, chargé de l’enseignement supérieur et de la recherche",
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "philippe-tabarot",
+      "nom": "Philippe Tabarot",
+      "portefeuille": "Ministère auprès du ministre de l’aménagement du territoire et de la décentralisation, chargé des transports",
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "rachida-dati",
+      "nom": "Rachida Dati",
+      "portefeuille": "Ministère de la culture",
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "sebastien-lecornu",
+      "nom": "Sébastien Lecornu",
+      "portefeuille": "Ministère des armées",
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "sophie-primas",
+      "nom": "Sophie Primas",
+      "portefeuille": "Ministère délégué auprès du Premier ministre, porte-parole du Gouvernement",
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "thani-mohamed-soilihi",
+      "nom": "Thani Mohamed Soilihi",
+      "portefeuille": "Ministère délégué auprès du ministre de l’Europe et des affaires étrangères, chargé de la francophonie et des partenariats internationaux",
       "debut": "2024-12-24",
       "fin": "2025-09-09",
       "actif": false,
@@ -203,7 +351,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52677",
@@ -223,7 +371,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         },
         {
           "acteur_ref": "PA717161",
@@ -231,7 +379,7 @@
         },
         {
           "acteur_ref": "PA855049",
-          "membre_id": null
+          "membre_id": "philippe-baptiste"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/projet_de_loi_regulation_enseignement_superieur_prive",
@@ -253,7 +401,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52635",
@@ -275,7 +423,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52600",
@@ -297,7 +445,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52599",
@@ -317,7 +465,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52561",
@@ -339,7 +487,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52549",
@@ -361,7 +509,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52433",
@@ -381,7 +529,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         },
         {
           "acteur_ref": "PA721836",
@@ -407,7 +555,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52354",
@@ -429,7 +577,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52247",
@@ -449,7 +597,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         },
         {
           "acteur_ref": "PA721836",
@@ -475,7 +623,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52135",
@@ -495,15 +643,15 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         },
         {
           "acteur_ref": "PA267797",
-          "membre_id": null
+          "membre_id": "catherine-vautrin"
         },
         {
           "acteur_ref": "PA855045",
-          "membre_id": null
+          "membre_id": "eric-lombard"
         },
         {
           "acteur_ref": "PA721670",
@@ -529,7 +677,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52100",
@@ -551,7 +699,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52103",
@@ -573,7 +721,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         },
         {
           "acteur_ref": "PA721836",
@@ -599,7 +747,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52040",
@@ -621,7 +769,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52002",
@@ -643,7 +791,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52000",
@@ -665,7 +813,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51986",
@@ -687,7 +835,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51985",
@@ -709,7 +857,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51984",
@@ -731,7 +879,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/Projetdeloirelatifauxresultatsdelagestionetportantapprobationdescomptesdelannee2024",
@@ -753,7 +901,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51789",
@@ -775,7 +923,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         },
         {
           "acteur_ref": "PA721836",
@@ -801,7 +949,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         },
         {
           "acteur_ref": "PA721836",
@@ -827,7 +975,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51519",
@@ -849,7 +997,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51420",
@@ -869,7 +1017,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         },
         {
           "acteur_ref": "PA721836",
@@ -895,11 +1043,11 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         },
         {
           "acteur_ref": "PA855045",
-          "membre_id": null
+          "membre_id": "eric-lombard"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/ratif_ordo_influence",
@@ -921,7 +1069,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         },
         {
           "acteur_ref": "PA607846",
@@ -947,7 +1095,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51236",
@@ -967,7 +1115,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         },
         {
           "acteur_ref": "PA267622",
@@ -993,7 +1141,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA410",
-          "membre_id": null
+          "membre_id": "francois-bayrou"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51237",
@@ -1023,37 +1171,37 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA759832",
-      "synchro_le": "2026-09-17T21:23:52+0000"
+      "synchro_le": "2026-09-18T05:39:23+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721670",
-      "synchro_le": "2026-09-17T21:33:04+0000"
+      "synchro_le": "2026-09-18T05:47:50+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605991",
-      "synchro_le": "2026-09-17T21:23:37+0000"
+      "synchro_le": "2026-09-18T05:39:03+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795050",
-      "synchro_le": "2026-09-17T21:23:14+0000"
+      "synchro_le": "2026-09-18T05:38:50+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722046",
-      "synchro_le": "2026-09-17T21:23:16+0000"
+      "synchro_le": "2026-09-18T05:38:40+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795958",
-      "synchro_le": "2026-09-17T21:23:41+0000"
+      "synchro_le": "2026-09-18T05:39:09+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2538",
-      "synchro_le": "2026-09-17T21:00:20+0000"
+      "synchro_le": "2026-09-18T05:47:02+0000"
     },
     {
       "type": "senat",
@@ -1063,74 +1211,164 @@
     },
     {
       "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267797",
+      "synchro_le": "2026-09-18T05:41:50+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://data.assemblee-nationale.fr/",
+      "synchro_le": "2026-09-18T05:41:50+0000"
+    },
+    {
+      "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720480",
-      "synchro_le": "2026-09-17T21:32:18+0000"
+      "synchro_le": "2026-09-18T05:47:04+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA847799",
+      "synchro_le": "2026-09-18T05:40:50+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717161",
-      "synchro_le": "2026-09-17T21:23:14+0000"
+      "synchro_le": "2026-09-18T05:38:45+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA855045",
+      "synchro_le": "2026-09-18T05:47:02+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA410",
+      "synchro_le": "2026-09-18T05:40:05+0000"
+    },
+    {
+      "type": "europarl",
+      "url": "https://www.europarl.europa.eu/meps/fr/4324",
+      "synchro_le": "2026-09-18T05:40:06+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA303997",
+      "synchro_le": "2026-09-18T05:41:04+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA415496",
+      "synchro_le": "2026-09-18T05:40:51+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA266795",
+      "synchro_le": "2026-09-18T05:40:06+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607846",
-      "synchro_le": "2026-09-17T21:23:07+0000"
+      "synchro_le": "2026-09-18T05:38:36+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721836",
-      "synchro_le": "2026-09-17T21:32:13+0000"
+      "synchro_le": "2026-09-18T05:48:18+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA711562",
+      "synchro_le": "2026-09-18T05:47:37+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605782",
-      "synchro_le": "2026-09-17T21:26:24+0000"
+      "synchro_le": "2026-09-18T05:41:48+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720878",
-      "synchro_le": "2026-09-17T21:30:59+0000"
+      "synchro_le": "2026-09-18T05:47:11+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267622",
-      "synchro_le": "2026-09-17T21:24:02+0000"
+      "synchro_le": "2026-09-18T05:39:58+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795884",
-      "synchro_le": "2026-09-17T21:23:17+0000"
+      "synchro_le": "2026-09-18T05:38:41+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA855047",
+      "synchro_le": "2026-09-18T05:41:51+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA736235",
+      "synchro_le": "2026-09-18T05:48:28+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719668",
-      "synchro_le": "2026-09-17T21:23:15+0000"
+      "synchro_le": "2026-09-18T05:38:45+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721418",
-      "synchro_le": "2026-09-17T21:24:11+0000"
+      "synchro_le": "2026-09-18T05:40:06+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA855049",
+      "synchro_le": "2026-09-18T05:41:17+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA775292",
+      "synchro_le": "2026-09-18T05:40:26+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA387829",
+      "synchro_le": "2026-09-18T05:48:31+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643210",
+      "synchro_le": "2026-09-18T05:48:19+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA345916",
+      "synchro_le": "2026-09-18T05:47:08+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA429840",
+      "synchro_le": "2026-09-18T05:41:17+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA227089",
-      "synchro_le": "2026-09-17T21:26:25+0000"
+      "synchro_le": "2026-09-18T05:41:49+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA608016",
-      "synchro_le": "2026-09-17T21:30:43+0000"
+      "synchro_le": "2026-09-18T05:46:55+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794038",
-      "synchro_le": "2026-09-17T21:23:50+0000"
+      "synchro_le": "2026-09-18T05:39:45+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-17T22:24:50+0000",
-    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + Licence Ouverte / Open Licence (Sénat) — data.senat.fr",
+    "genere_le": "2026-09-18T06:31:33+0000",
+    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + Licence Ouverte / Open Licence (Sénat) — data.senat.fr + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
     "warnings": []
   }
 }

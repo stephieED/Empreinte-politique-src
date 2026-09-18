@@ -33,6 +33,15 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "agnes-buzyn",
+      "nom": "Agnès Buzyn",
+      "portefeuille": "Ministère des solidarités et de la santé",
+      "debut": "2017-06-22",
+      "fin": "2020-02-16",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "agnes-pannier-runacher",
       "nom": "Agnès Pannier-Runacher",
       "portefeuille": "Secrétariat d'État auprès du ministre de l'économie et des finances",
@@ -105,6 +114,15 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "cedric-o",
+      "nom": "Cédric O",
+      "portefeuille": "Secrétariat d'État auprès du ministre de l'économie et des finances et du ministre de l'action et des comptes publics, chargé du numérique",
+      "debut": "2019-04-02",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "christelle-dubos",
       "nom": "Christelle Dubos",
       "portefeuille": "Secrétariat d'État auprès de la ministre des solidarités et de la santé",
@@ -150,6 +168,24 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "delphine-geny-stephann",
+      "nom": "Delphine Gény-Stephann",
+      "portefeuille": "Secrétariat d'État, auprès du ministre de l'économie et des finances",
+      "debut": "2017-11-25",
+      "fin": "2018-10-16",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "didier-guillaume",
+      "nom": "Didier Guillaume",
+      "portefeuille": "Ministère de l'agriculture et de l'alimentation",
+      "debut": "2018-10-17",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "edouard-philippe",
       "nom": "Édouard Philippe",
       "portefeuille": "Premier ministre",
@@ -177,6 +213,33 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "emmanuelle-wargon",
+      "nom": "Emmanuelle Wargon",
+      "portefeuille": "Secrétariat d'État auprès du ministre d'État, ministre de la transition écologique et solidaire",
+      "debut": "2018-10-17",
+      "fin": "2019-07-16",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "emmanuelle-wargon",
+      "nom": "Emmanuelle Wargon",
+      "portefeuille": "Secrétariat d'État auprès de la ministre de la transition écologique et solidaire",
+      "debut": "2019-07-17",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "florence-parly",
+      "nom": "Florence Parly",
+      "portefeuille": "Ministère des armées",
+      "debut": "2017-06-22",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "franck-riester",
       "nom": "Franck Riester",
       "portefeuille": "Ministère de la culture",
@@ -191,6 +254,24 @@
       "portefeuille": "Ministère de la transition écologique et solidaire",
       "debut": "2018-09-05",
       "fin": "2019-07-16",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "francoise-nyssen",
+      "nom": "Françoise Nyssen",
+      "portefeuille": "Ministère de la culture",
+      "debut": "2017-06-22",
+      "fin": "2018-10-16",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "frederique-vidal",
+      "nom": "Frédérique Vidal",
+      "portefeuille": "Ministère de l'enseignement supérieur, de la recherche et de l'innovation",
+      "debut": "2017-06-22",
+      "fin": "2020-07-06",
       "actif": false,
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
@@ -222,10 +303,127 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "gerard-collomb",
+      "nom": "Gérard Collomb",
+      "portefeuille": "Ministère de l’intérieur",
+      "debut": "2017-06-22",
+      "fin": "2018-10-16",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "jacqueline-gourault",
+      "nom": "Jacqueline Gourault",
+      "portefeuille": "Ministère de l'intérieur",
+      "debut": "2017-06-22",
+      "fin": "2018-10-16",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "jacqueline-gourault",
+      "nom": "Jacqueline Gourault",
+      "portefeuille": "Ministère de la cohésion des territoires et des relations avec les collectivités territoriales",
+      "debut": "2018-10-17",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "jacques-mezard",
+      "nom": "Jacques Mézard",
+      "portefeuille": "Ministère de la cohésion des territoires",
+      "debut": "2017-06-22",
+      "fin": "2018-10-16",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "jean-baptiste-djebbari",
       "nom": "Jean-Baptiste Djebbari",
       "portefeuille": "Secrétariat d’État auprès de la ministre de la transition écologique et solidaire, chargé des transports",
       "debut": "2019-09-04",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "jean-baptiste-lemoyne",
+      "nom": "Jean-Baptiste Lemoyne",
+      "portefeuille": "Secrétariat d'État auprès du ministre de l'Europe et des affaires étrangères",
+      "debut": "2017-06-22",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "jean-michel-blanquer",
+      "nom": "Jean-Michel Blanquer",
+      "portefeuille": "Ministère de l'éducation nationale",
+      "debut": "2017-06-22",
+      "fin": "2018-10-16",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "jean-michel-blanquer",
+      "nom": "Jean-Michel Blanquer",
+      "portefeuille": "Ministère de l'éducation nationale et de la jeunesse",
+      "debut": "2018-10-17",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "jean-paul-delevoye",
+      "nom": "Jean-Paul Delevoye",
+      "portefeuille": "Ministère des solidarités et de la santé – Retraites",
+      "debut": "2019-09-04",
+      "fin": "2019-12-17",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "jean-yves-le-drian",
+      "nom": "Jean-Yves Le Drian",
+      "portefeuille": "Ministère de l'Europe et des affaires étrangères",
+      "debut": "2017-06-22",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "julien-denormandie",
+      "nom": "Julien Denormandie",
+      "portefeuille": "Secrétariat d'État, auprès du ministre de la cohésion des territoires",
+      "debut": "2017-06-22",
+      "fin": "2018-10-16",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "julien-denormandie",
+      "nom": "Julien Denormandie",
+      "portefeuille": "Ministère auprès de la ministre de la cohésion des territoires et des relations avec les collectivités territoriales, chargé de la ville et du logement",
+      "debut": "2018-10-17",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "laura-flessel",
+      "nom": "Laura Flessel",
+      "portefeuille": "Ministère des sports",
+      "debut": "2017-06-22",
+      "fin": "2018-09-04",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "laurent-nunez",
+      "nom": "Laurent Nunez",
+      "portefeuille": "Secrétariat d'État auprès du ministre de l'intérieur",
+      "debut": "2018-10-17",
       "fin": "2020-07-06",
       "actif": false,
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
@@ -267,6 +465,24 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "marlene-schiappa",
+      "nom": "Marlène Schiappa",
+      "portefeuille": "Secrétariat d'État, auprès du Premier ministre, chargé de l'égalité entre les femmes et les hommes",
+      "debut": "2017-06-22",
+      "fin": "2018-10-16",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "marlene-schiappa",
+      "nom": "Marlène Schiappa",
+      "portefeuille": "Secrétariat d'État auprès du Premier ministre, chargée de l'égalité entre les femmes et les hommes et de la lutte contre les discriminations",
+      "debut": "2018-10-17",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "mounir-mahjoubi",
       "nom": "Mounir Mahjoubi",
       "portefeuille": "Secrétariat d'État, auprès du Premier ministre, chargé du numérique",
@@ -285,6 +501,42 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "muriel-penicaud",
+      "nom": "Muriel Pénicaud",
+      "portefeuille": "Ministère du travail",
+      "debut": "2017-06-22",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nathalie-loiseau",
+      "nom": "Nathalie Loiseau",
+      "portefeuille": "Ministère auprès du ministre de l'Europe et des affaires étrangères, chargé des affaires européennes",
+      "debut": "2017-06-22",
+      "fin": "2019-03-27",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nicolas-hulot",
+      "nom": "Nicolas Hulot",
+      "portefeuille": "Ministère de la transition écologique et solidaire",
+      "debut": "2017-06-22",
+      "fin": "2018-09-04",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nicole-belloubet",
+      "nom": "Nicole Belloubet",
+      "portefeuille": "Ministère de la justice",
+      "debut": "2017-06-22",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "olivier-dussopt",
       "nom": "Olivier Dussopt",
       "portefeuille": "Secrétariat d'État auprès du ministre de l'action et des comptes publics",
@@ -298,6 +550,51 @@
       "nom": "Olivier Véran",
       "portefeuille": "Ministère des solidarités et de la santé",
       "debut": "2020-02-17",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "roxana-maracineanu",
+      "nom": "Roxana Maracineanu",
+      "portefeuille": "Ministère des sports",
+      "debut": "2018-09-05",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "sebastien-lecornu",
+      "nom": "Sébastien Lecornu",
+      "portefeuille": "Secrétariat d'État, auprès du ministre d'État, ministre de la transition écologique et solidaire",
+      "debut": "2017-06-22",
+      "fin": "2018-10-16",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "sebastien-lecornu",
+      "nom": "Sébastien Lecornu",
+      "portefeuille": "Ministère auprès de la ministre de la cohésion des territoires et des relations avec les collectivités territoriales, chargé des collectivités territoriales",
+      "debut": "2018-10-17",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "sibeth-ndiaye",
+      "nom": "Sibeth Ndiaye",
+      "portefeuille": "Secrétariat d'État auprès du Premier ministre, porte-parole du Gouvernement",
+      "debut": "2019-04-02",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "sophie-cluzel",
+      "nom": "Sophie Cluzel",
+      "portefeuille": "Secrétariat d'État auprès du Premier ministre, chargé des personnes handicapées",
+      "debut": "2017-06-22",
       "fin": "2020-07-06",
       "actif": false,
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
@@ -348,7 +645,7 @@
         },
         {
           "acteur_ref": "PA702191",
-          "membre_id": null
+          "membre_id": "nicole-belloubet"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_modificatives_procedures_covid-19",
@@ -460,7 +757,7 @@
         },
         {
           "acteur_ref": "PA758792",
-          "membre_id": null
+          "membre_id": "roxana-maracineanu"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-538",
@@ -604,7 +901,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_partenariat_migrations_mobilite_inde",
@@ -764,7 +1061,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_securite_sociale_institut_etudes_securite",
@@ -794,7 +1091,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_cooperation_union_monetaire_ouest_africaine",
@@ -938,7 +1235,7 @@
         },
         {
           "acteur_ref": "PA717169",
-          "membre_id": null
+          "membre_id": "muriel-penicaud"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_covid-19_travail_formation_professionnelle",
@@ -990,7 +1287,7 @@
         },
         {
           "acteur_ref": "PA702191",
-          "membre_id": null
+          "membre_id": "nicole-belloubet"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_covid-19_procedures",
@@ -1342,7 +1639,7 @@
         },
         {
           "acteur_ref": "PA758792",
-          "membre_id": null
+          "membre_id": "roxana-maracineanu"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/conformite_droit_code_mondial_antidopage",
@@ -1550,7 +1847,7 @@
         },
         {
           "acteur_ref": "PA717153",
-          "membre_id": null
+          "membre_id": "agnes-buzyn"
         },
         {
           "acteur_ref": "PA720512",
@@ -1580,7 +1877,7 @@
         },
         {
           "acteur_ref": "PA717153",
-          "membre_id": null
+          "membre_id": "agnes-buzyn"
         },
         {
           "acteur_ref": "PA720512",
@@ -1718,7 +2015,7 @@
         },
         {
           "acteur_ref": "PA415452",
-          "membre_id": null
+          "membre_id": "didier-guillaume"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-1069",
@@ -1766,7 +2063,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_Burkina_Faso_emplois_agents_missions",
@@ -1792,7 +2089,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/protocole_amendement_convention_infractions_aeronefs",
@@ -1840,7 +2137,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_extradition_france_algerie",
@@ -1918,7 +2215,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord-cadre_ue_australie",
@@ -1944,7 +2241,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_inde_trafic_stupefiants",
@@ -1992,7 +2289,7 @@
         },
         {
           "acteur_ref": "PA717169",
-          "membre_id": null
+          "membre_id": "muriel-penicaud"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-771",
@@ -2136,7 +2433,7 @@
         },
         {
           "acteur_ref": "PA702191",
-          "membre_id": null
+          "membre_id": "nicole-belloubet"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-950",
@@ -2232,7 +2529,7 @@
         },
         {
           "acteur_ref": "PA717153",
-          "membre_id": null
+          "membre_id": "agnes-buzyn"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfss_2020",
@@ -2278,7 +2575,7 @@
         },
         {
           "acteur_ref": "PA717153",
-          "membre_id": null
+          "membre_id": "agnes-buzyn"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-765",
@@ -2370,7 +2667,7 @@
         },
         {
           "acteur_ref": "PA717153",
-          "membre_id": null
+          "membre_id": "agnes-buzyn"
         },
         {
           "acteur_ref": "PA331481",
@@ -2446,11 +2743,11 @@
         },
         {
           "acteur_ref": "PA205600",
-          "membre_id": null
+          "membre_id": "florence-parly"
         },
         {
           "acteur_ref": "PA702191",
-          "membre_id": null
+          "membre_id": "nicole-belloubet"
         },
         {
           "acteur_ref": "PA605131",
@@ -2568,7 +2865,7 @@
         },
         {
           "acteur_ref": "PA702191",
-          "membre_id": null
+          "membre_id": "nicole-belloubet"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/renouveau_vie_democratique",
@@ -2718,7 +3015,7 @@
         },
         {
           "acteur_ref": "PA717153",
-          "membre_id": null
+          "membre_id": "agnes-buzyn"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/bioethique_2",
@@ -2770,11 +3067,11 @@
         },
         {
           "acteur_ref": "PA227076",
-          "membre_id": null
+          "membre_id": "jacqueline-gourault"
         },
         {
           "acteur_ref": "PA729332",
-          "membre_id": null
+          "membre_id": "julien-denormandie"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_articles65-88_loi_elan",
@@ -2912,7 +3209,7 @@
         },
         {
           "acteur_ref": "PA702191",
-          "membre_id": null
+          "membre_id": "nicole-belloubet"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_2019-358_2019-359",
@@ -2992,7 +3289,7 @@
         },
         {
           "acteur_ref": "PA717153",
-          "membre_id": null
+          "membre_id": "agnes-buzyn"
         },
         {
           "acteur_ref": "PA331481",
@@ -3022,7 +3319,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/aecg_partenariat_strategique_ue-canada",
@@ -3048,7 +3345,7 @@
         },
         {
           "acteur_ref": "PA415452",
-          "membre_id": null
+          "membre_id": "didier-guillaume"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-362",
@@ -3116,7 +3413,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_transport_tactique_aerien_allemagne",
@@ -3186,7 +3483,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_traite_allemagne_cooperation_integration",
@@ -3306,7 +3603,7 @@
         },
         {
           "acteur_ref": "PA717169",
-          "membre_id": null
+          "membre_id": "muriel-penicaud"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-116",
@@ -3456,7 +3753,7 @@
         },
         {
           "acteur_ref": "PA702191",
-          "membre_id": null
+          "membre_id": "nicole-belloubet"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-1125",
@@ -3556,7 +3853,7 @@
         },
         {
           "acteur_ref": "PA758792",
-          "membre_id": null
+          "membre_id": "roxana-maracineanu"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-1178",
@@ -3608,7 +3905,7 @@
         },
         {
           "acteur_ref": "PA729330",
-          "membre_id": null
+          "membre_id": "nathalie-loiseau"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_luxembourg_transports_transfrontaliers",
@@ -3702,7 +3999,7 @@
         },
         {
           "acteur_ref": "PA205600",
-          "membre_id": null
+          "membre_id": "florence-parly"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ordonnances_application_article30_loi_2018-607",
@@ -3776,7 +4073,7 @@
         },
         {
           "acteur_ref": "PA717153",
-          "membre_id": null
+          "membre_id": "agnes-buzyn"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/organisation_transformation_systeme_sante",
@@ -3824,7 +4121,7 @@
         },
         {
           "acteur_ref": "PA717159",
-          "membre_id": null
+          "membre_id": "frederique-vidal"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-1131",
@@ -3870,7 +4167,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_ue_ceea_armenie",
@@ -3896,7 +4193,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_tchad_angola_services_aeriens",
@@ -3922,11 +4219,11 @@
         },
         {
           "acteur_ref": "PA717169",
-          "membre_id": null
+          "membre_id": "muriel-penicaud"
         },
         {
           "acteur_ref": "PA717153",
-          "membre_id": null
+          "membre_id": "agnes-buzyn"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/mesures_urgence_economiques_sociales",
@@ -3996,7 +4293,7 @@
         },
         {
           "acteur_ref": "PA717157",
-          "membre_id": null
+          "membre_id": "jean-michel-blanquer"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ecole_de_la_confiance",
@@ -4066,7 +4363,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_hong_kong_remise_personnes_condamnees",
@@ -4216,7 +4513,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/acte_election_parlement_europeen",
@@ -4264,7 +4561,7 @@
         },
         {
           "acteur_ref": "PA702191",
-          "membre_id": null
+          "membre_id": "nicole-belloubet"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-341",
@@ -4314,7 +4611,7 @@
         },
         {
           "acteur_ref": "PA717153",
-          "membre_id": null
+          "membre_id": "agnes-buzyn"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfss_2019",
@@ -4430,7 +4727,7 @@
         },
         {
           "acteur_ref": "PA758792",
-          "membre_id": null
+          "membre_id": "roxana-maracineanu"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-603",
@@ -4504,7 +4801,7 @@
         },
         {
           "acteur_ref": "PA717153",
-          "membre_id": null
+          "membre_id": "agnes-buzyn"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-470",
@@ -4530,7 +4827,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_republicaine_dominicaine_et_nicaragua",
@@ -4578,7 +4875,7 @@
         },
         {
           "acteur_ref": "PA906",
-          "membre_id": null
+          "membre_id": "gerard-collomb"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-207",
@@ -4604,7 +4901,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_services_aeriens_ethiopie_costa-rica_mozambique",
@@ -4816,7 +5113,7 @@
         },
         {
           "acteur_ref": "PA906",
-          "membre_id": null
+          "membre_id": "gerard-collomb"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/democratie_representative_responsable_efficace",
@@ -4842,7 +5139,7 @@
         },
         {
           "acteur_ref": "PA906",
-          "membre_id": null
+          "membre_id": "gerard-collomb"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/democratie_representative_responsable_efficace_pjo",
@@ -4892,7 +5189,7 @@
         },
         {
           "acteur_ref": "PA702191",
-          "membre_id": null
+          "membre_id": "nicole-belloubet"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/democratie_plus_representative_responsable_efficace",
@@ -4918,7 +5215,7 @@
         },
         {
           "acteur_ref": "PA717169",
-          "membre_id": null
+          "membre_id": "muriel-penicaud"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/choix_avenir_professionnel",
@@ -4988,7 +5285,7 @@
         },
         {
           "acteur_ref": "PA702191",
-          "membre_id": null
+          "membre_id": "nicole-belloubet"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1519",
@@ -5034,7 +5331,7 @@
         },
         {
           "acteur_ref": "PA415482",
-          "membre_id": null
+          "membre_id": "jacques-mezard"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/evolution_logement_amenagement_numerique",
@@ -5082,7 +5379,7 @@
         },
         {
           "acteur_ref": "PA717163",
-          "membre_id": null
+          "membre_id": "marlene-schiappa"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/lutte_violences_sexuelles_sexistes",
@@ -5134,7 +5431,7 @@
         },
         {
           "acteur_ref": "PA717153",
-          "membre_id": null
+          "membre_id": "agnes-buzyn"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-21",
@@ -5202,7 +5499,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_accord_dialogue_politique_ue_cuba",
@@ -5296,7 +5593,7 @@
         },
         {
           "acteur_ref": "PA906",
-          "membre_id": null
+          "membre_id": "gerard-collomb"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/immigration_maitrisee_droit_asile_effectif",
@@ -5348,7 +5645,7 @@
         },
         {
           "acteur_ref": "PA205600",
-          "membre_id": null
+          "membre_id": "florence-parly"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/programmation_militaire_2019-2025",
@@ -5400,7 +5697,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_cooperation_ue_nouvelle-zelande",
@@ -5426,7 +5723,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/protocole_fabrication_trafic_armes-a-feu",
@@ -5496,7 +5793,7 @@
         },
         {
           "acteur_ref": "PA717169",
-          "membre_id": null
+          "membre_id": "muriel-penicaud"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1491",
@@ -5644,7 +5941,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_sauvegarde_droits_hommes",
@@ -5690,7 +5987,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_andorre_routes_nationales",
@@ -5736,7 +6033,7 @@
         },
         {
           "acteur_ref": "PA702191",
-          "membre_id": null
+          "membre_id": "nicole-belloubet"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/donnees_personnelles_protection",
@@ -5788,7 +6085,7 @@
         },
         {
           "acteur_ref": "PA717153",
-          "membre_id": null
+          "membre_id": "agnes-buzyn"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1092",
@@ -5862,7 +6159,7 @@
         },
         {
           "acteur_ref": "PA717159",
-          "membre_id": null
+          "membre_id": "frederique-vidal"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/orientation_reussite_etudiants",
@@ -5910,7 +6207,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_cooperation_sanitaire_suisse_luxembourg",
@@ -5936,11 +6233,11 @@
         },
         {
           "acteur_ref": "PA717171",
-          "membre_id": null
+          "membre_id": "laura-flessel"
         },
         {
           "acteur_ref": "PA415482",
-          "membre_id": null
+          "membre_id": "jacques-mezard"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/jeux_olympiques_paralympiques_2024",
@@ -6096,7 +6393,7 @@
         },
         {
           "acteur_ref": "PA717169",
-          "membre_id": null
+          "membre_id": "muriel-penicaud"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-647",
@@ -6142,7 +6439,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_extradition_cambodge",
@@ -6168,7 +6465,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_bosnie-herzegovine_mobilite_jeunes",
@@ -6194,7 +6491,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_readmission_personnes_situation_irreguliere",
@@ -6220,7 +6517,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/maurice_accord_investissements",
@@ -6246,7 +6543,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/application_accord_bosnie-herzegovine_sejour_irregulier",
@@ -6298,7 +6595,7 @@
         },
         {
           "acteur_ref": "PA717155",
-          "membre_id": null
+          "membre_id": "francoise-nyssen"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-650",
@@ -6324,7 +6621,7 @@
         },
         {
           "acteur_ref": "PA717155",
-          "membre_id": null
+          "membre_id": "francoise-nyssen"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_2017-1117_2017-1134",
@@ -6372,7 +6669,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/protocole_montreal_appauvrissement_couche_ozone",
@@ -6422,7 +6719,7 @@
         },
         {
           "acteur_ref": "PA717153",
-          "membre_id": null
+          "membre_id": "agnes-buzyn"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfss_2018",
@@ -6520,7 +6817,7 @@
         },
         {
           "acteur_ref": "PA717169",
-          "membre_id": null
+          "membre_id": "muriel-penicaud"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_loi2017-1340",
@@ -6598,7 +6895,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_cooperation_policiere_andorre",
@@ -6624,7 +6921,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_cooperation_securite_civile_andorre",
@@ -6650,7 +6947,7 @@
         },
         {
           "acteur_ref": "PA717153",
-          "membre_id": null
+          "membre_id": "agnes-buzyn"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-734",
@@ -6676,7 +6973,7 @@
         },
         {
           "acteur_ref": "PA717147",
-          "membre_id": null
+          "membre_id": "nicolas-hulot"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/fin_recherche_exploitation_hydrocarbures",
@@ -6722,7 +7019,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_partenariat_ue_kazakhstan",
@@ -6748,7 +7045,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/privileges_juridiction_unifiee_brevet",
@@ -6914,7 +7211,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/protocole_convention_algerie_securite_sociale",
@@ -6940,7 +7237,7 @@
         },
         {
           "acteur_ref": "PA717153",
-          "membre_id": null
+          "membre_id": "agnes-buzyn"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-48_ordonnance_2017-50",
@@ -6966,7 +7263,7 @@
         },
         {
           "acteur_ref": "PA717153",
-          "membre_id": null
+          "membre_id": "agnes-buzyn"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-31",
@@ -6992,7 +7289,7 @@
         },
         {
           "acteur_ref": "PA717169",
-          "membre_id": null
+          "membre_id": "muriel-penicaud"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/habilitation_ordonnances_dialogue_social",
@@ -7018,7 +7315,7 @@
         },
         {
           "acteur_ref": "PA717153",
-          "membre_id": null
+          "membre_id": "agnes-buzyn"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-644",
@@ -7044,7 +7341,7 @@
         },
         {
           "acteur_ref": "PA717147",
-          "membre_id": null
+          "membre_id": "nicolas-hulot"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_2016-1058_2016_1060",
@@ -7070,7 +7367,7 @@
         },
         {
           "acteur_ref": "PA1872",
-          "membre_id": null
+          "membre_id": "jean-yves-le-drian"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/repression_actes_illicites_navigation_maritime",
@@ -7096,7 +7393,7 @@
         },
         {
           "acteur_ref": "PA729330",
-          "membre_id": null
+          "membre_id": "nathalie-loiseau"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_entraide_judiciaire_penale_algerie",
@@ -7212,123 +7509,263 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722086",
-      "synchro_le": "2026-09-17T21:24:06+0000"
+      "synchro_le": "2026-09-18T05:40:02+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717153",
+      "synchro_le": "2026-09-18T05:47:01+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA759832",
-      "synchro_le": "2026-09-17T21:23:52+0000"
+      "synchro_le": "2026-09-18T05:39:23+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721670",
-      "synchro_le": "2026-09-17T21:33:04+0000"
+      "synchro_le": "2026-09-18T05:47:50+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA337633",
-      "synchro_le": "2026-09-17T21:32:59+0000"
+      "synchro_le": "2026-09-18T05:47:46+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721560",
-      "synchro_le": "2026-09-17T21:33:04+0000"
+      "synchro_le": "2026-09-18T05:47:50+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721872",
-      "synchro_le": "2026-09-17T21:31:55+0000"
+      "synchro_le": "2026-09-18T05:48:03+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA331481",
-      "synchro_le": "2026-09-17T21:24:03+0000"
+      "synchro_le": "2026-09-18T05:39:33+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA764388",
+      "synchro_le": "2026-09-18T05:47:02+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719660",
-      "synchro_le": "2026-09-17T21:24:07+0000"
+      "synchro_le": "2026-09-18T05:39:36+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605131",
-      "synchro_le": "2026-09-17T21:24:03+0000"
+      "synchro_le": "2026-09-18T05:39:33+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA744078",
+      "synchro_le": "2026-09-18T05:48:28+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA415452",
+      "synchro_le": "2026-09-18T05:48:26+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA345619",
-      "synchro_le": "2026-09-17T20:57:16+0000"
+      "synchro_le": "2026-09-18T05:47:31+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717161",
-      "synchro_le": "2026-09-17T21:23:14+0000"
+      "synchro_le": "2026-09-18T05:38:45+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA759830",
+      "synchro_le": "2026-09-18T05:40:51+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA205600",
+      "synchro_le": "2026-09-18T05:40:51+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335758",
-      "synchro_le": "2026-09-17T21:32:00+0000"
+      "synchro_le": "2026-09-18T05:46:47+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA332747",
-      "synchro_le": "2026-09-17T21:26:48+0000"
+      "synchro_le": "2026-09-18T05:46:52+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717155",
+      "synchro_le": "2026-09-18T05:47:02+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717159",
+      "synchro_le": "2026-09-18T05:41:04+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722190",
-      "synchro_le": "2026-09-17T21:23:40+0000"
+      "synchro_le": "2026-09-18T05:39:07+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719914",
-      "synchro_le": "2026-09-17T21:31:14+0000"
+      "synchro_le": "2026-09-18T05:47:27+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607846",
-      "synchro_le": "2026-09-17T21:23:07+0000"
+      "synchro_le": "2026-09-18T05:38:36+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA906",
+      "synchro_le": "2026-09-18T05:40:06+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA227076",
+      "synchro_le": "2026-09-18T05:48:29+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA415482",
+      "synchro_le": "2026-09-18T05:48:27+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722236",
-      "synchro_le": "2026-09-17T21:24:33+0000"
+      "synchro_le": "2026-09-18T05:40:16+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA703535",
+      "synchro_le": "2026-09-18T05:41:04+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717157",
+      "synchro_le": "2026-09-18T05:47:07+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1051",
+      "synchro_le": "2026-09-18T05:47:37+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1872",
+      "synchro_le": "2026-09-18T05:40:51+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA729332",
+      "synchro_le": "2026-09-18T05:47:07+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717171",
+      "synchro_le": "2026-09-18T05:48:27+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA759834",
+      "synchro_le": "2026-09-18T05:47:07+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720512",
-      "synchro_le": "2026-09-17T21:26:49+0000"
+      "synchro_le": "2026-09-18T05:46:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719938",
-      "synchro_le": "2026-09-17T21:33:19+0000"
+      "synchro_le": "2026-09-18T05:48:10+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717163",
+      "synchro_le": "2026-09-18T05:48:27+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717167",
-      "synchro_le": "2026-09-17T21:24:26+0000"
+      "synchro_le": "2026-09-18T05:39:59+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717169",
+      "synchro_le": "2026-09-18T05:40:26+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA729330",
+      "synchro_le": "2026-09-18T05:41:11+0000"
+    },
+    {
+      "type": "europarl",
+      "url": "https://www.europarl.europa.eu/meps/fr/197494",
+      "synchro_le": "2026-09-18T05:41:53+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717147",
+      "synchro_le": "2026-09-18T05:40:26+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA702191",
+      "synchro_le": "2026-09-18T05:47:08+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA330357",
-      "synchro_le": "2026-09-17T21:26:04+0000"
+      "synchro_le": "2026-09-18T05:46:03+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA642788",
-      "synchro_le": "2026-09-17T21:23:13+0000"
+      "synchro_le": "2026-09-18T05:38:31+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA758792",
+      "synchro_le": "2026-09-18T05:40:26+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643210",
+      "synchro_le": "2026-09-18T05:48:19+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA764386",
+      "synchro_le": "2026-09-18T05:41:54+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717165",
+      "synchro_le": "2026-09-18T05:40:26+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607395",
-      "synchro_le": "2026-09-17T21:32:15+0000"
+      "synchro_le": "2026-09-18T05:47:01+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-17T22:24:49+0000",
-    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr",
+    "genere_le": "2026-09-18T06:31:32+0000",
+    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
     "warnings": []
   }
 }

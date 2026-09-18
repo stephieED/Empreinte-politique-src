@@ -15,6 +15,42 @@
   },
   "membres": [
     {
+      "membre_id": "alain-vidalies",
+      "nom": "Alain Vidalies",
+      "portefeuille": "Secrétariat d'État, auprès de la ministre de l'écologie, du développement durable et de l'énergie, chargé des transports, de la mer et de la pêche",
+      "debut": "2014-08-27",
+      "fin": "2016-02-12",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "alain-vidalies",
+      "nom": "Alain Vidalies",
+      "portefeuille": "Secrétariat d'État, auprès du ministère de l’environnement, de l’énergie et de la mer, chargé des relations internationales sur le climat, chargé des transports, de la mer et de la pêche",
+      "debut": "2016-02-12",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "andre-vallini",
+      "nom": "André Vallini",
+      "portefeuille": "Secrétariat d'État, auprès de la ministre de la décentralisation et de la fonction publique, chargé de la réforme territoriale",
+      "debut": "2014-08-27",
+      "fin": "2016-02-12",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "andre-vallini",
+      "nom": "André Vallini",
+      "portefeuille": "Secrétariat d'État, auprès du ministère des affaires étrangères et du développement international, chargé du développement et de la francophonie",
+      "debut": "2016-02-12",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "annick-girardin",
       "nom": "Annick Girardin",
       "portefeuille": "Secrétariat d'État, auprès du ministre des affaires étrangères et du développement international, chargé du développement et de la francophonie",
@@ -28,6 +64,51 @@
       "nom": "Annick Girardin",
       "portefeuille": "Ministère de la fonction publique",
       "debut": "2016-02-12",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "audrey-azoulay",
+      "nom": "Audrey Azoulay",
+      "portefeuille": "Ministère de la culture et de la communication",
+      "debut": "2016-02-12",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "axelle-lemaire",
+      "nom": "Axelle Lemaire",
+      "portefeuille": "Secrétariat d'État, auprès du ministre de l'économie, de l'industrie et du numérique, chargé du numérique",
+      "debut": "2014-08-27",
+      "fin": "2016-08-30",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "axelle-lemaire",
+      "nom": "Axelle Lemaire",
+      "portefeuille": "Secrétariat d'État, auprès du ministère de l'économie et des finances, chargé du numérique",
+      "debut": "2016-08-31",
+      "fin": "2016-08-31",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "axelle-lemaire",
+      "nom": "Axelle Lemaire",
+      "portefeuille": "Secrétariat d'État, auprès du ministère de l'économie et des finances, chargé du numérique",
+      "debut": "2016-09-01",
+      "fin": "2016-09-01",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "axelle-lemaire",
+      "nom": "Axelle Lemaire",
+      "portefeuille": "Secrétariat d'État, auprès du ministère de l'économie et des finances, chargé du numérique et de l'innovation",
+      "debut": "2016-09-01",
       "fin": "2016-12-06",
       "actif": false,
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
@@ -51,6 +132,96 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "carole-delga",
+      "nom": "Carole Delga",
+      "portefeuille": "Secrétariat d'État, auprès du ministre de l'économie, de l'industrie et du numérique, chargé du commerce, de l'artisanat, de la consommation et de l'économie sociale et solidaire",
+      "debut": "2014-08-27",
+      "fin": "2015-06-17",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "christian-eckert",
+      "nom": "Christian Eckert",
+      "portefeuille": "Secrétariat d'État, auprès du ministère de l'économie et des finances, chargé du budget",
+      "debut": "2016-09-01",
+      "fin": "2016-09-01",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "christian-eckert",
+      "nom": "Christian Eckert",
+      "portefeuille": "Secrétariat d'État, auprès du ministère de l'économie et des finances, chargé du budget et des comptes publics",
+      "debut": "2016-09-01",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "christian-eckert",
+      "nom": "Christian Eckert",
+      "portefeuille": "Secrétariat d'État, auprès du ministre des finances et des comptes publics, chargé du budget",
+      "debut": "2014-08-27",
+      "fin": "2016-08-30",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "christiane-taubira",
+      "nom": "Christiane Taubira",
+      "portefeuille": "Ministère de la justice",
+      "debut": "2014-08-27",
+      "fin": "2016-01-27",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "christophe-sirugue",
+      "nom": "Christophe Sirugue",
+      "portefeuille": "Secrétariat d'État, auprès du ministère de l'économie et des finances, chargé de l'industrie",
+      "debut": "2016-09-01",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "clotilde-valter",
+      "nom": "Clotilde Valter",
+      "portefeuille": "Secrétariat d'État, auprès du Premier ministre, chargé de la réforme de l'État et de la simplification",
+      "debut": "2015-06-18",
+      "fin": "2016-02-12",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "clotilde-valter",
+      "nom": "Clotilde Valter",
+      "portefeuille": "Secrétariat d’Etat, auprès du ministère du travail, de l’emploi, de la formation professionnelle et du dialogue social, chargé de la formation professionnelle et de l’apprentissage",
+      "debut": "2016-02-12",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "emmanuel-macron",
+      "nom": "Emmanuel Macron",
+      "portefeuille": "Ministère de l'économie, de l'industrie et du numérique",
+      "debut": "2014-08-27",
+      "fin": "2016-08-30",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "emmanuelle-cosse",
+      "nom": "Emmanuelle Cosse",
+      "portefeuille": "Ministère du logement et de l’habitat durable",
+      "debut": "2016-02-12",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "ericka-bareigts",
       "nom": "Ericka Bareigts",
       "portefeuille": "Secrétariat d’État, auprès du Premier ministre, chargé de l’égalité réelle",
@@ -69,6 +240,42 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "estelle-grelier",
+      "nom": "Estelle Grelier",
+      "portefeuille": "Secrétariat d’Etat, auprès du ministère de l’aménagement du territoire, de la ruralité et des collectivités territoriales, chargé des collectivités territoriales",
+      "debut": "2016-02-12",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "fleur-pellerin",
+      "nom": "Fleur Pellerin",
+      "portefeuille": "Ministère de la culture et de la communication",
+      "debut": "2014-08-27",
+      "fin": "2016-02-12",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "francois-rebsamen",
+      "nom": "François Rebsamen",
+      "portefeuille": "Ministère du travail, de l'emploi, de la formation professionnelle et du dialogue social",
+      "debut": "2014-08-27",
+      "fin": "2015-09-02",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "genevieve-fioraso",
+      "nom": "Geneviève Fioraso",
+      "portefeuille": "Secrétariat d'État, auprès du ministre de l'éducation nationale, de l'enseignement supérieur et de la recherche, chargé de l'enseignement supérieur et de la recherche",
+      "debut": "2014-08-27",
+      "fin": "2015-03-05",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "george-pau-langevin",
       "nom": "George Pau-Langevin",
       "portefeuille": "Ministère des outre-mer",
@@ -78,10 +285,316 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "harlem-desir",
+      "nom": "Harlem Désir",
+      "portefeuille": "Secrétariat d'État, auprès du ministre des affaires étrangères et du développement international, chargé des affaires européennes",
+      "debut": "2014-08-27",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "helene-geoffroy",
+      "nom": "Hélène Geoffroy",
+      "portefeuille": "Secrétariat d’Etat, auprès du ministère de la ville, de la jeunesse et des sports, chargé de la ville",
+      "debut": "2016-02-12",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "jean-jacques-urvoas",
+      "nom": "Jean-Jacques Urvoas",
+      "portefeuille": "Ministère de la justice",
+      "debut": "2016-01-27",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "jean-marc-ayrault",
+      "nom": "Jean-Marc Ayrault",
+      "portefeuille": "Ministère des affaires étrangères et du développement international",
+      "debut": "2016-02-12",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "jean-marc-todeschini",
+      "nom": "Jean-Marc Todeschini",
+      "portefeuille": "Secrétariat d'Etat, auprès du ministre de la défense, chargé des anciens combattants et de la mémoire",
+      "debut": "2014-11-21",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "jean-marie-le-guen",
+      "nom": "Jean-Marie Le Guen",
+      "portefeuille": "Secrétariat d'État, auprès du Premier ministre, chargé des relations avec le Parlement",
+      "debut": "2014-08-27",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "jean-michel-baylet",
+      "nom": "Jean-Michel Baylet",
+      "portefeuille": "Ministère de l’aménagement du territoire, de la ruralité et des collectivités territoriales",
+      "debut": "2016-02-12",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "jean-vincent-place",
+      "nom": "Jean-Vincent Placé",
+      "portefeuille": "Secrétariat d'État, auprès du Premier ministre, chargé de la réforme de l'État et de la simplification",
+      "debut": "2016-02-12",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "jean-yves-le-drian",
+      "nom": "Jean-Yves Le Drian",
+      "portefeuille": "Ministère de la défense",
+      "debut": "2014-08-27",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "juliette-meadel",
+      "nom": "Juliette Méadel",
+      "portefeuille": "Secrétariat d’État, auprès du Premier ministre, chargé de l’aide aux victimes",
+      "debut": "2016-02-12",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "kader-arif",
+      "nom": "Kader Arif",
+      "portefeuille": "Secrétariat d'État, auprès du ministre de la défense, chargé des anciens combattants et de la mémoire",
+      "debut": "2014-08-27",
+      "fin": "2014-11-21",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "laurence-rossignol",
+      "nom": "Laurence Rossignol",
+      "portefeuille": "Secrétariat d'État, auprès de la ministre des affaires sociales, de la santé et des droits des femmes, chargé de la famille, des personnes âgées et de l'autonomie",
+      "debut": "2014-08-27",
+      "fin": "2015-06-17",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "laurence-rossignol",
+      "nom": "Laurence Rossignol",
+      "portefeuille": "Secrétariat d'État, auprès de la ministre des affaires sociales, de la santé et des droits des femmes, chargé de la famille, de l'enfance, des personnes âgées et de l'autonomie",
+      "debut": "2015-06-17",
+      "fin": "2016-02-12",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "laurence-rossignol",
+      "nom": "Laurence Rossignol",
+      "portefeuille": "Ministère de la famille, de l’enfance et des droits des femmes",
+      "debut": "2016-02-12",
+      "fin": "2016-03-03",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "laurence-rossignol",
+      "nom": "Laurence Rossignol",
+      "portefeuille": "Ministère des familles, de l'enfance et des droits des femmes",
+      "debut": "2016-03-04",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "laurent-fabius",
+      "nom": "Laurent Fabius",
+      "portefeuille": "Ministère des affaires étrangères et du développement international",
+      "debut": "2014-08-27",
+      "fin": "2016-02-12",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "manuel-valls",
       "nom": "Manuel Valls",
       "portefeuille": "Premier ministre",
       "debut": "2014-08-26",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "marisol-touraine",
+      "nom": "Marisol Touraine",
+      "portefeuille": "Ministère des affaires sociales, de la santé et des droits des femmes",
+      "debut": "2014-08-27",
+      "fin": "2016-02-12",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "marisol-touraine",
+      "nom": "Marisol Touraine",
+      "portefeuille": "Ministère des affaires sociales et de la santé",
+      "debut": "2016-02-12",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "martine-pinville",
+      "nom": "Martine Pinville",
+      "portefeuille": "Secrétariat d'État, auprès du ministre de l'économie, de l'industrie et du numérique, chargé du commerce, de l'artisanat, de la consommation et de l'économie sociale et solidaire",
+      "debut": "2015-06-18",
+      "fin": "2016-08-30",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "martine-pinville",
+      "nom": "Martine Pinville",
+      "portefeuille": "Secrétariat d'État, auprès du ministère de l'économie et des finances, chargé du commerce, de l'artisanat, de la consommation et de l'économie sociale et solidaire",
+      "debut": "2016-08-31",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "marylise-lebranchu",
+      "nom": "Marylise Lebranchu",
+      "portefeuille": "Ministère de la décentralisation et de la fonction publique",
+      "debut": "2014-08-27",
+      "fin": "2016-02-12",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "matthias-fekl",
+      "nom": "Matthias Fekl",
+      "portefeuille": "Secrétariat d'État, auprès du ministre des affaires étrangères et du développement international, chargé du commerce extérieur, de la promotion du tourisme et des Français de l'étranger",
+      "debut": "2014-09-05",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "michel-sapin",
+      "nom": "Michel Sapin",
+      "portefeuille": "Ministère des finances et des comptes publics",
+      "debut": "2014-08-27",
+      "fin": "2016-08-30",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "michel-sapin",
+      "nom": "Michel Sapin",
+      "portefeuille": "Ministère de l'économie et des finances",
+      "debut": "2016-08-31",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "myriam-el-khomri",
+      "nom": "Myriam El Khomri",
+      "portefeuille": "Secrétariat d'État, auprès du ministre de la ville, de la jeunesse et des sports, chargé de la politique de la ville",
+      "debut": "2014-08-27",
+      "fin": "2015-09-03",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "myriam-el-khomri",
+      "nom": "Myriam El Khomri",
+      "portefeuille": "Ministère du travail, de l'emploi, de la formation professionnelle et du dialogue social",
+      "debut": "2015-09-03",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "najat-vallaud-belkacem",
+      "nom": "Najat Vallaud-Belkacem",
+      "portefeuille": "Ministère de l'éducation nationale, de l'enseignement supérieur et de la recherche",
+      "debut": "2014-08-27",
+      "fin": "2015-03-05",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "najat-vallaud-belkacem",
+      "nom": "Najat Vallaud-Belkacem",
+      "portefeuille": "Ministère de l'éducation nationale, de l'enseignement supérieur et de la recherche",
+      "debut": "2015-03-06",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "pascale-boistard",
+      "nom": "Pascale Boistard",
+      "portefeuille": "Secrétariat d'État, auprès de la ministre des affaires sociales, de la santé et des droits des femmes, chargé des des droits des femmes",
+      "debut": "2014-08-27",
+      "fin": "2016-02-12",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "pascale-boistard",
+      "nom": "Pascale Boistard",
+      "portefeuille": "Secrétariat d'État, auprès du ministère des affaires sociales et de la santé, chargé des personnes âgées et de l'autonomie",
+      "debut": "2016-02-12",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "patrick-kanner",
+      "nom": "Patrick Kanner",
+      "portefeuille": "Ministère de la ville, de la jeunesse et des sports",
+      "debut": "2014-08-27",
+      "fin": "2015-09-02",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "patrick-kanner",
+      "nom": "Patrick Kanner",
+      "portefeuille": "Ministère de la ville, de la jeunesse et des sports",
+      "debut": "2015-09-03",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "segolene-neuville",
+      "nom": "Ségolène Neuville",
+      "portefeuille": "Secrétariat d'État, auprès de la ministre des affaires sociales, de la santé et des droits des femmes, chargé des personnes handicapées et de la lutte contre l'exclusion",
+      "debut": "2014-08-27",
+      "fin": "2016-02-12",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "segolene-neuville",
+      "nom": "Ségolène Neuville",
+      "portefeuille": "Secrétariat d'État, auprès du ministère des affaires sociales et de la santé, chargé des personnes handicapées et de la lutte contre l'exclusion",
+      "debut": "2016-02-12",
       "fin": "2016-12-06",
       "actif": false,
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
@@ -112,6 +625,51 @@
       "fin": "2016-12-06",
       "actif": false,
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "sylvia-pinel",
+      "nom": "Sylvia Pinel",
+      "portefeuille": "Ministère du logement, de l'égalité des territoires et de la ruralité",
+      "debut": "2014-08-27",
+      "fin": "2016-02-12",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "thierry-braillard",
+      "nom": "Thierry Braillard",
+      "portefeuille": "Secrétariat d'État, auprès du ministre de la ville, de la jeunesse et des sports, chargé des sports",
+      "debut": "2014-08-27",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "thierry-mandon",
+      "nom": "Thierry Mandon",
+      "portefeuille": "Secrétariat d'État, auprès du Premier ministre, chargé de la réforme de l'État et de la simplification",
+      "debut": "2014-08-27",
+      "fin": "2015-06-17",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "thierry-mandon",
+      "nom": "Thierry Mandon",
+      "portefeuille": "Secrétariat d'État, auprès de la ministre de l'éducation nationale, de l'enseignement supérieur et de la recherche, chargé de l'enseignement supérieur et de la recherche",
+      "debut": "2015-06-18",
+      "fin": "2016-12-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "thomas-thevenoud",
+      "nom": "Thomas Thévenoud",
+      "portefeuille": "Secrétariat d'État, auprès du ministre des affaires étrangères et du développement international, chargé du commerce extérieur, de la promotion du tourisme et des Français de l'étranger",
+      "debut": "2014-08-27",
+      "fin": "2014-09-04",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     }
   ],
   "textes": [],
@@ -132,53 +690,278 @@
   "sources": [
     {
       "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2912",
+      "synchro_le": "2026-09-18T05:41:49+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://data.assemblee-nationale.fr/",
+      "synchro_le": "2026-09-18T05:41:49+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2870",
+      "synchro_le": "2026-09-18T05:48:27+0000"
+    },
+    {
+      "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA337633",
-      "synchro_le": "2026-09-17T21:32:59+0000"
+      "synchro_le": "2026-09-18T05:47:46+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA711560",
+      "synchro_le": "2026-09-18T05:41:49+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA610873",
+      "synchro_le": "2026-09-18T05:47:02+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA609520",
-      "synchro_le": "2026-09-17T21:23:35+0000"
+      "synchro_le": "2026-09-18T05:39:03+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA785",
-      "synchro_le": "2026-09-17T21:07:02+0000"
+      "synchro_le": "2026-09-18T05:48:14+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA606351",
+      "synchro_le": "2026-09-18T05:47:30+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1243",
+      "synchro_le": "2026-09-18T05:40:26+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2791",
+      "synchro_le": "2026-09-18T05:41:50+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335017",
+      "synchro_le": "2026-09-18T05:48:24+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605606",
+      "synchro_le": "2026-09-18T05:47:02+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA702992",
+      "synchro_le": "2026-09-18T05:48:26+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA711558",
+      "synchro_le": "2026-09-18T05:41:04+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA610681",
-      "synchro_le": "2026-09-17T21:31:51+0000"
+      "synchro_le": "2026-09-18T05:47:59+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA609218",
+      "synchro_le": "2026-09-18T05:47:31+0000"
+    },
+    {
+      "type": "europarl",
+      "url": "https://www.europarl.europa.eu/meps/fr/96953",
+      "synchro_le": "2026-09-18T05:47:36+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA588876",
+      "synchro_le": "2026-09-18T05:41:04+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA415496",
+      "synchro_le": "2026-09-18T05:40:51+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA332364",
+      "synchro_le": "2026-09-18T05:40:51+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335532",
-      "synchro_le": "2026-09-17T21:26:47+0000"
+      "synchro_le": "2026-09-18T05:46:51+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA700879",
+      "synchro_le": "2026-09-18T05:48:29+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA608574",
+      "synchro_le": "2026-09-18T05:41:04+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA331594",
+      "synchro_le": "2026-09-18T05:47:07+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA328",
+      "synchro_le": "2026-09-18T05:48:27+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA227096",
+      "synchro_le": "2026-09-18T05:41:04+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1880",
+      "synchro_le": "2026-09-18T05:41:51+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA408",
+      "synchro_le": "2026-09-18T05:40:10+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA429885",
+      "synchro_le": "2026-09-18T05:41:04+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1872",
+      "synchro_le": "2026-09-18T05:40:51+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA711562",
+      "synchro_le": "2026-09-18T05:47:37+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA590031",
+      "synchro_le": "2026-09-18T05:48:30+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA429889",
+      "synchro_le": "2026-09-18T05:41:51+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1268",
+      "synchro_le": "2026-09-18T05:40:10+0000"
+    },
+    {
+      "type": "europarl",
+      "url": "https://www.europarl.europa.eu/meps/fr/1029",
+      "synchro_le": "2026-09-18T05:40:25+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267622",
-      "synchro_le": "2026-09-17T21:24:02+0000"
+      "synchro_le": "2026-09-18T05:39:58+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2825",
+      "synchro_le": "2026-09-18T05:48:30+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA330981",
+      "synchro_le": "2026-09-18T05:41:11+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1893",
+      "synchro_le": "2026-09-18T05:41:51+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607287",
+      "synchro_le": "2026-09-18T05:40:26+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2679",
+      "synchro_le": "2026-09-18T05:48:27+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA642983",
+      "synchro_le": "2026-09-18T05:47:08+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA588883",
+      "synchro_le": "2026-09-18T05:48:30+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA609513",
+      "synchro_le": "2026-09-18T05:40:26+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA702993",
+      "synchro_le": "2026-09-18T05:48:31+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA608328",
+      "synchro_le": "2026-09-18T05:48:31+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2650",
-      "synchro_le": "2026-09-17T20:55:23+0000"
+      "synchro_le": "2026-09-18T05:48:28+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA588886",
-      "synchro_le": "2026-09-17T10:15:24+0000"
+      "synchro_le": "2026-09-18T05:39:48+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/28162",
-      "synchro_le": "2026-09-17T10:15:33+0000"
+      "synchro_le": "2026-09-18T05:39:56+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA336175",
+      "synchro_le": "2026-09-18T05:48:19+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA608495",
+      "synchro_le": "2026-09-18T05:41:54+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2051",
+      "synchro_le": "2026-09-18T05:41:52+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA608672",
+      "synchro_le": "2026-09-18T05:48:19+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-17T22:24:49+0000",
+    "genere_le": "2026-09-18T06:31:32+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
     "warnings": []
   }
