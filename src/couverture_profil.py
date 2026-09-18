@@ -120,6 +120,7 @@ from datetime import date, timedelta
 from typing import Any, Iterable, NamedTuple, Optional
 
 from groupes_config import CLE_SUSPENSION, libelle_groupe
+from population_profils import PROVENANCES_ROSTER
 from schema_pivot import (
     CAUSE_DEFAUT_COLLECTE,
     CAUSE_PANNE,
@@ -377,11 +378,12 @@ DECISIONS_PIPELINE: dict[str, tuple[tuple[str, ...], str]] = {
     ),
 }
 
-#: Politique appliquée à tout profil de provenance `roster_groupe` : le job qui
+#: Politique appliquée à tout profil d'une provenance de `PROVENANCES_ROSTER`
+#: — `roster_groupe`, et `roster_gouvernement` depuis #996 lot 3 : le job qui
 #: les produit porte les deux drapeaux **en dur**, donc la décision se lit sur la
 #: provenance seule, sans avoir à rejouer le run. C'est ce qui rend la couverture
-#: dérivable sur les 469 profils déjà publiés, dont aucun ne porte la trace des
-#: drapeaux du run qui les a écrits.
+#: dérivable sur les profils déjà publiés, dont les plus anciens ne portent
+#: aucune trace des drapeaux du run qui les a écrits.
 #:
 #: `groupe_suspendu` n'y est **pas**, et c'est délibéré : la provenance ne
 #: recouvre pas la population. Sur les 20 membres des deux fiches
@@ -939,9 +941,13 @@ def deriver(
         # son absence n'en est pas une. Mesuré au 31/08/2026 : 449 des 468
         # profils `roster_groupe` publiés portent la clé, 19 ne la portent pas.
         run_a_declare = isinstance(meta.get("collecte_ecartee"), list)
+        # #996 lot 3 — `PROVENANCES_ROSTER` et non l'égalité à `roster_groupe` :
+        # un membre de gouvernement est collecté par les mêmes shards, sous les
+        # mêmes drapeaux réduits, donc le repli qui explique ses listes vides
+        # est le même. L'égalité l'aurait laissé sans preuve de couverture.
         decisions = (
             DECISIONS_ROSTER
-            if provenance == "roster_groupe" and not run_a_declare
+            if provenance in PROVENANCES_ROSTER and not run_a_declare
             else ()
         )
     decisions = tuple(decisions)

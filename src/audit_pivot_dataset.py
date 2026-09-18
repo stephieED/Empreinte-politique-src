@@ -790,9 +790,9 @@ def _est_candidat(profil: dict[str, Any]) -> bool:
     """Vrai si le profil est un candidat déclaré, faux pour un membre de roster.
 
     `meta.provenance` absente vaut `"candidat_declare"` (rétro-compatibilité,
-    voir `compute_repartition_provenance`). Toute autre valeur — `"roster_groupe"`
-    comme une provenance inconnue — désigne un profil collecté via le roster
-    d'un groupe parlementaire, qui n'est pas un candidat déclaré.
+    voir `compute_repartition_provenance`). Toute autre valeur — `"roster_groupe"`,
+    `"roster_gouvernement"` (#996) comme une provenance inconnue — désigne un
+    profil collecté via un roster, qui n'est pas un candidat déclaré.
     """
     meta = profil.get("meta")
     provenance = meta.get("provenance") if isinstance(meta, dict) else None
@@ -810,8 +810,8 @@ def compute_tableau_croise_candidats(profils: list[dict[str, Any]]) -> dict[str,
 
     Le détail ligne à ligne est réservé aux **candidats déclarés**
     (`_est_candidat`) : c'est le périmètre éditorial du produit. Les profils
-    issus des rosters de groupes (`meta.provenance == "roster_groupe"`) sont
-    présents pour la cohésion de groupe, pas pour un affichage individuel ;
+    issus d'un roster (`meta.provenance` dans `PROVENANCES_ROSTER`) sont
+    présents pour alimenter un agrégat, pas pour un affichage individuel ;
     ils ne sont donc restitués qu'agrégés par groupe (min/max/médiane/moyenne),
     jamais membre par membre.
 
@@ -1252,6 +1252,7 @@ def _md_section_volumetrie(volumetrie: dict[str, Any]) -> str:
     ventilation = Ventilation(
         candidats_declares=par_provenance.get("candidat_declare", 0),
         membres_roster=par_provenance.get("roster_groupe", 0),
+        membres_gouvernement=par_provenance.get("roster_gouvernement", 0),
         provenance_autre=par_provenance.get("null", 0),
     )
 

@@ -193,8 +193,9 @@ est réécrit à chaque run, ne pas l'éditer à la main :
 python3 src/gouvernements_amo30.py --out raw_data/gouvernements_reels.json
 ```
 
-Le roster des membres de gouvernement part avec celui des groupes, dans
-`rosters_bruts.json` (#996). `--sans-gouvernements` le débranche :
+Le roster des membres de gouvernement part avec celui des groupes : dans
+`rosters_bruts.json`, et — depuis #996 lot 3 — dans `roster_candidats.json`,
+d'où leur collecte part. `--sans-gouvernements` débranche les deux :
 
 ```bash
 python3 src/generate_roster_candidats.py --sans-gouvernements \

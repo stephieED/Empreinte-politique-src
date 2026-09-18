@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 369 décisions
+gouverne sans avoir à fouiller les 370 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -276,7 +276,7 @@ Le mentionnent sans le gouverner : [`mise-en-oeuvre-des-grands-chiffres-328`](de
 
 ## `src/build_correspondance_acteurs_an.py`
 
-6 décision(s) le gouvernent ; le module en cite 4.
+7 décision(s) le gouvernent ; le module en cite 4.
 
 | Décision | Nomme |
 | --- | --- |
@@ -284,6 +284,7 @@ Le mentionnent sans le gouverner : [`mise-en-oeuvre-des-grands-chiffres-328`](de
 | [Un garde-fou posé sur `builtins.open` ne voit pas `pathlib` (#791) (2026-09-10)](decisions/lectures-du-depot-dans-les-tests-791.md) | `resolutions_candidats` |
 | [La liste des candidats se collecte, et un déclaré entre sans slug (#753)](decisions/liste-candidats-declares-753.md) | `slugs_fabriques` |
 | [La seconde déclaration lisait un champ que le corpus ne porte pas (#788)](decisions/nom-des-resolutions-vient-de-lappelant-788.md) | `resolutions_candidats` |
+| [Les membres de gouvernement deviennent une population, et leur collecte part (#996, lot 3) (2026-09-18)](decisions/provenance-roster-gouvernement-996.md) | `entrees_derivees` |
 | [Les membres d'un gouvernement reçoivent un identifiant de profil (#996, lot 2) (2026-09-17)](decisions/roster-gouvernements-amo30-996.md) | `slugs_fabriques` |
 | [Un membre de roster sans correspondance relue reçoit un slug, et la collision reste un refus (#708) (2026-09-02)](decisions/slug-fabrique-membre-de-roster-708.md) | `_slugs_publies` |
 
@@ -454,7 +455,7 @@ Le mentionnent sans le gouverner : [`rattachement-scrutin-dossier-758`](decision
 | [Une entrée dérivée gèle un slug fabriqué, elle ne prouve plus rien (#715) (2026-09-02)](decisions/entree-derivee-correspondance-715.md) | `ECARTS_CONNUS` |
 | [Un garde-fou posé sur `builtins.open` ne voit pas `pathlib` (#791) (2026-09-10)](decisions/lectures-du-depot-dans-les-tests-791.md) | `CHEMIN_PAR_DEFAUT`, `charger_correspondance` |
 
-Le mentionnent sans le gouverner : [`civilite-et-pcs-insee-659`](decisions/civilite-et-pcs-insee-659.md), [`identite-profils-539`](decisions/identite-profils-539.md), [`larem-xv-apres-691-779`](decisions/larem-xv-apres-691-779.md), [`position-politique-groupes-686`](decisions/position-politique-groupes-686.md), [`preuve-de-borne-dite-une-fois-328`](decisions/preuve-de-borne-dite-une-fois-328.md), [`roster-an-derive-amo30-526`](decisions/roster-an-derive-amo30-526.md), [`roster-gouvernements-amo30-996`](decisions/roster-gouvernements-amo30-996.md), [`slug-fabrique-membre-de-roster-708`](decisions/slug-fabrique-membre-de-roster-708.md), [`sparse-checkout-extract-an-674`](decisions/sparse-checkout-extract-an-674.md), [`tranches-derivees-lecteur-691`](decisions/tranches-derivees-lecteur-691.md).
+Le mentionnent sans le gouverner : [`civilite-et-pcs-insee-659`](decisions/civilite-et-pcs-insee-659.md), [`identite-profils-539`](decisions/identite-profils-539.md), [`larem-xv-apres-691-779`](decisions/larem-xv-apres-691-779.md), [`position-politique-groupes-686`](decisions/position-politique-groupes-686.md), [`preuve-de-borne-dite-une-fois-328`](decisions/preuve-de-borne-dite-une-fois-328.md), [`provenance-roster-gouvernement-996`](decisions/provenance-roster-gouvernement-996.md), [`roster-an-derive-amo30-526`](decisions/roster-an-derive-amo30-526.md), [`roster-gouvernements-amo30-996`](decisions/roster-gouvernements-amo30-996.md), [`slug-fabrique-membre-de-roster-708`](decisions/slug-fabrique-membre-de-roster-708.md), [`sparse-checkout-extract-an-674`](decisions/sparse-checkout-extract-an-674.md), [`tranches-derivees-lecteur-691`](decisions/tranches-derivees-lecteur-691.md).
 
 ## `src/couverture_dossiers.py`
 
@@ -563,7 +564,7 @@ Le mentionnent sans le gouverner : [`collecte-interventions-reduite-au-theme-657
 
 ## `src/generate_all_profiles.py`
 
-27 décision(s) le gouvernent ; le module en cite 3.
+28 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
@@ -587,6 +588,7 @@ Le mentionnent sans le gouverner : [`collecte-interventions-reduite-au-theme-657
 | [`extract-an` en matrix strategy par candidat, pour isoler la perte en cas de shutdown signal runner (#344) (2026-08-16)](decisions/matrix-extract-an-par-candidat.md) | `process_candidat` |
 | [La seconde déclaration lisait un champ que le corpus ne porte pas (#788)](decisions/nom-des-resolutions-vient-de-lappelant-788.md) | `_normaliser_en_pivot`, `process_candidat` |
 | [Un fichier de progression dans un répertoire de données (#518, troisième incident) (2026-08-24)](decisions/point-de-sauvegarde-dans-les-profils-518.md) | `DEFAULT_CHECKPOINT_PATH`, `_save_checkpoint` |
+| [Les membres de gouvernement deviennent une population, et leur collecte part (#996, lot 3) (2026-09-18)](decisions/provenance-roster-gouvernement-996.md) | `build_profile_any_chambre`, `process_candidat` |
 | [Le `texte_vise` fautif se reprend depuis l'archive figée, pas par une fusion plus permissive (#696, 01/09/2026)](decisions/report-texte-vise-source-696.md) | `_rafraichir_index_amendements` |
 | [Retrait de `fetch_activity_synthesis` (#356) (2026-08-16)](decisions/retrait-fetch-activity-synthesis.md) | `build_minimal_profile` |
 | [NosDéputés sort du pipeline (#529, lot 5 de l'épic « une seule source AN ») (2026-08-27)](decisions/retrait-nosdeputes-529.md) | `process_candidat` |
@@ -632,7 +634,7 @@ Le mentionnent sans le gouverner : [`amendements-agreges-dans-la-periode-821`](d
 
 ## `src/generate_roster_candidats.py`
 
-8 décision(s) le gouvernent ; le module en cite 3.
+9 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
@@ -641,6 +643,7 @@ Le mentionnent sans le gouverner : [`amendements-agreges-dans-la-periode-821`](d
 | [Un timeout ne peut plus écraser le roster, et rien de collecté ne reste non publié (#511) (2026-08-20)](decisions/collecte-non-publiee.md) | `fetch_rosters_bruts` |
 | [Suspendre l'extraction des deux groupes Sénat, sans les retirer de la config (#516) (2026-08-24)](decisions/extraction-groupe-suspendue-516.md) | `fetch_rosters_bruts` |
 | [Les 5 groupes de la XVIIe entrent dans `groupes[]`, et leur succession est déclarée comme une relecture (#700) (2026-09-01)](decisions/fiches-groupe-17e-legislature-700.md) | `build_roster_candidats_detaille` |
+| [Les membres de gouvernement deviennent une population, et leur collecte part (#996, lot 3) (2026-09-18)](decisions/provenance-roster-gouvernement-996.md) | `candidats_des_gouvernements` |
 | [NosDéputés sort du pipeline (#529, lot 5 de l'épic « une seule source AN ») (2026-08-27)](decisions/retrait-nosdeputes-529.md) | `membres_sans_slug` |
 | [Le roster des groupes AN est dérivé d'AMO30, derrière un drapeau baissé (#526, lot 1 de l'épic « une seule source AN ») (2026-08-26)](decisions/roster-an-derive-amo30-526.md) | `build_roster_candidats_detaille`, `membres_sans_slug` |
 | [Un membre de roster sans correspondance relue reçoit un slug, et la collision reste un refus (#708) (2026-09-02)](decisions/slug-fabrique-membre-de-roster-708.md) | `build_roster_candidats_detaille`, `membres_sans_slug`, `membres_slug_fabrique` |
@@ -755,7 +758,7 @@ Le mentionnent sans le gouverner : [`liste-gouvernements-amo30-996`](decisions/l
 | [Taxonomie des mandats : exploitation des `typeOrgane` AN non mappés (#382, option « mixte ») (2026-08-17)](decisions/taxonomie-mandats-typeorgane-an.md) | `MANDATS_AGREGES_CATEGORIES` |
 | [Votes : agrégation des législatures 14 à 17, index dédupliqué, 14/15/16 figées (#403) (2026-08-18)](decisions/votes-multi-legislature.md) | `_compute_cohesion_votes` |
 
-Le mentionnent sans le gouverner : [`civilite-et-pcs-insee-659`](decisions/civilite-et-pcs-insee-659.md), [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`divergences-avec-le-groupe-328`](decisions/divergences-avec-le-groupe-328.md), [`fiche-de-lignee-ui-329`](decisions/fiche-de-lignee-ui-329.md), [`id-pivot-sans-prefixe`](decisions/id-pivot-sans-prefixe.md), [`identifiants-groupes-et-successions-multiples-815`](decisions/identifiants-groupes-et-successions-multiples-815.md), [`identite-profils-539`](decisions/identite-profils-539.md), [`mandats-electifs-liste-complete-640`](decisions/mandats-electifs-liste-complete-640.md), [`ne-jamais-committer-un-build-perime`](decisions/ne-jamais-committer-un-build-perime.md), [`pivot-freshness-timestamps-stables`](decisions/pivot-freshness-timestamps-stables.md), [`populations-profils-portees-par-les-outils-630`](decisions/populations-profils-portees-par-les-outils-630.md), [`profil-de-groupe-lecture-329`](decisions/profil-de-groupe-lecture-329.md), [`provenance-par-champ-603`](decisions/provenance-par-champ-603.md), [`retrait-groupes-senat-nossenateurs`](decisions/retrait-groupes-senat-nossenateurs.md), [`syceron-acteur-ref-nu-510`](decisions/syceron-acteur-ref-nu-510.md), [`syceron-archives-verifiees-parseur-510`](decisions/syceron-archives-verifiees-parseur-510.md).
+Le mentionnent sans le gouverner : [`civilite-et-pcs-insee-659`](decisions/civilite-et-pcs-insee-659.md), [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`divergences-avec-le-groupe-328`](decisions/divergences-avec-le-groupe-328.md), [`fiche-de-lignee-ui-329`](decisions/fiche-de-lignee-ui-329.md), [`id-pivot-sans-prefixe`](decisions/id-pivot-sans-prefixe.md), [`identifiants-groupes-et-successions-multiples-815`](decisions/identifiants-groupes-et-successions-multiples-815.md), [`identite-profils-539`](decisions/identite-profils-539.md), [`mandats-electifs-liste-complete-640`](decisions/mandats-electifs-liste-complete-640.md), [`ne-jamais-committer-un-build-perime`](decisions/ne-jamais-committer-un-build-perime.md), [`pivot-freshness-timestamps-stables`](decisions/pivot-freshness-timestamps-stables.md), [`populations-profils-portees-par-les-outils-630`](decisions/populations-profils-portees-par-les-outils-630.md), [`profil-de-groupe-lecture-329`](decisions/profil-de-groupe-lecture-329.md), [`provenance-par-champ-603`](decisions/provenance-par-champ-603.md), [`provenance-roster-gouvernement-996`](decisions/provenance-roster-gouvernement-996.md), [`retrait-groupes-senat-nossenateurs`](decisions/retrait-groupes-senat-nossenateurs.md), [`syceron-acteur-ref-nu-510`](decisions/syceron-acteur-ref-nu-510.md), [`syceron-archives-verifiees-parseur-510`](decisions/syceron-archives-verifiees-parseur-510.md).
 
 ## `src/group_roster.py`
 
@@ -1027,13 +1030,14 @@ Le mentionnent sans le gouverner : [`cle-fusion-interventions-540`](decisions/cl
 
 ## `src/population_profils.py`
 
-3 décision(s) le gouvernent ; le module en cite 2.
+4 décision(s) le gouvernent ; le module en cite 2.
 
 | Décision | Nomme |
 | --- | --- |
 | [Le sédiment se compte avant de se juger : sept familles, deux couches, aucun retrait (#839, lot A) (2026-09-12)](decisions/audit-sediment-inventaire-839.md) | `provenance_du_profil` |
 | [« 32 candidats déclarés » en comptait 30 : un libellé de provenance affirmait un statut (#873) (2026-09-12)](decisions/libelle-population-candidats-873.md) | `LIBELLE_CANDIDATS` |
 | [Les deux populations de `pivot_data/profiles/` sont portées par les outils, pas par une consigne (#630, 2026-08-30)](decisions/populations-profils-portees-par-les-outils-630.md) | `Ventilation`, `ventiler_chemins` |
+| [Les membres de gouvernement deviennent une population, et leur collecte part (#996, lot 3) (2026-09-18)](decisions/provenance-roster-gouvernement-996.md) | `PROVENANCES_ROSTER` |
 
 Le mentionnent sans le gouverner : [`agents-sans-comptes-volatils`](decisions/agents-sans-comptes-volatils.md).
 
@@ -1147,7 +1151,7 @@ Le mentionnent sans le gouverner : [`audit-champs-deplaces-726`](decisions/audit
 
 ## `src/schema_pivot.py`
 
-47 décision(s) le gouvernent ; le module en cite 5.
+48 décision(s) le gouvernent ; le module en cite 5.
 
 | Décision | Nomme |
 | --- | --- |
@@ -1182,6 +1186,7 @@ Le mentionnent sans le gouverner : [`audit-champs-deplaces-726`](decisions/audit
 | [La position politique d'un groupe est celle que l'Assemblée déclare, lue dans une table committée (#686) (2026-09-01)](decisions/position-politique-groupes-686.md) | `POSITION_POLITIQUE_AN_VERS_PIVOT` |
 | [Quelle source a rempli quel champ, et quand — un bloc à côté d'`identite` (#603) (2026-08-30)](decisions/provenance-par-champ-603.md) | `BLOCS_PROVENANCE_CHAMPS`, `valider_provenance_champs` |
 | [Provenance des profils pivot : candidat_declare vs roster_groupe (2026-08-10)](decisions/provenance-pivot.md) | `KNOWN_PROVENANCES`, `validate_profil` |
+| [Les membres de gouvernement deviennent une population, et leur collecte part (#996, lot 3) (2026-09-18)](decisions/provenance-roster-gouvernement-996.md) | `KNOWN_PROVENANCES`, `validate_profil` |
 | [Un profil de roster ne porte pas une liste que sa propre collecte déclare écartée — purge des 49 `textes_portes` résiduels (#747)](decisions/purge-textes-portes-roster-747.md) | `validate_profil` |
 | [La qualification d'un scrutin se perdait entre la collecte et le profil brut (#639, rang 1) (2026-08-31)](decisions/qualification-perdue-a-la-fusion-639.md) | `validate_scrutins_index` |
 | [La qualification d'un scrutin et la clé de son dossier étaient lues puis jetées (#639, rangs 1 et 2)](decisions/qualification-scrutins-et-cle-dossier-639.md) | `KNOWN_TYPES_SCRUTIN`, `validate_scrutins_index` |

@@ -221,7 +221,7 @@ def test_gate_section2_ne_crie_plus_sur_les_membres_de_roster(tmp_path):
     assert "membre-roster-1" not in console
     assert "membre-roster-2" not in console
     assert "Inattendus" not in console
-    assert "2 membres de roster hors candidats.json" in console
+    assert "2 profil(s) hors candidats.json (2 membres de roster)" in console
 
 
 def test_gate_section2_signale_encore_un_candidat_declare_hors_liste(tmp_path):

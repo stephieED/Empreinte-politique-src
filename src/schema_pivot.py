@@ -433,7 +433,8 @@ Format d'un profil pivot v1 :
                                              # un rangement par défaut (§2 règle 5)
             }
         ],
-        "provenance": "candidat_declare",         # "candidat_declare" | "roster_groupe" ;
+        "provenance": "candidat_declare",         # "candidat_declare" | "roster_groupe"
+                                             # | "roster_gouvernement" ;
                                              # voir KNOWN_PROVENANCES
         "provenance_champs": {               # #603 — D'OÙ VIENT CETTE VALEUR, et de quand.
                                              # À ne pas confondre avec `provenance` ci-dessus,
@@ -1217,14 +1218,24 @@ KNOWN_ROLES_SIGNATAIRE_AMENDEMENT: frozenset[str] = frozenset({
 # financière ; art. 45 : lien avec le texte — "cavalier législatif").
 KNOWN_BASES_IRRECEVABILITE: frozenset[str] = frozenset({"art. 40", "art. 45"})
 
-# Provenance du profil (meta.provenance) : distingue un candidat déclaré à la
-# présidentielle (raw_data/candidats.json, source éditoriale) d'un profil
-# extrait via le roster réel d'un groupe parlementaire (generate_roster_candidats.py,
-# #188). Politique de fusion (voir merge_profile.merge_pivot_profile) : un profil
-# "candidat_declare" n'est jamais rétrogradé vers "roster_groupe" par une
-# régénération roster-driven du même slug, pour ne jamais perdre l'enrichissement
-# éditorial déjà présent (parti, etc.).
-KNOWN_PROVENANCES: frozenset[str] = frozenset({"candidat_declare", "roster_groupe"})
+# Provenance du profil (meta.provenance) : POURQUOI ce profil existe. Trois
+# valeurs, une par population de pivot_data/profiles/ (src/population_profils.py
+# les nomme et les ventile, #630) :
+#   - "candidat_declare" : candidat déclaré à la présidentielle
+#     (raw_data/candidats.json, source éditoriale) — sa fiche est publiée ;
+#   - "roster_groupe" : extrait via le roster réel d'un groupe parlementaire
+#     (generate_roster_candidats.py, #188) — il existe pour être agrégé ;
+#   - "roster_gouvernement" : membre d'un gouvernement recensé par AMO30 et
+#     qu'aucun roster de groupe n'amène (#996 lot 3). 124 de ces personnes
+#     n'ont jamais été députées : sans cette provenance, la fiche d'un
+#     gouvernement n'agrégerait que celles qui l'ont été.
+# Politique de fusion (voir merge_profile.merge_pivot_profile) : un profil
+# "candidat_declare" n'est jamais rétrogradé vers une provenance de roster par
+# une régénération roster-driven du même slug, pour ne jamais perdre
+# l'enrichissement éditorial déjà présent (parti, etc.).
+KNOWN_PROVENANCES: frozenset[str] = frozenset({
+    "candidat_declare", "roster_groupe", "roster_gouvernement",
+})
 
 # --- #539 : identifiants de source, publiés dans le pivot -------------------
 
@@ -1945,9 +1956,10 @@ def make_empty_profil(id_: str, nom: str, provenance: str = "candidat_declare") 
              explicite, ex. "parltrack:197451" : mieux vaut ça qu'un slug
              inventé à partir d'un nom collecté.
         nom: nom complet de l'élu.
-        provenance: origine du profil, "candidat_declare" (défaut, raw_data/candidats.json)
-                    ou "roster_groupe" (extraction pilotée par le roster réel d'un
-                    groupe parlementaire, #188). Voir KNOWN_PROVENANCES.
+        provenance: origine du profil, "candidat_declare" (défaut, raw_data/candidats.json),
+                    "roster_groupe" (extraction pilotée par le roster réel d'un
+                    groupe parlementaire, #188) ou "roster_gouvernement" (membre
+                    d'un gouvernement recensé par AMO30, #996). Voir KNOWN_PROVENANCES.
 
     Returns:
         Profil pivot dict initialisé, prêt à être enrichi.

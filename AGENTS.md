@@ -80,20 +80,27 @@ slices → `pivot_data/profiles/<slug>.pivot.json` → groupes / lignées /
 gouvernements → `check_quality_gate.py`, which gates every commit. `raw_data/` is
 source-near; `pivot_data/` is the only layer `web/` reads.
 
-**`pivot_data/profiles/` holds two populations, and nothing on disk says so
-(#630).** One directory, one naming pattern — a `glob` returns both.
-`meta.provenance == "candidat_declare"` marks the declared candidates, the ones
-`web/` publishes a page for; `meta.provenance == "roster_groupe"` marks the
-group members, collected **to feed the group and government aggregates** —
-`group_profile.py` never reads their `identite` block, it consumes `nom`,
-`mandats`, `votes`, `interventions`, `amendements`, all lists. **What differs
-is the use, not the standard**: an identity **merge** fix covers the declared
-candidates only, an identity **quality** fix covers every profile (#556's HATVP
-markers were in the roster). Name the population before you quote a figure —
-and the tools do it for you: every profile count they print carries its
-breakdown, via `src/population_profils.py`. **The counts themselves are not
+**`pivot_data/profiles/` holds three populations, and nothing on disk says so
+(#630, #996).** One directory, one naming pattern — a `glob` returns all of
+them. `meta.provenance == "candidat_declare"` marks the declared candidates,
+the ones `web/` publishes a page for; `roster_groupe` marks the group members
+and `roster_gouvernement` the government members AMO30 lists and no group
+roster brings in — both collected **to feed the group and government
+aggregates**. `group_profile.py` never reads their `identite` block, it
+consumes `nom`, `mandats`, `votes`, `interventions`, `amendements`, all lists.
+**What differs is the use, not the standard**: an identity **merge** fix covers
+the declared candidates only, an identity **quality** fix covers every profile
+(#556's HATVP markers were in the roster). Name the population before you quote
+a figure — and the tools do it for you: every profile count they print carries
+its breakdown, via `src/population_profils.py`. **The counts themselves are not
 here**: every run moves them, and this file is read as current.
-→ `docs/decisions/populations-profils-portees-par-les-outils-630.md`
+
+**Never write `provenance == "roster_groupe"` to mean "a roster member"** —
+import `population_profils.PROVENANCES_ROSTER`. That equality, copied into six
+modules, published a minister as `candidat_declare` and dropped the
+`acteur_ref` their collection depends on, and nothing failed.
+→ `docs/decisions/populations-profils-portees-par-les-outils-630.md`,
+  `docs/decisions/provenance-roster-gouvernement-996.md`
 
 ### The domain rules, and why they are not here
 
