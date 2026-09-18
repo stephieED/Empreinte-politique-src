@@ -76,8 +76,32 @@ légales.** Le patronyme n'étant pas publié, la page légale garde sa formulat
 sans se contredire. Un test refuse l'ajout du patronyme ici : le faire sans le
 demander mettrait les deux pages en désaccord.
 
-Les deux phrases suivantes — ce dont le projet est indépendant, et son statut —
-sont rédigées d'après l'issue.
+Les phrases suivantes — ce dont le projet est indépendant, son statut, et la
+raison pour laquelle il existe — sont rédigées d'après l'issue et d'après un
+texte long proposé le 18/09/2026.
+
+**Ce texte long n'est pas publié tel quel, et c'est un arbitrage.** Il portait
+trois listes — ce que le site refuse de publier, les données et fonctionnalités,
+les sources intégrées — qui redisaient `/methodologie` (« Ce que vous ne
+trouverez pas ici ») et `/sources` : la duplication que la structure A venait de
+supprimer. La page garde ce qui n'existe nulle part ailleurs — la mission, le
+but non lucratif, le code public, la phrase sur la polarisation — et renvoie
+pour le reste.
+
+**Trois de ses affirmations étaient fausses, vérifiées dans le dépôt, et ne sont
+pas publiées** :
+
+| Ce que le texte disait | Ce que le dépôt dit |
+| --- | --- |
+| « sans intervention ni sélection éditoriale humaine » | `/methodologie` publie l'inverse : le rattachement d'un mandat à un groupe est « une relecture humaine, datée » (#977) |
+| « Assemblée nationale **& Sénat** : scrutins officiels, dossiers et mandats » | L'open data du Sénat ne porte **ni scrutin ni prise de parole** ; depuis #885 on n'en collecte que les appartenances |
+| « Journal officiel & Open Data gouvernemental » | Le JO est **cité, pas collecté** — un décret par fonction antérieure au corpus, relu à la main (#860) |
+
+Trois sources collectées manquaient aussi à sa liste, et leur attribution est
+due : le répertoire national des élus (#922), Wikipédia (la liste des candidats
+déclarés, #753) et Wikidata (#757). Enfin « publié en open source » : le dépôt
+est public, mais il ne porte **aucun fichier de licence** — la page dit donc
+« le code est public », qui est exact.
 
 ### 5. La page est servie et référencée
 

@@ -28,6 +28,19 @@ import './AboutPage.css';
  * `/methodologie` : « relus par une personne » couvre les rapprochements que la
  * fiche signale (#977).
  *
+ * CE QUE LA PAGE NE PORTE PAS, ET POURQUOI. Un texte long a été proposé le
+ * 18/09/2026, avec trois listes — ce que le site refuse de publier, les données
+ * et fonctionnalités, les sources intégrées. Elles redisaient `/methodologie`
+ * (« Ce que vous ne trouverez pas ici ») et `/sources`, deux pages tenues à
+ * jour et testées : c'est la duplication que la structure A venait de
+ * supprimer. Cette page garde donc ce qui n'existe nulle part ailleurs — la
+ * mission, l'indépendance, le but non lucratif, le code public — et renvoie
+ * pour le reste. Trois affirmations de ce texte étaient par ailleurs fausses et
+ * ne sont pas publiées : « sans intervention humaine » (le rattachement d'un
+ * mandat est une relecture humaine datée, #977), « Sénat : scrutins » (son
+ * open data n'en porte aucun, #885) et le Journal officiel présenté comme
+ * collecté (il est cité, #860).
+ *
  * LA PRÉSENTATION EST LA SIENNE, ET ELLE SIGNE « STÉPHIE E. ». Le patronyme
  * n'est pas publié : c'est ce qui permet aux mentions légales de garder leur
  * formulation — « édité à titre non professionnel et non commercial par une
@@ -35,6 +48,10 @@ import './AboutPage.css';
  * de l'article 6-III de la LCEN. Le compléter ici mettrait les deux pages en
  * contradiction, et un test le refuse.
  */
+
+/* Le dépôt est public, et c'est un fait vérifiable ; « open source » attendra
+ * qu'il porte un fichier de licence. */
+const DEPOT = 'https://github.com/stephieED/Empreinte-politique-src';
 
 const MANIFESTE = [
   'Empreinte politique rassemble ce que les institutions publient sur les candidats à la présidentielle 2027 — mandats, votes, textes, prises de parole — et le donne à lire tel quel.',
@@ -80,12 +97,24 @@ export default function AboutPage() {
                 démocratique.
               </p>
               <p>
-                Aucune affiliation à un parti, à un candidat ou à une organisation ; aucun
-                financement extérieur, aucune publicité. Les coûts sont portés sur fonds propres.
+                Projet à but non lucratif : aucune affiliation à un parti, à un candidat ou à une
+                organisation ; aucun financement extérieur, aucune publicité. Les coûts sont portés
+                sur fonds propres, et{' '}
+                <a href={DEPOT} target="_blank" rel="noopener noreferrer">
+                  le code est public
+                </a>
+                .
               </p>
               <p>
                 C’est un projet personnel, mené sur mon temps libre. Ni une rédaction, ni une
                 entreprise : une personne, un programme, et des sources publiques.
+              </p>
+              {/* LA SEULE PHRASE DE LA PAGE QUI NE SOIT PAS UN FAIT SUR LE SITE :
+                  elle dit pourquoi il existe, et c'est la voix de la propriétaire
+                  (§2 — les règles tiennent l'outil, pas sa plume). */}
+              <p>
+                Il s’inscrit dans une logique de lutte contre la polarisation des débats et la
+                désinformation : donner à lire les faits, avec de quoi les vérifier.
               </p>
               <p className="apropos-liens">
                 <a href={`mailto:${CONTACT}`}>{CONTACT}</a>
