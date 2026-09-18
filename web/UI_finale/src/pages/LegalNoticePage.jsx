@@ -34,12 +34,31 @@ const SECTIONS = [
     ),
   },
   {
+    /* L'HÉBERGEUR EST GITHUB, PAS LE REGISTRAR (#1032, 18/09/2026). Le site est
+       servi par GitHub Pages — `.github/workflows/deploy-pages.yml` publie
+       `web/UI_finale/dist`, et `CNAME` y attache le domaine. Gandi est le
+       bureau d'enregistrement du nom de domaine, ce que la LCEN ne demande pas
+       de nommer : la section le dit quand même, parce que la question s'est
+       posée.
+
+       LES DEUX ADRESSES VIENNENT DE LEUR SOURCE, pas de mémoire : celle de
+       GitHub de sa déclaration de confidentialité (« Our addresses are »),
+       celle de Gandi de l'enregistrement RDAP du domaine chez l'AFNIC, qui fait
+       foi pour le registre `.fr`. Aucun téléphone pour GitHub : il n'en publie
+       pas, et en inventer un dans une page légale serait pire que l'absence. */
     heading: 'Hébergement',
     body: (
-      <p>
-        <em>À préciser.</em> L'hébergement définitif de ce site n'est pas encore déterminé à la date de
-        rédaction de cette page ; cette section sera complétée dès qu'un hébergeur sera choisi.
-      </p>
+      <>
+        <p>
+          Ce site est hébergé par <strong>GitHub, Inc.</strong>, 88 Colin P. Kelly Jr. Street, San
+          Francisco, CA 94107, États-Unis, via le service GitHub Pages.
+        </p>
+        <p>
+          Le nom de domaine <code>empreinte-politique.fr</code> est enregistré auprès de{' '}
+          <strong>Gandi</strong>, 63-65 boulevard Masséna, 75013 Paris, France — téléphone :
+          +33 1 70 37 76 61.
+        </p>
+      </>
     ),
   },
   {
