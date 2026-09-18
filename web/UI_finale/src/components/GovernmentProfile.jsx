@@ -327,7 +327,6 @@ function QuiLeComposait({ government }) {
     [government],
   );
   const piles = colonnes(poles, 3);
-  const sansTitulaire = poles.filter((p) => !p.titulaires.length).length;
 
   return (
     <section className="gvp-section" data-section="Qui le composait" id="section-composition">
@@ -363,13 +362,6 @@ function QuiLeComposait({ government }) {
             ))}
           </div>
         )}
-        <p className="gvp-note">
-          Chaque bloc est un ministère : son titulaire, et — au clic — les ministres délégués et
-          secrétaires d’État qui lui sont rattachés. Le rattachement est écrit dans le libellé
-          officiel du portefeuille, il n’est pas déduit. Une personne qui a changé de charge dans le
-          même ministère n’y figure qu’une fois, avec sa dernière.
-          {sansTitulaire > 0 && ` ${sansTitulaire} ministère${sansTitulaire > 1 ? 's apparaissent' : ' apparaît'} sans titulaire : le rattachement le nomme, mais la personne n’a pas de fiche ici.`}
-        </p>
       </div>
     </section>
   );
