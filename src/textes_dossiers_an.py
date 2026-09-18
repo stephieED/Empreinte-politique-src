@@ -56,7 +56,13 @@ from gouvernement_textes import (
 #: Nom du fichier de cache. Suffixé par une version : le jour où le contenu de
 #: la table change de forme, un cache CI existant ne doit pas servir l'ancienne
 #: en silence (leçon de `index_texte_titre_v2`, #400).
-NOM_CACHE = "index_texte_dossier_v1.json"
+#: **#1019 — version incrémentée avec l'ajout de l'archive XIV.** Le contenu
+#: de cet index change (3 402 dossiers de plus), et un cache porte le code ET
+#: les sources qui l'ont écrit. Ce n'est pas théorique : sur #997, un
+#: correctif publié n'a rien changé pendant un run entier parce que l'index
+#: était relu tel quel — `.cache/dossiers_an` est restauré d'une semaine sur
+#: l'autre par les `restore-keys` du workflow.
+NOM_CACHE = "index_texte_dossier_v2.json"
 
 _LOCK = threading.Lock()
 

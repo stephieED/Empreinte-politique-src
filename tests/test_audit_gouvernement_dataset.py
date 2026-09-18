@@ -846,7 +846,7 @@ def test_compute_couverture_textes_liste_vide():
     assert resultat["lignes"] == []
     assert resultat["sans_texte_hors_couverture"] == []
     assert resultat["sans_texte_dans_couverture"] == []
-    assert resultat["borne_couverture"] == "2017-06-21"
+    assert resultat["borne_couverture"] == "2012-06-20"
 
 
 def test_compute_couverture_textes_gouvernement_hors_couverture_sans_texte():
@@ -902,7 +902,10 @@ def test_compute_couverture_textes_liste_vide_est_bien_un_zero_observe():
 def test_compute_couverture_textes_repartition_par_statut():
     gouvernements = [
         gouvernement_periode("gouvernement:HORS", "2007-06-19", "2010-11-13", []),
-        gouvernement_periode("gouvernement:PARTIEL", "2017-06-20", "2020-07-06", []),
+        # #1019 — la borne ayant reculé au 2012-06-20, l'ancienne fixture
+        # (2017-06-20) est devenue entièrement couverte. Ayrault II est le cas
+        # partiel RÉEL : il commence la veille de l'ouverture de la XIV.
+        gouvernement_periode("gouvernement:PARTIEL", "2012-06-19", "2014-03-31", []),
         gouvernement_periode("gouvernement:COUVERT", "2024-07-18", None, []),
         gouvernement_periode("gouvernement:INDETERMINE", None, None, []),
     ]
@@ -1102,7 +1105,7 @@ def test_generate_markdown_report_en_tete_expose_la_borne_de_couverture():
 
     markdown = generate_markdown_report(rapport)
 
-    assert "2017-06-21" in markdown.split("## Volumétrie")[0]
+    assert "2012-06-20" in markdown.split("## Volumétrie")[0]
 
 
 def test_generate_markdown_report_distingue_hors_couverture_et_zero_constate():

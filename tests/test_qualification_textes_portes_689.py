@@ -175,13 +175,16 @@ def test_le_cache_disque_change_de_version():
     `_collect_acteur_roles` **au moment de construire l'index**, donc il y est
     figé.
 
-    Aucune version antérieure ne doit subsister dans le source : c'est ce que
-    les trois `not in` tiennent.
+    **`_v5` depuis #1019** : l'archive XIV entre dans la couverture, donc
+    l'index gagne 3 402 dossiers. Quatrième incrément, même règle — un cache
+    porte le code ET les sources qui l'ont écrit.
+
+    Aucune version antérieure ne doit subsister dans le source.
     """
     source = Path(candidate_profile.__file__).read_text(encoding="utf-8")
-    assert "index_acteur_textes_v4.json" in source
-    assert "index_acteur_textes_v3.json" not in source
-    assert "index_acteur_textes_v2.json" not in source
+    assert "index_acteur_textes_v5.json" in source
+    for perimee in ("v4", "v3", "v2"):
+        assert f"index_acteur_textes_{perimee}.json" not in source
 
 
 # ---------------------------------------------------------------------------

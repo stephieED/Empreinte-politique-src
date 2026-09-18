@@ -3332,7 +3332,9 @@ def _build_acteur_textes_portes_index() -> dict[str, list[dict[str, Any]]]:
         # La règle, une fois de plus : **un cache porte le code qui l'a écrit.**
         # Un correctif qui change ce qu'un index CONTIENT change sa clé, sans
         # quoi il ne change rien.
-        index_path = DOSSIERS_CACHE_DIR / "index_acteur_textes_v4.json"  # cf. #400, #689, #997
+        # `_v5` depuis #1019 : l'archive XIV entre dans la couverture, donc
+        # l'index gagne 3 402 dossiers. Même règle, quatrième fois.
+        index_path = DOSSIERS_CACHE_DIR / "index_acteur_textes_v5.json"  # cf. #400, #689, #997, #1019
         if index_path.is_file():
             try:
                 with open(index_path, encoding="utf-8") as f:

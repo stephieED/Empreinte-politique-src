@@ -57,7 +57,13 @@ from gouvernement_textes import (
 CODE_ACTE_SAISIE_FOND = "AN1-COM-FOND-SAISIE"
 
 #: Nom du fichier de cache disque, versionné (voir docstring du module).
-NOM_CACHE = "index_dossier_commission_v1.json"
+#: **#1019 — version incrémentée avec l'ajout de l'archive XIV.** Le contenu
+#: de cet index change (3 402 dossiers de plus), et un cache porte le code ET
+#: les sources qui l'ont écrit. Ce n'est pas théorique : sur #997, un
+#: correctif publié n'a rien changé pendant un run entier parce que l'index
+#: était relu tel quel — `.cache/dossiers_an` est restauré d'une semaine sur
+#: l'autre par les `restore-keys` du workflow.
+NOM_CACHE = "index_dossier_commission_v2.json"
 
 _LOCK = threading.Lock()
 

@@ -529,6 +529,77 @@ def _uid_depuis_nom(nom: str) -> str:
     return nom.rsplit("/", 1)[-1][: -len(".json")]
 
 
+# ── La XIV est monolithique, et c'est sa seule différence (#1019) ────────────
+#
+# Les archives XV et suivantes portent UN FICHIER PAR OBJET
+# (`json/dossierParlementaire/DLR5L17N52956.json`). La XIV porte **un seul
+# fichier JSON** de 36 Mo décompressés, dans lequel les objets sont deux
+# tableaux. Relevé le 18/09/2026 sur `Dossiers_Legislatifs_XIV.json.zip`
+# (2,5 Mo) : 3 432 dossiers, 7 120 documents.
+#
+# `couverture_dossiers.py` disait « aucun `dossierParlementaire` ». C'était
+# faux : il y en a 3 432, chacun sous cette clé exactement comme dans le format
+# par fichier. Seul l'EMBALLAGE change, pas le contenu — mesuré,
+# `parse_dossier_gouvernemental` traite les 3 432 sans une exception, et rend
+# 573 dossiers d'origine gouvernementale avec **un seul warning** et aucun
+# `fam_code` inconnu.
+#
+# Les deux collections ne s'emballent pas pareil, et c'est la seule subtilité :
+# un dossier est `{"dossierParlementaire": {…}}`, un document est l'objet nu.
+_COLLECTIONS_MONOLITHE: dict[str, tuple[tuple[str, str], bool]] = {
+    # cle_racine : ((clé de section, clé de tableau), objet enveloppé ?)
+    "dossierParlementaire": (("dossiersLegislatifs", "dossier"), True),
+    "document": (("textesLegislatifs", "document"), False),
+}
+
+
+def _entrees_monolithiques(chemin: Path, cle_racine: str) -> dict[str, dict[str, Any]]:
+    """`{uid: objet}` d'une archive monolithique, ou `{}` si ce n'en est pas une.
+
+    **Cette fonction charge l'archive entière en mémoire**, contrairement au
+    format par fichier qui arbitre les doublons sur les seuls `namelist()`. Il
+    n'y a pas d'autre choix : sans nom de fichier, l'uid ne se lit que dans
+    l'objet, donc il faut désérialiser pour savoir ce que l'archive contient.
+
+    Le coût est mesuré et borné : 36 Mo décompressés pour la XIV, contre les
+    « plusieurs centaines de Mo » que `_uid_depuis_nom` évite sur les trois
+    archives par fichier. Le pipeline a déjà connu deux OOM (#377, #392), donc
+    ce n'est pas une licence générale — c'est une exception pour UNE archive
+    dont la structure ne laisse pas le choix, et elle est rendue sous forme de
+    dict pour n'être parcourue qu'une fois.
+    """
+    section = _COLLECTIONS_MONOLITHE.get(cle_racine)
+    if section is None:
+        return {}
+    (cle_section, cle_tableau), enveloppe = section
+    try:
+        with zipfile.ZipFile(chemin) as zf:
+            noms = [n for n in zf.namelist() if n.endswith(".json")]
+            if len(noms) != 1:
+                return {}
+            with zf.open(noms[0]) as flux:
+                racine = json.load(flux)
+    except (zipfile.BadZipFile, OSError, ValueError):
+        return {}
+
+    export = racine.get("export") if isinstance(racine, dict) else None
+    entrees = ((export or {}).get(cle_section) or {}).get(cle_tableau)
+    if not isinstance(entrees, list):
+        return {}
+
+    resultat: dict[str, dict[str, Any]] = {}
+    for entree in entrees:
+        if not isinstance(entree, dict):
+            continue
+        objet = entree.get(cle_racine) if enveloppe else entree
+        if not isinstance(objet, dict):
+            continue
+        uid = objet.get("uid")
+        if isinstance(uid, str) and uid:
+            resultat[uid] = objet
+    return resultat
+
+
 def _iter_entrees_brutes(
     archives: list[tuple[int, Path]], prefixe: str, cle_racine: str
 ) -> Iterator[tuple[int, dict[str, Any]]]:
@@ -545,6 +616,12 @@ def _iter_entrees_brutes(
     """
     proprietaire: dict[str, int] = {}
     noms_par_archive: dict[int, list[str]] = {}
+    # #1019 — les archives monolithiques, chargées une fois et gardées le temps
+    # de l'itération. Il n'y en a qu'une aujourd'hui (la XIV) ; la détection
+    # porte sur la FORME de l'archive, jamais sur son numéro de législature,
+    # pour qu'une archive future de l'un ou l'autre format soit lue sans qu'on
+    # y revienne.
+    monolithes: dict[int, dict[str, dict[str, Any]]] = {}
     for legislature, chemin in archives:
         try:
             with zipfile.ZipFile(chemin) as zf:
@@ -553,6 +630,15 @@ def _iter_entrees_brutes(
                     if n.startswith(prefixe) and n.endswith(".json")
                 ]
         except (zipfile.BadZipFile, OSError):
+            continue
+        if not noms:
+            entrees = _entrees_monolithiques(chemin, cle_racine)
+            if entrees:
+                monolithes[legislature] = entrees
+                for uid in entrees:
+                    precedente = proprietaire.get(uid)
+                    if precedente is None or legislature > precedente:
+                        proprietaire[uid] = legislature
             continue
         noms_par_archive[legislature] = noms
         for nom in noms:
@@ -564,6 +650,12 @@ def _iter_entrees_brutes(
                 proprietaire[uid] = legislature
 
     for legislature, chemin in archives:
+        entrees = monolithes.get(legislature)
+        if entrees is not None:
+            for uid, objet in entrees.items():
+                if proprietaire.get(uid) == legislature:
+                    yield legislature, objet
+            continue
         noms = noms_par_archive.get(legislature)
         if not noms:
             continue

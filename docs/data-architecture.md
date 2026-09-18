@@ -811,7 +811,11 @@ Deux matériaux, jamais mélangés :
 - **les textes** — `gouvernement_textes.py`, seule fonction réseau du lot
   (`ensure_dossiers_zip_downloaded`), lit le dump AN `Dossiers_Legislatifs.json.zip`
   (une archive par législature, #400, dédupliquées par uid, la législature la plus
-  élevée faisant foi). L'origine gouvernementale (art. 39) se lit sur le **type du
+  élevée faisant foi). **Quatre archives depuis #1019 — XIV à XVII — et deux
+  formats** : la XIV est monolithique (un seul JSON, les objets dans deux
+  tableaux), les autres portent un fichier par objet. La détection se fait sur
+  la forme de l'archive, jamais sur son numéro. La borne de couverture recule
+  ainsi au **2012-06-20**, et les XII/XIII restent hors d'atteinte (404). L'origine gouvernementale (art. 39) se lit sur le **type du
   document déposé** — préfixe de l'uid du `texteAssocie` de l'acte `*-DEPOT` le
   plus ancien : `PRJL` = projet de loi, `PION` = proposition, `PNRE` = résolution.
   `procedureParlementaire.code` ne sert que de repli, et **jamais** pour les codes

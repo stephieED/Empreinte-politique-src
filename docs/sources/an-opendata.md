@@ -275,6 +275,33 @@ directly.
 `.../17/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip` (~10 MB,
 daily updates).
 
+### Deux formats coexistent, et la XIV n'est pas incompatible (2026-09-18)
+
+Relevé le 18/09/2026 sur les quatre archives ingérées :
+
+| Législature | URL | Format |
+| --- | --- | --- |
+| XIV | `.../14/…/Dossiers_Legislatifs_XIV.json.zip` (2,5 Mo) | **monolithique** — un seul `.json`, 36 Mo décompressés |
+| XV | `.../15/…/Dossiers_Legislatifs_XV.json.zip` (15 Mo) | un fichier par objet |
+| XVI, XVII | `.../{16,17}/…/Dossiers_Legislatifs.json.zip` | un fichier par objet |
+| XII, XIII | — | **404**, revérifié le 18/09/2026 |
+
+Le format monolithique porte les objets dans deux tableaux :
+`export.dossiersLegislatifs.dossier[]` (**3 432**) et
+`export.textesLegislatifs.document[]` (7 120). **Chaque dossier est sous la clé
+`dossierParlementaire`, exactement comme dans le format par fichier** — seul
+l'emballage change, pas le contenu, et `parse_dossier_gouvernemental` traite les
+3 432 sans une exception.
+
+**Le piège** : l'emballage n'est pas le même pour les deux collections. Un
+dossier est `{"dossierParlementaire": {…}}`, un **document est l'objet nu**.
+
+Second piège : le nom de fichier porte l'uid dans le format par fichier, ce qui
+permet d'arbitrer les doublons sans rien désérialiser. Le monolithe n'en a pas,
+donc l'uid se lit dans l'objet — et l'arbitrage compte : **30 uids de la XIV
+figurent aussi dans les XV-XVII**.
+→ `docs/decisions/archive-dossiers-xiv-1019.md`
+
 Empirical findings:
 
 - `dossierParlementaire.legislature` spans `{8, 11, 12, 13, 14, 15, 16, 17}`

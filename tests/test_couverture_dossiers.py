@@ -54,19 +54,20 @@ def test_borne_couverture_est_le_debut_de_la_plus_ancienne_legislature_ingeree()
 
 
 def test_borne_couverture_valeur_courante():
-    # XV/XVI/XVII ingérées : la borne est la première séance de la XV.
-    assert borne_couverture_textes() == "2017-06-21"
+    # XIV à XVII ingérées depuis #1019 : la borne est la première séance de la
+    # XIV, relue dans l'organe `ASSEMBLEE` d'AMO30 et non de mémoire.
+    assert borne_couverture_textes() == "2012-06-20"
 
 
 def test_libelle_legislatures_contigues_est_un_intervalle():
-    assert libelle_legislatures_ingerees() == "XV–XVII"
+    assert libelle_legislatures_ingerees() == "XIV–XVII"
 
 
 def test_libelle_couverture_expose_la_borne():
     libelle = libelle_couverture_textes()
 
-    assert "XV" in libelle
-    assert "2017-06-21" in libelle
+    assert "XIV" in libelle
+    assert "2012-06-20" in libelle
 
 
 # ---------------------------------------------------------------------------
@@ -83,12 +84,16 @@ def test_periode_commencant_exactement_a_la_borne_est_couverte():
 
 
 def test_periode_entierement_anterieure_est_hors_couverture():
-    # Fillon II (XIIIe législature) : aucune archive publiée, définitivement.
+    # Fillon II (XIIIe législature) : son archive répond 404, revérifié le
+    # 18/09/2026. Hors couverture définitivement, même après #1019.
     assert statut_couverture_textes("2007-06-19", "2010-11-13") == COUVERTURE_HORS
 
 
 def test_periode_a_cheval_sur_la_borne_est_partielle():
-    assert statut_couverture_textes("2017-06-20", "2020-07-06") == COUVERTURE_PARTIELLE
+    # Ayrault II (19/06/2012 → 31/03/2014) est le cas réel depuis #1019 : il
+    # commence LA VEILLE de l'ouverture de la XIV (2012-06-20), donc sa
+    # couverture est partielle même si l'archive lui rend 187 textes.
+    assert statut_couverture_textes("2012-06-19", "2014-03-31") == COUVERTURE_PARTIELLE
 
 
 def test_gouvernement_en_cours_commence_apres_la_borne_est_couvert():

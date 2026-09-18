@@ -304,15 +304,15 @@ BORNES: dict[str, Borne] = {
         ),
     ),
     "textes_portes": Borne(
-        legislatures=(15, 16, 17),
+        legislatures=(14, 15, 16, 17),
         limite_source=(
-            "l'Assemblée nationale publie des dossiers législatifs à partir de la "
-            "XIVe, mais dans une structure de jeu de données incompatible avec "
-            "celle des XVe et suivantes — établi le 18/08/2026 par requêtes "
-            "réelles sur les index 11 à 18 (couverture_dossiers.py)"
+            "l'Assemblée nationale ne publie pas d'archive de dossiers avant la "
+            "XIVe : les index 12 et 13 répondent 404, revérifié le 18/09/2026. "
+            "La XIVe est ingérée depuis #1019 — sa structure est monolithique, "
+            "non incompatible, ce que la rédaction précédente affirmait à tort"
         ),
         constante=(
-            "couverture_dossiers.AN_DOSSIERS_ARCHIVES = XV, XVI, XVII"
+            "couverture_dossiers.AN_DOSSIERS_ARCHIVES = XIV, XV, XVI, XVII"
         ),
     ),
     "interventions": Borne(
