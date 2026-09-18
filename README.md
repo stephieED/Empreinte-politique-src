@@ -225,16 +225,28 @@ où ils se lisaient comme des faits sur la personne affichée (#328).
   0 vote de cohésion. La chambre `senateurs` du roster reste suspendue.
   → [`docs/decisions/reouverture-partielle-senat-885.md`](docs/decisions/reouverture-partielle-senat-885.md)
 - **Parlement européen** : collecté via ParlTrack et le portail officiel, et lu
-  comme une **institution à part entière** sur la fiche depuis #328 — **7 des 32
-  candidats déclarés** y ont siégé, et pour certains c'est **tout** leur mandat
-  parlementaire. Les cinq listes sont publiées : 11 013 votes, 7 303 amendements,
-  383 textes portés, 5 329 interventions. Trois limites déclarées :
-  les interventions et textes antérieurs au 22/11/2016 portent la date de leur
-  **republication** par ParlTrack, pas celle de la séance (#858) ; aucun dump ne
-  porte le **sort** d'un amendement ni l'issue d'un dossier ; et la section « Où
-  il s'est écarté des siens » n'a aucune fiche de groupe européenne à quoi se
-  comparer.
+  comme une **institution à part entière** sur la fiche — **7 des 32 candidats
+  déclarés** y ont siégé, et pour certains c'est **tout** leur mandat
+  parlementaire. Les cinq listes sont publiées, et depuis #1007 les trois
+  figures européennes se lisent comme leurs jumelles françaises, derrière le
+  même commutateur : textes portés, amendements et **votes**.
+  Ce que la fiche y range et comment, en une ligne chacun :
+  **un texte, une position** — par dossier, le dernier scrutin, date puis rang
+  dans la séance, faute de notion de lecture dans la nomenclature européenne ;
+  **un thème** — les domaines EuroVoc du dossier, à défaut ses familles OEIL,
+  jamais déduits d'un intitulé ; **une couleur par thème**, la même d'une figure
+  et d'une fiche à l'autre.
+  Quatre limites déclarées : les interventions et textes antérieurs au
+  22/11/2016 portent la date de leur **republication** par ParlTrack, pas celle
+  de la séance (#858) ; aucun dump ne porte le **sort** d'un amendement ni
+  l'issue d'un dossier ; la section « Où il s'est écarté des siens » n'a aucune
+  fiche de groupe européenne à quoi se comparer, et ne sera pas transposée ; et
+  la couverture EuroVoc des dossiers **monte d'un run à l'autre** — un dossier
+  que la collecte n'a pas encore interrogé n'est pas un dossier sans thème, sa
+  famille OEIL le range en attendant (§2 règle 5).
   → [`docs/decisions/institution-dimension-de-la-fiche-328.md`](docs/decisions/institution-dimension-de-la-fiche-328.md),
+  [`docs/decisions/lecture-europeenne-themes-et-votes-901.md`](docs/decisions/lecture-europeenne-themes-et-votes-901.md),
+  [`docs/decisions/pas-d-ecarts-groupe-europeens-901.md`](docs/decisions/pas-d-ecarts-groupe-europeens-901.md),
   [`docs/sources/parltrack-et-europarl.md`](docs/sources/parltrack-et-europarl.md)
 - **Interventions** : Syceron est la seule source depuis #529, et sa résolution
   d'identifiants d'acteur nus reste livrée inactive (#510) — une collecte
