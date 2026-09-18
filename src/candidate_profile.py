@@ -3301,6 +3301,24 @@ def _collect_acteur_roles(dossier: dict) -> tuple[dict[str, tuple[str, Optional[
     return acteur_roles, stade, date_min, date_max
 
 
+def _tprint_textes_portes(message: str) -> None:
+    """Trace du chemin des textes portés, sur stderr (#997).
+
+    **Pourquoi une trace et pas une exception.** Ce chemin est non fatal par
+    construction, et il doit le rester : une panne d'archive ne doit pas faire
+    échouer un run dont tout le reste est bon (#524). Mais « non fatal » avait
+    dérivé en « silencieux », et un chemin qui rend `[]` sans un mot est
+    indistinguable d'un chemin qui n'a rien trouvé — la fusion garde alors
+    l'ancien, le profil ne bouge pas, et aucune étape n'échoue.
+
+    Mesuré : le correctif de stade de #997 a traversé **trois runs** sans
+    atteindre le corpus, et aucun log ne permet de dire lequel des quatre
+    chemins muets a été pris. C'est la forme exacte du trou de #510 et #501,
+    et le remède est le même — rendre bruyant avant de reboucher.
+    """
+    print(f"  [textes portés] {message}", file=sys.stderr)
+
+
 def _build_acteur_textes_portes_index() -> dict[str, list[dict[str, Any]]]:
     """Construit (et met en cache sur disque) un index acteurRef -> liste de
     dossiers législatifs où l'acteur a un rôle factuel connu (auteur,
@@ -3338,12 +3356,26 @@ def _build_acteur_textes_portes_index() -> dict[str, list[dict[str, Any]]]:
         if index_path.is_file():
             try:
                 with open(index_path, encoding="utf-8") as f:
-                    return json.load(f)
-            except (json.JSONDecodeError, OSError):
-                pass  # cache corrompu : on reconstruit
+                    index_cache = json.load(f)
+            except (json.JSONDecodeError, OSError) as exc:
+                _tprint_textes_portes(
+                    f"cache {index_path.name} illisible ({exc}) — reconstruction.")
+            else:
+                _tprint_textes_portes(
+                    f"index relu depuis {index_path.name} "
+                    f"({len(index_cache)} acteurs) — AUCUNE reconstruction.")
+                return index_cache
 
         archives = ensure_dossiers_zips_downloaded()
         if not archives:
+            # #997 — LA sortie muette. Sans archive, l'index est vide, donc
+            # `fetch_textes_portes_officiels` rend `[]`, donc la fusion garde
+            # intégralement les entrées du run précédent : le profil ne bouge
+            # pas d'un octet et rien ne dit pourquoi. Trois runs ont passé
+            # ainsi, les 18/09 à 10h23, 12h04 et après.
+            _tprint_textes_portes(
+                "AUCUNE archive de dossiers disponible — index vide. Les textes "
+                "portés publiés restent ceux du run précédent, inchangés.")
             return {}
 
         index: dict[str, list[dict[str, Any]]] = {}
@@ -3411,12 +3443,25 @@ def _build_acteur_textes_portes_index() -> dict[str, list[dict[str, Any]]]:
                     "source_url": source_url,
                 })
 
+        _tprint_textes_portes(
+            f"index reconstruit depuis {len(archives)} archive(s) : "
+            f"{len(index)} acteurs.")
+        if not index:
+            # Des archives lisibles qui ne rendent AUCUN acteur : ce n'est pas
+            # un corpus vide, c'est un défaut de lecture. Même conséquence que
+            # ci-dessus, et même invisibilité jusqu'à #997.
+            _tprint_textes_portes(
+                "l'index est VIDE alors que les archives ont été lues — les "
+                "textes portés publiés resteront ceux du run précédent.")
+
         try:
             index_path.parent.mkdir(parents=True, exist_ok=True)
             with open(index_path, "w", encoding="utf-8") as f:
                 json.dump(index, f, ensure_ascii=False)
-        except OSError:
-            pass
+        except OSError as exc:
+            # Non fatal, mais plus muet : un index non écrit est reconstruit à
+            # chaque appel, ce qui coûte sans qu'on le voie.
+            _tprint_textes_portes(f"index NON écrit dans {index_path} ({exc}).")
 
         return index
 
@@ -3430,9 +3475,19 @@ def fetch_textes_portes_officiels(url_an_ou_senat: Optional[str]) -> list[dict[s
     que pour le Sénat."""
     acteur_ref = _extract_acteur_ref(url_an_ou_senat)
     if not acteur_ref:
+        # Quatrième sortie muette (#997) : sans acteur résolu, la collecte rend
+        # `[]` et la fusion conserve tout l'ancien. Le profil déclare pourtant
+        # `textes_portes` COLLECTÉE, puisque le drapeau ne l'avait pas écartée.
+        _tprint_textes_portes(
+            f"aucun acteur AN résolu depuis {url_an_ou_senat!r} — les textes "
+            "portés publiés restent ceux du run précédent.")
         return []
     index = _build_acteur_textes_portes_index()
     entries = index.get(acteur_ref, [])
+    if not entries:
+        _tprint_textes_portes(
+            f"{acteur_ref} absent de l'index ({len(index)} acteurs) — aucun "
+            "texte porté collecté pour ce profil.")
     return sorted(entries, key=lambda t: (t.get("date_max") or "", t.get("titre") or ""), reverse=True)
 
 
