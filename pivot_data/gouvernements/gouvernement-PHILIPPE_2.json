@@ -613,7 +613,7 @@
     {
       "dossier_id": "DLR5L15N39994",
       "titre": "Permis d'armement et régime des fouilles de sûreté des navires",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2020-06-24",
       "date_dernier_evenement": "2020-06-24",
@@ -633,7 +633,7 @@
     {
       "dossier_id": "DLR5L15N39975",
       "titre": "Covid-19 : ordonnances modificatives en matière de procédures",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2020-06-24",
       "date_dernier_evenement": "2020-06-24",
@@ -741,7 +741,7 @@
     {
       "dossier_id": "DLR5L15N39853",
       "titre": "Résolution des contrats en cas de force majeure dans les secteurs de la culture et du sport",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2020-06-03",
       "date_dernier_evenement": "2020-06-03",
@@ -771,7 +771,7 @@
     {
       "dossier_id": "DLR5L15N39856",
       "titre": "Etat d'urgence sanitaire et fonctionnement des institutions locales",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2020-06-03",
       "date_dernier_evenement": "2020-06-03",
@@ -791,7 +791,7 @@
     {
       "dossier_id": "DLR5L15N39876",
       "titre": "Délais particuliers applicables en matière d'urbanisme, d'aménagement et de construction",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2020-06-03",
       "date_dernier_evenement": "2020-06-03",
@@ -811,7 +811,7 @@
     {
       "dossier_id": "DLR5L15N39854",
       "titre": "Délais de procédures pendant l'urgence sanitaire",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2020-06-03",
       "date_dernier_evenement": "2020-06-03",
@@ -841,7 +841,7 @@
     {
       "dossier_id": "DLR5L15N39851",
       "titre": "Diverses dispositions en matière bancaire",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2020-06-03",
       "date_dernier_evenement": "2020-06-03",
@@ -963,7 +963,7 @@
     {
       "dossier_id": "DLR5L15N39811",
       "titre": "Remboursement de la contribution au service public de l’électricité",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2020-05-27",
       "date_dernier_evenement": "2020-05-27",
@@ -1105,7 +1105,7 @@
     {
       "dossier_id": "DLR5L15N41024",
       "titre": "Ratifiant l’ordonnance n° 2020-353 du 27 mars 2020 relative aux aides exceptionnelles à destination de titulaires de droits d'auteurs et de droits voisins en raison des conséquences de la propagation du virus covid-19 et des mesures prises pour limiter cet",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2020-05-13",
       "date_dernier_evenement": "2020-05-13",
@@ -1131,7 +1131,7 @@
     {
       "dossier_id": "DLR5L15N39692",
       "titre": "Prolongation de la durée de validité des documents de séjour",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2020-05-13",
       "date_dernier_evenement": "2020-05-13",
@@ -1157,7 +1157,7 @@
     {
       "dossier_id": "DLR5L15N39705",
       "titre": "Covid-19 : élections et  trêve des expulsions en outre-mer",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2020-05-13",
       "date_dernier_evenement": "2020-05-13",
@@ -1177,7 +1177,7 @@
     {
       "dossier_id": "DLR5L15N39704",
       "titre": "Covid-19 : organisation des examens et concours",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2020-05-13",
       "date_dernier_evenement": "2020-05-13",
@@ -1197,7 +1197,7 @@
     {
       "dossier_id": "DLR5L15N39693",
       "titre": "Covid-19 : ordonnances en matière économique et financière",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2020-05-13",
       "date_dernier_evenement": "2020-05-13",
@@ -1223,7 +1223,7 @@
     {
       "dossier_id": "DLR5L15N39694",
       "titre": "Covid-19 : ordonnances en matière de travail, d'emploi et de formation professionnelle",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2020-05-13",
       "date_dernier_evenement": "2020-05-13",
@@ -1249,7 +1249,7 @@
     {
       "dossier_id": "DLR5L15N39691",
       "titre": "Covid-19 : ordonnances en matière de solidarités et de santé",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2020-05-13",
       "date_dernier_evenement": "2020-05-13",
@@ -1275,7 +1275,7 @@
     {
       "dossier_id": "DLR5L15N39690",
       "titre": "Covid-19 : ordonnances en matière de procédures pénale, civile et administrative",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2020-05-13",
       "date_dernier_evenement": "2020-05-13",
@@ -1301,7 +1301,7 @@
     {
       "dossier_id": "DLR5L15N39702",
       "titre": "Covid-19 : ordonnances concernant les comptables publics, les établissements publics, la fonction publique et territoriale",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2020-05-13",
       "date_dernier_evenement": "2020-05-13",
@@ -1321,7 +1321,7 @@
     {
       "dossier_id": "DLR5L15N39703",
       "titre": "Covid-19 : conseils d'administration des caisses locales et caisse centrale de la MSA",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2020-05-13",
       "date_dernier_evenement": "2020-05-13",
@@ -1341,7 +1341,7 @@
     {
       "dossier_id": "DLR5L15N39701",
       "titre": "Covid-19 :  ordonnances en matière de collectivités territoriales et de logement",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2020-05-13",
       "date_dernier_evenement": "2020-05-13",
@@ -1457,7 +1457,7 @@
     {
       "dossier_id": "DLR5L15N39430",
       "titre": "Prorogation des mandats des conseillers consulaires et délégués consulaires",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2020-04-15",
       "date_dernier_evenement": "2020-04-15",
@@ -1581,7 +1581,7 @@
     {
       "dossier_id": "DLR5L15N38909",
       "titre": "Ordonnances relatives à la défense nationale",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2020-02-26",
       "date_dernier_evenement": "2020-02-26",
@@ -1601,7 +1601,7 @@
     {
       "dossier_id": "DLR5L15N38847",
       "titre": "Rémunération des mandataires sociaux des sociétés cotées",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2020-02-19",
       "date_dernier_evenement": "2020-02-19",
@@ -1675,7 +1675,7 @@
     {
       "dossier_id": "DLR5L15N38766",
       "titre": "Offres au public de titres",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2020-02-12",
       "date_dernier_evenement": "2020-02-12",
@@ -1745,7 +1745,7 @@
     {
       "dossier_id": "DLR5L15N38691",
       "titre": "Régime juridique du schéma d’aménagement régional",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2020-02-05",
       "date_dernier_evenement": "2020-02-05",
@@ -1787,7 +1787,7 @@
     {
       "dossier_id": "DLR5L15N38587",
       "titre": "Système d'échange de quotas d'émissions de gaz à effet de serre (2021-2030)",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2020-01-29",
       "date_dernier_evenement": "2020-01-29",
@@ -1917,7 +1917,7 @@
     {
       "dossier_id": "DLR5L15N38462",
       "titre": "Livre II du code rural et de la pêche maritime",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2020-01-15",
       "date_dernier_evenement": "2020-01-15",
@@ -1937,7 +1937,7 @@
     {
       "dossier_id": "DLR5L15N38455",
       "titre": "Echange d'informations fiscales",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2020-01-15",
       "date_dernier_evenement": "2020-01-15",
@@ -1963,7 +1963,7 @@
     {
       "dossier_id": "DLR5L15N38463",
       "titre": "Droit de la copropriété des immeubles bâtis",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2020-01-15",
       "date_dernier_evenement": "2020-01-15",
@@ -1983,7 +1983,7 @@
     {
       "dossier_id": "DLR5L15N38428",
       "titre": "Tribunaux judiciaires",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2020-01-06",
       "date_dernier_evenement": "2020-01-06",
@@ -2003,7 +2003,7 @@
     {
       "dossier_id": "DLR5L15N38417",
       "titre": "Ordonnance relative à la lutte contre le gaspillage alimentaire",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2020-01-06",
       "date_dernier_evenement": "2020-01-06",
@@ -2375,7 +2375,7 @@
     {
       "dossier_id": "DLR5L15N37947",
       "titre": "Code de commerce aux îles Wallis et Futuna",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2019-11-07",
       "date_dernier_evenement": "2019-11-07",
@@ -2395,7 +2395,7 @@
     {
       "dossier_id": "DLR5L15N37920",
       "titre": "Régulation des jeux d'argent et de hasard",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2019-10-30",
       "date_dernier_evenement": "2019-10-30",
@@ -2447,7 +2447,7 @@
     {
       "dossier_id": "DLR5L15N37838",
       "titre": "Régulateur des redevances aéroportuaires",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2019-10-09",
       "date_dernier_evenement": "2019-10-09",
@@ -2467,7 +2467,7 @@
     {
       "dossier_id": "DLR5L15N37827",
       "titre": "Réforme de l'épargne retraite",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2019-10-09",
       "date_dernier_evenement": "2019-10-09",
@@ -2493,7 +2493,7 @@
     {
       "dossier_id": "DLR5L15N37840",
       "titre": "Octroi et prolongation des titres d'exploration et d'exploitation des gîtes géothermiques",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2019-10-09",
       "date_dernier_evenement": "2019-10-09",
@@ -2543,7 +2543,7 @@
     {
       "dossier_id": "DLR5L15N37839",
       "titre": "Livre VIII du code de la construction et de l'habitation.",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2019-10-09",
       "date_dernier_evenement": "2019-10-09",
@@ -2563,7 +2563,7 @@
     {
       "dossier_id": "DLR5L15N37828",
       "titre": "Droit de rectification des informations concernant les bénéficiaires des prestations sociales et des minima sociaux",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2019-10-09",
       "date_dernier_evenement": "2019-10-09",
@@ -2589,7 +2589,7 @@
     {
       "dossier_id": "DLR5L15N37793",
       "titre": "Sanctions civiles applicables en cas de défaut ou d'erreur du TEG",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2019-10-02",
       "date_dernier_evenement": "2019-10-02",
@@ -2615,7 +2615,7 @@
     {
       "dossier_id": "DLR5L15N37798",
       "titre": "Extension en Nouvelle Calédonie, Polynésie française et à  Wallis et Futuna de diverses dispositions du code monétaire et financier",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2019-10-02",
       "date_dernier_evenement": "2019-10-02",
@@ -2635,7 +2635,7 @@
     {
       "dossier_id": "DLR5L15N37805",
       "titre": "Dématérialisation des actes de l’état civil établis par le ministère des affaires étrangères",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2019-10-02",
       "date_dernier_evenement": "2019-10-02",
@@ -2655,7 +2655,7 @@
     {
       "dossier_id": "DLR5L15N37768",
       "titre": "Régimes professionnels de retraite supplémentaire",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2019-09-27",
       "date_dernier_evenement": "2019-09-27",
@@ -2685,7 +2685,7 @@
     {
       "dossier_id": "DLR5L15N37770",
       "titre": "Refonte du titre IV du livre IV du code de commerce",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2019-09-27",
       "date_dernier_evenement": "2019-09-27",
@@ -2765,7 +2765,7 @@
     {
       "dossier_id": "DLR5L15N37733",
       "titre": "Entrepreneurs de spectacles vivants",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2019-09-11",
       "date_dernier_evenement": "2019-09-11",
@@ -2785,7 +2785,7 @@
     {
       "dossier_id": "DLR5L15N37722",
       "titre": "Conventions d’entraide judiciaire en matière pénale et d'extradition avec le Niger",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2019-09-04",
       "date_dernier_evenement": "2019-09-04",
@@ -2905,7 +2905,7 @@
     {
       "dossier_id": "DLR5L15N37709",
       "titre": "Surveillance des institutions de retraite professionnelle",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2019-08-28",
       "date_dernier_evenement": "2019-08-28",
@@ -2953,7 +2953,7 @@
     {
       "dossier_id": "DLR5L15N37706",
       "titre": "Dispositions relatives au groupe SNCF",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2019-08-21",
       "date_dernier_evenement": "2019-08-21",
@@ -2983,7 +2983,7 @@
     {
       "dossier_id": "DLR5L15N37686",
       "titre": "Schémas de raccordement au réseau des énergies renouvelables",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2019-07-24",
       "date_dernier_evenement": "2019-07-24",
@@ -3029,7 +3029,7 @@
     {
       "dossier_id": "DLR5L15N37654",
       "titre": "Système ferroviaire au sein de l'UE et sécurité ferroviaire",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2019-07-17",
       "date_dernier_evenement": "2019-07-17",
@@ -3151,7 +3151,7 @@
     {
       "dossier_id": "DLR5L15N37640",
       "titre": "Lutte contre la piraterie et pouvoirs de police en mer",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2019-07-10",
       "date_dernier_evenement": "2019-07-10",
@@ -3171,7 +3171,7 @@
     {
       "dossier_id": "DLR5L15N37624",
       "titre": "Fourniture au Royaume-Uni de produits liés à la défense et de matériels spatiaux",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2019-07-10",
       "date_dernier_evenement": "2019-07-10",
@@ -3193,7 +3193,7 @@
     {
       "dossier_id": "DLR5L15N37625",
       "titre": "Action en responsabilité pour prix abusivement bas et transparence",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2019-07-10",
       "date_dernier_evenement": "2019-07-10",
@@ -3223,7 +3223,7 @@
     {
       "dossier_id": "DLR5L15N37613",
       "titre": "Pouvoirs de police en matière de contrôles sanitaires et protection des végétaux",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2019-07-03",
       "date_dernier_evenement": "2019-07-03",
@@ -3243,7 +3243,7 @@
     {
       "dossier_id": "DLR5L15N37608",
       "titre": "Mesures de préparation au retrait du Royaume-Uni de l’UE",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2019-07-03",
       "date_dernier_evenement": "2019-07-03",
@@ -3273,7 +3273,7 @@
     {
       "dossier_id": "DLR5L15N37609",
       "titre": "Mesures applicables en cas de retrait du Royaume-Uni de l'UE sans accord",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2019-07-03",
       "date_dernier_evenement": "2019-07-03",
@@ -3381,7 +3381,7 @@
     {
       "dossier_id": "DLR5L15N37594",
       "titre": "Activités de conseil à l'utilisation des produits phytopharmaceutiques",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2019-06-25",
       "date_dernier_evenement": "2019-06-25",
@@ -3497,7 +3497,7 @@
     {
       "dossier_id": "DLR5L15N37499",
       "titre": "Fonctionnement du système gazier",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2019-05-29",
       "date_dernier_evenement": "2019-05-29",
@@ -3523,7 +3523,7 @@
     {
       "dossier_id": "DLR5L15N37500",
       "titre": "Actualisation du contrat entre l'Etat et SNCF Réseau",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2019-05-29",
       "date_dernier_evenement": "2019-05-29",
@@ -3591,7 +3591,7 @@
     {
       "dossier_id": "DLR5L15N37465",
       "titre": "Détachement de travailleurs effectué dans le cadre d'une prestation de services",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2019-05-07",
       "date_dernier_evenement": "2019-05-07",
@@ -3647,7 +3647,7 @@
     {
       "dossier_id": "DLR5L15N37442",
       "titre": "Transfert expérimental de missions aux chambres d'agriculture",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2019-04-24",
       "date_dernier_evenement": "2019-04-24",
@@ -3741,7 +3741,7 @@
     {
       "dossier_id": "DLR5L15N37366",
       "titre": "Article 32 de la loi de protection des données personnelles",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2019-04-01",
       "date_dernier_evenement": "2019-04-01",
@@ -3919,7 +3919,7 @@
     {
       "dossier_id": "DLR5L15N37290",
       "titre": "Infrastructure ferroviaire et ouverture à la concurrence",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2019-02-27",
       "date_dernier_evenement": "2019-02-27",
@@ -3939,7 +3939,7 @@
     {
       "dossier_id": "DLR5L15N37297",
       "titre": "Encadrement des promotions pour les produits alimentaires",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2019-02-27",
       "date_dernier_evenement": "2019-02-27",
@@ -3987,7 +3987,7 @@
     {
       "dossier_id": "DLR5L15N37298",
       "titre": "Article 30 de la loi de programmation militaire 2019-2025",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2019-02-27",
       "date_dernier_evenement": "2019-02-27",
@@ -4013,7 +4013,7 @@
     {
       "dossier_id": "DLR5L15N37271",
       "titre": "Partie législative du code de la commande publique",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2019-02-20",
       "date_dernier_evenement": "2019-02-20",
@@ -4109,7 +4109,7 @@
     {
       "dossier_id": "DLR5L15N37192",
       "titre": "Regroupement des établissements d'enseignement supérieur et de recherche",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2019-01-30",
       "date_dernier_evenement": "2019-01-30",
@@ -4135,7 +4135,7 @@
     {
       "dossier_id": "DLR5L15N37201",
       "titre": "Projets de construction et innovation",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2019-01-16",
       "date_dernier_evenement": "2019-01-16",
@@ -4481,7 +4481,7 @@
     {
       "dossier_id": "DLR5L15N36969",
       "titre": "Ordonnances prises sur le fondement de la loi de modernisation de la justice du XXIe siècle",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2018-10-30",
       "date_dernier_evenement": "2018-10-30",
@@ -4549,7 +4549,7 @@
     {
       "dossier_id": "DLR5L15N36949",
       "titre": "Brevet européen à effet unitaire et juridiction unifiée du brevet",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2018-10-24",
       "date_dernier_evenement": "2018-10-24",
@@ -4575,7 +4575,7 @@
     {
       "dossier_id": "DLR5L15N36932",
       "titre": "Avocats inscrits aux barreaux d'Etats non membres de l'UE",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2018-10-17",
       "date_dernier_evenement": "2018-10-17",
@@ -4625,7 +4625,7 @@
     {
       "dossier_id": "DLR5L15N36902",
       "titre": "Distribution d’assurances",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2018-10-10",
       "date_dernier_evenement": "2018-10-10",
@@ -4715,7 +4715,7 @@
     {
       "dossier_id": "DLR5L15N36856",
       "titre": "Procédure disciplinaire devant l'Agence française de lutte contre le dopage",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2018-09-19",
       "date_dernier_evenement": "2018-09-19",
@@ -4789,7 +4789,7 @@
     {
       "dossier_id": "DLR5L15N36842",
       "titre": "Dispositions du code de la sécurité sociale applicables aux travailleurs indépendants",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2018-08-31",
       "date_dernier_evenement": "2018-08-31",
@@ -4863,7 +4863,7 @@
     {
       "dossier_id": "DLR5L15N36817",
       "titre": "Délai probatoire pour les titulaires d’un premier permis de conduire",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2018-07-25",
       "date_dernier_evenement": "2018-07-25",
@@ -4937,7 +4937,7 @@
     {
       "dossier_id": "DLR5L15N36769",
       "titre": "Code de l’action sociale et des familles et article L. 412-2 du code du tourisme",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2018-07-06",
       "date_dernier_evenement": "2018-07-06",
@@ -5007,7 +5007,7 @@
     {
       "dossier_id": "DLR5L15N36749",
       "titre": "Officines de pharmacie, activités de soins et centres de santé",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2018-06-18",
       "date_dernier_evenement": "2018-06-18",
@@ -5027,7 +5027,7 @@
     {
       "dossier_id": "DLR5L15N36667",
       "titre": "Dispositif d'enregistrement électronique partagé pour la transmission de titres financiers",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2018-05-30",
       "date_dernier_evenement": "2018-05-30",
@@ -5153,7 +5153,7 @@
     {
       "dossier_id": "DLR5L15N36637",
       "titre": "Mesures institutionnelles relatives à la Ville de Paris",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2018-05-16",
       "date_dernier_evenement": "2018-05-16",
@@ -5273,7 +5273,7 @@
     {
       "dossier_id": "DLR5L15N36558",
       "titre": "Adaptation du droit français au règlement (UE) sur les procédures d'insolvabilité",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2018-04-11",
       "date_dernier_evenement": "2018-04-11",
@@ -5299,7 +5299,7 @@
     {
       "dossier_id": "DLR5L15N36539",
       "titre": "Service de santé des armées et Institution nationale des invalides",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2018-04-04",
       "date_dernier_evenement": "2018-04-04",
@@ -5419,7 +5419,7 @@
     {
       "dossier_id": "DLR5L15N36459",
       "titre": "Mise en cohérence des textes avec la loi de modernisation de notre système de santé",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2018-03-14",
       "date_dernier_evenement": "2018-03-14",
@@ -5467,7 +5467,7 @@
     {
       "dossier_id": "DLR5L15N36456",
       "titre": "Voyages à forfait et prestations de voyage liées",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2018-03-07",
       "date_dernier_evenement": "2018-03-07",
@@ -5561,7 +5561,7 @@
     {
       "dossier_id": "DLR5L15N36418",
       "titre": "Prise en charge des dommages en cas de retrait d'agrément d'une entreprise d'assurance",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2018-02-21",
       "date_dernier_evenement": "2018-02-21",
@@ -5781,7 +5781,7 @@
     {
       "dossier_id": "DLR5L15N36260",
       "titre": "Travail, emploi et formation professionnelle à Mayotte",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2018-01-12",
       "date_dernier_evenement": "2018-01-12",
@@ -5807,7 +5807,7 @@
     {
       "dossier_id": "DLR5L15N36292",
       "titre": "Extension des compléments de l'allocation aux adultes handicapés à Mayotte",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2018-01-12",
       "date_dernier_evenement": "2018-01-12",
@@ -5827,7 +5827,7 @@
     {
       "dossier_id": "DLR5L15N36294",
       "titre": "Adaptation du code de la santé publique à Mayotte",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2018-01-12",
       "date_dernier_evenement": "2018-01-12",
@@ -5867,7 +5867,7 @@
     {
       "dossier_id": "DLR5L15N36302",
       "titre": "Obligations d'information à la charge des sociétés",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2018-01-03",
       "date_dernier_evenement": "2018-01-03",
@@ -5909,7 +5909,7 @@
     {
       "dossier_id": "DLR5L15N36250",
       "titre": "Dépôt des documents sociaux pour les sociétés",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2017-12-20",
       "date_dernier_evenement": "2017-12-20",
@@ -6001,7 +6001,7 @@
     {
       "dossier_id": "DLR5L15N36224",
       "titre": "Transactions électroniques",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2017-12-13",
       "date_dernier_evenement": "2017-12-13",
@@ -6047,7 +6047,7 @@
     {
       "dossier_id": "DLR5L15N36221",
       "titre": "Décalage d'un an de l'entrée en vigueur du prélèvement à la source",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2017-12-13",
       "date_dernier_evenement": "2017-12-13",
@@ -6073,7 +6073,7 @@
     {
       "dossier_id": "DLR5L15N36214",
       "titre": "Composantes de la rémunération du pharmacien d'officine",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2017-12-08",
       "date_dernier_evenement": "2017-12-08",
@@ -6407,7 +6407,7 @@
     {
       "dossier_id": "DLR5L15N36093",
       "titre": "Prise de décision et participation des actionnaires dans les sociétés",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2017-10-25",
       "date_dernier_evenement": "2017-10-25",
@@ -6557,7 +6557,7 @@
     {
       "dossier_id": "DLR5L15N36058",
       "titre": "Publication d'informations non financières",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2017-10-18",
       "date_dernier_evenement": "2017-10-18",
@@ -6583,7 +6583,7 @@
     {
       "dossier_id": "DLR5L15N36056",
       "titre": "Livre III du code du patrimoine",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2017-10-18",
       "date_dernier_evenement": "2017-10-18",
@@ -6609,7 +6609,7 @@
     {
       "dossier_id": "DLR5L15N36057",
       "titre": "Conservation du patrimoine archéologique mobilier et du patrimoine culturel",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2017-10-18",
       "date_dernier_evenement": "2017-10-18",
@@ -6683,7 +6683,7 @@
     {
       "dossier_id": "DLR5L15N36032",
       "titre": "Partie législative du code du cinéma et de l'image animée",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2017-10-11",
       "date_dernier_evenement": "2017-10-11",
@@ -6733,7 +6733,7 @@
     {
       "dossier_id": "DLR5L15N36012",
       "titre": "Mobilité dans la fonction publique",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2017-10-04",
       "date_dernier_evenement": "2017-10-04",
@@ -6759,7 +6759,7 @@
     {
       "dossier_id": "DLR5L15N36021",
       "titre": "Article 45 de la loi de modernisation de notre système de santé à Wallis et Futuna, en Nouvelle-Calédonie et en Polynésie",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2017-10-04",
       "date_dernier_evenement": "2017-10-04",
@@ -6857,7 +6857,7 @@
     {
       "dossier_id": "DLR5L15N35977",
       "titre": "Marchés d'instruments financiers",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2017-09-22",
       "date_dernier_evenement": "2017-09-22",
@@ -6935,7 +6935,7 @@
     {
       "dossier_id": "DLR5L15N35935",
       "titre": "Dispositions relatives aux organismes mutualistes",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2017-09-14",
       "date_dernier_evenement": "2017-09-14",
@@ -6987,7 +6987,7 @@
     {
       "dossier_id": "DLR5L15N35926",
       "titre": "Offres de prêt immobilier conditionnées à la domiciliation des revenus de l'emprunteur",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2017-08-30",
       "date_dernier_evenement": "2017-08-30",
@@ -7059,7 +7059,7 @@
     {
       "dossier_id": "DLR5L15N35868",
       "titre": "Développement des émissions obligataires",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2017-08-02",
       "date_dernier_evenement": "2017-08-02",
@@ -7079,7 +7079,7 @@
     {
       "dossier_id": "DLR5L15N35864",
       "titre": "Agent des sûretés",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2017-07-28",
       "date_dernier_evenement": "2017-07-28",
@@ -7099,7 +7099,7 @@
     {
       "dossier_id": "DLR5L15N35852",
       "titre": "Propriété des personnes publiques",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2017-07-12",
       "date_dernier_evenement": "2017-07-12",
@@ -7473,7 +7473,7 @@
     {
       "dossier_id": "DLR5L15N35832",
       "titre": "Extension à Mayotte du code de la voirie routière",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2017-06-22",
       "date_dernier_evenement": "2017-06-22",
@@ -7493,12 +7493,13 @@
   ],
   "comptages": {
     "membres_recenses": 50,
+    "membres_distincts": 50,
     "par_statut": {
       "adopte": 95,
       "adopte_49_3": 1,
       "adopte_cmp": 40,
-      "depose": 0,
-      "navette_en_cours": 127,
+      "depose": 104,
+      "navette_en_cours": 23,
       "promulgue": 15,
       "rejete": 0,
       "rejete_49_3": 0,
@@ -7509,262 +7510,262 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722086",
-      "synchro_le": "2026-09-18T05:40:02+0000"
+      "synchro_le": "2026-09-18T08:58:31+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717153",
-      "synchro_le": "2026-09-18T05:47:01+0000"
+      "synchro_le": "2026-09-18T09:05:02+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA759832",
-      "synchro_le": "2026-09-18T05:39:23+0000"
+      "synchro_le": "2026-09-18T08:57:51+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721670",
-      "synchro_le": "2026-09-18T05:47:50+0000"
+      "synchro_le": "2026-09-18T09:05:51+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA337633",
-      "synchro_le": "2026-09-18T05:47:46+0000"
+      "synchro_le": "2026-09-18T09:05:47+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721560",
-      "synchro_le": "2026-09-18T05:47:50+0000"
+      "synchro_le": "2026-09-18T09:05:50+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721872",
-      "synchro_le": "2026-09-18T05:48:03+0000"
+      "synchro_le": "2026-09-18T09:02:17+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA331481",
-      "synchro_le": "2026-09-18T05:39:33+0000"
+      "synchro_le": "2026-09-18T08:58:03+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA764388",
-      "synchro_le": "2026-09-18T05:47:02+0000"
+      "synchro_le": "2026-09-18T09:05:02+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719660",
-      "synchro_le": "2026-09-18T05:39:36+0000"
+      "synchro_le": "2026-09-18T08:58:04+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605131",
-      "synchro_le": "2026-09-18T05:39:33+0000"
+      "synchro_le": "2026-09-18T08:58:03+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA744078",
-      "synchro_le": "2026-09-18T05:48:28+0000"
+      "synchro_le": "2026-09-18T09:02:59+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA415452",
-      "synchro_le": "2026-09-18T05:48:26+0000"
+      "synchro_le": "2026-09-18T09:06:19+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA345619",
-      "synchro_le": "2026-09-18T05:47:31+0000"
+      "synchro_le": "2026-09-18T09:01:34+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717161",
-      "synchro_le": "2026-09-18T05:38:45+0000"
+      "synchro_le": "2026-09-18T08:57:29+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA759830",
-      "synchro_le": "2026-09-18T05:40:51+0000"
+      "synchro_le": "2026-09-18T08:58:53+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA205600",
-      "synchro_le": "2026-09-18T05:40:51+0000"
+      "synchro_le": "2026-09-18T08:58:53+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335758",
-      "synchro_le": "2026-09-18T05:46:47+0000"
+      "synchro_le": "2026-09-18T09:04:47+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA332747",
-      "synchro_le": "2026-09-18T05:46:52+0000"
+      "synchro_le": "2026-09-18T09:04:48+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717155",
-      "synchro_le": "2026-09-18T05:47:02+0000"
+      "synchro_le": "2026-09-18T09:05:03+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717159",
-      "synchro_le": "2026-09-18T05:41:04+0000"
+      "synchro_le": "2026-09-18T08:59:04+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722190",
-      "synchro_le": "2026-09-18T05:39:07+0000"
+      "synchro_le": "2026-09-18T08:57:41+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719914",
-      "synchro_le": "2026-09-18T05:47:27+0000"
+      "synchro_le": "2026-09-18T09:01:29+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607846",
-      "synchro_le": "2026-09-18T05:38:36+0000"
+      "synchro_le": "2026-09-18T08:57:25+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA906",
-      "synchro_le": "2026-09-18T05:40:06+0000"
+      "synchro_le": "2026-09-18T08:58:35+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA227076",
-      "synchro_le": "2026-09-18T05:48:29+0000"
+      "synchro_le": "2026-09-18T09:03:14+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA415482",
-      "synchro_le": "2026-09-18T05:48:27+0000"
+      "synchro_le": "2026-09-18T09:06:20+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722236",
-      "synchro_le": "2026-09-18T05:40:16+0000"
+      "synchro_le": "2026-09-18T08:58:33+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA703535",
-      "synchro_le": "2026-09-18T05:41:04+0000"
+      "synchro_le": "2026-09-18T08:59:05+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717157",
-      "synchro_le": "2026-09-18T05:47:07+0000"
+      "synchro_le": "2026-09-18T09:05:08+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1051",
-      "synchro_le": "2026-09-18T05:47:37+0000"
+      "synchro_le": "2026-09-18T09:01:39+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1872",
-      "synchro_le": "2026-09-18T05:40:51+0000"
+      "synchro_le": "2026-09-18T08:58:56+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA729332",
-      "synchro_le": "2026-09-18T05:47:07+0000"
+      "synchro_le": "2026-09-18T09:05:09+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717171",
-      "synchro_le": "2026-09-18T05:48:27+0000"
+      "synchro_le": "2026-09-18T09:06:20+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA759834",
-      "synchro_le": "2026-09-18T05:47:07+0000"
+      "synchro_le": "2026-09-18T09:05:09+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720512",
-      "synchro_le": "2026-09-18T05:46:54+0000"
+      "synchro_le": "2026-09-18T09:04:52+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719938",
-      "synchro_le": "2026-09-18T05:48:10+0000"
+      "synchro_le": "2026-09-18T09:06:06+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717163",
-      "synchro_le": "2026-09-18T05:48:27+0000"
+      "synchro_le": "2026-09-18T09:06:21+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717167",
-      "synchro_le": "2026-09-18T05:39:59+0000"
+      "synchro_le": "2026-09-18T08:58:33+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717169",
-      "synchro_le": "2026-09-18T05:40:26+0000"
+      "synchro_le": "2026-09-18T08:58:41+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA729330",
-      "synchro_le": "2026-09-18T05:41:11+0000"
+      "synchro_le": "2026-09-18T08:59:16+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/197494",
-      "synchro_le": "2026-09-18T05:41:53+0000"
+      "synchro_le": "2026-09-18T09:00:11+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717147",
-      "synchro_le": "2026-09-18T05:40:26+0000"
+      "synchro_le": "2026-09-18T08:58:41+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA702191",
-      "synchro_le": "2026-09-18T05:47:08+0000"
+      "synchro_le": "2026-09-18T09:05:09+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA330357",
-      "synchro_le": "2026-09-18T05:46:03+0000"
+      "synchro_le": "2026-09-18T09:03:56+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA642788",
-      "synchro_le": "2026-09-18T05:38:31+0000"
+      "synchro_le": "2026-09-18T08:57:20+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA758792",
-      "synchro_le": "2026-09-18T05:40:26+0000"
+      "synchro_le": "2026-09-18T08:58:42+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643210",
-      "synchro_le": "2026-09-18T05:48:19+0000"
+      "synchro_le": "2026-09-18T09:02:37+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA764386",
-      "synchro_le": "2026-09-18T05:41:54+0000"
+      "synchro_le": "2026-09-18T09:00:12+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717165",
-      "synchro_le": "2026-09-18T05:40:26+0000"
+      "synchro_le": "2026-09-18T08:58:42+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607395",
-      "synchro_le": "2026-09-18T05:47:01+0000"
+      "synchro_le": "2026-09-18T09:05:02+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-18T06:31:32+0000",
+    "genere_le": "2026-09-18T09:42:04+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
     "warnings": []
   }

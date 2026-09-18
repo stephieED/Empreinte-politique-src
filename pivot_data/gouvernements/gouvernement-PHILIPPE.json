@@ -248,6 +248,7 @@
   ],
   "comptages": {
     "membres_recenses": 23,
+    "membres_distincts": 23,
     "par_statut": {
       "adopte": 1,
       "adopte_49_3": 0,
@@ -264,82 +265,82 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717153",
-      "synchro_le": "2026-09-18T05:47:01+0000"
+      "synchro_le": "2026-09-18T09:05:02+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA337633",
-      "synchro_le": "2026-09-18T05:47:46+0000"
+      "synchro_le": "2026-09-18T09:05:47+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA331481",
-      "synchro_le": "2026-09-18T05:39:33+0000"
+      "synchro_le": "2026-09-18T08:58:03+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605131",
-      "synchro_le": "2026-09-18T05:39:33+0000"
+      "synchro_le": "2026-09-18T08:58:03+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA345619",
-      "synchro_le": "2026-09-18T05:47:31+0000"
+      "synchro_le": "2026-09-18T09:01:34+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717161",
-      "synchro_le": "2026-09-18T05:38:45+0000"
+      "synchro_le": "2026-09-18T08:57:29+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA410",
-      "synchro_le": "2026-09-18T05:40:05+0000"
+      "synchro_le": "2026-09-18T08:58:33+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/4324",
-      "synchro_le": "2026-09-18T05:40:06+0000"
+      "synchro_le": "2026-09-18T08:58:35+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717155",
-      "synchro_le": "2026-09-18T05:47:02+0000"
+      "synchro_le": "2026-09-18T09:05:03+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717159",
-      "synchro_le": "2026-09-18T05:41:04+0000"
+      "synchro_le": "2026-09-18T08:59:04+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607846",
-      "synchro_le": "2026-09-18T05:38:36+0000"
+      "synchro_le": "2026-09-18T08:57:25+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA906",
-      "synchro_le": "2026-09-18T05:40:06+0000"
+      "synchro_le": "2026-09-18T08:58:35+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA415482",
-      "synchro_le": "2026-09-18T05:48:27+0000"
+      "synchro_le": "2026-09-18T09:06:20+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717157",
-      "synchro_le": "2026-09-18T05:47:07+0000"
+      "synchro_le": "2026-09-18T09:05:08+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1872",
-      "synchro_le": "2026-09-18T05:40:51+0000"
+      "synchro_le": "2026-09-18T08:58:56+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717171",
-      "synchro_le": "2026-09-18T05:48:27+0000"
+      "synchro_le": "2026-09-18T09:06:20+0000"
     },
     {
       "type": "assemblee_nationale",
@@ -354,37 +355,37 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717163",
-      "synchro_le": "2026-09-18T05:48:27+0000"
+      "synchro_le": "2026-09-18T09:06:21+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717167",
-      "synchro_le": "2026-09-18T05:39:59+0000"
+      "synchro_le": "2026-09-18T08:58:33+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717169",
-      "synchro_le": "2026-09-18T05:40:26+0000"
+      "synchro_le": "2026-09-18T08:58:41+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717147",
-      "synchro_le": "2026-09-18T05:40:26+0000"
+      "synchro_le": "2026-09-18T08:58:41+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA606171",
-      "synchro_le": "2026-09-18T05:47:09+0000"
+      "synchro_le": "2026-09-18T09:01:13+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717165",
-      "synchro_le": "2026-09-18T05:40:26+0000"
+      "synchro_le": "2026-09-18T08:58:42+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717149",
-      "synchro_le": "2026-09-18T05:48:31+0000"
+      "synchro_le": "2026-09-18T09:03:44+0000"
     },
     {
       "type": "europarl",
@@ -394,7 +395,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-18T06:31:32+0000",
+    "genere_le": "2026-09-18T09:42:03+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
     "warnings": []
   }

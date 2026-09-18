@@ -195,6 +195,15 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "damien-abad",
+      "nom": "Damien Abad",
+      "portefeuille": null,
+      "debut": "2022-06-24",
+      "fin": "2022-07-05",
+      "actif": false,
+      "source_url": null
+    },
+    {
       "membre_id": "dominique-faure",
       "nom": "Dominique Faure",
       "portefeuille": "Secrétariat d’État auprès du ministre de la transition écologique et de la cohésion des territoires, chargé de la ruralité",
@@ -616,6 +625,15 @@
       "fin": "2022-06-25",
       "actif": false,
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "yael-braun-pivet",
+      "nom": "Yaël Braun-Pivet",
+      "portefeuille": null,
+      "debut": "2022-06-24",
+      "fin": "2022-06-27",
+      "actif": false,
+      "source_url": null
     }
   ],
   "textes": [
@@ -744,7 +762,7 @@
     {
       "dossier_id": "DLR5L16N48971",
       "titre": "Ratification de l’ordonnance n° 2023-857 du 6 septembre 2023 relative à l’accessibilité des personnes sourdes, malentendantes, sourdaveugles et aphasiques aux services téléphoniques",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2023-11-22",
       "date_dernier_evenement": "2023-11-22",
@@ -770,7 +788,7 @@
     {
       "dossier_id": "DLR5L16N48970",
       "titre": "Ratification de l'ordonnance du 6 septembre 2023 prise en application du 1° du VII de l'article 16 de la loi n° 2023-171 du 9 mars 2023",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2023-11-22",
       "date_dernier_evenement": "2023-11-22",
@@ -862,7 +880,7 @@
     {
       "dossier_id": "DLR5L16N48913",
       "titre": "Ordonnance n° 2023-836 du 30 août 2023 portant adaptation du droit français au règlement (UE) 2021/23 du Parlement européen et du Conseil du 16 décembre 2020 relatif à un cadre pour le redressement et la résolution des contreparties centrales",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2023-11-15",
       "date_dernier_evenement": "2023-11-15",
@@ -888,7 +906,7 @@
     {
       "dossier_id": "DLR5L16N48872",
       "titre": "Ratification de l’ordonnance n° 2023-816 du 23 août 2023 relative au raccordement et à l'accès aux réseaux publics d'électricité",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2023-11-08",
       "date_dernier_evenement": "2023-11-08",
@@ -992,7 +1010,7 @@
     {
       "dossier_id": "DLR5L16N48719",
       "titre": "Faciliter le financement de la reconstruction et de la réfection des bâtiments dégradés ou détruits au cours des violences urbaines survenues du 27 juin au 5 juillet 2023",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2023-10-11",
       "date_dernier_evenement": "2023-10-11",
@@ -1018,7 +1036,7 @@
     {
       "dossier_id": "DLR5L16N48721",
       "titre": "Diverses adaptations et dérogations temporaires en matière de commande publique nécessaires à l’accélération de la reconstruction et de la réfection des équipements publics et des bâtiments dégradés ou détruits au cours des violences urbaines survenues du",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2023-10-11",
       "date_dernier_evenement": "2023-10-11",
@@ -1044,7 +1062,7 @@
     {
       "dossier_id": "DLR5L16N48720",
       "titre": "Accélération de la délivrance et la mise en œuvre des autorisations d'urbanisme permettant la reconstruction et la réfection des bâtiments dégradés au cours des violences urbaines survenues du 27 juin au 5 juillet 2023",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2023-10-11",
       "date_dernier_evenement": "2023-10-11",
@@ -1164,7 +1182,7 @@
     {
       "dossier_id": "DLR5L16N48654",
       "titre": "Ratification de l’ordonnance n° 2023-661 du 26 juillet 2023 prise en application des dispositions de l’article 137 de la loi du 22 août 2021",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2023-09-20",
       "date_dernier_evenement": "2023-09-20",
@@ -1198,7 +1216,7 @@
     {
       "dossier_id": "DLR5L16N48652",
       "titre": "Ratification de l’ordonnance n° 2023-483 du 21 juin 2023",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2023-09-20",
       "date_dernier_evenement": "2023-09-20",
@@ -1250,7 +1268,7 @@
     {
       "dossier_id": "DLR5L16N48481",
       "titre": "Projet de loi ratifiant l’ordonnance n° 2023-393 du 24 mai 2023 portant réforme du régime des fusions, scissions, apports partiels d'actifs et opérations transfrontalières des sociétés commerciales",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2023-07-21",
       "date_dernier_evenement": "2023-07-21",
@@ -1292,7 +1310,7 @@
     {
       "dossier_id": "DLR5L16N48390",
       "titre": "Ordonnance du 16 mai 2023 relative à la formation aux activités privées de sécurité",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2023-07-13",
       "date_dernier_evenement": "2023-07-13",
@@ -1344,7 +1362,7 @@
     {
       "dossier_id": "DLR5L16N48350",
       "titre": "Projet de loi ratifiant l'ordonnance n° 2023-77 du 8 février 2023 relative à l'exercice en société des professions libérales réglementées",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2023-07-05",
       "date_dernier_evenement": "2023-07-05",
@@ -1390,7 +1408,7 @@
     {
       "dossier_id": "DLR5L16N48212",
       "titre": "Ratification de l’ordonnance n° 2023-208 du 28 mars 2023 portant partie législative du code de l'artisanat",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2023-06-14",
       "date_dernier_evenement": "2023-06-14",
@@ -1416,7 +1434,7 @@
     {
       "dossier_id": "DLR5L16N48165",
       "titre": "Ratification de l’ordonnance n°2022-887 du 14 juin 2022 portant prise en charge partielle par l’Etat, dans les zones non interconnectées au réseau métropolitain continental, des coûts associés à la conversion des usages des réseaux de gaz de pétrole liquéf",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2023-06-08",
       "date_dernier_evenement": "2023-06-08",
@@ -1710,7 +1728,7 @@
     {
       "dossier_id": "DLR5L16N47698",
       "titre": "Projet de loi ratifiant l'ordonnance n° 2023-80 du 8 février 2023 relative au bail réel solidaire d’activité",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2023-04-26",
       "date_dernier_evenement": "2023-04-26",
@@ -1730,7 +1748,7 @@
     {
       "dossier_id": "DLR5L16N47696",
       "titre": "Ordonnance n° 2023-78 du 8 février 2023 relative à la prise en charge des conséquences des désordres causés par le phénomène de mouvements de terrain différentiels consécutifs à la sécheresse et à la réhydratation des sols",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2023-04-26",
       "date_dernier_evenement": "2023-04-26",
@@ -1800,7 +1818,7 @@
     {
       "dossier_id": "DLR5L16N47614",
       "titre": "Projet de loi ratifiant l’ordonnance n° 2023-53 du 1er février 2023 portant extension et adaptation aux îles Wallis et Futuna, à la Nouvelle-Calédonie et à la Polynésie française des dispositions de la loi n° 2021-1017 du 2 août 2021 relative à la bioéthiq",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2023-04-19",
       "date_dernier_evenement": "2023-04-19",
@@ -1956,7 +1974,7 @@
     {
       "dossier_id": "DLR5L16N47463",
       "titre": "Projet de loi ratifiant l'ordonnance n° 2023-15 du 18 janvier 2023 portant extension outre-mer de certaines dispositions de la loi n° 2022-52 du 24 janvier 2022 relative à la responsabilité pénale et à la sécurité intérieure",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2023-03-28",
       "date_dernier_evenement": "2023-03-28",
@@ -1998,7 +2016,7 @@
     {
       "dossier_id": "DLR5L16N47436",
       "titre": "Ordonnance du 5 octobre 2022 prise en application de l'article 18 de la loi n° 2022-219 du 21 février 2022 visant à réformer l'adoption",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2023-03-22",
       "date_dernier_evenement": "2023-03-22",
@@ -2024,7 +2042,7 @@
     {
       "dossier_id": "DLR5L16N47335",
       "titre": "Apprentissage transfrontalier",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2023-03-08",
       "date_dernier_evenement": "2023-03-08",
@@ -2050,7 +2068,7 @@
     {
       "dossier_id": "DLR5L16N47299",
       "titre": "Projet de loi ratifiant l’ordonnance n° 2022-1521 du 7 décembre 2022 étendant aux collectivités relevant de l’article 74 de la Constitution et à la Nouvelle-Calédonie les dispositions de la loi n° 2022-217 du 21 février 2022 relative à la différenciation, la décentralisation, la déconcentration et portant diverses mesures de simplification de l’action publique locale",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2023-03-01",
       "date_dernier_evenement": "2023-03-01",
@@ -2070,7 +2088,7 @@
     {
       "dossier_id": "DLR5L16N47305",
       "titre": "Accès et qualité des eaux destinées à la consommation humaine",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2023-03-01",
       "date_dernier_evenement": "2023-03-01",
@@ -2096,7 +2114,7 @@
     {
       "dossier_id": "DLR5L16N47268",
       "titre": "Ratification de l’ordonnance n° 2022-1524 du 7 décembre 2022 relative au casier judiciaire national automatisé",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2023-02-22",
       "date_dernier_evenement": "2023-02-22",
@@ -2256,7 +2274,7 @@
     {
       "dossier_id": "DLR5L16N47054",
       "titre": "Ratification de l’ordonnance n° 2022-1421 du 10 novembre 2022 relative au régime budgétaire et comptable de l'établissement public local Paris La Défense",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2023-01-18",
       "date_dernier_evenement": "2023-01-18",
@@ -2286,7 +2304,7 @@
     {
       "dossier_id": "DLR5L16N47052",
       "titre": "Ratification de l’ordonnance n° 2022-1203 du 31 août 2022 prolongeant l’application des dispositions adaptant les conditions de versement de l’indemnité complémentaire à l’allocation journalière au contexte de l’épidémie de covid-19",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2023-01-18",
       "date_dernier_evenement": "2023-01-18",
@@ -2312,7 +2330,7 @@
     {
       "dossier_id": "DLR5L16N46989",
       "titre": "Ratification de l’ordonnance du 23 novembre 2022 portant dispositions de contrôles et de sanctions dans le cadre de la réforme des outils de gestion des risques climatiques en agriculture",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2023-01-11",
       "date_dernier_evenement": "2023-01-11",
@@ -2394,7 +2412,7 @@
     {
       "dossier_id": "DLR5L16N46948",
       "titre": "Projet de loi ratifiant l'ordonnance n° 2022-1423 du 10 novembre 2022 portant diverses dispositions relatives au code minier",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2023-01-04",
       "date_dernier_evenement": "2023-01-04",
@@ -2414,7 +2432,7 @@
     {
       "dossier_id": "DLR5L16N46920",
       "titre": "Ratification de l’ordonnance n° 2022-1293 du 5 octobre 2022 relative au détachement de salariés roulants ou navigants dans le domaine des transports",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2022-12-23",
       "date_dernier_evenement": "2022-12-23",
@@ -2488,7 +2506,7 @@
     {
       "dossier_id": "DLR5L16N46828",
       "titre": "Projet de loi ratifiant l’ordonnance n° 2022-1229 du 14 septembre 2022 modifiant l'ordonnance n° 2021-1735 du 22 décembre 2021 modernisant le cadre relatif au financement participatif et l'ordonnance n° 2022-230 du 15 février 2022 relative aux titres III à VIII de la partie législative du livre VII du code monétaire et financier",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2022-12-07",
       "date_dernier_evenement": "2022-12-07",
@@ -2630,7 +2648,7 @@
     {
       "dossier_id": "DLR5L16N46495",
       "titre": "Ratification de l'ordonnance n° 2022-1086 du 29 juillet 2022 portant adaptation du droit français du règlement européen relatif aux dispositifs médicaux de diagnostic in vitro",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2022-10-19",
       "date_dernier_evenement": "2022-10-19",
@@ -2656,7 +2674,7 @@
     {
       "dossier_id": "DLR5L16N46447",
       "titre": "Ratification de l’ordonnance n° 2022-1076 du 29 juillet 2022 visant à renforcer le contrôle des règles de construction",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2022-10-12",
       "date_dernier_evenement": "2022-10-12",
@@ -2802,7 +2820,7 @@
     {
       "dossier_id": "DLR5L16N46292",
       "titre": "Projet de loi ratifiant l’ordonnance n° 2022-1075 du 29 juillet 2022 portant développement des outils de gestion des risques climatiques en agriculture",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2022-09-14",
       "date_dernier_evenement": "2022-09-14",
@@ -2828,7 +2846,7 @@
     {
       "dossier_id": "DLR5L16N46267",
       "titre": "Transfert à la direction générale des finances publiques de la gestion de la taxe d’aménagement et de la part logement de la redevance d’archéologie préventive",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "AN",
       "date_depot": "2022-09-07",
       "date_dernier_evenement": "2022-09-07",
@@ -2988,7 +3006,7 @@
     {
       "dossier_id": "DLR5L16N46009",
       "titre": "Projet de loi ratifiant les ordonnances prises sur le fondement des articles 1er et 12 de la loi n° 2021-1308 du 8 octobre 2021 portant diverses dispositions d'adaptation au droit de l'Union européenne dans le domaine des transports, de l'environnement, de l'économie et des finances",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2022-07-20",
       "date_dernier_evenement": "2022-07-20",
@@ -3008,7 +3026,7 @@
     {
       "dossier_id": "DLR5L16N46008",
       "titre": "Projet de loi ratifiant l'ordonnance n° 2022-839 du 1er juin 2022 relative aux agents de l'Office national des forêts",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2022-07-20",
       "date_dernier_evenement": "2022-07-20",
@@ -3028,7 +3046,7 @@
     {
       "dossier_id": "DLR5L16N45972",
       "titre": "Projet de loi ratifiant l’ordonnance n° 2022-582 du 20 avril 2022 portant adaptation du droit français au règlement (UE) 2017/745 du Parlement européen et du Conseil du 5 avril 2017 relatif aux dispositifs médicaux et modifiant le code de la santé publique.",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2022-07-13",
       "date_dernier_evenement": "2022-07-13",
@@ -3342,7 +3360,7 @@
     {
       "dossier_id": "DLR5L15N45831",
       "titre": "Projet de loi ratifiant l’ordonnance n° 2022-583 du 20 avril 2022 relative aux missions et compétences de l’établissement « Chambres d’agriculture France »  et l’ordonnance n° 2022-584 du 20 avril 2022 relative à la chambre de l’agriculture, de la pêche et de l’aquaculture de Mayotte",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2022-06-08",
       "date_dernier_evenement": "2022-06-08",
@@ -3382,7 +3400,7 @@
     {
       "dossier_id": "DLR5L15N45798",
       "titre": "Projet de loi ratifiant l’ordonnance n° 2022-533 du 13 avril 2022 définissant la nature, les conditions et les modalités d'octroi par le Gouvernement de privilèges, immunités et facilités à des organisations internationales, des agences décentralisées de l'Union européenne et à certaines associations ou fondations",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2022-06-01",
       "date_dernier_evenement": "2022-06-01",
@@ -3402,7 +3420,7 @@
     {
       "dossier_id": "DLR5L15N45806",
       "titre": "Projet de loi ratifiant l’ordonnance n° 2021-1554 du 1er décembre 2021 relative à la mise en œuvre de la création de la cinquième branche du régime général de la sécurité sociale relative à l’autonomie",
-      "statut": "navette_en_cours",
+      "statut": "depose",
       "chambre_depot_initial": "Senat",
       "date_depot": "2022-06-01",
       "date_dernier_evenement": "2022-06-01",
@@ -3422,12 +3440,13 @@
   ],
   "comptages": {
     "membres_recenses": 55,
+    "membres_distincts": 55,
     "par_statut": {
       "adopte": 12,
       "adopte_49_3": 6,
       "adopte_cmp": 27,
-      "depose": 0,
-      "navette_en_cours": 43,
+      "depose": 39,
+      "navette_en_cours": 4,
       "promulgue": 19,
       "rejete": 4,
       "rejete_49_3": 0,
@@ -3438,87 +3457,92 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267780",
-      "synchro_le": "2026-09-18T05:48:12+0000"
+      "synchro_le": "2026-09-18T09:06:09+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA759832",
-      "synchro_le": "2026-09-18T05:39:23+0000"
+      "synchro_le": "2026-09-18T08:57:51+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721670",
-      "synchro_le": "2026-09-18T05:47:50+0000"
+      "synchro_le": "2026-09-18T09:05:51+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA791652",
-      "synchro_le": "2026-09-18T05:47:02+0000"
+      "synchro_le": "2026-09-18T09:05:02+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA826635",
-      "synchro_le": "2026-09-18T05:39:49+0000"
+      "synchro_le": "2026-09-18T08:58:17+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722046",
-      "synchro_le": "2026-09-18T05:38:40+0000"
+      "synchro_le": "2026-09-18T08:57:22+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719624",
-      "synchro_le": "2026-09-18T05:47:04+0000"
+      "synchro_le": "2026-09-18T09:05:04+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA608083",
-      "synchro_le": "2026-09-18T05:39:33+0000"
+      "synchro_le": "2026-09-18T08:58:03+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA331481",
-      "synchro_le": "2026-09-18T05:39:33+0000"
+      "synchro_le": "2026-09-18T08:58:03+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720170",
-      "synchro_le": "2026-09-18T05:46:33+0000"
+      "synchro_le": "2026-09-18T09:00:37+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA429862",
-      "synchro_le": "2026-09-18T05:48:28+0000"
+      "synchro_le": "2026-09-18T09:02:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA312976",
-      "synchro_le": "2026-09-18T05:40:26+0000"
+      "synchro_le": "2026-09-18T08:58:52+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA791656",
-      "synchro_le": "2026-09-18T05:48:28+0000"
+      "synchro_le": "2026-09-18T09:02:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA429846",
-      "synchro_le": "2026-09-18T05:48:28+0000"
+      "synchro_le": "2026-09-18T09:02:54+0000"
+    },
+    {
+      "type": "europarl",
+      "url": "https://www.europarl.europa.eu/meps/fr/97002",
+      "synchro_le": "2026-09-18T09:02:59+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA791658",
-      "synchro_le": "2026-09-18T05:40:26+0000"
+      "synchro_le": "2026-09-18T08:58:52+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/197499",
-      "synchro_le": "2026-09-18T05:41:03+0000"
+      "synchro_le": "2026-09-18T08:59:04+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA774109",
-      "synchro_le": "2026-09-18T05:39:08+0000"
+      "synchro_le": "2026-09-18T08:57:42+0000"
     },
     {
       "type": "assemblee_nationale",
@@ -3533,198 +3557,201 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793788",
-      "synchro_le": "2026-09-18T05:38:41+0000"
+      "synchro_le": "2026-09-18T08:57:22+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717161",
-      "synchro_le": "2026-09-18T05:38:45+0000"
+      "synchro_le": "2026-09-18T08:57:29+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA773443",
-      "synchro_le": "2026-09-18T05:40:04+0000"
+      "synchro_le": "2026-09-18T08:58:33+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719186",
-      "synchro_le": "2026-09-18T05:38:47+0000"
+      "synchro_le": "2026-09-18T08:57:29+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335758",
-      "synchro_le": "2026-09-18T05:46:47+0000"
+      "synchro_le": "2026-09-18T09:04:47+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA801862",
-      "synchro_le": "2026-09-18T05:47:02+0000"
+      "synchro_le": "2026-09-18T09:05:03+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722190",
-      "synchro_le": "2026-09-18T05:39:07+0000"
+      "synchro_le": "2026-09-18T08:57:41+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719914",
-      "synchro_le": "2026-09-18T05:47:27+0000"
+      "synchro_le": "2026-09-18T09:01:29+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607846",
-      "synchro_le": "2026-09-18T05:38:36+0000"
+      "synchro_le": "2026-09-18T08:57:25+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719218",
-      "synchro_le": "2026-09-18T05:38:38+0000"
+      "synchro_le": "2026-09-18T08:57:20+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA791654",
-      "synchro_le": "2026-09-18T05:47:37+0000"
+      "synchro_le": "2026-09-18T09:01:39+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA801864",
-      "synchro_le": "2026-09-18T05:41:51+0000"
+      "synchro_le": "2026-09-18T08:58:44+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA801866",
-      "synchro_le": "2026-09-18T05:40:10+0000"
+      "synchro_le": "2026-09-18T08:58:39+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721836",
-      "synchro_le": "2026-09-18T05:48:18+0000"
+      "synchro_le": "2026-09-18T09:02:36+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720968",
-      "synchro_le": "2026-09-18T05:47:00+0000"
+      "synchro_le": "2026-09-18T09:04:57+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA801874",
-      "synchro_le": "2026-09-18T05:41:04+0000"
+      "synchro_le": "2026-09-18T08:59:05+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719938",
-      "synchro_le": "2026-09-18T05:48:10+0000"
+      "synchro_le": "2026-09-18T09:06:06+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717163",
-      "synchro_le": "2026-09-18T05:48:27+0000"
+      "synchro_le": "2026-09-18T09:06:21+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721764",
-      "synchro_le": "2026-09-18T05:38:46+0000"
+      "synchro_le": "2026-09-18T08:57:30+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA642935",
-      "synchro_le": "2026-09-18T05:46:15+0000"
+      "synchro_le": "2026-09-18T09:04:10+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA330357",
-      "synchro_le": "2026-09-18T05:46:03+0000"
+      "synchro_le": "2026-09-18T09:03:56+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA801870",
-      "synchro_le": "2026-09-18T05:48:28+0000"
+      "synchro_le": "2026-09-18T09:06:21+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA642788",
-      "synchro_le": "2026-09-18T05:38:31+0000"
+      "synchro_le": "2026-09-18T08:57:20+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA791646",
-      "synchro_le": "2026-09-18T05:41:53+0000"
+      "synchro_le": "2026-09-18T09:00:11+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794514",
-      "synchro_le": "2026-09-18T05:47:08+0000"
+      "synchro_le": "2026-09-18T09:05:09+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719668",
-      "synchro_le": "2026-09-18T05:38:45+0000"
+      "synchro_le": "2026-09-18T08:57:29+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA331582",
-      "synchro_le": "2026-09-18T05:40:29+0000"
+      "synchro_le": "2026-09-18T08:58:39+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795920",
-      "synchro_le": "2026-09-18T05:46:36+0000"
+      "synchro_le": "2026-09-18T09:00:40+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA791650",
-      "synchro_le": "2026-09-18T05:41:17+0000"
+      "synchro_le": "2026-09-18T08:59:19+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721134",
-      "synchro_le": "2026-09-18T05:47:04+0000"
+      "synchro_le": "2026-09-18T09:05:05+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793278",
-      "synchro_le": "2026-09-18T05:46:35+0000"
+      "synchro_le": "2026-09-18T09:00:39+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720002",
-      "synchro_le": "2026-09-18T05:40:30+0000"
+      "synchro_le": "2026-09-18T08:58:39+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643210",
-      "synchro_le": "2026-09-18T05:48:19+0000"
+      "synchro_le": "2026-09-18T09:02:37+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA801872",
-      "synchro_le": "2026-09-18T05:41:52+0000"
+      "synchro_le": "2026-09-18T08:58:45+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721498",
-      "synchro_le": "2026-09-18T05:38:46+0000"
+      "synchro_le": "2026-09-18T08:57:30+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA791648",
-      "synchro_le": "2026-09-18T05:48:28+0000"
+      "synchro_le": "2026-09-18T09:06:22+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793940",
-      "synchro_le": "2026-09-18T05:46:35+0000"
+      "synchro_le": "2026-09-18T09:00:39+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721908",
-      "synchro_le": "2026-09-18T05:47:05+0000"
+      "synchro_le": "2026-09-18T09:05:06+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-18T06:31:33+0000",
+    "genere_le": "2026-09-18T09:42:04+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
-    "warnings": []
+    "warnings": [
+      "gouvernement_roster: Damien Abad : portefeuille \"Ministère des solidarités, de l'autonomie et des personnes handicapées\" sans source_url traçable — portefeuille non renseigné.",
+      "gouvernement_roster: Yaël Braun-Pivet : portefeuille 'Ministère des outre-mer' sans source_url traçable — portefeuille non renseigné."
+    ]
   }
 }
