@@ -18,15 +18,20 @@ Ce module est volontairement sans I/O ni dépendance non-stdlib : il est
 importé par `audit_gouvernement_dataset.py` et `check_quality_gate.py`, qui
 ne doivent jamais tirer `requests` ni toucher au réseau.
 
-Concrètement, avec les archives XV/XVI/XVII ingérées, la borne est le
-2017-06-21 (première séance de la XV) :
+Concrètement, avec les archives **XIV** à XVII ingérées (#1019), la borne
+recule au 2012-06-20 (première séance de la XIV) :
 
-  - Fillon II et Fillon III (2007→2012, XIII) sont **définitivement** hors
-    couverture — les archives XII/XIII ne sont pas publiées et la XIV est
-    structurellement inexploitable (voir `gouvernement_textes.py`) ;
-  - Philippe I (18 mai → 19 juin 2017) relève de la XIV : les quelques
-    dossiers qu'on lui connaît viennent de la traîne résiduelle de l'archive
-    XV, pas d'une couverture garantie.
+  - Fillon I, II et III (2007→2012, XII/XIII) restent **définitivement** hors
+    couverture : leurs archives répondent 404, revérifié le 18/09/2026 ;
+  - Ayrault II, Valls, Valls II, Cazeneuve et Philippe I relèvent de la XIV et
+    sont désormais **couverts** — mesuré : 573 dossiers gouvernementaux, dont
+    187 pour Ayrault II, 254 pour Valls II, 81 pour Cazeneuve, 44 pour Valls
+    et 7 pour Philippe I ;
+  - **Ayrault I reste HORS COUVERTURE**, et son `textes[]` vide ne doit pas se
+    lire comme « aucun texte porté » : sa fenêtre (16/05 → 18/06/2012) se
+    termine AVANT l'ouverture de la XIV, donc elle relève de la XIIIe, dont
+    l'archive répond 404. C'est une absence de source (§2 règle 5), pas un
+    zéro mesuré — l'erreur que ce module entier existe pour empêcher.
 
 `statut_couverture_textes()` ne dit donc pas « il n'y a pas de texte », mais
 « la source ne permet pas de l'affirmer » — la distinction que #399 demande
@@ -63,13 +68,20 @@ AN_OPENDATA_BASE = "https://data.assemblee-nationale.fr/static/openData/reposito
 # chemins valides), donc l'inventaire ne peut pas être découvert dynamiquement
 # et doit être tenu à jour ici.
 #
-# La XIV et antérieures sont absentes volontairement : les XII/XIII ne sont pas
-# publiées, et la XIV a une structure incompatible (JSON monolithique
-# `export.textesLegislatifs.document[]`, aucun `dossierParlementaire`) —
-# changement d'architecture du jeu de données AN entre la XIV et la XV, déjà
-# constaté côté amendements. Les gouvernements Fillon II/III sont donc hors
-# d'atteinte définitivement.
+# La XIV est LUE depuis #1019. Ce qui était écrit ici — « structure
+# incompatible, aucun `dossierParlementaire` » — était faux sur le second
+# point : l'archive porte **3 432 dossiers**, chacun sous la clé
+# `dossierParlementaire`, exactement comme dans le format par fichier. Ce qui
+# change est l'EMBALLAGE, pas le contenu : un seul JSON de 36 Mo décompressés
+# au lieu d'un fichier par objet. `gouvernement_textes._entrees_monolithiques`
+# lit cette forme, et `parse_dossier_gouvernemental` traite les 3 432 sans une
+# exception.
+#
+# Les XII et XIII, elles, restent hors d'atteinte : leurs archives répondent
+# 404, revérifié le 18/09/2026. **Les gouvernements Fillon I, II et III le
+# restent donc aussi** — une absence de source, déclarée et non comblée.
 AN_DOSSIERS_ARCHIVES: dict[int, str] = {
+    14: f"{AN_OPENDATA_BASE}/14/loi/dossiers_legislatifs/Dossiers_Legislatifs_XIV.json.zip",
     15: f"{AN_OPENDATA_BASE}/15/loi/dossiers_legislatifs/Dossiers_Legislatifs_XV.json.zip",
     16: f"{AN_OPENDATA_BASE}/16/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip",
     17: f"{AN_OPENDATA_BASE}/17/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip",
@@ -89,7 +101,10 @@ AN_DOSSIERS_ARCHIVES: dict[int, str] = {
 #
 # À l'ouverture de la 18e : ajouter 17 ici, et son URL au dictionnaire ci-dessus.
 # C'est la seule édition à faire — le reste s'en déduit.
-AN_DOSSIERS_LEGISLATURES_FIGEES: frozenset[int] = frozenset({15, 16})
+#
+# La 14 y entre avec #1019 : elle est dissoute depuis 2017, son archive ne
+# changera plus. Un run n'a donc aucune raison de la rafraîchir.
+AN_DOSSIERS_LEGISLATURES_FIGEES: frozenset[int] = frozenset({14, 15, 16})
 
 #: Les archives qu'un run doit pouvoir rafraîchir. Dérivé, jamais écrit à la
 #: main : une liste tenue en double se désaligne au premier changement.
@@ -107,6 +122,10 @@ AN_DOSSIERS_LEGISLATURES_ACTIVES: frozenset[int] = frozenset(
 # ajouter une entrée à `AN_DOSSIERS_ARCHIVES` sans l'ajouter ici est une
 # erreur, signalée par `verifier_coherence_inventaire()`.
 LEGISLATURES_DEBUT: dict[int, str] = {
+    # #1019 — relue dans l'organe `ASSEMBLEE` de la 14e législature d'AMO30 le
+    # 18/09/2026 (`viMoDe.dateDebut`), pas de mémoire. La même lecture
+    # confirme les trois dates ci-dessous au jour près.
+    14: "2012-06-20",
     15: "2017-06-21",
     16: "2022-06-22",
     17: "2024-07-18",

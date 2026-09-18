@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 375 décisions
+gouverne sans avoir à fouiller les 376 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -404,7 +404,7 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 | [L'union des avertissements peut ressusciter un démenti, et deux familles Syceron s'éteignent (#600) (2026-08-30)](decisions/union-warnings-extinction-600.md) | `WARNING_PREFIX_QUESTIONS_INDISPONIBLES` |
 | [Votes : agrégation des législatures 14 à 17, index dédupliqué, 14/15/16 figées (#403) (2026-08-18)](decisions/votes-multi-legislature.md) | `AN_SCRUTINS_LEGISLATURES`, `AN_SCRUTINS_LEGISLATURES_FIGEES`, `AN_SCRUTIN_UID_PREFIXE`, `fetch_votes_officiels` |
 
-Le mentionnent sans le gouverner : [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`dossiers-multi-archives-origine-document`](decisions/dossiers-multi-archives-origine-document.md), [`gouvernement-roster-desambiguisation`](decisions/gouvernement-roster-desambiguisation.md), [`licences`](decisions/licences.md), [`mandats-agreges-famille-1`](decisions/mandats-agreges-famille-1.md), [`parlementaire-en-mission-nest-pas-ministre`](decisions/parlementaire-en-mission-nest-pas-ministre.md), [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`perimetre-controle-perte`](decisions/perimetre-controle-perte.md), [`plafond-roster-et-commit-518`](decisions/plafond-roster-et-commit-518.md), [`pythonunbuffered-generate-data`](decisions/pythonunbuffered-generate-data.md), [`qualification-perdue-a-la-fusion-639`](decisions/qualification-perdue-a-la-fusion-639.md), [`rattachement-des-membres-par-organe-996`](decisions/rattachement-des-membres-par-organe-996.md), [`retrait-marqueur-regards-citoyens-deputes-890`](decisions/retrait-marqueur-regards-citoyens-deputes-890.md), [`roster-unique-par-run-518`](decisions/roster-unique-par-run-518.md), [`trame-profil-candidat-328`](decisions/trame-profil-candidat-328.md).
+Le mentionnent sans le gouverner : [`archive-dossiers-xiv-1019`](decisions/archive-dossiers-xiv-1019.md), [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`dossiers-multi-archives-origine-document`](decisions/dossiers-multi-archives-origine-document.md), [`gouvernement-roster-desambiguisation`](decisions/gouvernement-roster-desambiguisation.md), [`licences`](decisions/licences.md), [`mandats-agreges-famille-1`](decisions/mandats-agreges-famille-1.md), [`parlementaire-en-mission-nest-pas-ministre`](decisions/parlementaire-en-mission-nest-pas-ministre.md), [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`perimetre-controle-perte`](decisions/perimetre-controle-perte.md), [`plafond-roster-et-commit-518`](decisions/plafond-roster-et-commit-518.md), [`pythonunbuffered-generate-data`](decisions/pythonunbuffered-generate-data.md), [`qualification-perdue-a-la-fusion-639`](decisions/qualification-perdue-a-la-fusion-639.md), [`rattachement-des-membres-par-organe-996`](decisions/rattachement-des-membres-par-organe-996.md), [`retrait-marqueur-regards-citoyens-deputes-890`](decisions/retrait-marqueur-regards-citoyens-deputes-890.md), [`roster-unique-par-run-518`](decisions/roster-unique-par-run-518.md), [`trame-profil-candidat-328`](decisions/trame-profil-candidat-328.md).
 
 ## `src/candidate_profile_ue.py`
 
@@ -444,7 +444,7 @@ Le mentionnent sans le gouverner : [`absences-publiees-comme-faits-556-558-560`]
 
 ## `src/commissions_dossiers_an.py`
 
-Le mentionnent sans le gouverner : [`rattachement-scrutin-dossier-758`](decisions/rattachement-scrutin-dossier-758.md), [`vivier-de-points-et-empreinte-de-commission-328`](decisions/vivier-de-points-et-empreinte-de-commission-328.md).
+Le mentionnent sans le gouverner : [`archive-dossiers-xiv-1019`](decisions/archive-dossiers-xiv-1019.md), [`rattachement-scrutin-dossier-758`](decisions/rattachement-scrutin-dossier-758.md), [`vivier-de-points-et-empreinte-de-commission-328`](decisions/vivier-de-points-et-empreinte-de-commission-328.md).
 
 ## `src/correspondance_acteurs_an.py`
 
@@ -461,10 +461,11 @@ Le mentionnent sans le gouverner : [`civilite-et-pcs-insee-659`](decisions/civil
 
 ## `src/couverture_dossiers.py`
 
-8 décision(s) le gouvernent ; le module en cite 3.
+9 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
+| [La XIVe législature n'était pas inexploitable, elle était monolithique (#1019) (2026-09-18)](decisions/archive-dossiers-xiv-1019.md) | `AN_DOSSIERS_LEGISLATURES_FIGEES`, `LEGISLATURES_DEBUT`, `statut_couverture_textes` |
 | [Les mandats locaux commencent en 2020, et l'avant se déclare (#922) (2026-09-15)](decisions/borne-mandats-locaux-2020-922.md) | `borne_couverture_textes` |
 | [Couverture des dossiers : « hors couverture de la source » ≠ « réellement à zéro » (#399) (2026-08-18)](decisions/couverture-dossiers-hors-couverture-vs-zero.md) | `AN_DOSSIERS_ARCHIVES`, `LEGISLATURES_DEBUT`, `borne_couverture_textes`, `statut_couverture_textes` |
 | [Ce qu'une liste vide veut dire : les quatre états de couverture (#539) (2026-08-28)](decisions/couverture-listes-539.md) | `AN_DOSSIERS_ARCHIVES` |
@@ -701,10 +702,11 @@ Le mentionnent sans le gouverner : [`gouvernement-ci-integration`](decisions/gou
 
 ## `src/gouvernement_textes.py`
 
-16 décision(s) le gouvernent ; le module en cite 6.
+17 décision(s) le gouvernent ; le module en cite 6.
 
 | Décision | Nomme |
 | --- | --- |
+| [La XIVe législature n'était pas inexploitable, elle était monolithique (#1019) (2026-09-18)](decisions/archive-dossiers-xiv-1019.md) | `_COLLECTIONS_MONOLITHE`, `_entrees_monolithiques`, `_uid_depuis_nom`, `parse_dossier_gouvernemental` |
 | [Dossiers législatifs : ingestion multi-archives, origine par document déposé, statut `promulgue` (#400) (2026-08-18)](decisions/dossiers-multi-archives-origine-document.md) | `iter_dossiers_bruts` |
 | [Un texte renvoyé en commission n'est pas un texte examiné (#997) (2026-09-18)](decisions/examen-en-commission-997.md) | `_CODES_NUS_DATES`, `_determine_statut`, `est_acte_au_dela_du_depot`, `est_examen_en_commission` |
 | [La fiche de gouvernement dit d'abord où elle se situe (#330)](decisions/fiche-de-gouvernement-330.md) | `_determine_statut` |
@@ -1287,7 +1289,7 @@ Le mentionnent sans le gouverner : [`boucle-perimetre-candidats-757`](decisions/
 
 ## `src/textes_dossiers_an.py`
 
-Le mentionnent sans le gouverner : [`dossier-des-amendements-639`](decisions/dossier-des-amendements-639.md), [`fraicheur-dossiers-762`](decisions/fraicheur-dossiers-762.md).
+Le mentionnent sans le gouverner : [`archive-dossiers-xiv-1019`](decisions/archive-dossiers-xiv-1019.md), [`dossier-des-amendements-639`](decisions/dossier-des-amendements-639.md), [`fraicheur-dossiers-762`](decisions/fraicheur-dossiers-762.md).
 
 ## `src/textes_vises_figes.py`
 

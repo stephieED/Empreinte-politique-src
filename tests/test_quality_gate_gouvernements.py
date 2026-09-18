@@ -231,13 +231,17 @@ def test_report_gouvernements_textes_vides_hors_couverture_nest_pas_un_soft_fail
 
 def test_report_gouvernements_textes_vides_couverture_partielle_nest_pas_un_soft_fail(tmp_path):
     # Période à cheval sur la borne : un textes[] vide y reste ininterprétable.
+    # #1019 — la borne ayant reculé au 2012-06-20, l'ancienne fixture
+    # (2016 → 2018) est devenue entièrement couverte. La période retenue est
+    # celle d'Ayrault II, le cas à cheval RÉEL : il commence la veille de
+    # l'ouverture de la XIV.
     config_path = tmp_path / "gouvernements_reels.json"
     gouvernements_dir = tmp_path / "gouvernements"
     gouvernements_dir.mkdir()
     _write_gouvernement(
         gouvernements_dir, "x.json", "gouvernement:X",
         nb_membres=1, nb_portefeuille_connu=1, nb_textes=0,
-        periode_debut="2016-01-01", periode_fin="2018-01-01",
+        periode_debut="2012-06-19", periode_fin="2014-03-31",
     )
     _write_config(config_path, [{"gouvernement_id": "gouvernement:X", "nom": "X", "fichier": "x.json"}])
 
@@ -260,8 +264,8 @@ def test_report_gouvernements_borne_de_couverture_est_affichee(tmp_path):
 
     _, _, console, md = _report_gouvernements(config_path, gouvernements_dir)
 
-    assert "2017-06-21" in console
-    assert "2017-06-21" in md
+    assert "2012-06-20" in console
+    assert "2012-06-20" in md
 
 
 def test_report_gouvernements_textes_vides_sans_periode_ne_declenche_rien(tmp_path):

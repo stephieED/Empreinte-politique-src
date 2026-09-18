@@ -89,9 +89,9 @@ const GOVERNMENT_STATUT_LABELS = {
 // Avant cette borne, un `textes[]` vide n'est pas « aucun texte porté » :
 // c'est une absence de source, qui ne doit jamais se lire comme un fait
 // mesuré (AGENTS.md §2.5).
-export const GOVERNMENT_TEXTS_COVERAGE_START = '2017-06-21';
+export const GOVERNMENT_TEXTS_COVERAGE_START = '2012-06-20';
 export const GOVERNMENT_TEXTS_COVERAGE_LABEL =
-  'législatures XV à XVII (dossiers déposés à partir du 21 juin 2017)';
+  'législatures XIV à XVII (dossiers déposés à partir du 20 juin 2012)';
 
 /** Classe la période d'un gouvernement face à la couverture des archives ingérées.
  *  Retourne 'couverte' | 'partielle' | 'hors_couverture' | 'indeterminee',

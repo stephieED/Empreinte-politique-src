@@ -61,9 +61,11 @@ def test_les_actives_sont_la_difference_et_ne_se_recopient_pas():
 
 
 def test_la_seule_archive_vivante_est_la_dix_septieme():
-    """Les 15e et 16e sont dissoutes : leurs archives ne changeront plus."""
+    """Les 14e, 15e et 16e sont dissoutes : leurs archives ne changeront plus.
+
+    La 14e est entrée avec #1019 — dissoute depuis 2017, elle naît figée."""
     assert AN_DOSSIERS_LEGISLATURES_ACTIVES == frozenset({17})
-    assert AN_DOSSIERS_LEGISLATURES_FIGEES == frozenset({15, 16})
+    assert AN_DOSSIERS_LEGISLATURES_FIGEES == frozenset({14, 15, 16})
 
 
 def test_aucune_legislature_n_est_a_la_fois_figee_et_active():
