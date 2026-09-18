@@ -198,6 +198,10 @@ SITES_UI: dict[tuple[str, str], str] = {
     ("scripts/metadonnees-pages.mjs", "lignee"): GROUPE,
     # #969 : le bloc lisible sans JavaScript nomme la chambre de la lignée.
     ("scripts/bloc-sans-js.mjs", "vue"): GROUPE,
+    # #1008 : le balisage Schema.org nomme l'organisation d'une lignée, et celle
+    # d'un mandat — lue SUR LE MANDAT, comme la fiche candidat.
+    ("scripts/donnees-structurees.mjs", "vue"): GROUPE,
+    ("scripts/donnees-structurees.mjs", "mandat"): MANDAT,
     ("src/components/GovernmentProfile.jsx", "texte"): GROUPE,
     # #328 : la fiche candidat lit la chambre SUR LE MANDAT, jamais sur le
     # profil. `siegesElectifs` regroupe les enregistrements en sièges et
