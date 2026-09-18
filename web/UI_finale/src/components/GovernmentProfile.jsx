@@ -29,6 +29,7 @@ import {
   MATIERE_ABSENTE,
   chargeDuPortefeuille,
   fluxMatiereSort,
+  matiereDeFigure,
   organigramme,
 } from '../utils/gouvernement';
 
@@ -378,7 +379,7 @@ function QuiLeComposait({ government }) {
  * figure — une dizaine de rubans d'un texte y superposent leurs étiquettes. La
  * liste en dessous nomme chacune.
  */
-function FluxDesTextes({ textes }) {
+function FluxDesTextes({ textes, selection, onSelection }) {
   const { matieres, sorts, liens } = useMemo(() => fluxMatiereSort(textes, ORDRE_SORTS), [textes]);
 
   const disposition = useMemo(() => {
@@ -416,18 +417,34 @@ function FluxDesTextes({ textes }) {
       <svg viewBox={`0 0 1000 ${hauteur}`} role="img"
         aria-label="Les textes déposés, de leur matière à l’étape où ils se sont arrêtés">
         <g>
-          {graphe.links.map((l) => (
-            <path
-              key={`${l.source.id}-${l.target.id}`}
-              d={sankeyLinkHorizontal()(l)}
-              fill="none"
-              stroke={teinteDe.get(l.matiere)}
-              strokeOpacity="0.38"
-              strokeWidth={Math.max(1, l.width)}
-            >
-              <title>{`${l.source.nom} → ${l.target.nom} : ${l.value}`}</title>
-            </path>
-          ))}
+          {graphe.links.map((l) => {
+            const choisi = selection
+              && selection.matiere === l.matiere
+              && selection.statut === l.target.statut;
+            const eteint = Boolean(selection) && !choisi;
+            return (
+              <path
+                key={`${l.source.id}-${l.target.id}`}
+                className="gvp-brin"
+                d={sankeyLinkHorizontal()(l)}
+                fill="none"
+                stroke={teinteDe.get(l.matiere)}
+                strokeOpacity={choisi ? 0.75 : (eteint ? 0.1 : 0.38)}
+                strokeWidth={Math.max(1, l.width)}
+                role="button"
+                tabIndex={0}
+                aria-pressed={Boolean(choisi)}
+                onClick={() => onSelection(choisi ? null : { matiere: l.matiere, statut: l.target.statut })}
+                onKeyDown={(ev) => {
+                  if (ev.key !== 'Enter' && ev.key !== ' ') return;
+                  ev.preventDefault();
+                  onSelection(choisi ? null : { matiere: l.matiere, statut: l.target.statut });
+                }}
+              >
+                <title>{`${l.source.nom} → ${l.target.nom} : ${l.value} — cliquez pour lire ces textes`}</title>
+              </path>
+            );
+          })}
         </g>
         <g>
           {graphe.nodes.map((n) => (
@@ -443,12 +460,6 @@ function FluxDesTextes({ textes }) {
           ))}
         </g>
       </svg>
-      <figcaption className="gvp-note">
-        À gauche la matière — la commission saisie au fond —, à droite l’étape où le texte s’est
-        arrêté. L’épaisseur d’un ruban est un nombre de textes, jamais une part. Un texte adopté
-        sans vote (49.3) porte un contour et aucune teinte : c’est un fait de procédure. Les
-        commissions spéciales, créées pour un seul texte, sont regroupées.
-      </figcaption>
     </figure>
   );
 }
@@ -485,13 +496,41 @@ function CeQuIlAFaitDeposer({ government }) {
               : `Aucun projet de loi n’a été déposé entre le ${jour(government.periode.debut)} et le ${jour(government.periode.fin)}. Cette période est couverte par les archives : c’est un zéro mesuré, pas une absence de source.`}
           </p>
         ) : (
-          <>
-            <FluxDesTextes textes={government.textes} />
-            <ListeDesTextes textes={government.textes} />
-          </>
+          <FluxEtListe textes={government.textes} />
         )}
       </div>
     </section>
+  );
+}
+
+/* La liste ne s'ouvre qu'au clic sur un brin : 282 cartes sous la figure
+   étaient un mur, et la figure servait d'index sans qu'on puisse y entrer. */
+function FluxEtListe({ textes }) {
+  const [selection, setSelection] = useState(null);
+  const choisis = selection
+    ? textes.filter((t) => matiereDeFigure({ commission: t.commission }) === selection.matiere
+      && t.statut === selection.statut)
+    : [];
+
+  return (
+    <>
+      <FluxDesTextes textes={textes} selection={selection} onSelection={setSelection} />
+      {selection ? (
+        <div className="gvp-selection">
+          <p className="gvp-selection-tete">
+            <span className="gvp-nombre">{choisis.length}</span>
+            {choisis.length === 1 ? ' texte · ' : ' textes · '}
+            <span className="gvp-fort">{selection.matiere}</span>
+            {' → '}
+            <span className="gvp-fort">{LIBELLE_COURT_SORT[selection.statut] || selection.statut}</span>
+            <button type="button" className="gvp-raz" onClick={() => setSelection(null)}>Tout refermer</button>
+          </p>
+          <ListeDesTextes textes={choisis} />
+        </div>
+      ) : (
+        <p className="gvp-invite">Cliquez un brin de la figure pour lire les textes qu’il porte.</p>
+      )}
+    </>
   );
 }
 
