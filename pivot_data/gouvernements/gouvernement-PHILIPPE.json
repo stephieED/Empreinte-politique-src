@@ -224,6 +224,70 @@
   ],
   "textes": [
     {
+      "dossier_id": "DLR5L14N35831",
+      "titre": "Traités et conventions : normes de formation du personnel des navires de pêche (STCW-F)",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2017-06-14",
+      "date_dernier_evenement": "2018-03-22",
+      "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA345619",
+          "membre_id": "edouard-philippe"
+        }
+      ],
+      "source_url": "https://www.assemblee-nationale.fr/dyn/14/dossiers/convention_formation_personnel_navires_peche",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
+    },
+    {
+      "dossier_id": "DLR5L14N35825",
+      "titre": "Pouvoirs publics : confiance dans la vie publique",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2017-06-14",
+      "date_dernier_evenement": "2017-09-15",
+      "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA345619",
+          "membre_id": "edouard-philippe"
+        }
+      ],
+      "source_url": "https://www.assemblee-nationale.fr/dyn/14/dossiers/confiance_action_publique",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
+    },
+    {
+      "dossier_id": "DLR5L14N35824",
+      "titre": "Pouvoirs publics : confiance dans la vie politique",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2017-06-14",
+      "date_dernier_evenement": "2017-09-15",
+      "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA345619",
+          "membre_id": "edouard-philippe"
+        }
+      ],
+      "source_url": "https://www.assemblee-nationale.fr/dyn/14/dossiers/retablissement_confiance_action_publique",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
+    },
+    {
       "dossier_id": "DLR5L15N35824",
       "titre": "Confiance dans la vie politique (loi organique)",
       "statut": "adopte",
@@ -244,17 +308,103 @@
         "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
         "type": "COMPER"
       }
+    },
+    {
+      "dossier_id": "DLR5L14N35818",
+      "titre": "Economie : réforme du droit des contrats, du régime général et de la preuve des obligations",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2017-06-09",
+      "date_dernier_evenement": "2018-02-16",
+      "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA345619",
+          "membre_id": "edouard-philippe"
+        }
+      ],
+      "source_url": "https://www.assemblee-nationale.fr/dyn/14/dossiers/ratification_ordonnance_2016_131",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59051",
+        "sigle": "Lois",
+        "nom": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+        "type": "COMPER"
+      }
+    },
+    {
+      "dossier_id": "DLR5L14N35819",
+      "titre": "Affaires étrangères : conventions d'entraide judiciaire et d'extradition avec Sainte-Lucie",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2017-06-07",
+      "date_dernier_evenement": "2017-12-20",
+      "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA345619",
+          "membre_id": "edouard-philippe"
+        }
+      ],
+      "source_url": "https://www.assemblee-nationale.fr/dyn/14/dossiers/convention_entraide_judiciaire_sainte-lucie",
+      "commission_saisie_au_fond": {
+        "organe_ref": "PO59047",
+        "sigle": "Affaires étrangères",
+        "nom": "Commission des affaires étrangères",
+        "type": "COMPER"
+      }
+    },
+    {
+      "dossier_id": "DLR5L14N35821",
+      "titre": "Outre-mer : dispositions relatives à l'outre-mer du code de la consommation",
+      "statut": "depose",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2017-05-31",
+      "date_dernier_evenement": "2017-05-31",
+      "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA345619",
+          "membre_id": "edouard-philippe"
+        }
+      ],
+      "source_url": "https://www.assemblee-nationale.fr/dyn/14/dossiers/ratification_ordonnance_2017-269",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
+    },
+    {
+      "dossier_id": "DLR5L14N35822",
+      "titre": "Economie : actions en dommages et intérêts du fait des pratiques anticoncurrentielles",
+      "statut": "depose",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2017-05-31",
+      "date_dernier_evenement": "2017-05-31",
+      "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA345619",
+          "membre_id": "edouard-philippe"
+        }
+      ],
+      "source_url": "https://www.assemblee-nationale.fr/dyn/14/dossiers/ratification_ordonnance_2017-303",
+      "commission_saisie_au_fond": null,
+      "commission_non_resolue": {
+        "motif": "depot_senat"
+      }
     }
   ],
+  "tags_thematiques_agreges": [],
   "comptages": {
     "membres_recenses": 23,
     "membres_distincts": 23,
+    "membres_avec_interventions": 0,
     "par_statut": {
-      "adopte": 1,
+      "adopte": 3,
       "adopte_49_3": 0,
-      "adopte_cmp": 0,
-      "depose": 0,
-      "navette_en_cours": 0,
+      "adopte_cmp": 1,
+      "depose": 2,
+      "navette_en_cours": 2,
       "promulgue": 0,
       "rejete": 0,
       "rejete_49_3": 0,
@@ -265,127 +415,127 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717153",
-      "synchro_le": "2026-09-18T09:05:02+0000"
+      "synchro_le": "2026-09-18T13:25:39+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA337633",
-      "synchro_le": "2026-09-18T09:05:47+0000"
+      "synchro_le": "2026-09-18T13:26:48+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA331481",
-      "synchro_le": "2026-09-18T08:58:03+0000"
+      "synchro_le": "2026-09-18T13:18:35+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605131",
-      "synchro_le": "2026-09-18T08:58:03+0000"
+      "synchro_le": "2026-09-18T13:18:35+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA345619",
-      "synchro_le": "2026-09-18T09:01:34+0000"
+      "synchro_le": "2026-09-18T13:25:40+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717161",
-      "synchro_le": "2026-09-18T08:57:29+0000"
+      "synchro_le": "2026-09-18T13:18:26+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA410",
-      "synchro_le": "2026-09-18T08:58:33+0000"
+      "synchro_le": "2026-09-18T13:19:06+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/4324",
-      "synchro_le": "2026-09-18T08:58:35+0000"
+      "synchro_le": "2026-09-18T13:19:08+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717155",
-      "synchro_le": "2026-09-18T09:05:03+0000"
+      "synchro_le": "2026-09-18T13:25:40+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717159",
-      "synchro_le": "2026-09-18T08:59:04+0000"
+      "synchro_le": "2026-09-18T13:19:10+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607846",
-      "synchro_le": "2026-09-18T08:57:25+0000"
+      "synchro_le": "2026-09-18T13:17:40+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA906",
-      "synchro_le": "2026-09-18T08:58:35+0000"
+      "synchro_le": "2026-09-18T13:19:08+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA415482",
-      "synchro_le": "2026-09-18T09:06:20+0000"
+      "synchro_le": "2026-09-18T13:27:29+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717157",
-      "synchro_le": "2026-09-18T09:05:08+0000"
+      "synchro_le": "2026-09-18T13:25:46+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1872",
-      "synchro_le": "2026-09-18T08:58:56+0000"
+      "synchro_le": "2026-09-18T13:19:40+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717171",
-      "synchro_le": "2026-09-18T09:06:20+0000"
+      "synchro_le": "2026-09-18T13:27:30+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717151",
-      "synchro_le": "2026-09-18T05:39:41+0000"
+      "synchro_le": "2026-09-18T13:18:42+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/4335",
-      "synchro_le": "2026-09-18T05:39:58+0000"
+      "synchro_le": "2026-09-18T13:19:03+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717163",
-      "synchro_le": "2026-09-18T09:06:21+0000"
+      "synchro_le": "2026-09-18T13:27:30+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717167",
-      "synchro_le": "2026-09-18T08:58:33+0000"
+      "synchro_le": "2026-09-18T13:19:41+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717169",
-      "synchro_le": "2026-09-18T08:58:41+0000"
+      "synchro_le": "2026-09-18T13:19:14+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717147",
-      "synchro_le": "2026-09-18T08:58:41+0000"
+      "synchro_le": "2026-09-18T13:19:14+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA606171",
-      "synchro_le": "2026-09-18T09:01:13+0000"
+      "synchro_le": "2026-09-18T13:25:17+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717165",
-      "synchro_le": "2026-09-18T08:58:42+0000"
+      "synchro_le": "2026-09-18T13:19:14+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717149",
-      "synchro_le": "2026-09-18T09:03:44+0000"
+      "synchro_le": "2026-09-18T13:27:43+0000"
     },
     {
       "type": "europarl",
@@ -395,8 +545,10 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-18T09:42:03+0000",
+    "genere_le": "2026-09-18T14:15:48+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
-    "warnings": []
+    "warnings": [
+      "gouvernement_textes: dossier DLR5L14N34217 : fam_code inconnu 'TSORTF04' — statut non déterminé."
+    ]
   }
 }

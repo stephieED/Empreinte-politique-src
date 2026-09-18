@@ -1,6 +1,6 @@
 {
   "schema_version": "scrutins-dossiers-v1",
-  "genere_le": "2026-09-18T11:12:54+0000",
+  "genere_le": "2026-09-18T13:51:59+0000",
   "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr",
   "scrutins": {
     "an:15:4352": "DLR5L15N42350",
@@ -717,7 +717,137 @@
     "an:17:2460": "DLR5L17N51362",
     "an:17:7398": "DLR5L17N50548",
     "an:17:5730": "DLR5L17N53821",
-    "an:17:1474": "DLR5L17N51078"
+    "an:17:1474": "DLR5L17N51078",
+    "an:14:528": "DLR5L14N29639",
+    "an:14:291": "DLR5L14N29639",
+    "an:14:525": "DLR5L14N29905",
+    "an:14:1266": "DLR5L14N29905",
+    "an:14:930": "DLR5L14N33241",
+    "an:14:955": "DLR5L14N33241",
+    "an:14:995": "DLR5L14N33241",
+    "an:14:725": "DLR5L14N31473",
+    "an:14:678": "DLR5L14N31473",
+    "an:14:736": "DLR5L14N31473",
+    "an:14:1245": "DLR5L14N34682",
+    "an:14:914": "DLR5L14N33352",
+    "an:14:1120": "DLR5L14N33352",
+    "an:14:588": "DLR5L14N30067",
+    "an:14:782": "DLR5L14N32183",
+    "an:14:307": "DLR5L14N29393",
+    "an:14:499": "DLR5L14N29393",
+    "an:14:279": "DLR5L14N29393",
+    "an:14:482": "DLR5L14N29393",
+    "an:14:1191": "DLR5L14N34457",
+    "an:14:71": "DLR5L14N29328",
+    "an:14:1348": "DLR5L14N34918",
+    "an:14:1286": "DLR5L14N34918",
+    "an:14:1336": "DLR5L14N35110",
+    "an:14:1352": "DLR5L14N35110",
+    "an:14:781": "DLR5L14N30595",
+    "an:14:593": "DLR5L14N30595",
+    "an:14:745": "DLR5L14N31756",
+    "an:14:596": "DLR5L14N30251",
+    "an:14:1127": "DLR5L14N33930",
+    "an:14:1189": "DLR5L14N34104",
+    "an:14:1177": "DLR5L14N34104",
+    "an:14:62": "DLR5L14N28884",
+    "an:14:41": "DLR5L14N28884",
+    "an:14:784": "DLR5L14N32397",
+    "an:14:774": "DLR5L14N31996",
+    "an:14:810": "DLR5L14N31474",
+    "an:14:1109": "DLR5L14N33839",
+    "an:14:1062": "DLR5L14N33249",
+    "an:14:1133": "DLR5L14N33632",
+    "an:14:513": "DLR5L14N29877",
+    "an:14:481": "DLR5L14N29877",
+    "an:14:1044": "DLR5L14N33632",
+    "an:14:511": "DLR5L14N29305",
+    "an:14:259": "DLR5L14N29305",
+    "an:14:1275": "DLR5L14N34217",
+    "an:8:1270": "DLR5L14N34896",
+    "an:14:522": "DLR5L14N29921",
+    "an:14:841": "DLR5L14N33103",
+    "an:14:1263": "DLR5L14N34389",
+    "an:14:981": "DLR5L14N33588",
+    "an:14:647": "DLR5L14N31235",
+    "an:14:726": "DLR5L14N31235",
+    "an:14:261": "DLR5L14N29532",
+    "an:14:698": "DLR5L14N30653",
+    "an:14:663": "DLR5L14N30653",
+    "an:14:945": "DLR5L14N33456",
+    "an:14:1185": "DLR5L14N34322",
+    "an:14:1285": "DLR5L14N34814",
+    "an:14:1347": "DLR5L14N34814",
+    "an:14:765": "DLR5L14N31757",
+    "an:14:526": "DLR5L14N29949",
+    "an:14:982": "DLR5L14N33129",
+    "an:14:701": "DLR5L14N29999",
+    "an:14:768": "DLR5L14N29999",
+    "an:14:559": "DLR5L14N29999",
+    "an:14:260": "DLR5L14N29463",
+    "an:14:536": "DLR5L14N30147",
+    "an:14:590": "DLR5L14N30147",
+    "an:14:594": "DLR5L14N30147",
+    "an:14:1167": "DLR5L14N34109",
+    "an:14:538": "DLR5L14N30265",
+    "an:14:687": "DLR5L14N30265",
+    "an:14:1326": "DLR5L14N35094",
+    "an:14:308": "DLR5L14N29394",
+    "an:14:280": "DLR5L14N29394",
+    "an:14:500": "DLR5L14N29394",
+    "an:14:1364": "DLR5L14N35138",
+    "an:15:103": "DLR5L14N35825",
+    "an:15:107": "DLR5L14N35825",
+    "an:14:849": "DLR5L14N33224",
+    "an:14:1362": "DLR5L14N35433",
+    "an:14:898": "DLR5L14N33251",
+    "an:14:991": "DLR5L14N33251",
+    "an:14:30": "DLR5L14N29088",
+    "an:14:686": "DLR5L14N30152",
+    "an:14:537": "DLR5L14N30152",
+    "an:14:790": "DLR5L14N30940",
+    "an:14:729": "DLR5L14N31013",
+    "an:14:1106": "DLR5L14N33494",
+    "an:14:1200": "DLR5L14N33494",
+    "an:14:49": "DLR5L14N29173",
+    "an:14:1346": "DLR5L14N35276",
+    "an:14:560": "DLR5L14N30000",
+    "an:14:769": "DLR5L14N30000",
+    "an:14:702": "DLR5L14N30000",
+    "an:14:779": "DLR5L14N31032",
+    "an:14:990": "DLR5L14N33568",
+    "an:14:1358": "DLR5L14N35384",
+    "an:14:550": "DLR5L14N30205",
+    "an:14:497": "DLR5L14N29552",
+    "an:14:32": "DLR5L14N29092",
+    "an:14:738": "DLR5L14N31477",
+    "an:14:1212": "DLR5L14N34516",
+    "an:14:902": "DLR5L14N33198",
+    "an:14:929": "DLR5L14N33440",
+    "an:14:589": "DLR5L14N30146",
+    "an:14:595": "DLR5L14N30146",
+    "an:14:535": "DLR5L14N30146",
+    "an:14:773": "DLR5L14N30676",
+    "an:14:1130": "DLR5L14N33983",
+    "an:14:1329": "DLR5L14N35137",
+    "an:14:1083": "DLR5L14N33016",
+    "an:14:1070": "DLR5L14N33687",
+    "an:14:40": "DLR5L14N29114",
+    "an:14:840": "DLR5L14N31537",
+    "an:14:1084": "DLR5L14N33256",
+    "an:14:737": "DLR5L14N31072",
+    "an:14:31": "DLR5L14N29012",
+    "an:14:1202": "DLR5L14N34429",
+    "an:14:1237": "DLR5L14N34570",
+    "an:14:868": "DLR5L14N33248",
+    "an:14:1274": "DLR5L14N34215",
+    "an:14:994": "DLR5L14N33347",
+    "an:14:835": "DLR5L14N33104",
+    "an:14:1312": "DLR5L14N34836",
+    "an:14:82": "DLR5L14N29330",
+    "an:14:292": "DLR5L14N29908",
+    "an:14:85": "DLR5L14N29505",
+    "an:14:1332": "DLR5L14N35236"
   },
   "dossiers": {
     "DLR5L15N42350": {
@@ -2961,6 +3091,398 @@
       "sort_49_3": null
     },
     "DLR5L17N51078": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N29639": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N29905": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N33241": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N31473": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N34682": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N33352": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N30067": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N32183": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N29393": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N34457": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N29328": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N34918": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N35110": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N30595": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N31756": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N30251": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N33930": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N34104": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N28884": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N32397": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N31996": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N31474": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N33839": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N33249": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N34049": {
+      "statut": "navette_en_cours",
+      "sort_49_3": null
+    },
+    "DLR5L14N29877": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N33785": {
+      "statut": "navette_en_cours",
+      "sort_49_3": null
+    },
+    "DLR5L14N29305": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N34217": {
+      "statut": "promulgue",
+      "sort_49_3": false
+    },
+    "DLR5L14N34783": {
+      "statut": "adopte_49_3",
+      "sort_49_3": true
+    },
+    "DLR5L14N29921": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N33103": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N33632": {
+      "statut": "adopte_49_3",
+      "sort_49_3": true
+    },
+    "DLR5L14N34389": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N33588": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N31235": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N29532": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N30653": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N34896": {
+      "statut": "navette_en_cours",
+      "sort_49_3": null
+    },
+    "DLR5L14N33456": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N34322": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N34814": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N31757": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N29949": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N33129": {
+      "statut": "rejete",
+      "sort_49_3": false
+    },
+    "DLR5L14N29999": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N29463": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N30147": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N34109": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N30265": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N35094": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N29394": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N35138": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N35825": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N35824": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N33224": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N35433": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N33251": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N29088": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N30152": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N30940": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N31013": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N33494": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N29173": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N35276": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N30000": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N31032": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N33568": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N35384": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N30205": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N29552": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N29092": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N31477": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N34516": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N33198": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N33440": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N30146": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N30676": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N33983": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N35137": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N33016": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N33687": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N29114": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N31537": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N33256": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N31072": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N29012": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N34429": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N34570": {
+      "statut": "navette_en_cours",
+      "sort_49_3": false
+    },
+    "DLR5L14N33248": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N34215": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N33347": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N33104": {
+      "statut": "rejete",
+      "sort_49_3": false
+    },
+    "DLR5L14N34836": {
+      "statut": "adopte",
+      "sort_49_3": false
+    },
+    "DLR5L14N29330": {
+      "statut": "promulgue",
+      "sort_49_3": false
+    },
+    "DLR5L14N29908": {
+      "statut": "navette_en_cours",
+      "sort_49_3": null
+    },
+    "DLR5L14N29505": {
+      "statut": "adopte_cmp",
+      "sort_49_3": false
+    },
+    "DLR5L14N35236": {
       "statut": "adopte_cmp",
       "sort_49_3": false
     }
