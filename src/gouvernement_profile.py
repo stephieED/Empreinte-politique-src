@@ -88,7 +88,7 @@ import json
 import sys
 from datetime import date
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 from licences import appliquer_licence_donnees
 from schema_pivot import deriver_tags_thematiques
@@ -104,6 +104,8 @@ from gouvernement_roster import (
     build_gouvernement_roster,
     slugs_du_gouvernement,
     build_premier_ministre,
+    charger_profils_et_chemins,
+    lecteur_interventions,
     load_gouvernement_config,
     load_profils_from_dir,
 )
@@ -414,10 +416,24 @@ def fenetres_des_membres(
 
 
 def agreger_tags_thematiques(
-    profils_par_id: dict[str, dict[str, Any]],
     fenetres: dict[str, list[tuple[str, str]]],
+    lire_interventions: Callable[[str], list[dict[str, Any]]],
 ) -> tuple[list[dict[str, Any]], int, int, int]:
     """`(tags_agreges, membres_porteurs, hors_fenetre, sans_date)`.
+
+    **`lire_interventions` et non des profils, parce que les profils n'en
+    portent pas.** Les trois lectures du corpus passent par la projection de
+    #635, qui retire `interventions` (38,1 % du volume) : cette fonction a
+    publié `[]` sur les 17 fiches pendant un run entier, sans rien dire, parce
+    qu'elle recevait des profils projetés et lisait un bloc absent. Le lecteur
+    la force à dire d'où vient la matière, et `gouvernement_roster.lecteur_interventions`
+    la lit sur disque, une personne à la fois.
+
+    Le test qui n'a pas vu le défaut appelait cette fonction avec des profils
+    fabriqués portant leurs `interventions` : il prouvait l'agrégation, jamais
+    le chemin. La garde est désormais dans
+    `tests/test_generate_gouvernement_profiles.py`, sur des profils écrits sur
+    disque et lus par `generate_all`.
 
     Une étiquette compte **une fois par membre**, comme sur la fiche de groupe :
     l'agrégat dit combien de personnes ont parlé d'un sujet, jamais combien de
@@ -447,11 +463,8 @@ def agreger_tags_thematiques(
     sans_date = 0
 
     for membre_id, fenetres_membre in sorted(fenetres.items()):
-        profil = profils_par_id.get(membre_id)
-        if profil is None:
-            continue
         retenues: list[dict[str, Any]] = []
-        for interv in (profil.get("interventions") or []):
+        for interv in lire_interventions(membre_id) or []:
             if not isinstance(interv, dict):
                 continue
             jour = (interv.get("date") or "")[:10]
@@ -498,6 +511,7 @@ def build_gouvernement_profile(
     commissions_par_dossier: Optional[dict[str, Any]] = None,
     membres_roster: Optional[list[dict[str, Any]]] = None,
     organe_ref: Optional[str] = None,
+    lire_interventions: Optional[Callable[[str], list[dict[str, Any]]]] = None,
 ) -> dict[str, Any]:
     """Construit un profil de gouvernement à partir des profils pivot
     individuels déjà collectés et des dossiers législatifs d'origine
@@ -523,6 +537,13 @@ def build_gouvernement_profile(
                  membres. Absent, le repli historique s'applique.
         organe_ref: uid de l'organe `GOUVERNEMENT` (ex. "PO873418"), tel que
                  `raw_data/gouvernements_reels.json` le porte.
+        lire_interventions: `lire(membre_id) -> interventions[]`, d'où
+                 `tags_thematiques_agreges` tire sa matière (#1020). `profils`
+                 ne peut pas la porter : il est projeté sur cinq blocs (#635).
+                 `None` veut dire « personne ne peut lire les interventions » :
+                 l'agrégat n'est alors pas calculé, `membres_avec_interventions`
+                 est publié `null` — jamais `0`, qui affirmerait qu'aucun
+                 membre n'a parlé (§2 règle 5) — et un warning le dit.
 
     Returns:
         Profil de gouvernement dict conforme à `schema_gouvernement.py`.
@@ -599,8 +620,18 @@ def build_gouvernement_profile(
 
     # #1020 — sur quoi les membres ont pris la parole, PENDANT leur passage.
     fenetres = fenetres_des_membres(membres, periode_debut, periode_fin)
-    tags_agreges, membres_porteurs, hors_fenetre, sans_date = agreger_tags_thematiques(
-        {p.get("id"): p for p in profils if p.get("id")}, fenetres)
+    if lire_interventions is None:
+        # Pas de lecteur : l'agrégat n'est pas mesuré. Le dire, plutôt que de
+        # publier un zéro qui se lit « aucun membre n'a pris la parole » —
+        # c'est exactement ce que les 17 fiches ont publié pendant un run.
+        tags_agreges, membres_porteurs, hors_fenetre, sans_date = [], None, 0, 0
+        warnings.append(
+            "gouvernement_profile: tags_thematiques_agreges non calculé — aucun "
+            "lecteur d'interventions fourni (les profils sont projetés, #635)."
+        )
+    else:
+        tags_agreges, membres_porteurs, hors_fenetre, sans_date = agreger_tags_thematiques(
+            fenetres, lire_interventions)
     profil_gouvernement["tags_thematiques_agreges"] = tags_agreges
     # Le dénominateur de `nb_membres_porteurs`, publié plutôt que pré-divisé
     # (§2.7). Il rend la couverture LISIBLE : tant que les membres n'ont pas
@@ -699,7 +730,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         print(f"[!] {exc}", file=sys.stderr)
         return 1
 
-    profils = load_profils_from_dir(Path(args.profiles_dir))
+    profils, chemins_profils = charger_profils_et_chemins(Path(args.profiles_dir))
     print(f"→ {len(profils)} profil(s) pivot chargé(s).", file=sys.stderr)
 
     from gouvernement_textes import fetch_dossiers_gouvernementaux  # import tardif : réseau non requis hors CLI
@@ -719,6 +750,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         profils=profils,
         dossiers_gouvernementaux=dossiers_result["dossiers"],
         licence_donnees=args.licence,
+        lire_interventions=lecteur_interventions(chemins_profils),
     )
     if dossiers_result["warnings"]:
         profil_gouvernement["meta"]["warnings"].extend(dossiers_result["warnings"])

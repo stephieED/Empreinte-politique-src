@@ -36,6 +36,19 @@ def _profil(id_: str, interventions: list[dict]) -> dict:
     return {"id": id_, "nom": id_, "interventions": interventions}
 
 
+def _lecteur(profils: dict[str, dict]):
+    """Le lecteur d'interventions que `agreger_tags_thematiques` exige.
+
+    Il ne reçoit PLUS des profils : les profils du pipeline sont projetés sur
+    cinq blocs (#635) et n'ont pas d'`interventions`. C'est ce qui a fait
+    publier `[]` sur les 17 fiches pendant un run — et ce que les cas
+    ci-dessous ne pouvaient pas voir, puisqu'ils fabriquaient leurs profils.
+    La garde du chemin réel est dans
+    `tests/test_generate_gouvernement_profiles.py`.
+    """
+    return lambda membre_id: (profils.get(membre_id) or {}).get("interventions") or []
+
+
 def _interv(date: str | None, theme: str) -> dict:
     return {"intervention_id": f"syceron_{theme}_{date}", "date": date,
             "theme_officiel": theme, "mots_cles": []}
@@ -90,7 +103,7 @@ def test_la_parole_hors_du_passage_ministeriel_est_ecartee():
     ])}
 
     tags, porteurs, hors, sans_date = agreger_tags_thematiques(
-        profils, fenetres_des_membres(membres, "2022-05-17", "2024-01-09"))
+        fenetres_des_membres(membres, "2022-05-17", "2024-01-09"), _lecteur(profils))
 
     assert [t["tag"] for t in tags] == ["outre-mer"]
     assert (porteurs, hors, sans_date) == (1, 2, 0)
@@ -105,7 +118,7 @@ def test_une_intervention_sans_date_est_ecartee_et_comptee():
     profils = {"x": _profil("x", [_interv(None, "budget"), _interv("2022-06-01", "sante")])}
 
     tags, porteurs, hors, sans_date = agreger_tags_thematiques(
-        profils, fenetres_des_membres(membres, "2022-05-17", "2024-01-09"))
+        fenetres_des_membres(membres, "2022-05-17", "2024-01-09"), _lecteur(profils))
 
     assert [t["tag"] for t in tags] == ["sante"]
     assert (porteurs, hors, sans_date) == (1, 0, 1)
@@ -117,7 +130,7 @@ def test_un_membre_sans_profil_ne_bloque_rien():
     membres = [_membre("absent", "2022-05-21", "2022-07-04")]
 
     tags, porteurs, hors, sans_date = agreger_tags_thematiques(
-        {}, fenetres_des_membres(membres, "2022-05-17", "2024-01-09"))
+        fenetres_des_membres(membres, "2022-05-17", "2024-01-09"), _lecteur({}))
 
     assert (tags, porteurs, hors, sans_date) == ([], 0, 0, 0)
 
@@ -134,7 +147,7 @@ def test_une_etiquette_compte_une_fois_par_membre():
     }
 
     tags, porteurs, _, _ = agreger_tags_thematiques(
-        profils, fenetres_des_membres(membres, "2022-05-17", "2024-01-09"))
+        fenetres_des_membres(membres, "2022-05-17", "2024-01-09"), _lecteur(profils))
 
     assert tags == [{"tag": "budget", "nb_membres_porteurs": 2}]
     assert porteurs == 2
@@ -149,7 +162,7 @@ def test_aucun_ratio_n_est_publie():
     profils = {"a": _profil("a", [_interv("2022-06-01", "budget")])}
 
     tags, _, _, _ = agreger_tags_thematiques(
-        profils, fenetres_des_membres(membres, "2022-05-17", "2024-01-09"))
+        fenetres_des_membres(membres, "2022-05-17", "2024-01-09"), _lecteur(profils))
 
     assert set(tags[0]) == {"tag", "nb_membres_porteurs"}
 
@@ -163,6 +176,6 @@ def test_le_tri_met_les_sujets_les_plus_partages_en_tete():
     }
 
     tags, _, _, _ = agreger_tags_thematiques(
-        profils, fenetres_des_membres(membres, "2022-05-17", "2024-01-09"))
+        fenetres_des_membres(membres, "2022-05-17", "2024-01-09"), _lecteur(profils))
 
     assert [(t["tag"], t["nb_membres_porteurs"]) for t in tags] == [("budget", 3), ("sante", 1)]

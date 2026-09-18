@@ -55,7 +55,7 @@ from typing import Any, Optional
 from gouvernement_profile import build_gouvernement_profile
 from gouvernement_roster_an import CLE_ROSTER as CLE_ROSTER_GOUVERNEMENTS
 from group_roster import charger_rosters_bruts
-from gouvernement_roster import load_profils_from_dir
+from gouvernement_roster import charger_profils_et_chemins, lecteur_interventions
 from gouvernement_textes import AN_DOSSIERS_ARCHIVES, fetch_dossiers_gouvernementaux
 from merge_profile import load_existing_document, preserve_stable_freshness_timestamps
 from schema_gouvernement import validate_profil_gouvernement
@@ -92,7 +92,11 @@ def generate_all(
     `membres_roster` (#996 lot 4) : la clé `gouvernements` de
     `rosters_bruts.json`, lue UNE fois pour les 17 fiches. `None` rebranche le
     rattachement par libellé, et les fiches sont produites quand même."""
-    profils = load_profils_from_dir(profiles_dir)
+    # Les profils sont PROJETÉS sur cinq blocs (#635) : `interventions` n'y est
+    # pas. `chemins_profils` est ce qui permet de l'aller chercher à la demande,
+    # une personne à la fois, pour `tags_thematiques_agreges` (#1020).
+    profils, chemins_profils = charger_profils_et_chemins(profiles_dir)
+    lire_interventions = lecteur_interventions(chemins_profils)
     print(f"→ {len(profils)} profil(s) pivot chargé(s).", file=sys.stderr)
 
     print("→ Récupération des dossiers législatifs gouvernementaux…", file=sys.stderr)
@@ -150,6 +154,7 @@ def generate_all(
                 commissions_par_dossier=commissions_par_dossier,
                 membres_roster=membres_roster,
                 organe_ref=gouvernement.get("organe_ref"),
+                lire_interventions=lire_interventions,
             )
         except Exception as exc:  # noqa: BLE001 - un échec sur un gouvernement ne doit pas arrêter les autres
             print(f"  [!] Échec de génération pour {gouvernement_id} : {exc}", file=sys.stderr)
