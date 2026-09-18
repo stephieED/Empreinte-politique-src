@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 380 décisions
+gouverne sans avoir à fouiller les 381 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -603,13 +603,14 @@ Le mentionnent sans le gouverner : [`amendements-legislatures-figees`](decisions
 
 ## `src/generate_gouvernement_profiles.py`
 
-6 décision(s) le gouvernent ; le module en cite 3.
+7 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
 | [Cloisonnement de la branche roster, et le code 2 « suspension totale » (#524) (2026-08-26)](decisions/cloisonnement-branche-roster-524.md) | `EXIT_COLLECTE_INCOMPLETE` |
 | [Extension de la stabilité des horodatages aux profils groupe/gouvernement/parti (#343, complet) (2026-08-17)](decisions/freshness-timestamps-groupes-gouvernements-partis.md) | `generate_all` |
 | [Profils de gouvernement : ne jamais réécrire sur une collecte incomplète, et cache dossiers dédié (#427) (2026-08-18)](decisions/gouvernement-textes-non-ecrasement.md) | `COLLECTE_INCOMPLETE` |
+| [Un bloc que la projection retire se lit à la demande, il ne revient pas dans la liste (#1020) (2026-09-18)](decisions/lecture-a-la-demande-des-interventions-1020.md) | `generate_all` |
 | [Le `label` d'un mandat `MINISTERE` ne dit pas si c'est un maroquin (#474) (2026-08-20)](decisions/parlementaire-en-mission-nest-pas-ministre.md) | `COLLECTE_INCOMPLETE` |
 | [Le plafond de lecture du roster, et le commit qui ne paie plus pour une source lente (#518, second incident) (2026-08-24)](decisions/plafond-roster-et-commit-518.md) | `EXIT_COLLECTE_INCOMPLETE` |
 | [La fiche rattache ses membres par `organe_ref`, plus par un libellé comparé entre deux sources (#996, lot 4) (2026-09-18)](decisions/rattachement-des-membres-par-organe-996.md) | `charger_membres_roster` |
@@ -659,19 +660,20 @@ Le mentionnent sans le gouverner : [`plafond-roster-et-commit-518`](decisions/pl
 
 ## `src/gouvernement_profile.py`
 
-3 décision(s) le gouvernent ; le module en cite 1.
+4 décision(s) le gouvernent ; le module en cite 1.
 
 | Décision | Nomme |
 | --- | --- |
 | [La parole d'un gouvernement se compte dans la fenêtre de chaque membre, pas dans celle du gouvernement (#1020) (2026-09-18)](decisions/agregat-parole-gouvernement-1020.md) | `agreger_tags_thematiques`, `fenetres_des_membres` |
 | [`gouvernement_profile.py` : rattachement des textes par `date_depot`, exclusion silencieuse des dossiers non classifiables (#211) (2026-08-14)](decisions/gouvernement-profile-rattachement.md) | `build_gouvernement_profile` |
+| [Un bloc que la projection retire se lit à la demande, il ne revient pas dans la liste (#1020) (2026-09-18)](decisions/lecture-a-la-demande-des-interventions-1020.md) | `agreger_tags_thematiques`, `build_gouvernement_profile` |
 | [Trois lectures du corpus passent à la projection, et chacune a son plafond dans un test (#635, 2026-08-30)](decisions/lectures-pipeline-par-projection-635.md) | `_index_acteur_ref_vers_membre`, `build_gouvernement_profile` |
 
 Le mentionnent sans le gouverner : [`audit-599-projection-blocs-lus-628`](decisions/audit-599-projection-blocs-lus-628.md), [`audit-pipeline-gouvernement`](decisions/audit-pipeline-gouvernement.md), [`freshness-timestamps-groupes-gouvernements-partis`](decisions/freshness-timestamps-groupes-gouvernements-partis.md), [`gouvernement-premier-ministre-portefeuille`](decisions/gouvernement-premier-ministre-portefeuille.md), [`gouvernement-textes-fam-codes-archives`](decisions/gouvernement-textes-fam-codes-archives.md), [`gouvernement-textes-fam-codes-manquants`](decisions/gouvernement-textes-fam-codes-manquants.md), [`gouvernement-textes-initiateurs`](decisions/gouvernement-textes-initiateurs.md), [`hors-perimetre`](decisions/hors-perimetre.md), [`parlementaire-en-mission-nest-pas-ministre`](decisions/parlementaire-en-mission-nest-pas-ministre.md), [`pivot-freshness-timestamps-stables`](decisions/pivot-freshness-timestamps-stables.md).
 
 ## `src/gouvernement_roster.py`
 
-14 décision(s) le gouvernent ; le module en cite 4.
+15 décision(s) le gouvernent ; le module en cite 4.
 
 | Décision | Nomme |
 | --- | --- |
@@ -682,6 +684,7 @@ Le mentionnent sans le gouverner : [`audit-599-projection-blocs-lus-628`](decisi
 | [`gouvernement_roster.py` : désambiguïsation par libellé exact + garde-fou de période, pas l'inverse (#209) (2026-08-14)](decisions/gouvernement-roster-desambiguisation.md) | `build_gouvernement_roster` |
 | [Profils de gouvernement : le lien ministre → texte (#435) (2026-08-18)](decisions/gouvernement-textes-initiateurs.md) | `acteur_ref_depuis_profil` |
 | [L'`id` d'un profil pivot est le slug : le préfixe de provenance était instable (#487) (2026-08-20)](decisions/id-pivot-sans-prefixe.md) | `build_gouvernement_roster` |
+| [Un bloc que la projection retire se lit à la demande, il ne revient pas dans la liste (#1020) (2026-09-18)](decisions/lecture-a-la-demande-des-interventions-1020.md) | `BLOCS_LUS_COMPOSITION`, `_lire_profil_projete`, `charger_profils_et_chemins`, `lecteur_interventions`, `load_profils_from_dir` |
 | [Trois lectures du corpus passent à la projection, et chacune a son plafond dans un test (#635, 2026-08-30)](decisions/lectures-pipeline-par-projection-635.md) | `BLOCS_LUS_COMPOSITION`, `acteur_ref_depuis_profil`, `build_premier_ministre`, `load_profils_from_dir` |
 | [Le libellé d'organe du chef du gouvernement s'accorde en genre, la qualité jamais (#658) (2026-08-31)](decisions/libelle-chef-du-gouvernement-au-feminin-658.md) | `FONCTIONS_MINISTERIELLES_OBSERVEES`, `LABELS_PORTEFEUILLE_PREMIER_MINISTRE_OBSERVES`, `_normalise_fonction`, `_normalise_libelle_organe`, `_normalise_typographique`, `build_gouvernement_roster`, `build_premier_ministre` |
 | [Le référentiel type l'organe, il n'y a rien à interpréter (#730) (2026-09-04)](decisions/mandats-gouvernementaux-en-commission-730.md) | `FONCTIONS_MINISTERIELLES`, `_normalise_fonction` |

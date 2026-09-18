@@ -561,6 +561,11 @@ def test_build_profile_sans_premier_ministre_reste_null():
         gouvernement_id="gouvernement:TEST", nom="Gouvernement Test", libelle_an="TEST",
         periode_debut="2025-01-01", periode_fin="2025-06-30",
         profils=profils, dossiers_gouvernementaux=[],
+        # Un lecteur qui ne rend rien, et non l'absence de lecteur : ici
+        # personne n'a d'interventions, ce qui est un fait mesuré et non un
+        # agrégat non calculé (#1020). Sans lui, `meta.warnings` porterait —
+        # à raison — la trace « aucun lecteur fourni ».
+        lire_interventions=lambda _membre_id: [],
     )
     assert profil["premier_ministre"] is None
     assert profil["membres"][0]["portefeuille"] is None
