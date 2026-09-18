@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 376 décisions
+gouverne sans avoir à fouiller les 377 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -46,7 +46,6 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 | `src/audit_gouvernement_dataset.py` | 2 |
 | `src/avertissements.py` | 2 |
 | `src/fetch_candidats_declares.py` | 2 |
-| `src/gouvernement_profile.py` | 2 |
 | `src/titres_europeens.py` | 2 |
 | `src/build_amendements_index.py` | 1 |
 | `src/candidate_profile_ue.py` | 1 |
@@ -660,10 +659,11 @@ Le mentionnent sans le gouverner : [`plafond-roster-et-commit-518`](decisions/pl
 
 ## `src/gouvernement_profile.py`
 
-2 décision(s) le gouvernent ; le module en cite 0.
+3 décision(s) le gouvernent ; le module en cite 1.
 
 | Décision | Nomme |
 | --- | --- |
+| [La parole d'un gouvernement se compte dans la fenêtre de chaque membre, pas dans celle du gouvernement (#1020) (2026-09-18)](decisions/agregat-parole-gouvernement-1020.md) | `agreger_tags_thematiques`, `fenetres_des_membres` |
 | [`gouvernement_profile.py` : rattachement des textes par `date_depot`, exclusion silencieuse des dossiers non classifiables (#211) (2026-08-14)](decisions/gouvernement-profile-rattachement.md) | `build_gouvernement_profile` |
 | [Trois lectures du corpus passent à la projection, et chacune a son plafond dans un test (#635, 2026-08-30)](decisions/lectures-pipeline-par-projection-635.md) | `_index_acteur_ref_vers_membre`, `build_gouvernement_profile` |
 
@@ -1139,7 +1139,7 @@ Le mentionnent sans le gouverner : [`collecte-mandats-locaux-rne-922`](decisions
 | [Le sort d'un texte entre dans la fiche, à côté de son stade et jamais à sa place (#743 dans #328), 07/09/2026](decisions/sort-des-textes-dans-la-fiche-328.md) | `KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL` |
 | [Un texte porté dit ce qu'il est devenu, et son sort ne se déduit jamais de son stade (#743) (2026-09-06)](decisions/sort-des-textes-portes-743.md) | `KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL` |
 
-Le mentionnent sans le gouverner : [`deduplication-entrees-membres`](decisions/deduplication-entrees-membres.md), [`gouvernement-doc-cloture`](decisions/gouvernement-doc-cloture.md), [`gouvernement-premier-ministre-portefeuille`](decisions/gouvernement-premier-ministre-portefeuille.md), [`hors-perimetre`](decisions/hors-perimetre.md), [`pivot-freshness-timestamps-stables`](decisions/pivot-freshness-timestamps-stables.md), [`web-v3-ui`](decisions/web-v3-ui.md).
+Le mentionnent sans le gouverner : [`agregat-parole-gouvernement-1020`](decisions/agregat-parole-gouvernement-1020.md), [`deduplication-entrees-membres`](decisions/deduplication-entrees-membres.md), [`gouvernement-doc-cloture`](decisions/gouvernement-doc-cloture.md), [`gouvernement-premier-ministre-portefeuille`](decisions/gouvernement-premier-ministre-portefeuille.md), [`hors-perimetre`](decisions/hors-perimetre.md), [`pivot-freshness-timestamps-stables`](decisions/pivot-freshness-timestamps-stables.md), [`web-v3-ui`](decisions/web-v3-ui.md).
 
 ## `src/schema_groupe.py`
 
@@ -1159,11 +1159,12 @@ Le mentionnent sans le gouverner : [`audit-champs-deplaces-726`](decisions/audit
 
 ## `src/schema_pivot.py`
 
-48 décision(s) le gouvernent ; le module en cite 5.
+49 décision(s) le gouvernent ; le module en cite 5.
 
 | Décision | Nomme |
 | --- | --- |
 | [Trois absences publiées comme des faits (#556, #558, #560) (2026-08-29)](decisions/absences-publiees-comme-faits-556-558-560.md) | `validate_profil` |
+| [La parole d'un gouvernement se compte dans la fenêtre de chaque membre, pas dans celle du gouvernement (#1020) (2026-09-18)](decisions/agregat-parole-gouvernement-1020.md) | `deriver_tags_thematiques` |
 | [La cascade des textes portés entre dans l'UI, et la section s'aligne sur la maquette (#328), 06/09/2026](decisions/alignement-section-propose-ui-328.md) | `KNOWN_STADES_PROCEDURAUX` |
 | [La cascade des textes portés passe au versant européen : une porte, et la nomenclature de la source (#901) (2026-09-16)](decisions/cascade-europeenne-une-porte-901.md) | `STADES_UE_NON_PUBLIES` |
 | [Un mandat dit quel référentiel a établi sa catégorie, et l'absence n'accuse personne (#718) (2026-09-03)](decisions/categorie-source-des-mandats-718.md) | `KNOWN_CATEGORIE_SOURCES` |
