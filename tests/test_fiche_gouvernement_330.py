@@ -155,6 +155,20 @@ def test_une_entree_sans_portefeuille_ne_dedouble_pas_une_personne():
     assert "!nommes.has(m.nom)" in source
 
 
+def test_le_nom_du_premier_ministre_ne_mene_pas_a_une_page_absente():
+    """Seules les fiches de candidats déclarés sont publiées : 4 des 17 Premiers
+    ministres en ont une. Les 13 autres nommaient une adresse qui rend « Aucun
+    candidat trouvé » — un lien mène là où le texte le dit, ou n'existe pas."""
+    index = (UI / "src" / "data" / "index.js").read_text(encoding="utf-8")
+    assert "manifest.candidates || []).find((c) => c.nom === pm)" in index, (
+        "le slug du Premier ministre se résout sur les fiches publiées"
+    )
+    source = COMPOSANT.read_text(encoding="utf-8")
+    assert "government.premierMinistreId ? (" in source, (
+        "sans fiche publiée, le nom s'affiche sans lien"
+    )
+
+
 def test_la_decision_existe_et_porte_sa_date():
     contenu = DECISION.read_text(encoding="utf-8")
     assert contenu.startswith("# "), "un titre de niveau 1 ouvre la décision"

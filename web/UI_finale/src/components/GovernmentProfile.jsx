@@ -175,7 +175,7 @@ function Fait({ cle, children, sous }) {
 }
 
 function EnBref({ government, chronologie }) {
-  const { periode, effectif, remaniements, majorite, chiffres } = government;
+  const { effectif, remaniements, majorite, chiffres } = government;
   const majoriteDeclaree = majorite.length > 0;
 
   return (
@@ -653,9 +653,13 @@ export default function GovernmentProfile({ government, chronologie = [] }) {
         <p className="gvp-qui">
           {government.premierMinistre ? (
             <span>
-              <a className="gvp-lien" href={`/candidats/${government.premierMinistreId || ''}`}>
-                {government.premierMinistre}
-              </a>
+              {government.premierMinistreId ? (
+                <Link className="gvp-lien" to={`/candidats/${government.premierMinistreId}`}>
+                  {government.premierMinistre}
+                </Link>
+              ) : (
+                <span className="gvp-fort">{government.premierMinistre}</span>
+              )}
               {', Premier ministre · '}
             </span>
           ) : (

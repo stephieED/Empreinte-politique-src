@@ -612,7 +612,7 @@ export function buildCandidateView(
 }
 
 /** Construit l'objet consommé par GovernmentProfile.jsx à partir d'un profil de gouvernement v1 (schema_gouvernement.py). */
-export function buildGovernmentView(gouvernement, groupesDuManifest = []) {
+export function buildGovernmentView(gouvernement, groupesDuManifest = [], slugDuPremierMinistre = null) {
   const periode = gouvernement.periode || {};
   const membres = gouvernement.membres || [];
   const textes = gouvernement.textes || [];
@@ -668,7 +668,9 @@ export function buildGovernmentView(gouvernement, groupesDuManifest = []) {
     title: gouvernement.nom,
     kicker,
     premierMinistre: gouvernement.premier_ministre?.nom || null,
-    premierMinistreId: gouvernement.premier_ministre?.membre_id || null,
+    // `null` quand la personne n'a pas de fiche publiée : le nom s'affiche
+    // alors sans lien, plutôt que de mener à une page « non trouvée » (#330).
+    premierMinistreId: slugDuPremierMinistre,
     periode: { debut: periode.debut || null, fin: periode.fin || null, actif: Boolean(periode.actif) },
     actif: Boolean(periode.actif),
     membres: membresView,
