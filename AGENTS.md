@@ -39,8 +39,10 @@ names what governs it.
 the current production interface, wired to real pivot data (`docs/decisions/web-v3-ui.md`). Earlier design
 generations — `v1`-`v7`, including the `v3` editorial reference — are archived under `web/old/`.
 `web/UI_finale` navigation: **Candidats** · **Groupes** (real parliamentary groups) ·
-**Gouvernement** (real governments) — no Partis tab. Three tabs, but **six published
-pages**: `/methodologie`, `/mentions-legales`, `/sources` and `/faq` live outside the tabs.
+**Gouvernement** (real governments) — no Partis tab. Three tabs, but **seven published
+pages**: `/a-propos`, `/methodologie`, `/mentions-legales`, `/sources` and `/faq` live outside
+the tabs. `/a-propos` says what the site is and who edits it; `/methodologie` says how each
+fiche is made, and the manifesto lives on **one** of the two, never both (#1032).
 `/sources` (formerly `/couverture`, which redirects to it — #951) says which source brings what, and once, for the whole corpus, what every fiche used to repeat — what the
 repository holds and since when (#328).
 Positioning, naming, target audience: `docs/decisions/direction-artistique-empreinte.md`.
@@ -206,6 +208,12 @@ string from `sources[]` after every step that changes it (`normalize_profil`,
 profile the day that profile stops carrying anything from Regards Citoyens.
 Never hardcode a licence label elsewhere; import it from `src/licences.py`, and keep
 `AGENTS.md` §7, `sources.config.js` and `LegalNoticePage.jsx` saying the same thing.
+
+**The code is AGPL-3.0 since 18/09/2026 (#1032), and it changes nothing here.** `LICENSE`
+covers the code only: the editorial texts and the graphic identity are all rights reserved, and
+the data keep their sources' licences — a software licence does not reach them. What the AGPL
+does add is an obligation on us: the deployed site must correspond to the published code, its
+section 13 being the reason `/a-propos` carries the link to the repository.
 
 Site HTML = ODbL "Produced Work" (attribution sufficient). Downloadable raw data → share-alike.
 Full details: `docs/decisions/licences.md`, `docs/decisions/licence-lot-6-530.md`.

@@ -24,6 +24,14 @@ export const PREPOSITION = { AN: "à l'Assemblée nationale", Senat: 'au Sénat'
 /* Pages fixes : le titre est celui que la page affiche. Seule la méthode a une
  * description propre ; les autres gardent celle du site. */
 export const PAGES_FIXES_META = {
+  /* /a-propos porte une description propre, comme la méthode : c'est la page qui
+     dit ce que le site est et qui l'édite (#1032), et l'aperçu d'un lien vers
+     elle ne doit pas être celui du site entier. */
+  'a-propos': {
+    titre: `À propos — ${MARQUE}`,
+    description:
+      "Ce que ce site fait, et qui l'édite : un projet indépendant qui publie ce que les institutions publient, collecté par un programme, sans note ni classement.",
+  },
   methodologie: {
     titre: `Méthode éditoriale — ${MARQUE}`,
     description: "Ce que le site publie, ce qu'il refuse de publier, et pourquoi : des faits sourcés, sans note ni classement.",

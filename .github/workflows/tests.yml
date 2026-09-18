@@ -81,6 +81,12 @@ jobs:
           # sur le push vers `main` (run 32773016491). Un fichier de premier
           # niveau compte autant qu'un répertoire.
           #
+          # `LICENSE` (#1032) : `test_licence_du_code_1032.py` lit le texte de
+          # l'AGPL-3.0 — sa section 13, celle qui distingue l'AGPL de la GPL, et
+          # sa longueur, parce qu'une licence tronquée n'en est pas une. Sans
+          # cette ligne, le test passe en local et échoue en CI : le piège
+          # annoncé plus haut, pour la troisième fois.
+          #
           # `raw_data/candidats.json` (#791) : quatre tests de
           # `test_fetch_candidats_declares_753.py` et un de
           # `test_perimetre_candidats_760.py` portent sur la validité de ce
@@ -112,6 +118,7 @@ jobs:
             .gitignore
             AGENTS.md
             CLAUDE.md
+            LICENSE
             README.md
             ROADMAP.md
             docs
