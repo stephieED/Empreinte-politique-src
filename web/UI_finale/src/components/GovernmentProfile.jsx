@@ -1,6 +1,99 @@
+/*
+ * LA FICHE DE GOUVERNEMENT (#330), arbitrée en maquette avec la propriétaire du
+ * dépôt les 17 et 18/09/2026.
+ * Maquette de référence : https://claude.ai/artifact/BE1ez5DkE83kqCS6n6QxTC
+ *
+ * Trois sections, et ce que chacune répond :
+ *
+ *   01 « En bref »            — où ce gouvernement se situe. Même intention que
+ *      sur les fiches sœurs : ce que l'objet EST, jamais ce qu'il a fait. La
+ *      frise des dix-sept gouvernements, puis quatre faits sourcés.
+ *   02 « Qui le composait »   — un bloc par ministère, replié ; le rattachement
+ *      d'un ministre délégué se LIT dans le libellé officiel de son
+ *      portefeuille, il ne se devine pas.
+ *   03 « Ce qu'il a fait déposer » — le flux matière → étape.
+ *
+ * Trois formes ont été écartées en maquette, et il vaut mieux le savoir avant
+ * de les reproposer : les grandes tuiles de chiffres (« une rangée de chiffres
+ * ne dit pas quand »), la frise des dépôts mois par mois (elle avançait ce que
+ * la section 03 dit déjà), et la liste des remaniements ligne à ligne (douze
+ * lignes pour Philippe II, quand « remanié 10 fois » suffit).
+ */
+import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { sankey, sankeyLinkHorizontal } from 'd3-sankey';
 import '../styles/shell.css';
 import './GovernmentProfile.css';
-import { SOURCE_BADGE_VERIFIED } from '../utils/lecture';
+import { LIBELLE_SORT_TEXTE, SOURCE_BADGE_VERIFIED } from '../utils/lecture';
+import { teinteMatiere } from '../utils/matiere';
+import {
+  MATIERE_ABSENTE,
+  chargeDuPortefeuille,
+  fluxMatiereSort,
+  matiereDeFigure,
+  organigramme,
+} from '../utils/gouvernement';
+
+const MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+  'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+
+function jour(iso) {
+  if (!iso) return null;
+  const [a, m, j] = iso.split('-');
+  return `${Number(j)} ${MOIS[Number(m) - 1]} ${a}`;
+}
+
+function moisEtAnnee(iso) {
+  return iso ? `${MOIS[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}` : null;
+}
+
+function moisCourt(iso) {
+  return iso ? `${iso.slice(5, 7)}/${iso.slice(0, 4)}` : null;
+}
+
+function duree(debut, fin) {
+  const jours = Math.round((Date.parse(fin || new Date().toISOString().slice(0, 10)) - Date.parse(debut)) / 86400000);
+  if (jours <= 1) return `${jours} jour`;
+  if (jours < 62) return `${jours} jours`;
+  const mois = Math.round(jours / 30.44);
+  if (mois < 24) return `${mois} mois`;
+  return `${String(Math.round((jours / 365.25) * 10) / 10).replace('.', ',')} ans`;
+}
+
+/* L'étape où un texte s'est arrêté, dans l'ordre de la procédure. `depose` et
+ * `rejete_49_3` n'ont aucun texte au commit de données du 18/09/2026 : ils sont
+ * ici quand même — le vocabulaire est celui du schéma, pas celui du jour. */
+const ORDRE_SORTS = [
+  'promulgue', 'adopte', 'adopte_cmp', 'adopte_49_3',
+  'navette_en_cours', 'depose', 'rejete', 'rejete_49_3', 'retire',
+];
+
+/* Les teintes d'issue du système (DESIGN_SYSTEM §2). Le 49.3 n'en reçoit
+ * AUCUNE : c'est un fait de procédure, et une teinte le rangerait parmi les
+ * issues de vote (§2 règle 4). Il se distingue par un contour. */
+const TEINTE_SORT = {
+  promulgue: '#007A45',
+  adopte: '#4C9A6E',
+  adopte_cmp: '#8FBFA5',
+  navette_en_cours: '#c4c0b9',
+  depose: '#DCD9D3',
+  rejete: '#E53420',
+  retire: '#F2A93B',
+  adopte_49_3: null,
+  rejete_49_3: null,
+};
+
+const LIBELLE_COURT_SORT = {
+  promulgue: 'Promulgué',
+  adopte: 'Adopté',
+  adopte_cmp: 'Adopté après CMP',
+  adopte_49_3: 'Adopté via 49.3',
+  rejete_49_3: 'Rejeté via 49.3',
+  navette_en_cours: 'Navette en cours',
+  depose: 'Déposé',
+  rejete: 'Rejeté',
+  retire: 'Retiré',
+};
 
 function VerifiedIcon() {
   return (
@@ -11,125 +104,575 @@ function VerifiedIcon() {
   );
 }
 
-function initialsOf(nom) {
-  return nom
-    .split(' ')
-    .map((p) => p[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
+/* ── 01 · En bref ────────────────────────────────────────────────────────── */
+
+/* La frise des dix-sept gouvernements, celui de la fiche en teinte. Elle ne
+ * remonte pas avant 2007 : l'Assemblée ne publie rien de plus ancien, et la
+ * frise ne montre donc pas tous les gouvernements de la Ve République. */
+function FriseDesGouvernements({ chronologie, courantId }) {
+  const aujourdhui = new Date().toISOString().slice(0, 10);
+  const tries = [...chronologie].filter((g) => g.debut).sort((a, b) => a.debut.localeCompare(b.debut));
+  if (!tries.length) return null;
+
+  const debut = Date.parse(tries[0].debut);
+  const fin = Date.parse(aujourdhui);
+  const etendue = Math.max(fin - debut, 1);
+  const L = 1000;
+  const GAUCHE = 2;
+  const LARGEUR = L - 4;
+  const HAUT = 26;
+  const BANDE = 34;
+  const x = (iso) => GAUCHE + ((Date.parse(iso) - debut) / etendue) * LARGEUR;
+
+  const annees = [];
+  for (let a = new Date(tries[0].debut).getUTCFullYear() + 1; a <= new Date(aujourdhui).getUTCFullYear(); a += 2) {
+    annees.push(a);
+  }
+
+  return (
+    <svg className="gvp-frise" viewBox={`0 0 ${L} 92`} role="img"
+      aria-label={`Les ${tries.length} gouvernements publiés depuis ${tries[0].debut.slice(0, 4)}, celui de cette fiche mis en évidence`}>
+      {tries.map((g) => {
+        const x0 = x(g.debut);
+        const x1 = x(g.fin || aujourdhui);
+        const courant = g.id === courantId;
+        const milieu = (x0 + x1) / 2;
+        const ancre = milieu < 60 ? 'start' : (milieu > L - 60 ? 'end' : 'middle');
+        return (
+          <g key={g.id}>
+            <rect x={x0} y={HAUT} width={Math.max(x1 - x0 - 1, 1.2)} height={BANDE} rx="2"
+              fill={courant ? 'var(--gouv)' : 'var(--border-strong)'}>
+              <title>
+                {`${g.title} — ${jour(g.debut)}${g.fin ? ` → ${jour(g.fin)}` : ' → en fonction'}`}
+              </title>
+            </rect>
+            {courant && (
+              <text x={ancre === 'start' ? x0 : (ancre === 'end' ? x1 : milieu)} y={HAUT - 9}
+                textAnchor={ancre} className="gvp-frise-nom">
+                {g.title.replace(/^Gouvernement\s+/, '')}
+              </text>
+            )}
+          </g>
+        );
+      })}
+      {annees.map((a) => (
+        <text key={a} x={x(`${a}-01-01`)} y={HAUT + BANDE + 18} textAnchor="middle" className="gvp-frise-annee">{a}</text>
+      ))}
+    </svg>
+  );
 }
 
-export default function GovernmentProfile({ government }) {
-  const members = government.membres.map((m) => ({
-    nom: m.nom,
-    initials: initialsOf(m.nom),
-    portefeuille: m.portefeuille,
-    period: m.period,
-    statusLabel: m.actif ? 'Actif' : 'Ancien',
-    statusClass: m.actif ? 'gvp-member-status-actif' : 'gvp-member-status-ancien',
-  }));
+function Fait({ cle, children, sous }) {
+  return (
+    <div className="gvp-fait">
+      <span className="gvp-fait-cle">{cle}</span>
+      <div className="gvp-fait-corps">
+        <p className="gvp-fait-valeur">{children}</p>
+        {sous && <p className="gvp-fait-sous">{sous}</p>}
+      </div>
+    </div>
+  );
+}
 
-  // Couverture des archives de dossiers législatifs (#399). Hors couverture,
-  // l'absence de texte est une absence de source : elle ne doit jamais être
-  // présentée comme un « 0 texte porté » constaté (AGENTS.md §2.5).
+function EnBref({ government, chronologie }) {
+  const { periode, effectif, remaniements, majorite, chiffres } = government;
+  const majoriteDeclaree = majorite.length > 0;
+
+  return (
+    <section className="gvp-section" data-section="En bref" id="section-bref">
+      <div className="gvp-section-tete">
+        <span className="gvp-section-numero">01</span>
+        <span className="gvp-section-trait" />
+      </div>
+      <h2 className="gvp-section-titre"><span>En bref</span></h2>
+      <div className="gvp-carte">
+        {chronologie.length > 1 && (
+          <FriseDesGouvernements chronologie={chronologie} courantId={government.id} />
+        )}
+
+        <div className="gvp-faits">
+          <Fait cle="Composition">
+            {effectif && (effectif.mini === effectif.maxi
+              ? <span className="gvp-nombre">{`${effectif.mini} membre${effectif.mini > 1 ? 's' : ''}`}</span>
+              : (
+                <>
+                  {'entre '}
+                  <span className="gvp-nombre">{effectif.mini}</span>
+                  {' et '}
+                  <span className="gvp-nombre">{`${effectif.maxi} membres`}</span>
+                </>
+              ))}
+            {remaniements === 0 ? ' · jamais remanié' : ' · remanié '}
+            {remaniements > 0 && <span className="gvp-fort">{`${remaniements} fois`}</span>}
+          </Fait>
+
+          <Fait
+            cle="Majorité à l’Assemblée"
+            sous={majoriteDeclaree ? null : 'nous ne collectons les groupes qu’à partir de 2017'}
+          >
+            {majoriteDeclaree ? majorite.map((m, i) => (
+              <span key={m.legislature}>
+                {i > 0 && ', puis '}
+                <span className={m.declaree ? 'gvp-fort' : 'gvp-nd'}>{m.nom}</span>
+                {i > 0 && ` à partir de ${moisEtAnnee(m.debut)}`}
+              </span>
+            )) : <span className="gvp-nd">non collectée pour cette période</span>}
+          </Fait>
+
+          <Fait
+            cle="Projets de loi"
+            sous={chiffres.sansVote
+              ? `dont ${chiffres.sansVote} adopté${chiffres.sansVote > 1 ? 's' : ''} sans vote (article 49.3), fait de procédure`
+              : null}
+          >
+            {chiffres.deposes ? (
+              <>
+                <span className="gvp-nombre">{chiffres.deposes}</span>{' déposés · '}
+                <span className="gvp-nombre">{chiffres.adoptes}</span>
+                {chiffres.adoptes === 1 ? ' adopté · ' : ' adoptés · '}
+                <span className="gvp-nombre">{chiffres.promulgues}</span>
+                {chiffres.promulgues === 1 ? ' promulgué à ce jour' : ' promulgués à ce jour'}
+              </>
+            ) : <span className="gvp-nd">aucun lisible sur cette période</span>}
+          </Fait>
+        </div>
+      </div>
+      <p className="gvp-methodo">
+        <Link to="/methodologie#fonctions">Majorité, minorité et opposition, selon l’Assemblée →</Link>
+      </p>
+    </section>
+  );
+}
+
+/* ── 02 · Qui le composait ───────────────────────────────────────────────── */
+
+/* Replié par défaut, et une seule carte ouverte à la fois : la page ne
+ * s'allonge pas au fil des clics. Les colonnes sont construites ici et non
+ * laissées à une grille CSS — une grille aligne chaque rangée sur son bloc le
+ * plus haut, si bien qu'ouvrir une carte les ouvrait visuellement toutes. */
+function colonnes(poles, nombre) {
+  const piles = Array.from({ length: nombre }, () => []);
+  poles.forEach((pole, i) => piles[i % nombre].push(pole));
+  return piles;
+}
+
+function Ministere({ pole, ouvert, onBasculer }) {
+  const enfants = pole.enfants;
+  const basculer = (ev) => {
+    ev.stopPropagation();
+    onBasculer();
+  };
+  return (
+    <div
+      className={`gvp-pole${pole.connu ? '' : ' gvp-pole--absent'}${enfants.length ? ' gvp-pole--cliquable' : ''}`}
+      onClick={enfants.length ? basculer : undefined}
+    >
+      <p className="gvp-pole-portefeuille">{pole.titre}</p>
+      {pole.titulaires.length ? (
+        <p className="gvp-pole-titulaire">
+          {pole.titulaires.map((t, i) => (
+            <span key={t.nom}>
+              {i > 0 && <span className="gvp-passation"> → </span>}
+              {t.nom}
+              {i > 0 && <span className="gvp-depuis">{` depuis ${moisCourt(t.debut)}`}</span>}
+            </span>
+          ))}
+        </p>
+      ) : (
+        <p className="gvp-pole-titulaire gvp-nd">Titulaire sans fiche ici</p>
+      )}
+
+      {enfants.length > 0 && (
+        <>
+          <button type="button" className="gvp-bascule" aria-expanded={ouvert} onClick={basculer}>
+            <span className="gvp-chevron" aria-hidden="true">{ouvert ? '▾' : '▸'}</span>
+            {`${enfants.length} rattaché${enfants.length > 1 ? 's' : ''}`}
+          </button>
+          <div className="gvp-tiroir" hidden={!ouvert}>
+            {enfants.map((m) => {
+              const charge = chargeDuPortefeuille(m.portefeuille);
+              return (
+                <p className="gvp-enfant" key={m.nom}>
+                  <span className="gvp-enfant-nom">{m.nom}</span>
+                  {charge && <span className="gvp-enfant-charge"> {charge}</span>}
+                </p>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function QuiLeComposait({ government }) {
+  const [deplie, setDeplie] = useState(null);
+  const poles = useMemo(() => {
+    /* La source publie parfois DEUX mandats d'appartenance pour la même
+       personne, dont un sans portefeuille — Damien Abad et Yaël Braun-Pivet
+       sous Borne (#996). L'entrée muette ne dit rien de plus que celle qui
+       nomme le ministère, et en faire un bloc « Portefeuille non renseigné »
+       ferait apparaître la personne deux fois. Elle est donc écartée
+       UNIQUEMENT quand la personne est déjà placée ailleurs. */
+    const nommes = new Set(government.membres.filter((m) => m.portefeuille).map((m) => m.nom));
+    const membres = government.membres.filter((m) => m.portefeuille || !nommes.has(m.nom));
+    return organigramme(membres, government.premierMinistre, government.periode);
+  }, [government]);
+  const piles = colonnes(poles, 3);
+
+  return (
+    <section className="gvp-section" data-section="Qui le composait" id="section-composition">
+      <div className="gvp-section-tete">
+        <span className="gvp-section-numero">02</span>
+        <span className="gvp-section-trait" />
+      </div>
+      <h2 className="gvp-section-titre"><span>Qui le composait</span></h2>
+      <div className="gvp-carte">
+        {poles.length === 0 ? (
+          <p className="gvp-vide">Aucun membre n’est publié pour ce gouvernement.</p>
+        ) : (
+          <div className="gvp-orga">
+            {piles.map((pile, i) => (
+              // eslint-disable-next-line react/no-array-index-key
+              <div className="gvp-colonne" key={i}>
+                {pile.map((pole) => (
+                  <Ministere
+                    key={pole.cle || pole.titre}
+                    pole={pole}
+                    ouvert={deplie === (pole.cle || pole.titre)}
+                    onBasculer={() => setDeplie((actuel) => (
+                      actuel === (pole.cle || pole.titre) ? null : (pole.cle || pole.titre)
+                    ))}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+/* ── 03 · Ce qu'il a fait déposer ────────────────────────────────────────── */
+
+/*
+ * LE FLUX MATIÈRE → ÉTAPE. À gauche la commission saisie au fond, à droite
+ * l'étape où le texte s'est arrêté. L'épaisseur d'un ruban est un NOMBRE DE
+ * TEXTES, jamais une part, et aucun seuil ne fait disparaître un texte seul.
+ *
+ * Les commissions spéciales, créées pour un seul texte, sont regroupées dans la
+ * figure — une dizaine de rubans d'un texte y superposent leurs étiquettes. La
+ * liste en dessous nomme chacune.
+ */
+function FluxDesTextes({ textes, selection, onSelection }) {
+  const { matieres, sorts, liens } = useMemo(() => fluxMatiereSort(textes, ORDRE_SORTS), [textes]);
+
+  const disposition = useMemo(() => {
+    if (!liens.length) return null;
+    const noeuds = [
+      ...matieres.map((m) => ({ id: `m:${m.nom}`, nom: `${m.nom} (${m.n})`, teinte: teinteMatiere(m.nom === MATIERE_ABSENTE ? MATIERE_ABSENTE : m.nom, m.rang), matiere: m.nom })),
+      ...sorts.map((s) => ({ id: `s:${s.statut}`, nom: `${LIBELLE_COURT_SORT[s.statut] || s.statut} (${s.n})`, teinte: TEINTE_SORT[s.statut], statut: s.statut })),
+    ];
+    const index = new Map(noeuds.map((n, i) => [n.id, i]));
+    const graphe = {
+      nodes: noeuds.map((n) => ({ ...n })),
+      links: liens.map((l) => ({
+        source: index.get(`m:${l.matiere}`),
+        target: index.get(`s:${l.statut}`),
+        value: l.valeur,
+        matiere: l.matiere,
+      })),
+    };
+    const hauteur = Math.max(260, Math.min(560, noeuds.length * 26));
+    return {
+      hauteur,
+      graphe: sankey()
+        .nodeWidth(12)
+        .nodePadding(13)
+        .extent([[2, 8], [810, hauteur - 8]])(graphe),
+    };
+  }, [matieres, sorts, liens]);
+
+  if (!disposition) return null;
+  const { graphe, hauteur } = disposition;
+  const teinteDe = new Map(graphe.nodes.map((n) => [n.matiere, n.teinte]));
+
+  return (
+    <figure className="gvp-flux">
+      <svg viewBox={`0 0 1000 ${hauteur}`} role="img"
+        aria-label="Les textes déposés, de leur matière à l’étape où ils se sont arrêtés">
+        <g>
+          {graphe.links.map((l) => {
+            const choisi = selection
+              && selection.matiere === l.matiere
+              && selection.statut === l.target.statut;
+            const eteint = Boolean(selection) && !choisi;
+            return (
+              <path
+                key={`${l.source.id}-${l.target.id}`}
+                className="gvp-brin"
+                d={sankeyLinkHorizontal()(l)}
+                fill="none"
+                stroke={teinteDe.get(l.matiere)}
+                strokeOpacity={choisi ? 0.75 : (eteint ? 0.1 : 0.38)}
+                strokeWidth={Math.max(1, l.width)}
+                role="button"
+                tabIndex={0}
+                aria-pressed={Boolean(choisi)}
+                onClick={() => onSelection(choisi ? null : { matiere: l.matiere, statut: l.target.statut })}
+                onKeyDown={(ev) => {
+                  if (ev.key !== 'Enter' && ev.key !== ' ') return;
+                  ev.preventDefault();
+                  onSelection(choisi ? null : { matiere: l.matiere, statut: l.target.statut });
+                }}
+              >
+                <title>{`${l.source.nom} → ${l.target.nom} : ${l.value} — cliquez pour lire ces textes`}</title>
+              </path>
+            );
+          })}
+        </g>
+        <g>
+          {graphe.nodes.map((n) => (
+            <g key={n.id}>
+              <rect
+                x={n.x0} y={n.y0} width={n.x1 - n.x0} height={Math.max(n.y1 - n.y0, 1)}
+                fill={n.teinte || 'var(--card)'}
+                stroke={n.teinte ? 'none' : 'var(--ink)'}
+                strokeWidth={n.teinte ? 0 : 1}
+              />
+              <text x={n.x1 + 6} y={(n.y0 + n.y1) / 2} dy="0.35em" className="gvp-flux-etiquette">{n.nom}</text>
+            </g>
+          ))}
+        </g>
+      </svg>
+    </figure>
+  );
+}
+
+function CeQuIlAFaitDeposer({ government }) {
   const couverture = government.textesCouverture || {};
   const horsCouverture = couverture.statut === 'hors_couverture';
-  const couvertureIncomplete = horsCouverture || couverture.statut === 'partielle';
-  const messageTextesVides = couvertureIncomplete
-    ? `Période non couverte par les archives ouvertes de l'Assemblée nationale (${couverture.label}) : le nombre de textes portés par ce gouvernement n'est pas mesurable ici. Ce n'est pas un « aucun texte porté ».`
-    : 'Aucune donnée de texte disponible pour ce gouvernement.';
+  const partielle = couverture.statut === 'partielle';
 
+  return (
+    <section className="gvp-section" data-section="Ce qu’il a fait déposer" id="section-textes">
+      <div className="gvp-section-tete">
+        <span className="gvp-section-numero">03</span>
+        <span className="gvp-section-trait" />
+      </div>
+      <h2 className="gvp-section-titre"><span>Ce qu’il a fait déposer</span></h2>
+      <div className="gvp-carte">
+        {government.textes.length === 0 ? (
+          <p className="gvp-vide">
+            {horsCouverture || partielle
+              ? 'Aucun texte lisible sur cette période — voir « Ce qu’on n’a pas pu lire ».'
+              : `Aucun projet de loi n’a été déposé entre le ${jour(government.periode.debut)} et le ${jour(government.periode.fin)} : un zéro mesuré, pas une absence de source.`}
+          </p>
+        ) : (
+          <FluxEtListe textes={government.textes} />
+        )}
+      </div>
+      {/* Ce qui reste n'explique pas la figure — l'épaisseur d'un ruban se lit
+          sans qu'on l'écrive : c'est le 49.3 qu'aucune forme ne peut porter
+          seule, et que §2 règle 4 veut nommé à côté. */}
+      <p className="gvp-section-pied">
+        Le 49.3 est un fait de procédure, jamais une position de vote.
+      </p>
+      <p className="gvp-methodo">
+        <Link to="/methodologie#propose">Ce que la figure compte, et ce qu’elle refuse de compter →</Link>
+      </p>
+    </section>
+  );
+}
+
+/* La liste ne s'ouvre qu'au clic sur un brin : 282 cartes sous la figure
+   étaient un mur, et la figure servait d'index sans qu'on puisse y entrer. */
+function FluxEtListe({ textes }) {
+  const [selection, setSelection] = useState(null);
+  const choisis = selection
+    ? textes.filter((t) => matiereDeFigure({ commission: t.commission }) === selection.matiere
+      && t.statut === selection.statut)
+    : [];
+
+  return (
+    <>
+      <FluxDesTextes textes={textes} selection={selection} onSelection={setSelection} />
+      {selection ? (
+        <div className="gvp-selection">
+          <p className="gvp-selection-tete">
+            <span className="gvp-nombre">{choisis.length}</span>
+            {choisis.length === 1 ? ' texte · ' : ' textes · '}
+            <span className="gvp-fort">{selection.matiere}</span>
+            {' → '}
+            <span className="gvp-fort">{LIBELLE_COURT_SORT[selection.statut] || selection.statut}</span>
+            <button type="button" className="gvp-raz" onClick={() => setSelection(null)}>Tout refermer</button>
+          </p>
+          <ListeDesTextes textes={choisis} />
+        </div>
+      ) : (
+        <p className="gvp-invite">Cliquez un brin de la figure pour lire les textes qu’il porte.</p>
+      )}
+    </>
+  );
+}
+
+const TEXTES_AFFICHES = 30;
+
+function ListeDesTextes({ textes }) {
+  const [tout, setTout] = useState(false);
+  const visibles = tout ? textes : textes.slice(0, TEXTES_AFFICHES);
+
+  return (
+    <div className="gvp-liste">
+      {visibles.map((texte) => (
+        <div className="gvp-texte" key={texte.dossierId}>
+          <span className="gvp-texte-date">{texte.meta}</span>
+          <div className="gvp-texte-corps">
+            <p className="gvp-texte-titre">{texte.titre}</p>
+            <div className="gvp-texte-meta">
+              <span className="gvp-sort">
+                <span
+                  className={`gvp-pastille${TEINTE_SORT[texte.statut] ? '' : ' gvp-pastille--procedure'}`}
+                  style={TEINTE_SORT[texte.statut] ? { background: TEINTE_SORT[texte.statut] } : undefined}
+                />
+                {LIBELLE_SORT_TEXTE[texte.statut] || texte.statut}
+              </span>
+              <span>{`Déposé au ${texte.chambre === 'Assemblée nationale' ? 'Assemblée' : 'Sénat'}`.replace('au Assemblée', 'à l’Assemblée')}</span>
+              <span className={texte.commission ? undefined : 'gvp-nd'}>{texte.commission || MATIERE_ABSENTE}</span>
+              {texte.sourceUrl ? (
+                <a className="gvp-source" href={texte.sourceUrl} target="_blank" rel="noreferrer">
+                  <VerifiedIcon /> {SOURCE_BADGE_VERIFIED}
+                </a>
+              ) : (
+                <span className="gvp-nd">Source non renseignée</span>
+              )}
+            </div>
+          </div>
+        </div>
+      ))}
+      {textes.length > TEXTES_AFFICHES && (
+        <button type="button" className="gvp-plus" onClick={() => setTout((v) => !v)}>
+          {tout ? 'Replier la liste' : `Voir les ${textes.length - TEXTES_AFFICHES} autres textes`}
+        </button>
+      )}
+    </div>
+  );
+}
+
+/* ── 04 · Ce qu'on n'a pas pu lire ──────────────────────────────────────── */
+
+/*
+ * Ce que CETTE fiche ne peut pas lire, et pourquoi — jamais le corpus entier,
+ * qui a sa page (`/couverture`). Deux absences ne se confondent pas
+ * (DESIGN_SYSTEM §7 règle 7) : une archive que la source ne publie pas, une
+ * position que la source ne déclare plus, et une activité qui n'existe pas au
+ * niveau d'un gouvernement sont trois lignes distinctes.
+ */
+function limitesDeLaFiche(government) {
+  const lignes = [];
+  const couverture = government.textesCouverture || {};
+
+  if (couverture.statut === 'hors_couverture') {
+    lignes.push({
+      quoi: 'Textes déposés',
+      texte: government.textes.length
+        ? `Les archives de dossiers de l’Assemblée nationale commencent au 21 juin 2017, après la fin de ce gouvernement. ${government.textes.length === 1 ? 'Le texte affiché vient' : 'Les textes affichés viennent'} de la traîne d’une archive plus récente : la liste n’est pas complète.`
+        : 'Les archives de dossiers de l’Assemblée nationale commencent au 21 juin 2017, après la fin de ce gouvernement. Rien n’en est lisible, et ce n’est pas « aucun texte déposé ».',
+    });
+  } else if (couverture.statut === 'partielle') {
+    lignes.push({
+      quoi: 'Textes déposés',
+      texte: `Les archives de dossiers de l’Assemblée nationale commencent au 21 juin 2017. Ce gouvernement était en fonction depuis le ${jour(government.periode.debut)} : ${duree(government.periode.debut, couverture.borne)} de son activité n’est pas couvert.`,
+    });
+  }
+
+  if (!government.majorite.length) {
+    lignes.push({
+      quoi: 'Majorité à l’Assemblée',
+      texte: 'Nous ne collectons les groupes parlementaires qu’à partir de 2017 : pour ce gouvernement, la position déclarée des groupes n’est pas lisible.',
+    });
+  } else if (government.majorite.some((m) => !m.declaree)) {
+    lignes.push({
+      quoi: 'Majorité à l’Assemblée',
+      texte: 'Depuis 2024, l’Assemblée nationale ne déclare plus la position de ses groupes. Aucun n’est donc déclaré majoritaire, et nous ne désignons pas le plus nombreux à sa place.',
+    });
+  }
+
+  lignes.push({
+    quoi: 'Votes et prises de parole',
+    texte: 'Un gouvernement ne vote pas et ne siège pas : ce que ses membres ont voté ou dit se lit sur leur propre fiche.',
+  });
+
+  return lignes;
+}
+
+function CeQuOnNaPasPuLire({ government }) {
+  const lignes = limitesDeLaFiche(government);
+
+  return (
+    <section className="gvp-section" data-section="Ce qu’on n’a pas pu lire" id="section-limites">
+      <div className="gvp-section-tete">
+        <span className="gvp-section-numero">04</span>
+        <span className="gvp-section-trait" />
+      </div>
+      <h2 className="gvp-section-titre"><span>Ce qu’on n’a pas pu lire</span></h2>
+      <div className="gvp-carte">
+        <dl className="gvp-limites">
+          {lignes.map((l) => (
+            <div className="gvp-limite" key={l.quoi}>
+              <dt>{l.quoi}</dt>
+              <dd>{l.texte}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+      <p className="gvp-methodo">
+        <Link to="/methodologie#couverture">Pourquoi ces limites se déclarent au lieu de se combler →</Link>
+      </p>
+    </section>
+  );
+}
+
+/* ── La fiche ────────────────────────────────────────────────────────────── */
+
+export default function GovernmentProfile({ government, chronologie = [] }) {
   return (
     <main className="gvp-main">
       <div className="gvp-breadcrumb">
         Gouvernement / <strong>{government.title}</strong>
       </div>
 
-      <div className="gvp-banner">
-        <span className="gvp-banner-tag">Gouvernement</span>
+      {/* Même en-tête que les fiches candidat et de lignée : un sourcil, le
+          nom, puis UNE ligne d'identité — qui l'a dirigé et pendant combien de
+          temps. Pas de carte ni de filet de couleur : l'en-tête n'est pas un
+          bloc de contenu. */}
+      <header className="gvp-entete">
+        <p className="gvp-sourcil">Gouvernement</p>
         <h1>{government.title}</h1>
-        <p>{government.kicker}</p>
-        <p className="gvp-banner-pm">
-          Premier ministre : {government.premierMinistre || 'Non renseigné'}
-        </p>
-      </div>
-
-      <p className="gvp-section-title">Textes portés — comptages par statut</p>
-      {couvertureIncomplete && (
-        <p className="gvp-coverage-note">
-          {horsCouverture
-            ? "Les archives ouvertes de l'Assemblée nationale ne couvrent pas cette période"
-            : "Les archives ouvertes de l'Assemblée nationale ne couvrent qu'une partie de cette période"}{' '}
-          ({couverture.label}). Les textes ci-dessous ne peuvent donc pas être
-          considérés comme la liste complète de ceux portés par ce gouvernement,
-          et une absence n'y vaut pas zéro.
-        </p>
-      )}
-      {government.statutBadges.length === 0 ? (
-        <p className="gvp-empty">
-          {couvertureIncomplete
-            ? 'Aucun comptage par statut ne peut être établi sur cette période — voir la note ci-dessus.'
-            : 'Aucune donnée de statut disponible pour ce gouvernement.'}
-        </p>
-      ) : (
-        <div className="gvp-statut-badges">
-          {government.statutBadges.map((badge) => (
-            <span className="gvp-statut-badge" key={badge.key}>
-              {badge.count} {badge.label}
+        <p className="gvp-qui">
+          {government.premierMinistre ? (
+            <span>
+              <a className="gvp-lien" href={`/candidats/${government.premierMinistreId || ''}`}>
+                {government.premierMinistre}
+              </a>
+              {', Premier ministre · '}
             </span>
-          ))}
-        </div>
-      )}
+          ) : (
+            <span><span className="gvp-nd">Premier ministre non publié</span>{' · '}</span>
+          )}
+          <span>
+            {government.periode.fin
+              ? `du ${jour(government.periode.debut)} au ${jour(government.periode.fin)} · ${duree(government.periode.debut, government.periode.fin)}`
+              : `depuis le ${jour(government.periode.debut)} · ${duree(government.periode.debut, null)}`}
+          </span>
+        </p>
+      </header>
 
-      <p className="gvp-section-title">Textes suivis</p>
-      {government.textes.length === 0 ? (
-        <p className="gvp-empty">{messageTextesVides}</p>
-      ) : (
-        <div className="gvp-textes-grid">
-          {government.textes.map((texte) => (
-            <div className="gvp-texte-card" key={texte.dossierId}>
-              <div className="gvp-texte-header">
-                <span className="gvp-texte-statut">{texte.statutLabel}</span>
-                {texte.sort493 && <span className="gvp-texte-493">Art. 49.3</span>}
-              </div>
-              <p className="gvp-texte-titre">{texte.titre}</p>
-              <div className="gvp-texte-footer">
-                {texte.sourceUrl ? (
-                  <a className="gvp-verified-badge" href={texte.sourceUrl} target="_blank" rel="noreferrer">
-                    <VerifiedIcon /> {SOURCE_BADGE_VERIFIED}
-                  </a>
-                ) : (
-                  <span className="gvp-texte-nd">Source non renseignée</span>
-                )}
-                <span className="gvp-texte-meta">
-                  {texte.chambre} · {texte.meta}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <p className="gvp-section-title">Membres du gouvernement</p>
-      {members.length === 0 ? (
-        <p className="gvp-empty">Aucun membre disponible pour ce gouvernement.</p>
-      ) : (
-        <div className="gvp-members-grid">
-          {members.map((member) => (
-            <div className="gvp-member-row" key={member.nom}>
-              <span className="gvp-member-avatar">{member.initials}</span>
-              <div className="gvp-member-info">
-                <span className="gvp-member-name">{member.nom}</span>
-                <span className="gvp-member-portefeuille">
-                  {member.portefeuille || 'Portefeuille non renseigné'}
-                </span>
-              </div>
-              <span className={`gvp-member-status ${member.statusClass}`}>{member.statusLabel}</span>
-            </div>
-          ))}
-        </div>
-      )}
+      <EnBref government={government} chronologie={chronologie} />
+      <QuiLeComposait government={government} />
+      <CeQuIlAFaitDeposer government={government} />
+      <CeQuOnNaPasPuLire government={government} />
     </main>
   );
 }

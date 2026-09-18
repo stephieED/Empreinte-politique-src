@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 374 décisions
+gouverne sans avoir à fouiller les 375 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -701,12 +701,13 @@ Le mentionnent sans le gouverner : [`gouvernement-ci-integration`](decisions/gou
 
 ## `src/gouvernement_textes.py`
 
-15 décision(s) le gouvernent ; le module en cite 6.
+16 décision(s) le gouvernent ; le module en cite 6.
 
 | Décision | Nomme |
 | --- | --- |
 | [Dossiers législatifs : ingestion multi-archives, origine par document déposé, statut `promulgue` (#400) (2026-08-18)](decisions/dossiers-multi-archives-origine-document.md) | `iter_dossiers_bruts` |
 | [Un texte renvoyé en commission n'est pas un texte examiné (#997) (2026-09-18)](decisions/examen-en-commission-997.md) | `_CODES_NUS_DATES`, `_determine_statut`, `est_acte_au_dela_du_depot`, `est_examen_en_commission` |
+| [La fiche de gouvernement dit d'abord où elle se situe (#330)](decisions/fiche-de-gouvernement-330.md) | `_determine_statut` |
 | [L'archive vivante se reprend au changement de semaine, les mortes jamais (#762), 07/09/2026](decisions/fraicheur-dossiers-762.md) | `ensure_dossiers_zip_downloaded`, `rafraichir_dossiers_actifs` |
 | [`gouvernement_textes` : 3 derniers `fam_code` mappés ; `TSORTF02` tranché sur données réelles (#402) (2026-08-18)](decisions/gouvernement-textes-fam-codes-archives.md) | `_FAM_CODE_STATUT_MAP`, `_STATUTS_CORRIGES_PAR_PROMULGATION` |
 | [`gouvernement_textes` : 3 `fam_code` manquants excluaient 42 % des textes ; `adopte_cmp` ajouté à la nomenclature (#397) (2026-08-18)](decisions/gouvernement-textes-fam-codes-manquants.md) | `_FAM_CODE_STATUT_MAP` |

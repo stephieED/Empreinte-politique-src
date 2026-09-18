@@ -40,6 +40,12 @@ import {
 } from '../utils/profilCandidat';
 import { LIBELLE_SORT_TEXTE, legislatureDeAmendementId } from '../utils/lecture';
 import { ecartsAvecLeGroupe } from '../utils/ecartsGroupe';
+import {
+  chiffresDesTextes,
+  fourchetteEffectif,
+  majoriteDuGouvernement,
+  vaguesDeNomination,
+} from '../utils/gouvernement';
 import { figureVotesEuropeens, themesDuDossier, votesEuropeensRetenus } from '../utils/votesEuropeens';
 import {
   couvertureDesReperes,
@@ -606,7 +612,7 @@ export function buildCandidateView(
 }
 
 /** Construit l'objet consommé par GovernmentProfile.jsx à partir d'un profil de gouvernement v1 (schema_gouvernement.py). */
-export function buildGovernmentView(gouvernement) {
+export function buildGovernmentView(gouvernement, groupesDuManifest = []) {
   const periode = gouvernement.periode || {};
   const membres = gouvernement.membres || [];
   const textes = gouvernement.textes || [];
@@ -631,17 +637,25 @@ export function buildGovernmentView(gouvernement) {
     .map((t) => ({
       dossierId: t.dossier_id,
       titre: t.titre,
+      statut: t.statut,
       statutLabel: LIBELLE_SORT_TEXTE[t.statut] || t.statut,
       chambre: t.chambre_depot_initial === 'AN' ? 'Assemblée nationale' : 'Sénat',
+      // La matière d'un texte est la COMMISSION SAISIE AU FOND, sourcée, jamais
+      // une lecture de son titre (#328, « les grands chiffres »).
+      commission: t.commission_saisie_au_fond?.sigle || null,
       sort493: t.sort_49_3 === true,
+      dateDepot: t.date_depot,
       meta: formatFrDate(t.date_depot) || 'Date de dépôt non renseignée',
       sourceUrl: t.source_url,
     }));
 
   const membresView = membres.map((m) => ({
     nom: m.nom,
+    membreId: m.membre_id,
     portefeuille: m.portefeuille,
     actif: m.actif,
+    debut: m.debut,
+    fin: m.fin,
     period: `${yearOf(m.debut) || '?'} → ${m.actif ? "aujourd'hui" : (yearOf(m.fin) || '?')}`,
   }));
 
@@ -654,10 +668,21 @@ export function buildGovernmentView(gouvernement) {
     title: gouvernement.nom,
     kicker,
     premierMinistre: gouvernement.premier_ministre?.nom || null,
+    premierMinistreId: gouvernement.premier_ministre?.membre_id || null,
+    periode: { debut: periode.debut || null, fin: periode.fin || null, actif: Boolean(periode.actif) },
     actif: Boolean(periode.actif),
     membres: membresView,
     textes: textesView,
     statutBadges,
+    comptages: parStatut,
+    // « En bref » : les trois nombres des projets de loi, la fourchette
+    // d'effectif, les remaniements, et le groupe que l'Assemblée DÉCLARE
+    // majoritaire — jamais celui que nous jugerions tel (#330).
+    chiffres: chiffresDesTextes(parStatut, textes.length),
+    effectif: fourchetteEffectif(membresView, periode),
+    remaniements: Math.max(vaguesDeNomination(membresView).length - 1, 0),
+    majorite: majoriteDuGouvernement(groupesDuManifest, periode),
+    majoriteCollectee: Boolean(groupesDuManifest.length),
     textesCouverture: {
       statut: couvertureStatut,
       borne: GOVERNMENT_TEXTS_COVERAGE_START,

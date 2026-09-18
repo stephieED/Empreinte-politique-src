@@ -515,6 +515,11 @@ export async function getGovernmentsList() {
     id: g.id,
     title: g.nom,
     kicker: g.actif ? 'En fonction' : `Jusqu'en ${g.fin ? new Date(g.fin).getFullYear() : '?'}`,
+    // La frise de « En bref » situe le gouvernement parmi les autres : elle a
+    // besoin des bornes, que le manifest porte déjà (#330).
+    debut: g.debut,
+    fin: g.fin,
+    actif: g.actif,
   }));
 }
 
@@ -524,5 +529,7 @@ export async function getGovernmentProfile(id) {
   if (!entry) return null;
   const gouvernement = await fetchJson(`/data/gouvernements/${entry.fichier}`);
   if (!gouvernement) return null;
-  return buildGovernmentView(gouvernement);
+  // Les groupes du manifest, pas leurs fiches : seules la position déclarée et
+  // les bornes servent ici (#330).
+  return buildGovernmentView(gouvernement, manifest.groupes || []);
 }

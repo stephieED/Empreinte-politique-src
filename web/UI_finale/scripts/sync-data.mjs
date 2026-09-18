@@ -305,6 +305,12 @@ for (const file of groupeFiles) {
     chambre: groupe.chambre,
     legislature: groupe.legislature,
     rosterTotal: groupe.meta?.couverture_roster?.roster_total ?? null,
+    // #330 : la fiche de gouvernement nomme le groupe que l'Assemblée DÉCLARE
+    // majoritaire pendant sa période. La position et les bornes suffisent — la
+    // fiche complète du groupe pèse jusqu'à 500 Ko et n'est pas téléchargée.
+    position: groupe.position_politique?.position ?? null,
+    debut: groupe.periode?.debut ?? null,
+    fin: groupe.periode?.fin ?? null,
   });
   // Rattache chaque candidat au groupe réel dont il est membre (membre_id ->
   // slug), pour permettre le filtrage "Candidats" par "Groupes" côté UI sans
