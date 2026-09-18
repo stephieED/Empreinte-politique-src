@@ -1,113 +1,125 @@
-import { Outlet, useLocation } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
+import { Outlet, useLocation, useSearchParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import EnTeteSite from './EnTeteSite';
 import GroupsBar from './GroupsBar';
 import GovernmentsBar from './GovernmentsBar';
 import CandidatesBar from './CandidatesBar';
 import SommaireSections from './SommaireSections';
+import { BarreFiltre } from './Recherche';
 import { GroupFilterProvider } from '../context/GroupFilterContext';
 import '../styles/shell.css';
 import PiedDeSite from './PiedDeSite';
 import './ExplorerLayout.css';
 
-/* ── Le cadre de la page (#324, refait par #951) ──────────────────────────────
+/* ── Le cadre de la page (#324, refait par #951, puis par #1025) ──────────────
  *
- * LA RANGÉE DU LOGO RESTE COLLÉE, LES LISTES DÉFILENT. Retenu le 16/09/2026 sur
- * maquette jouable. La rangée porte le logo, les pages du site et « Changer de
- * fiche » ; les trois listes vivent dans la page, sous elle.
+ * UN SEUL ENDROIT POUR CHOISIR SA FICHE, ET C'EST LE TIROIR. Les trois listes
+ * vivaient à deux endroits : dépliées sous le bandeau à l'arrivée — 425 px, et
+ * la fiche ne commençait qu'à 577 px du haut de la page — puis rappelées dans
+ * un bouton du bandeau une fois ces listes passées au défilement. Une seule
+ * reste, celle du bandeau, et la page commence par la fiche.
  *
- * LA MISE EN PAGE NE CHANGE JAMAIS AU DÉFILEMENT, et c'est tout l'objet de la
- * refonte. L'en-tête de #324 RETIRAIT les listes de la page au-delà de 180 px :
- * la page raccourcissait de 385 px, le navigateur ramenait le défilement à 0,
- * les listes revenaient, et la boucle reprenait. Mesuré le 16/09/2026 sur la
- * fiche de Jérôme Guedj, défilement par pas de 40 px : à 200 px les listes
- * partent, 22 ms plus tard le défilement est à 0. Ici, franchir les listes ne
- * change qu'une VISIBILITÉ — celle du bouton, dont la place est réservée.
+ * LE TIROIR PREND LA PLACE DE L'ONGLET « EXPLORATEUR », il ne s'ajoute pas à
+ * lui. Sur une fiche, cet onglet était déjà la page courante et son clic
+ * renvoyait à `/candidats`, c'est-à-dire à la fiche par défaut : il déplaçait
+ * le lecteur vers une fiche que personne n'avait demandée. Il reste un lien
+ * partout où il sert encore — accueil, méthodologie, sources, FAQ.
  *
- * LA POSITION SE LIT À CHAQUE DÉFILEMENT, PAS PAR UN IntersectionObserver :
- * l'observateur ne signale qu'un franchissement, et un saut direct — une ancre,
- * un lien partagé — passe les listes sans jamais les croiser. Mesuré sur
- * maquette : à 390 px, un saut à 2 600 px laissait le bouton caché.
+ * LA RECHERCHE EST DANS LE TIROIR, EN TÊTE. « Rechercher sur cette page »
+ * (#979) vivait dans le corps de la fiche, sous le nom ; le mot, lui, vit dans
+ * l'adresse (`?mot=carburant`) et c'est la page qui le lit. Monter le champ
+ * dans le bandeau ne déplace donc qu'un champ : la mécanique du filtre n'est
+ * pas touchée.
  *
- * SOUS 720 PX, LES LISTES QUITTENT LA PAGE. Elles y faisaient 1 277 px : deux
- * écrans avant le premier mot de la fiche. Le bandeau seul reste, et « Changer
- * de fiche » les ouvre dans le panneau.
+ * LE CHAMP N'EXISTE QUE LÀ OÙ IL FILTRE. Les fiches candidat et de lignée
+ * lisent `?mot=` ; la fiche de gouvernement ne le lit pas encore, et les pages
+ * éditoriales n'ont pas de filtre du tout. Une barre qui ne filtre rien est du
+ * mobilier : le tiroir se renomme alors « Changer de fiche ».
+ *
+ * PLUS RIEN NE LIT LE DÉFILEMENT. La mise en page ne changeait déjà plus au
+ * défilement depuis #951, mais la VISIBILITÉ du bouton s'y réglait encore. Les
+ * listes ayant quitté la page, le tiroir est là dès l'arrivée : ni écouteur de
+ * défilement, ni repère, ni `IntersectionObserver` — dont #951 avait déjà
+ * montré qu'il manquait les sauts directs (une ancre, un lien partagé).
  */
+
+/** Les fiches qui lisent `?mot=`. La fiche de gouvernement les rejoindra quand
+ *  son filtre sera livré ; d'ici là, son tiroir ne porte pas de champ. */
+const FICHES_FILTRABLES = ['/candidats', '/groupes'];
+
 export default function ExplorerLayout() {
-  const [listesPassees, setListesPassees] = useState(false);
-  const [panneauOuvert, setPanneauOuvert] = useState(false);
+  const [tiroirOuvert, setTiroirOuvert] = useState(false);
   const { pathname } = useLocation();
-  const enteteRef = useRef(null);
-  const repereRef = useRef(null);
 
-  useEffect(() => {
-    let attente = false;
-    const lire = () => {
-      attente = false;
-      const entete = enteteRef.current;
-      const repere = repereRef.current;
-      if (!entete || !repere) return;
-      setListesPassees(repere.getBoundingClientRect().top <= entete.getBoundingClientRect().bottom);
-    };
-    const surDefilement = () => {
-      if (attente) return;
-      attente = true;
-      requestAnimationFrame(lire);
-    };
-    lire();
-    window.addEventListener('scroll', surDefilement, { passive: true });
-    window.addEventListener('resize', surDefilement);
-    return () => {
-      window.removeEventListener('scroll', surDefilement);
-      window.removeEventListener('resize', surDefilement);
-    };
-  }, []);
+  /* LE MOT VIT DANS L'ADRESSE (#979) : `?mot=finances` se recharge, se partage
+   * et revient avec le bouton précédent. `replace` : chaque lettre tapée n'est
+   * pas une page de l'historique. */
+  const [params, setParams] = useSearchParams();
+  const mot = params.get('mot') ?? '';
+  const changerMot = (valeur) => {
+    setParams((p) => {
+      const suivant = new URLSearchParams(p);
+      if (valeur) suivant.set('mot', valeur);
+      else suivant.delete('mot');
+      return suivant;
+    }, { replace: true });
+  };
+  const filtrable = FICHES_FILTRABLES.some((racine) => pathname.startsWith(racine));
 
-  // Remonter jusqu'aux listes referme le panneau : sinon elles seraient deux fois
-  // à l'écran. Sous 720 px les listes ne sont plus dans la page, le repère est
-  // collé à l'en-tête et cette règle ne se déclenche jamais.
+  // Changer de fiche referme le tiroir : on vient de s'en servir. Taper un mot
+  // ne change que la partie `?mot=` de l'adresse, et le laisse donc ouvert.
   useEffect(() => {
-    if (!listesPassees) setPanneauOuvert(false);
-  }, [listesPassees]);
-
-  // Changer de fiche referme le panneau : on vient de s'en servir.
-  useEffect(() => {
-    setPanneauOuvert(false);
+    setTiroirOuvert(false);
   }, [pathname]);
 
   useEffect(() => {
-    if (!panneauOuvert) return undefined;
+    if (!tiroirOuvert) return undefined;
     const surTouche = (e) => {
-      if (e.key === 'Escape') setPanneauOuvert(false);
+      if (e.key === 'Escape') setTiroirOuvert(false);
     };
     document.addEventListener('keydown', surTouche);
     return () => document.removeEventListener('keydown', surTouche);
-  }, [panneauOuvert]);
+  }, [tiroirOuvert]);
+
+  const libelleFerme = filtrable ? 'Chercher ou changer de fiche' : 'Changer de fiche';
+
+  /* Le bouton est rendu UNE SEULE FOIS, dans la barre des pages, à la place de
+     l'onglet. Sous 720 px cette barre ne porte plus que lui (NavigationSite.css)
+     et passe à droite du bouton « Menu » : un seul élément, deux mises en page,
+     jamais deux boutons pour un même geste. */
+  const outil = (
+    <button
+      type="button"
+      className="explorer-outil"
+      aria-expanded={tiroirOuvert}
+      aria-controls="explorer-tiroir"
+      onClick={() => setTiroirOuvert((v) => !v)}
+    >
+      {/* Le libellé long dit les deux gestes ; sous 720 px il ne tient pas —
+          226 px mesurés sur 390 px de large — et se réduit à « Fiches ». */}
+      <span className="explorer-outil-long">{tiroirOuvert ? 'Fermer' : libelleFerme}</span>
+      <span className="explorer-outil-court">{tiroirOuvert ? 'Fermer' : 'Fiches'}</span>
+      <svg className="explorer-outil-chevron" width="10" height="7" viewBox="0 0 10 7" aria-hidden="true">
+        <path d="M1 1.5L5 5.5L9 1.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    </button>
+  );
 
   return (
     <GroupFilterProvider>
       <div className="app-shell">
         <div className="explorer-main">
-          <EnTeteSite ref={enteteRef}>
-            <button
-              type="button"
-              className={`explorer-changer${listesPassees ? ' explorer-changer--visible' : ''}`}
-              aria-expanded={panneauOuvert}
-              aria-controls="explorer-panneau"
-              onClick={() => setPanneauOuvert((v) => !v)}
-            >
-              {/* Les deux libellés occupent la même case : le bouton garde sa
-                  largeur, et les liens à sa gauche ne bougent pas. */}
-              <span className="explorer-changer-libelle">
-                Changer de fiche
-              </span>
-              <span className="explorer-changer-libelle">
-                Masquer les listes
-              </span>
-            </button>
-            <div id="explorer-panneau" className="explorer-panneau" hidden={!panneauOuvert}>
-              {panneauOuvert && (
+          <EnTeteSite navProps={{ outilExplorateur: outil }}>
+            <div id="explorer-tiroir" className="explorer-tiroir" hidden={!tiroirOuvert}>
+              {tiroirOuvert && (
                 <>
+                  {filtrable && (
+                    <div className="explorer-tiroir-recherche">
+                      <p className="explorer-tiroir-titre">Sur cette page</p>
+                      <BarreFiltre onSaisie={changerMot} saisie={mot} />
+                    </div>
+                  )}
+                  <p className="explorer-tiroir-titre">Changer de fiche</p>
                   <CandidatesBar />
                   <GroupsBar />
                   <GovernmentsBar />
@@ -115,13 +127,6 @@ export default function ExplorerLayout() {
               )}
             </div>
           </EnTeteSite>
-
-          <div className="explorer-bars">
-            <CandidatesBar />
-            <GroupsBar />
-            <GovernmentsBar />
-          </div>
-          <div className="explorer-repere" ref={repereRef} aria-hidden="true" />
 
           <div className="explorer-corps">
             <SommaireSections />

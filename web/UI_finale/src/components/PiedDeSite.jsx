@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import Baseline from './Baseline';
 import './PiedDeSite.css';
 
 /* LE PIED DU SITE — UN SEUL, RENDU PAR LES TROIS CARCASSES (#328).
@@ -23,6 +24,11 @@ import './PiedDeSite.css';
  *
  * `rel="noopener"` partout où `target="_blank"` apparaît : un lien sortant
  * ouvert dans un onglet neuf ne doit pas garder la main sur celui-ci.
+ *
+ * IL PORTE LA BASELINE (#1026), sous la marque, et elle remplace les deux
+ * lignes qui disaient la même chose à moitié — « Données publiques agrégées.
+ * Aucun score, aucun classement. » La promesse est écrite une seule fois, dans
+ * `Baseline.jsx`, et l'accueil lit la même.
  *
  * CE QUE LE PIED NE PORTE PAS : « aucun taux de présence individuel ». La règle
  * §2 n° 3 reste publiée — méthodologie, « Ce que vous ne trouverez pas ici » et
@@ -55,11 +61,7 @@ export default function PiedDeSite() {
     <footer className="pds">
       <div className="pds-marque">
         <b>Empreinte politique</b>
-        <p>
-          Données publiques agrégées.
-          <br />
-          Aucun score, aucun classement.
-        </p>
+        <Baseline className="baseline--pied" />
       </div>
 
       <nav className="pds-colonne" aria-label="Pages du site">
