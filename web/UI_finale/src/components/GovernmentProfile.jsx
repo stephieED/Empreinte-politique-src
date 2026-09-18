@@ -20,6 +20,7 @@
  * lignes pour Philippe II, quand « remanié 10 fois » suffit).
  */
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { sankey, sankeyLinkHorizontal } from 'd3-sankey';
 import '../styles/shell.css';
 import './GovernmentProfile.css';
@@ -185,7 +186,6 @@ function EnBref({ government, chronologie }) {
       <h2 className="gvp-section-titre"><span>En bref</span></h2>
       <p className="gvp-section-critere">
         Où ce gouvernement se situe, qui l’a dirigé, et ce qu’il a fait déposer.
-        Chaque nombre dit sur quoi il est compté.
       </p>
 
       <div className="gvp-carte">
@@ -256,6 +256,12 @@ function EnBref({ government, chronologie }) {
           </Fait>
         </div>
       </div>
+      <p className="gvp-section-pied">
+        La position d’un groupe est celle que l’Assemblée déclare ; elle n’en déclare plus depuis 2024.
+      </p>
+      <p className="gvp-methodo">
+        <Link to="/methodologie#fonctions">Majorité, minorité et opposition, selon l’Assemblée →</Link>
+      </p>
     </section>
   );
 }
@@ -337,8 +343,8 @@ function QuiLeComposait({ government }) {
       </div>
       <h2 className="gvp-section-titre"><span>Qui le composait</span></h2>
       <p className="gvp-section-critere">
-        Les membres que l’Assemblée nationale recense pour ce gouvernement, avec leur portefeuille
-        et la période où ils l’ont exercé, du premier au dernier remaniement.
+        Les membres que l’Assemblée nationale recense, avec leur portefeuille et la période où ils
+        l’ont exercé.
       </p>
 
       <div className="gvp-carte">
@@ -476,12 +482,6 @@ function CeQuIlAFaitDeposer({ government }) {
         <span className="gvp-section-trait" />
       </div>
       <h2 className="gvp-section-titre"><span>Ce qu’il a fait déposer</span></h2>
-      <p className="gvp-section-critere">
-        Les projets de loi déposés pendant qu’il était en fonction, avec la matière dont ils
-        relèvent et l’étape où chacun s’est arrêté. Un projet déposé sous un gouvernement et adopté
-        sous le suivant reste compté ici, à sa date de dépôt.
-      </p>
-
       <div className="gvp-carte">
         {partielle && (
           <p className="gvp-avertissement">
@@ -499,6 +499,12 @@ function CeQuIlAFaitDeposer({ government }) {
           <FluxEtListe textes={government.textes} />
         )}
       </div>
+      <p className="gvp-section-pied">
+        Un brin est un nombre de textes, jamais une part. Le 49.3 y est un fait de procédure, sans teinte.
+      </p>
+      <p className="gvp-methodo">
+        <Link to="/methodologie#propose">Ce que la figure compte, et ce qu’elle refuse de compter →</Link>
+      </p>
     </section>
   );
 }

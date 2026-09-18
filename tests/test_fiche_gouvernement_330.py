@@ -87,7 +87,7 @@ def test_le_rattachement_se_lit_dans_le_libelle_officiel():
     assert "aupr[èe]s|apr[èe]s" in source, (
         "la faute de la source se lit, elle ne se corrige pas : sinon un ministère fantôme apparaît"
     )
-    assert r" " in source, "les espaces insécables des libellés se normalisent à l'entrée"
+    assert "\\u00a0" in source, "les espaces insécables des libellés se normalisent à l'entrée"
 
 
 def test_la_matiere_d_un_texte_est_la_commission_saisie_au_fond():
@@ -101,6 +101,31 @@ def test_le_manifest_porte_la_position_des_groupes():
     """Sans elle, la fiche téléchargerait des fiches de groupe de 500 Ko."""
     source = SYNC.read_text(encoding="utf-8")
     assert "position: groupe.position_politique?.position" in source
+
+
+def test_les_criteres_de_section_tiennent_en_une_limite():
+    """DESIGN_SYSTEM §7 règle 2 : au-delà de 22 mots, ce n'est plus une limite,
+    c'est une explication — et une explication va dans la méthodologie."""
+    source = COMPOSANT.read_text(encoding="utf-8")
+    criteres = re.findall(r'<p className="gvp-section-critere">(.*?)</p>', source, re.S)
+    assert criteres, "aucun critère de section : le sélecteur a changé"
+    trop_longs = [
+        (len(" ".join(c.split()).split()), " ".join(c.split()))
+        for c in criteres
+        if len(" ".join(c.split()).split()) > 22
+    ]
+    assert not trop_longs, f"critères qui expliquent au lieu de limiter : {trop_longs}"
+
+
+def test_chaque_section_garde_sa_limite_et_son_renvoi():
+    """La fiche garde la limite ET le renvoi ; le paragraphe part en méthodologie."""
+    source = COMPOSANT.read_text(encoding="utf-8")
+    assert source.count('className="gvp-section-pied"') >= 2
+    ancres = set(re.findall(r"/methodologie#([a-z]+)", source))
+    assert ancres, "aucun renvoi vers la méthodologie"
+    methodo = (UI / "src" / "pages" / "MethodologyPage.jsx").read_text(encoding="utf-8")
+    ids = set(re.findall(r"id: '([a-z]+)'", methodo))
+    assert ancres <= ids, f"renvois vers des ancres inexistantes : {ancres - ids}"
 
 
 def test_la_decision_existe_et_porte_sa_date():

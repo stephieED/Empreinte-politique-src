@@ -31,7 +31,7 @@ export const COMMISSIONS_SPECIALES = 'Commissions spéciales';
 export const JOURS_MEME_VAGUE = 8;
 
 function normaliser(texte) {
-  return String(texte || '').replace(/ /g, ' ');
+  return String(texte || '').replace(/\u00a0/g, ' ');
 }
 
 /** Le ministère auquel un portefeuille est rattaché, tel que son libellé le
@@ -59,7 +59,7 @@ export function motsClesPortefeuille(portefeuille) {
   let t = normaliser(portefeuille)
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .replace(/[’']/g, ' ')
     .replace(/[^a-z ]/g, ' ');
   let avant;

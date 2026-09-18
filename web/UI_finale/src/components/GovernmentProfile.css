@@ -110,6 +110,32 @@
   margin-top: 14px;
 }
 
+/* Pied de section et renvoi en méthodologie : mêmes valeurs que
+   `.lp-section-pied` / `.lp-methodo` sur la fiche de lignée — une fiche ne
+   parle pas d'une autre voix que sa voisine. */
+.gvp-section-pied {
+  margin-top: 14px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--texte-2);
+  max-width: 100ch;
+}
+
+.gvp-methodo {
+  margin-top: 8px;
+  font-size: 12.5px;
+}
+
+.gvp-methodo a {
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 3px;
+}
+
+.gvp-methodo a:hover { text-decoration-color: currentcolor; }
+
 .gvp-vide {
   font-size: 13.5px;
   color: var(--texte-2);
