@@ -52,6 +52,13 @@ import {
 } from './metadonnees-pages.mjs';
 import { avecBloc, blocCandidat, blocGouvernement, blocLignee } from './bloc-sans-js.mjs';
 import { robots, sitemap } from './sitemap-et-robots.mjs';
+import {
+  baliseJsonld,
+  jsonldAccueil,
+  jsonldCandidat,
+  jsonldGouvernement,
+  jsonldLignee,
+} from './donnees-structurees.mjs';
 
 const racineUI = dirname(dirname(fileURLToPath(import.meta.url)));
 const dist = join(racineUI, 'dist');
@@ -127,6 +134,8 @@ if (cles !== [...PAGES_FIXES].sort().join(', ')) echouer(`les pages fixes n'ont 
  * JavaScript (#969). Une erreur de texte arrête le build. */
 const metas = new Map();
 const blocs = new Map();
+/* Adresse → balisage Schema.org (#1008). */
+const jsonld = new Map();
 /* Adresse → date de la donnée, pour le `lastmod` du sitemap. */
 const datesDesDonnees = new Map();
 const dateDuBuild = new Date().toISOString().slice(0, 10);
@@ -137,6 +146,7 @@ try {
     metas.set(`candidats/${c.slug}`, metaCandidat(c, profil));
     blocs.set(`candidats/${c.slug}`, blocCandidat(c, profil, dateDuBuild));
     datesDesDonnees.set(`candidats/${c.slug}`, profil.meta?.genere_le || null);
+    jsonld.set(`candidats/${c.slug}`, jsonldCandidat(c, profil, `https://${domaine}/candidats/${c.slug}`));
   }
   /* La période n'est pas au manifeste : elle se lit dans la vue de lignée. */
   for (const l of manifeste.lignees || []) {
@@ -144,24 +154,34 @@ try {
     metas.set(`groupes/${l.id}`, metaLignee(vue));
     blocs.set(`groupes/${l.id}`, blocLignee(vue, dateDuBuild));
     datesDesDonnees.set(`groupes/${l.id}`, vue.genereLe || null);
+    jsonld.set(`groupes/${l.id}`, jsonldLignee(vue, `https://${domaine}/groupes/${l.id}`));
   }
   for (const g of manifeste.gouvernements || []) {
     metas.set(`gouvernements/${g.id}`, metaGouvernement(g));
     const profil = JSON.parse(readFileSync(join(dist, 'data', 'gouvernements', g.fichier), 'utf-8'));
     blocs.set(`gouvernements/${g.id}`, blocGouvernement(profil, dateDuBuild));
     datesDesDonnees.set(`gouvernements/${g.id}`, profil.meta?.genere_le || null);
+    jsonld.set(`gouvernements/${g.id}`, jsonldGouvernement(profil, `https://${domaine}/gouvernements/${g.id}`));
   }
 } catch (erreur) {
   echouer(`texte d'une page impossible à écrire — ${erreur.message}`);
 }
 
+/* Le balisage vit dans le `<head>`, où les robots le lisent sans rendre la page. */
+function avecJsonld(page, objet) {
+  return page.replace('</head>', `  ${baliseJsonld(objet)}\n  </head>`);
+}
+
 /* L'accueil garde son texte (celui d'`index.html`) et reçoit sa canonical ici,
  * APRÈS la copie vers `404.html` : une page introuvable ne désigne pas l'accueil. */
-writeFileSync(join(dist, 'index.html'), gabarit.replace('</head>', `  <link rel="canonical" href="https://${domaine}/" />\n  </head>`));
+const accueil = gabarit.replace('</head>', `  <link rel="canonical" href="https://${domaine}/" />\n  </head>`);
+const descriptionDuSite = (gabarit.match(/<meta name="description" content="([^"]*)"/) || [])[1] || '';
+writeFileSync(join(dist, 'index.html'), avecJsonld(accueil, jsonldAccueil(domaine, descriptionDuSite)));
 
 for (const chemin of publiees) {
   try {
-    const page = appliquerMeta(gabarit, { ...metas.get(chemin), url: `https://${domaine}/${chemin}` });
+    let page = appliquerMeta(gabarit, { ...metas.get(chemin), url: `https://${domaine}/${chemin}` });
+    if (jsonld.has(chemin)) page = avecJsonld(page, jsonld.get(chemin));
     ecrire(chemin, blocs.has(chemin) ? avecBloc(page, blocs.get(chemin)) : page);
   } catch (erreur) {
     echouer(`${chemin} : ${erreur.message}`);
@@ -183,5 +203,6 @@ console.log(
   + `${pages.groupes.length} fiches de lignée, ${pages.gouvernements.length} fiches de gouvernement ; `
   + `${Object.keys(redirections).length} adresses de redirection, canonical vers leur arrivée ; `
   + `${blocs.size} fiches portent leurs faits en clair, lisibles sans JavaScript ; `
-  + `sitemap.xml en liste ${entrees.length}, robots.txt le désigne.`,
+  + `sitemap.xml en liste ${entrees.length}, robots.txt le désigne ; `
+  + `${jsonld.size + 1} pages portent leur balisage Schema.org.`,
 );

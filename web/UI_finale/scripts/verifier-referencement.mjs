@@ -44,6 +44,10 @@ for (const url of adresses) {
     titre: entre(html, /<title>([^<]*)<\/title>/),
     canonical: entre(html, /rel="canonical" href="([^"]*)"/),
     texte: sansBalises(html).length,
+    /* #1008 : le balisage doit être présent ET analysable — un JSON cassé ne
+     * se voit pas à l'œil, et aucune machine ne le lit. */
+    jsonld: [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+      .map((m) => { try { return JSON.parse(m[1])['@type']; } catch { return 'ILLISIBLE'; } }),
   });
 }
 
@@ -57,12 +61,17 @@ const defauts = [
   ...lignes.filter((l) => l.statut === 200 && !l.canonical).map((l) => `${l.url} : aucune canonical`),
   ...[...titres].filter(([titre, n]) => titre && n > 1).map(([titre, n]) => `${n} pages portent le titre « ${titre} »`),
   ...fiches.filter((l) => l.texte < 100).map((l) => `${l.url} : ${l.texte} caractères lisibles sans JavaScript`),
+  ...fiches.filter((l) => l.statut === 200 && l.jsonld.length === 0).map((l) => `${l.url} : aucun balisage Schema.org`),
+  ...lignes.filter((l) => l.jsonld.includes('ILLISIBLE')).map((l) => `${l.url} : balisage Schema.org illisible`),
   ...(robotsTxt === null ? [`${base}/robots.txt : absent`] : []),
   ...(robotsTxt && !robotsTxt.includes('/sitemap.xml') ? [`${base}/robots.txt ne désigne pas le sitemap`] : []),
 ];
 
 for (const l of lignes) {
-  console.log(`${l.statut} ${String(l.texte).padStart(6)} car.  ${l.url}\n         ${l.titre ?? '— aucun titre —'}`);
+  console.log(
+    `${l.statut} ${String(l.texte).padStart(6)} car.  ${l.jsonld.join(',') || '—'}  ${l.url}`
+    + `\n         ${l.titre ?? '— aucun titre —'}`,
+  );
 }
 console.log(
   `\n${lignes.length} adresses du sitemap, dont ${fiches.length} fiches ; `
