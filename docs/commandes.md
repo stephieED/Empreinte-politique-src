@@ -912,8 +912,10 @@ node web/UI_finale/scripts/verifier-referencement.mjs
 ```
 
 Parcourt le `sitemap.xml` du site **en ligne** et relève, adresse par adresse :
-statut HTTP, `<title>`, `canonical`, et longueur du texte lisible **sans
-JavaScript**. Sort en échec si une adresse ne répond pas 200, si un titre
+statut HTTP, `<title>`, `canonical`, longueur du texte lisible **sans
+JavaScript**, et types du balisage Schema.org — validés contre le vocabulaire
+publié par schema.org, que `--sans-vocabulaire` permet de ne pas télécharger
+(#1008). Sort en échec si une adresse ne répond pas 200, si un titre
 manque, si deux pages partagent le même titre, ou si une fiche a perdu son texte
 en clair (#969). Une autre base s'ajoute en argument — un build local servi
 comme GitHub Pages, jamais `vite preview`, qui ne reproduit pas son 404.
