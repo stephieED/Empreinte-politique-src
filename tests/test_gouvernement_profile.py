@@ -394,8 +394,11 @@ def test_build_profile_aucun_taux_calcule_dans_comptages():
     # écrit « 2 des 21 membres recensés », jamais « 10 % de couverture ».
     # #996 lot 4 : et son numérateur est `membres_distincts`, PAS `len(membres)`
     # — celui-ci compte les périodes. Deux entiers, toujours aucun taux.
+    # #1020 — `membres_avec_interventions` est le troisième entier, dénominateur
+    # de `tags_thematiques_agreges`. Toujours aucun taux.
     assert set(profil["comptages"].keys()) == {
-        "par_statut", "membres_recenses", "membres_distincts"}
+        "par_statut", "membres_recenses", "membres_distincts",
+        "membres_avec_interventions"}
     assert profil["comptages"]["membres_recenses"] is None  # non fourni ici
     assert profil["comptages"]["membres_distincts"] == 1
 

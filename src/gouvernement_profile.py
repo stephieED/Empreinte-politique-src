@@ -91,6 +91,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from licences import appliquer_licence_donnees
+from schema_pivot import deriver_tags_thematiques
 from schema_gouvernement import (
     KNOWN_CHAMBRES_DEPOT_TEXTE,
     KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL,
@@ -346,6 +347,141 @@ def _select_textes_gouvernement(
 
 
 # ---------------------------------------------------------------------------
+# Sur quoi les membres ont pris la parole (#1020)
+# ---------------------------------------------------------------------------
+#
+# Même logique que la fiche de groupe (`group_profile.aggregate_tags_thematiques`),
+# à UNE différence près, et elle est mesurée.
+#
+# **Le groupe filtre par LÉGISLATURE, lue dans l'identifiant de l'intervention
+# et jamais déduite d'une date (#403). Un gouvernement ne peut pas.** Sa période
+# n'est pas une législature : Borne court du 17/05/2022 au 09/01/2024, à cheval
+# sur la XVe et la XVIe. Retenir ses deux législatures garderait 68 524 des
+# 97 898 interventions de ses membres — sept ans de parole attribués à un
+# gouvernement qui a duré vingt mois.
+#
+# Le filtre est donc la période, sur la date publiée de l'intervention. Ce n'est
+# pas une entorse à #403, qui interdit de DÉDUIRE une législature d'une date :
+# ici rien n'est déduit, un fait daté est retenu dans une période que le
+# référentiel déclare. La source porte la date à 99,99 % — 97 893 des 97 898.
+#
+# **Et la période retenue est celle DU MEMBRE, pas celle du gouvernement.** Une
+# personne n'y siège souvent qu'un moment, et l'écart n'est pas de bord :
+#
+#     Borne        25 704 → 15 750 entrées   (−39 %)
+#     Philippe II  40 719 → 25 264 entrées   (−38 %)
+#
+# Le cas qui le rend évident : **Yaël Braun-Pivet, 8 968 → 0**. Ministre trois
+# jours (24 → 27 juin 2022), puis présidente de l'Assemblée. Ses 8 968
+# interventions dans la fenêtre Borne sont celles d'une présidente de séance.
+# François de Rugy, 11 310 → 1 058, pour la même raison. Sans ce filtre, « la
+# parole du gouvernement » serait dominée par deux personnes qui parlaient EN
+# FACE du banc.
+# → `docs/decisions/agregat-parole-gouvernement-1020.md`
+
+
+def fenetres_des_membres(
+    membres: list[dict[str, Any]],
+    periode_debut: Optional[str],
+    periode_fin: Optional[str],
+) -> dict[str, list[tuple[str, str]]]:
+    """`{membre_id: [(début, fin), …]}` — le passage réel de chaque personne.
+
+    Une personne peut avoir PLUSIEURS entrées dans `membres[]` : une par
+    période de portefeuille (#398). L'union de ses entrées décrit son passage,
+    et c'est elle qui fait fenêtre — pas la première trouvée.
+
+    Une borne absente sur l'entrée retombe sur celle du gouvernement : `fin`
+    nulle veut dire « toujours en fonction » et non « fin inconnue », et le
+    gouvernement, lui, porte toujours sa période. Un gouvernement en cours a
+    une `periode_fin` nulle : la fenêtre reste alors ouverte, ce qui est le
+    fait (§2 règle 5, jamais la date du jour).
+    """
+    fin_gouv = periode_fin or "9999-12-31"
+    fenetres: dict[str, list[tuple[str, str]]] = {}
+    for membre in membres:
+        membre_id = membre.get("membre_id")
+        if not membre_id:
+            continue
+        debut = membre.get("debut") or periode_debut
+        if not debut:
+            # Sans borne basse ni sur l'entrée ni sur le gouvernement, la
+            # fenêtre n'est pas définissable. On ne la remplace pas par une
+            # borne ouverte, qui retiendrait toute la carrière.
+            continue
+        fenetres.setdefault(membre_id, []).append((debut[:10], (membre.get("fin") or fin_gouv)[:10]))
+    return fenetres
+
+
+def agreger_tags_thematiques(
+    profils_par_id: dict[str, dict[str, Any]],
+    fenetres: dict[str, list[tuple[str, str]]],
+) -> tuple[list[dict[str, Any]], int, int, int]:
+    """`(tags_agreges, membres_porteurs, hors_fenetre, sans_date)`.
+
+    Une étiquette compte **une fois par membre**, comme sur la fiche de groupe :
+    l'agrégat dit combien de personnes ont parlé d'un sujet, jamais combien de
+    fois elles en ont parlé — un compte d'occurrences serait un indice
+    d'activité (§2 règle 1).
+
+    **Aucun ratio n'est publié.** `nb_membres_porteurs` est rendu seul, et son
+    dénominateur est `comptages.membres_avec_interventions`, publié à côté.
+    C'est l'arbitrage que `mandats_agreges` a déjà rendu sur la fiche de
+    groupe : « il est publié plutôt que pré-divisé, pour que le lecteur voie
+    "5 / 76" et non un pourcentage seul (§2.7) ». `tags_thematiques_agreges`
+    du groupe porte encore un `poids_relatif` et n'a pas suivi ; le nouvel
+    agrégat ne reproduit pas ce retard.
+
+    **Une intervention sans date est écartée, et comptée.** C'est la seconde
+    divergence d'avec le groupe, qui retient ses entrées sans législature
+    plutôt que de les exclure. La raison n'est pas la même de part et d'autre :
+    une législature dure cinq ans et une entrée non datée y tombe
+    probablement ; un gouvernement dure quelques mois, et rien ne permet de
+    l'y placer. Mesuré sur Borne : **5 entrées sur 97 898**, soit un choix sans
+    conséquence de volume — mais qui, pris dans l'autre sens, affirmerait sans
+    source (§2 règle 5).
+    """
+    tag_counts: dict[str, int] = {}
+    membres_porteurs = 0
+    hors_fenetre = 0
+    sans_date = 0
+
+    for membre_id, fenetres_membre in sorted(fenetres.items()):
+        profil = profils_par_id.get(membre_id)
+        if profil is None:
+            continue
+        retenues: list[dict[str, Any]] = []
+        for interv in (profil.get("interventions") or []):
+            if not isinstance(interv, dict):
+                continue
+            jour = (interv.get("date") or "")[:10]
+            if not jour:
+                sans_date += 1
+                continue
+            if not any(debut <= jour <= fin for debut, fin in fenetres_membre):
+                hors_fenetre += 1
+                continue
+            retenues.append(interv)
+        if not retenues:
+            continue
+        membres_porteurs += 1
+        # `deriver_tags_thematiques` est la fabrique UNIQUE des étiquettes
+        # (#710) : la rappeler sur les interventions retenues donne exactement
+        # ce que `tags_thematiques` porterait si le profil n'avait que
+        # celles-là. Rien n'est dupliqué, et le repli `theme_officiel` puis
+        # `mots_cles` est dedans.
+        for tag in set(deriver_tags_thematiques(retenues)):
+            if tag:
+                tag_counts[tag] = tag_counts.get(tag, 0) + 1
+
+    agreges = sorted(
+        ({"tag": tag, "nb_membres_porteurs": n} for tag, n in tag_counts.items()),
+        key=lambda x: (-x["nb_membres_porteurs"], x["tag"]),
+    )
+    return agreges, membres_porteurs, hors_fenetre, sans_date
+
+
+# ---------------------------------------------------------------------------
 # Fonction principale d'agrégation
 # ---------------------------------------------------------------------------
 
@@ -460,6 +596,30 @@ def build_gouvernement_profile(
     profil_gouvernement["comptages"]["membres_distincts"] = len(
         {m.get("membre_id") for m in membres if m.get("membre_id")}
     )
+
+    # #1020 — sur quoi les membres ont pris la parole, PENDANT leur passage.
+    fenetres = fenetres_des_membres(membres, periode_debut, periode_fin)
+    tags_agreges, membres_porteurs, hors_fenetre, sans_date = agreger_tags_thematiques(
+        {p.get("id"): p for p in profils if p.get("id")}, fenetres)
+    profil_gouvernement["tags_thematiques_agreges"] = tags_agreges
+    # Le dénominateur de `nb_membres_porteurs`, publié plutôt que pré-divisé
+    # (§2.7). Il rend la couverture LISIBLE : tant que les membres n'ont pas
+    # tous leurs interventions collectées, il est plus petit que
+    # `membres_distincts`, et l'écart se voit au lieu d'être dilué dans un
+    # pourcentage.
+    profil_gouvernement["comptages"]["membres_avec_interventions"] = membres_porteurs
+    if hors_fenetre:
+        warnings.append(
+            f"gouvernement_profile: tags_thematiques_agreges — {hors_fenetre} "
+            "intervention(s) écartée(s) : hors de la fenêtre de passage du membre "
+            "dans ce gouvernement."
+        )
+    if sans_date:
+        warnings.append(
+            f"gouvernement_profile: tags_thematiques_agreges — {sans_date} "
+            "intervention(s) écartée(s) : sans date, donc non plaçable dans la "
+            "période (AGENTS.md §2 règle 5)."
+        )
     profil_gouvernement["sources"] = sources
     # `licence_donnees` : dérivée de `sources[]` quand l'appelant n'impose rien
     # (#530, lot 6). Le pipeline ne passe pas `--licence`, et les 10 fiches

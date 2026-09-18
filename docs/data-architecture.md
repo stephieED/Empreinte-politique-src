@@ -765,6 +765,25 @@ personne, ce que la période ne peut pas faire pour deux gouvernements qui se
 touchent d'un jour. Sans roster, le repli par libellé s'applique et les fiches
 sont produites quand même.
 
+**Sur quoi les membres ont pris la parole** (#1020) : `tags_thematiques_agreges`
+porte une entrée par étiquette — `tag` et `nb_membres_porteurs`, **sans ratio**,
+son dénominateur étant `comptages.membres_avec_interventions` publié à côté
+(§2.7). Même fabrique d'étiquettes que la fiche de groupe
+(`deriver_tags_thematiques`, #710), et une étiquette compte **une fois par
+membre** : l'agrégat dit combien de personnes ont parlé d'un sujet, jamais
+combien de fois (§2 règle 1).
+
+Le filtre, lui, diffère du groupe : celui-ci retient par **législature** lue
+dans l'identifiant (#403), un gouvernement retient par la **fenêtre de passage
+de chaque membre**, sur la date publiée. Une période de gouvernement n'est pas
+une législature, et une personne n'y siège souvent qu'un moment — mesuré sur
+Borne, ce filtre retire 39 % des entrées, dont les 8 968 de Yaël Braun-Pivet,
+ministre trois jours puis présidente de l'Assemblée. Une intervention **sans
+date est écartée et comptée**, là où le groupe retient ses entrées sans
+législature : un gouvernement dure quelques mois, rien ne permet d'y placer une
+entrée non datée (§2 règle 5).
+→ [`docs/decisions/agregat-parole-gouvernement-1020.md`](./decisions/agregat-parole-gouvernement-1020.md)
+
 **Deux comptages, deux populations.** `comptages.membres_recenses` (lot 2)
 compte les **personnes** que l'AN recense, qu'elles aient un profil ou non ;
 `comptages.membres_distincts` (lot 4) compte les personnes que `membres[]`

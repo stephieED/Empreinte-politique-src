@@ -100,6 +100,25 @@ Format d'un profil de gouvernement v1 :
         }
     ],
 
+    # #1020 — SUR QUOI LES MEMBRES ONT PRIS LA PAROLE, pendant leur passage.
+    #
+    # Une étiquette compte UNE FOIS PAR MEMBRE : l'agrégat dit combien de
+    # personnes ont parlé d'un sujet, jamais combien de fois — un compte
+    # d'occurrences serait un indice d'activité (§2 règle 1). Et il ne porte
+    # AUCUN ratio : son dénominateur est `comptages.membres_avec_interventions`,
+    # publié à côté plutôt que pré-divisé (§2.7).
+    #
+    # Les étiquettes sont celles de `tags_thematiques` du pivot — les intitulés
+    # des points de séance (`theme_officiel`), donc des aides à la lecture et
+    # jamais des positions déclarées (§2 règle 8).
+    #
+    # Le filtre est la fenêtre de passage DU MEMBRE, pas la période du
+    # gouvernement : voir `gouvernement_profile.agreger_tags_thematiques`, et
+    # ce qu'il retire (Yaël Braun-Pivet, 8 968 entrées → 0).
+    "tags_thematiques_agreges": [
+        {"tag": "projet de loi de finances pour 2026", "nb_membres_porteurs": 12},
+    ],
+
     "comptages": {                           # entiers bruts uniquement — aucun taux, pourcentage
                                               # ou classement (règle AGENTS.md §2.1)
         # #996 : combien de PERSONNES l'AN recense dans ce gouvernement,
@@ -120,6 +139,14 @@ Format d'un profil de gouvernement v1 :
         # est `membres_distincts` / `membres_recenses` — et il reste deux
         # entiers, jamais un taux (§2 règle 7, et le commentaire ci-dessus).
         "membres_distincts": 19,
+        # #1020 : combien de membres portent au moins une intervention DANS
+        # leur fenêtre de passage. C'est le dénominateur de
+        # `tags_thematiques_agreges[].nb_membres_porteurs`, publié plutôt que
+        # pré-divisé (§2.7) — et il rend la couverture lisible : tant que tous
+        # les membres n'ont pas leurs interventions collectées, il est plus
+        # petit que `membres_distincts`, et l'écart se VOIT au lieu d'être
+        # dilué dans un pourcentage.
+        "membres_avec_interventions": 12,
         "par_statut": {
             "depose": 0,
             "navette_en_cours": 0,
@@ -345,9 +372,11 @@ def make_empty_profil_gouvernement(gouvernement_id: str, nom: str) -> dict[str, 
         },
         "membres": [],
         "textes": [],
+        "tags_thematiques_agreges": [],
         "comptages": {
             "membres_recenses": None,
             "membres_distincts": 0,
+            "membres_avec_interventions": 0,
             "par_statut": make_empty_comptages_statuts(),
         },
         "sources": [],

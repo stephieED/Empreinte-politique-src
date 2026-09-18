@@ -61,6 +61,9 @@ def test_make_empty_comptages_defaults():
     assert g["comptages"] == {
         "membres_recenses": None,
         "membres_distincts": 0,
+        # #1020 — naît à 0 comme `membres_distincts`, et pour la même raison :
+        # une fiche vide porte zéro membre parlant, ce n'est pas une inconnue.
+        "membres_avec_interventions": 0,
         "par_statut": make_empty_comptages_statuts(),
     }
     for statut in KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL:
