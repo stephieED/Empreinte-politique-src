@@ -499,8 +499,11 @@ function CeQuIlAFaitDeposer({ government }) {
           <FluxEtListe textes={government.textes} />
         )}
       </div>
+      {/* Ce qui reste n'explique pas la figure — l'épaisseur d'un ruban se lit
+          sans qu'on l'écrive : c'est le 49.3 qu'aucune forme ne peut porter
+          seule, et que §2 règle 4 veut nommé à côté. */}
       <p className="gvp-section-pied">
-        Un brin est un nombre de textes, jamais une part. Le 49.3 y est un fait de procédure, sans teinte.
+        Le 49.3 est un fait de procédure, jamais une position de vote.
       </p>
       <p className="gvp-methodo">
         <Link to="/methodologie#propose">Ce que la figure compte, et ce qu’elle refuse de compter →</Link>
