@@ -185,10 +185,6 @@ function EnBref({ government, chronologie }) {
         <span className="gvp-section-trait" />
       </div>
       <h2 className="gvp-section-titre"><span>En bref</span></h2>
-      <p className="gvp-section-critere">
-        Où ce gouvernement se situe, qui l’a dirigé, et ce qu’il a fait déposer.
-      </p>
-
       <div className="gvp-carte">
         {chronologie.length > 1 && (
           <FriseDesGouvernements chronologie={chronologie} courantId={government.id} />
@@ -621,8 +617,6 @@ function CeQuOnNaPasPuLire({ government }) {
         <span className="gvp-section-trait" />
       </div>
       <h2 className="gvp-section-titre"><span>Ce qu’on n’a pas pu lire</span></h2>
-      <p className="gvp-section-critere">Les limites propres à cette fiche, et leur cause.</p>
-
       <div className="gvp-carte">
         <dl className="gvp-limites">
           {lignes.map((l) => (
