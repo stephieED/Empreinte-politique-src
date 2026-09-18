@@ -856,7 +856,11 @@ def test_collect_acteur_roles_rapporteur_unique_et_dates():
     }
     acteur_roles, stade, date_min, date_max = _collect_acteur_roles(dossier)
     assert acteur_roles == {"PA1": ("rapporteur", "rapporteur_fond")}
-    assert stade == "examine_commission"
+    # #997, option B — la NOMINATION d'un rapporteur dit que la commission
+    # s'organise, pas qu'elle a examiné : elle ne donne donc plus de stade.
+    # C'était l'option A, écartée. Le sujet de ce test est le rôle collecté,
+    # que la nomination établit bien, et qui est inchangé.
+    assert stade is None
     assert date_min == date_max == "2024-01-10"
 
 

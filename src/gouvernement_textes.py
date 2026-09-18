@@ -317,6 +317,108 @@ def _est_decision_de_seance(code_acte: str) -> bool:
     return "-DEBATS-" in code_acte and code_acte.endswith("-DEC")
 
 
+# ── Ce qui atteste un EXAMEN en commission, et ce qui n'est qu'un dépôt (#997)
+#
+# `_determine_statut` et `candidate_profile._stade_from_code_acte` posaient
+# chacun la même question — « ce dossier a-t-il dépassé le dépôt ? » — et y
+# répondaient tous deux par « il existe un acte qui n'est pas un dépôt », donc
+# par oui, toujours. Deux conséquences mesurées le 18/09/2026 sur les archives
+# XV à XVII (10 764 dossiers) :
+#
+#   - `"depose"` était INATTEIGNABLE : un texte seulement déposé sortait
+#     `navette_en_cours` (279 des 728 dossiers d'origine gouvernementale) ;
+#   - **6 808 dossiers étaient qualifiés `examine_commission` sans avoir été
+#     examinés**, dont 5 219 entrées de `textes_portes[]` publiées.
+#
+# La cause est dans la nomenclature de la source : la saisine de la commission
+# est AUTOMATIQUE au dépôt, et elle porte un code contenant `COM`. Relevé sur
+# les trois archives, un dossier déposé et rien de plus porte :
+#
+#     AN1                       (l'étape de lecture, sans date)
+#     AN1-DEPOT                 2024-01-25
+#     AN1-COM                   (conteneur, sans date)
+#     AN1-COM-FOND              (conteneur, sans date)
+#     AN1-COM-FOND-SAISIE       2024-01-25   ← même jour que le dépôt
+#
+# Vérifié à la main sur `DLR5L16N49329`, `DLR5L16N49108`, `DLR5L16N48166`
+# (propositions de loi de Marine Le Pen) : 14 nœuds d'actes, aucun autre code.
+#
+# Les codes qui attestent un examen RÉEL, et leur effectif sur les trois
+# archives : `-COM-FOND-REUNION` (3 672 AN + les variantes SN/ANLUNI/ANNLEC),
+# `-COM-FOND-RAPPORT` (1 095 AN, 997 SN), `-COM-AVIS-REUNION` (703),
+# `-COM-AVIS-RAPPORT` (129), `CMP-COM-RAPPORT-{AN,SN}` (285 + 281).
+#
+# ARBITRÉ LE 18/09/2026, option B : c'est la **réunion de commission ou le
+# dépôt du rapport** qui fait passer un texte de « déposé » à « examiné ».
+# Écartées : la nomination d'un rapporteur (`-NOMIN`, 1 133 AN + 1 003 SN),
+# qui dit que la commission s'organise et non qu'elle a examiné ; la discussion
+# en séance (`-DEBATS`), qui ferait redescendre à « déposé » les textes
+# réellement examinés en commission mais jamais venus en séance.
+#
+# `-AVIS` est retenu à côté de `-FOND` : une commission saisie pour avis qui se
+# réunit a examiné le texte. L'arbitrage porte sur l'acte, pas sur la
+# commission qui le pose.
+#
+# **Ce que cette règle NE fait pas** : elle ne retire rien du corpus. Un texte
+# seulement déposé est collecté et publié comme avant, sous `stade_procedural:
+# "depose"` — 1 355 entrées le portaient déjà au 18/09/2026. Elle corrige une
+# ÉTIQUETTE. Ce que l'interface montre en deçà du seuil d'AGENTS.md §6 est une
+# règle d'affichage, et elle vit dans `web/UI_finale`.
+# → `docs/decisions/examen-en-commission-997.md`
+_MARQUEURS_EXAMEN_COMMISSION: tuple[str, ...] = ("REUNION", "RAPPORT")
+
+#: Les codes SANS tiret sont des conteneurs : l'étape de lecture (`AN1`, `SN1`,
+#: `ANLUNI`, `AN20`, `CMP`, `CC`, `ANLDEF`…) ou la phase (`PROM`), qui portent
+#: les actes datés de cette étape. Mesuré le 18/09/2026 sur les archives XV à
+#: XVII : **sur les 17 codes sans tiret, 16 ne portent JAMAIS de date** — 6 418
+#: `AN1`, 603 `PROM`, 284 `CMP`, aucune date. Un conteneur existe dès le dépôt,
+#: donc il n'atteste rien.
+#:
+#: `MOTION` est le seul qui en porte une (8 occurrences, 8 datées) : c'est un
+#: acte réel, pas un conteneur. Il est nommé ici plutôt que déduit, et la limite
+#: est dite : un code nu et daté qu'une archive future ajouterait serait compté
+#: comme conteneur jusqu'à ce qu'il soit ajouté ici. Le relevé se refait avec
+#: `scripts/` ou la mesure de la décision — c'est déclaré, pas présumé.
+_CODES_NUS_DATES: frozenset[str] = frozenset({"MOTION"})
+
+
+def est_examen_en_commission(code_acte: str) -> bool:
+    """Vrai si ce `codeActe` atteste un examen en commission (#997, option B).
+
+    Un code de commission qui n'est ni une réunion ni un rapport — la saisine
+    automatique du dépôt, la nomination d'un rapporteur, les conteneurs `-COM`
+    et `-COM-FOND` sans date — rend `False` : il dit que le texte a été
+    *renvoyé*, pas qu'il a été *examiné*.
+    """
+    return "COM" in code_acte and any(
+        marqueur in code_acte for marqueur in _MARQUEURS_EXAMEN_COMMISSION
+    )
+
+
+def est_acte_au_dela_du_depot(code_acte: str) -> bool:
+    """Vrai si ce `codeActe` atteste que le dossier a dépassé le simple dépôt.
+
+    C'est la question de `_determine_statut` : sans décision de séance, un
+    dossier est `navette_en_cours` s'il a bougé, `depose` sinon.
+
+    Trois familles rendent `False`, et chacune pour la même raison — elles
+    existent dès le dépôt et n'attestent aucune étape franchie :
+
+    1. le dépôt lui-même (`-DEPOT`) ;
+    2. l'étape de lecture nue (`AN1`, `SN1`, `CMP`, `ANLUNI`…), un conteneur
+       sans date qui porte les actes de cette lecture ;
+    3. un acte de commission qui n'est pas un examen (`est_examen_en_commission`).
+    """
+    if code_acte.endswith("-DEPOT"):
+        return False
+    if "COM" in code_acte:
+        return est_examen_en_commission(code_acte)
+    if "-" in code_acte:
+        return True
+    return code_acte in _CODES_NUS_DATES
+
+
+
 assert set(statut for statut, _ in _FAM_CODE_STATUT_MAP.values()) <= KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL
 
 
@@ -730,7 +832,10 @@ def _determine_statut(
         date_acte = acte.get("dateActe")
         if not isinstance(code_acte, str):
             continue
-        if not code_acte.endswith("-DEPOT"):
+        # #997 — `not endswith("-DEPOT")` passait à True sur la saisine de
+        # commission, automatique au dépôt, et sur les conteneurs d'étape :
+        # `"depose"` était donc inatteignable.
+        if est_acte_au_dela_du_depot(code_acte):
             a_acte_hors_depot = True
         if code_acte.startswith(_CODE_ACTE_PROMULGATION_PREFIXE):
             a_promulgation = True

@@ -358,6 +358,40 @@ Le retrait a son propre `codeActe` dédié, sans `statutConclusion` associé :
 `AN1-RTRINI` (53 occurrences, ex. `DLR5L17N51314`) / `ANLUNI-RTRINI`
 (29 occurrences, ex. `DLR5L17N52157`).
 
+### Le piège des `codeActe` de commission : la saisine est automatique (2026-09-18)
+
+**Un `codeActe` contenant `COM` ne dit pas qu'une commission a examiné le
+texte.** La saisine de la commission saisie au fond est posée **le jour du
+dépôt**, automatiquement, et l'arbre d'actes porte en plus des **conteneurs
+d'étape** qui existent dès l'ouverture du dossier. Relevé sur les archives XV,
+XVI et XVII, 10 764 dossiers, le 18/09/2026 — un dossier déposé et rien de plus :
+
+```
+AN1                       (conteneur d'étape, sans date)
+AN1-DEPOT                 2024-01-25
+AN1-COM                   (conteneur, sans date)
+AN1-COM-FOND              (conteneur, sans date)
+AN1-COM-FOND-SAISIE       2024-01-25   ← même date que le dépôt
+```
+
+84 codes distincts contiennent `COM`. Ceux qui attestent un examen réel sont
+les réunions et les rapports : `AN1-COM-FOND-REUNION` (3 672),
+`AN1-COM-FOND-RAPPORT` (1 095), `SN1-COM-FOND-RAPPORT` (997),
+`AN1-COM-AVIS-REUNION` (703), `CMP-COM-RAPPORT-{SN,AN}` (285 / 281). Ceux qui
+n'attestent rien : `-SAISIE` (6 410 AN + 2 738 SN), `-NOMIN` (1 133 AN +
+1 003 SN, une nomination de rapporteur), et les conteneurs `-COM` / `-COM-FOND`
+(6 410 chacun, jamais datés).
+
+**Second piège, même arbre : un `codeActe` sans tiret est un conteneur.** Sur
+les 17 codes nus, **16 ne portent jamais de date** — 6 418 `AN1`, 2 741 `SN1`,
+1 463 `ANLUNI`, 1 415 `AN20`, 603 `PROM`, 284 `CMP`, 156 `CC`… Ils portent les
+actes datés de leur étape, ils n'en sont pas un. `MOTION` est le seul exception
+(8 occurrences, 8 datées).
+
+Ce que ça a coûté : `"depose"` était inatteignable et 6 808 dossiers étaient
+qualifiés « examiné en commission » sans l'avoir été.
+→ `docs/decisions/examen-en-commission-997.md`
+
 Exemple réel documentant les deux cas 49.3 sur un même dossier :
 `DLR5L17N50588.json` (PLFSS 2025) — engagement de responsabilité en
 1ère lecture (`CMP-DEBATS-AN-DEC`, `fam_code TSORTF24`, motion de censure

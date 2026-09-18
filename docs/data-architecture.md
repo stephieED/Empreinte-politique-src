@@ -543,6 +543,9 @@ ressemble un fichier :
                      "role": "initiateur_projet_de_loi",   // dérivé de (rôle brut × nature), #689
                      "nature_texte": "projet_de_loi",      // le fait sourcé (PRJL/PION/PNRE)
                      "stade_procedural": "adopte",         // la PROGRESSION : le cran le plus avancé atteint
+                                                           // `examine_commission` exige une RÉUNION ou un
+                                                           // RAPPORT de commission depuis #997 : la saisine
+                                                           // est automatique au dépôt et n'atteste rien
                      "sort": "promulgue",                  // l'ISSUE, #743 — jamais déduite du stade
                      "sort_non_resolu": null,              // non nul SI ET SEULEMENT SI `sort` est nul, #747
                      "...": null} ],
