@@ -117,10 +117,17 @@ def test_les_criteres_de_section_tiennent_en_une_limite():
     assert not trop_longs, f"critères qui expliquent au lieu de limiter : {trop_longs}"
 
 
-def test_chaque_section_garde_sa_limite_et_son_renvoi():
-    """La fiche garde la limite ET le renvoi ; le paragraphe part en méthodologie."""
+def test_les_renvois_remplacent_l_explication_et_atteignent_une_ancre():
+    """La fiche garde le renvoi ; le paragraphe part en méthodologie.
+
+    Un pied de section ne subsiste que là où AUCUNE forme ne porte le fait —
+    le 49.3, que §2 règle 4 veut nommé à côté de la figure. Décrire ce que la
+    figure montre déjà est l'aveu d'échec que DESIGN_SYSTEM §7 règle 2 refuse.
+    """
     source = COMPOSANT.read_text(encoding="utf-8")
-    assert source.count('className="gvp-section-pied"') >= 2
+    assert '49.3 est un fait de procédure' in source, (
+        "le 49.3 se nomme à côté de la figure : aucune forme ne le porte seule"
+    )
     ancres = set(re.findall(r"/methodologie#([a-z]+)", source))
     assert ancres, "aucun renvoi vers la méthodologie"
     methodo = (UI / "src" / "pages" / "MethodologyPage.jsx").read_text(encoding="utf-8")

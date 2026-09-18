@@ -256,9 +256,6 @@ function EnBref({ government, chronologie }) {
           </Fait>
         </div>
       </div>
-      <p className="gvp-section-pied">
-        La position d’un groupe est celle que l’Assemblée déclare ; elle n’en déclare plus depuis 2024.
-      </p>
       <p className="gvp-methodo">
         <Link to="/methodologie#fonctions">Majorité, minorité et opposition, selon l’Assemblée →</Link>
       </p>
@@ -342,11 +339,6 @@ function QuiLeComposait({ government }) {
         <span className="gvp-section-trait" />
       </div>
       <h2 className="gvp-section-titre"><span>Qui le composait</span></h2>
-      <p className="gvp-section-critere">
-        Les membres que l’Assemblée nationale recense, avec leur portefeuille et la période où ils
-        l’ont exercé.
-      </p>
-
       <div className="gvp-carte">
         {poles.length === 0 ? (
           <p className="gvp-vide">Aucun membre n’est publié pour ce gouvernement.</p>
