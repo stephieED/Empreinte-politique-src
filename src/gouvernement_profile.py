@@ -101,6 +101,7 @@ from schema_gouvernement import (
 from gouvernement_roster import (
     acteur_ref_depuis_profil,
     build_gouvernement_roster,
+    slugs_du_gouvernement,
     build_premier_ministre,
     load_gouvernement_config,
     load_profils_from_dir,
@@ -359,6 +360,8 @@ def build_gouvernement_profile(
     membres_recenses: Optional[int] = None,
     licence_donnees: str = "",
     commissions_par_dossier: Optional[dict[str, Any]] = None,
+    membres_roster: Optional[list[dict[str, Any]]] = None,
+    organe_ref: Optional[str] = None,
 ) -> dict[str, Any]:
     """Construit un profil de gouvernement à partir des profils pivot
     individuels déjà collectés et des dossiers législatifs d'origine
@@ -378,11 +381,22 @@ def build_gouvernement_profile(
                  `gouvernement_textes.collect_dossiers_gouvernementaux`/
                  `fetch_dossiers_gouvernementaux` (`["dossiers"]`).
         licence_donnees: texte de licence à inscrire dans meta.
+        membres_roster: la clé `gouvernements` de `rosters_bruts.json` (#996
+                 lot 4) — le roster AMO30, non filtré. Avec `organe_ref`, il
+                 remplace la correspondance de libellé pour rattacher les
+                 membres. Absent, le repli historique s'applique.
+        organe_ref: uid de l'organe `GOUVERNEMENT` (ex. "PO873418"), tel que
+                 `raw_data/gouvernements_reels.json` le porte.
 
     Returns:
         Profil de gouvernement dict conforme à `schema_gouvernement.py`.
     """
     warnings: list[str] = []
+
+    # #996 lot 4 — `None` quand le roster manque : le repli reste le libellé,
+    # et la fiche est produite quand même. Un ensemble vide dirait « ce
+    # gouvernement n'a aucun membre », ce qui n'est pas la même chose.
+    slugs_roster = slugs_du_gouvernement(membres_roster, organe_ref)
 
     membres = build_gouvernement_roster(
         libelle_an=libelle_an,
@@ -390,6 +404,7 @@ def build_gouvernement_profile(
         periode_fin=periode_fin,
         profils=profils,
         warnings=warnings,
+        slugs_roster=slugs_roster,
     )
     premier_ministre = build_premier_ministre(
         libelle_an=libelle_an,
@@ -438,6 +453,13 @@ def build_gouvernement_profile(
     # non. `None` quand la liste ne le porte pas : un dénominateur inventé
     # ferait lire « 2 des 2 membres » là où il en manque 19 (§2 règle 5).
     profil_gouvernement["comptages"]["membres_recenses"] = membres_recenses
+    # #996 lot 4 — `membres[]` porte une entrée par PÉRIODE, pas par personne
+    # (#398). Publier `len(membres)` à côté de `membres_recenses` revenait à
+    # poser deux nombres de populations différentes côte à côte. Celui-ci se
+    # rapproche du recensement, et lui seul.
+    profil_gouvernement["comptages"]["membres_distincts"] = len(
+        {m.get("membre_id") for m in membres if m.get("membre_id")}
+    )
     profil_gouvernement["sources"] = sources
     # `licence_donnees` : dérivée de `sources[]` quand l'appelant n'impose rien
     # (#530, lot 6). Le pipeline ne passe pas `--licence`, et les 10 fiches

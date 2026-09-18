@@ -757,13 +757,24 @@ l'archive du 17/08/2026, de Fillon I (17/05/2007) à Lecornu II (le seul dont
 17/09/2026, la liste était **écrite à la main** (#209) : 10 fiches, sans Fillon I,
 Ayrault I et II, Valls I et II, Cazeneuve ni Lecornu I. Les dates d'AMO30
 élargissent les périodes des 10 fiches existantes, sans jamais les rétrécir.
-La composition des fiches reste celle des profils présents (`membres[]` ne liste
-que les ministres qui ont un profil) ; la collecte de tous les membres est l'objet
-des lots suivants de #996. **`comptages.membres_recenses`** (lot 2) publie le
-**dénominateur** : combien de personnes l'AN recense dans ce gouvernement, qu'elles
-aient un profil ou non — de 19 (Lecornu I) à 55 (Borne), 311 personnes en tout.
-`null` quand la liste ne le porte pas : un dénominateur inventé ferait lire
-« 2 des 2 membres » là où il en manque 19.
+**Les membres sont rattachés par `organe_ref`** depuis #996 lot 4 :
+`slugs_du_gouvernement` lit dans le roster brut qui appartient à cet organe, et
+la **période de l'organe** sert de garde temporel. Le libellé ne décide plus de
+l'appartenance — il ne fait plus que départager les mandats d'une même
+personne, ce que la période ne peut pas faire pour deux gouvernements qui se
+touchent d'un jour. Sans roster, le repli par libellé s'applique et les fiches
+sont produites quand même.
+
+**Deux comptages, deux populations.** `comptages.membres_recenses` (lot 2)
+compte les **personnes** que l'AN recense, qu'elles aient un profil ou non ;
+`comptages.membres_distincts` (lot 4) compte les personnes que `membres[]`
+porte. `len(membres)`, lui, n'est ni l'un ni l'autre : `membres[]` a une entrée
+par **période**, un ministre qui change de portefeuille en cours de
+gouvernement en ayant plusieurs (#398). Les deux comptages restent des entiers,
+jamais un taux (§2 règle 7). `membres_recenses` vaut `null` quand la liste ne le
+porte pas — un recensement inventé ferait lire « 2 des 2 membres » là où il en
+manque 19.
+→ [`docs/decisions/rattachement-des-membres-par-organe-996.md`](./decisions/rattachement-des-membres-par-organe-996.md)
 
 **Le roster des gouvernements entre dans `rosters_bruts.json`** (lot 2, non
 committé, produit à chaque run) sous la clé `gouvernements:`, à côté des
@@ -771,8 +782,11 @@ committé, produit à chaque run) sous la clé `gouvernements:`, à côté des
 `slug_origine` et ses `mandat_periodes`. C'est ce qui donne un identifiant de
 profil aux ministres jamais députés — mesuré le 17/09/2026 : 311 membres, 106
 slugs repris de la table de correspondance, **205 fabriqués**, aucun bloqué —,
-et ce qui fait créer leurs entrées de correspondance (§5b du portail). Aucun
-profil n'est collecté par ce lot.
+et ce qui fait créer leurs entrées de correspondance (§5b du portail). Depuis le
+lot 3 ces membres entrent aussi dans `roster_candidats.json` sous
+`statut: "roster_gouvernement"`, donc les shards les collectent ; depuis le lot
+4, ce même roster est relu par `generate_gouvernement_profiles.py`
+(`--rosters-bruts`) pour rattacher les membres aux fiches.
 Deux matériaux, jamais mélangés :
 
 - **la composition** — `gouvernement_roster.py`, **aucun appel réseau** : il

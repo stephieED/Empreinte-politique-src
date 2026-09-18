@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 372 décisions
+gouverne sans avoir à fouiller les 373 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -403,7 +403,7 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 | [L'union des avertissements peut ressusciter un démenti, et deux familles Syceron s'éteignent (#600) (2026-08-30)](decisions/union-warnings-extinction-600.md) | `WARNING_PREFIX_QUESTIONS_INDISPONIBLES` |
 | [Votes : agrégation des législatures 14 à 17, index dédupliqué, 14/15/16 figées (#403) (2026-08-18)](decisions/votes-multi-legislature.md) | `AN_SCRUTINS_LEGISLATURES`, `AN_SCRUTINS_LEGISLATURES_FIGEES`, `AN_SCRUTIN_UID_PREFIXE`, `fetch_votes_officiels` |
 
-Le mentionnent sans le gouverner : [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`dossiers-multi-archives-origine-document`](decisions/dossiers-multi-archives-origine-document.md), [`gouvernement-roster-desambiguisation`](decisions/gouvernement-roster-desambiguisation.md), [`licences`](decisions/licences.md), [`mandats-agreges-famille-1`](decisions/mandats-agreges-famille-1.md), [`parlementaire-en-mission-nest-pas-ministre`](decisions/parlementaire-en-mission-nest-pas-ministre.md), [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`perimetre-controle-perte`](decisions/perimetre-controle-perte.md), [`plafond-roster-et-commit-518`](decisions/plafond-roster-et-commit-518.md), [`pythonunbuffered-generate-data`](decisions/pythonunbuffered-generate-data.md), [`qualification-perdue-a-la-fusion-639`](decisions/qualification-perdue-a-la-fusion-639.md), [`retrait-marqueur-regards-citoyens-deputes-890`](decisions/retrait-marqueur-regards-citoyens-deputes-890.md), [`roster-unique-par-run-518`](decisions/roster-unique-par-run-518.md), [`trame-profil-candidat-328`](decisions/trame-profil-candidat-328.md).
+Le mentionnent sans le gouverner : [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`dossiers-multi-archives-origine-document`](decisions/dossiers-multi-archives-origine-document.md), [`gouvernement-roster-desambiguisation`](decisions/gouvernement-roster-desambiguisation.md), [`licences`](decisions/licences.md), [`mandats-agreges-famille-1`](decisions/mandats-agreges-famille-1.md), [`parlementaire-en-mission-nest-pas-ministre`](decisions/parlementaire-en-mission-nest-pas-ministre.md), [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`perimetre-controle-perte`](decisions/perimetre-controle-perte.md), [`plafond-roster-et-commit-518`](decisions/plafond-roster-et-commit-518.md), [`pythonunbuffered-generate-data`](decisions/pythonunbuffered-generate-data.md), [`qualification-perdue-a-la-fusion-639`](decisions/qualification-perdue-a-la-fusion-639.md), [`rattachement-des-membres-par-organe-996`](decisions/rattachement-des-membres-par-organe-996.md), [`retrait-marqueur-regards-citoyens-deputes-890`](decisions/retrait-marqueur-regards-citoyens-deputes-890.md), [`roster-unique-par-run-518`](decisions/roster-unique-par-run-518.md), [`trame-profil-candidat-328`](decisions/trame-profil-candidat-328.md).
 
 ## `src/candidate_profile_ue.py`
 
@@ -602,7 +602,7 @@ Le mentionnent sans le gouverner : [`amendements-legislatures-figees`](decisions
 
 ## `src/generate_gouvernement_profiles.py`
 
-5 décision(s) le gouvernent ; le module en cite 3.
+6 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
@@ -611,6 +611,7 @@ Le mentionnent sans le gouverner : [`amendements-legislatures-figees`](decisions
 | [Profils de gouvernement : ne jamais réécrire sur une collecte incomplète, et cache dossiers dédié (#427) (2026-08-18)](decisions/gouvernement-textes-non-ecrasement.md) | `COLLECTE_INCOMPLETE` |
 | [Le `label` d'un mandat `MINISTERE` ne dit pas si c'est un maroquin (#474) (2026-08-20)](decisions/parlementaire-en-mission-nest-pas-ministre.md) | `COLLECTE_INCOMPLETE` |
 | [Le plafond de lecture du roster, et le commit qui ne paie plus pour une source lente (#518, second incident) (2026-08-24)](decisions/plafond-roster-et-commit-518.md) | `EXIT_COLLECTE_INCOMPLETE` |
+| [La fiche rattache ses membres par `organe_ref`, plus par un libellé comparé entre deux sources (#996, lot 4) (2026-09-18)](decisions/rattachement-des-membres-par-organe-996.md) | `charger_membres_roster` |
 
 Le mentionnent sans le gouverner : [`audit-599-projection-blocs-lus-628`](decisions/audit-599-projection-blocs-lus-628.md), [`generation-fiches-lignees-836`](decisions/generation-fiches-lignees-836.md), [`gouvernement-ci-integration`](decisions/gouvernement-ci-integration.md), [`gouvernement-profile-rattachement`](decisions/gouvernement-profile-rattachement.md), [`lectures-pipeline-par-projection-635`](decisions/lectures-pipeline-par-projection-635.md).
 
@@ -668,7 +669,7 @@ Le mentionnent sans le gouverner : [`audit-599-projection-blocs-lus-628`](decisi
 
 ## `src/gouvernement_roster.py`
 
-13 décision(s) le gouvernent ; le module en cite 3.
+14 décision(s) le gouvernent ; le module en cite 4.
 
 | Décision | Nomme |
 | --- | --- |
@@ -684,6 +685,7 @@ Le mentionnent sans le gouverner : [`audit-599-projection-blocs-lus-628`](decisi
 | [Le référentiel type l'organe, il n'y a rien à interpréter (#730) (2026-09-04)](decisions/mandats-gouvernementaux-en-commission-730.md) | `FONCTIONS_MINISTERIELLES`, `_normalise_fonction` |
 | [Le `label` d'un mandat `MINISTERE` ne dit pas si c'est un maroquin (#474) (2026-08-20)](decisions/parlementaire-en-mission-nest-pas-ministre.md) | `FONCTIONS_MINISTERIELLES`, `FONCTIONS_MINISTERIELLES_OBSERVEES`, `_est_mandat_appartenance_gouvernement`, `_normalise_fonction`, `_portefeuilles_du_mandat`, `_qualite_portefeuille`, `build_gouvernement_roster`, `build_premier_ministre` |
 | [`check_quality_gate.py` : section gouvernements (§5), couverture ministérielle proxy par `portefeuille` (#212) (2026-08-14)](decisions/quality-gate-gouvernements.md) | `build_gouvernement_roster` |
+| [La fiche rattache ses membres par `organe_ref`, plus par un libellé comparé entre deux sources (#996, lot 4) (2026-09-18)](decisions/rattachement-des-membres-par-organe-996.md) | `slugs_du_gouvernement` |
 | [Un test d'acceptation adossé au corpus vivant rougit quand la donnée s'améliore (#457) (2026-08-20)](decisions/test-adosse-au-corpus-vivant.md) | `build_gouvernement_roster` |
 
 Le mentionnent sans le gouverner : [`gouvernement-ci-integration`](decisions/gouvernement-ci-integration.md), [`gouvernement-profile-rattachement`](decisions/gouvernement-profile-rattachement.md), [`mandat-electif-perdu-fausse-le-denominateur`](decisions/mandat-electif-perdu-fausse-le-denominateur.md), [`perimetre-controle-perte`](decisions/perimetre-controle-perte.md).
@@ -722,7 +724,7 @@ Le mentionnent sans le gouverner : [`audit-pipeline-gouvernement`](decisions/aud
 
 ## `src/gouvernements_amo30.py`
 
-Le mentionnent sans le gouverner : [`liste-gouvernements-amo30-996`](decisions/liste-gouvernements-amo30-996.md).
+Le mentionnent sans le gouverner : [`liste-gouvernements-amo30-996`](decisions/liste-gouvernements-amo30-996.md), [`rattachement-des-membres-par-organe-996`](decisions/rattachement-des-membres-par-organe-996.md).
 
 ## `src/group_profile.py`
 

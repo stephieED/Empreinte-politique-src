@@ -3262,6 +3262,7 @@ jobs:
         run: |
           python3 src/generate_gouvernement_profiles.py \
             --config raw_data/gouvernements_reels.json \
+            --rosters-bruts raw_data/rosters_bruts.json \
             --profiles-dir pivot_data/profiles \
             --out-dir pivot_data/gouvernements \
             --validate
