@@ -53,6 +53,7 @@ function moisCourt(iso) {
 
 function duree(debut, fin) {
   const jours = Math.round((Date.parse(fin || new Date().toISOString().slice(0, 10)) - Date.parse(debut)) / 86400000);
+  if (jours <= 1) return `${jours} jour`;
   if (jours < 62) return `${jours} jours`;
   const mois = Math.round(jours / 30.44);
   if (mois < 24) return `${mois} mois`;
@@ -475,9 +476,21 @@ function CeQuIlAFaitDeposer({ government }) {
       </div>
       <h2 className="gvp-section-titre"><span>Ce qu’il a fait déposer</span></h2>
       <div className="gvp-carte">
-        {partielle && (
+        {horsCouverture && government.textes.length > 0 && (
           <p className="gvp-avertissement">
-            {`Les archives ouvertes de l’Assemblée nationale ne couvrent qu’une partie de cette période (${couverture.label}) : les textes ci-dessous ne sont pas la liste complète de ceux déposés, et une absence n’y vaut pas zéro.`}
+            {`Les archives de dossiers de l’Assemblée nationale commencent au 21 juin 2017, après la fin de ce gouvernement : ${government.textes.length === 1 ? 'le texte ci-dessous vient' : 'les textes ci-dessous viennent'} de la traîne d’une archive plus récente, et la liste n’est pas complète.`}
+          </p>
+        )}
+
+        {partielle && (
+          /* La phrase NOMME la fenêtre non couverte, au lieu d'annoncer une
+             couverture partielle en général : sur Philippe II, formé la veille
+             de l'ouverture des archives, « une partie de cette période » se
+             lisait comme un trou béant pour un seul jour. Aucun seuil ne fait
+             taire l'avertissement (DESIGN_SYSTEM §7 règle 5) : c'est la durée
+             réelle qui est écrite, et le lecteur en juge. */
+          <p className="gvp-avertissement">
+            {`Les archives de dossiers de l’Assemblée nationale commencent au 21 juin 2017. Ce gouvernement était en fonction depuis le ${jour(government.periode.debut)} : ${duree(government.periode.debut, couverture.borne)} de son activité n’est pas couvert.`}
           </p>
         )}
 
