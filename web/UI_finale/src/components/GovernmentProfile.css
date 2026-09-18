@@ -331,6 +331,36 @@
 .gvp-enfant-nom { font-weight: 600; }
 .gvp-enfant-charge { color: var(--texte-2); }
 
+/* ── 04 · Ce qu'on n'a pas pu lire ─────────────────────────────────────── */
+
+.gvp-limites { display: grid; }
+
+.gvp-limite {
+  display: grid;
+  grid-template-columns: minmax(120px, 190px) 1fr;
+  gap: 16px;
+  padding: 11px 0;
+  border-top: 1px solid var(--border);
+}
+
+.gvp-limite:first-child { border-top: 0; padding-top: 0; }
+
+.gvp-limite dt {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.gvp-limite dd {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--texte-2);
+  max-width: 96ch;
+}
+
 /* ── 03 · Ce qu'il a fait déposer ───────────────────────────────────────── */
 
 .gvp-brin { cursor: pointer; }
@@ -468,6 +498,7 @@
   .gvp-main { padding: 20px 16px 56px; }
   .gvp-tete h1 { font-size: 24px; }
   .gvp-fait,
+  .gvp-limite,
   .gvp-texte { grid-template-columns: 1fr; gap: 4px; }
   .gvp-orga { flex-direction: column; }
 }

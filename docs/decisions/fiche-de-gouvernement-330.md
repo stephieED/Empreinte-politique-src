@@ -179,6 +179,24 @@ d'où viennent les textes ni à quelle matière ils se rattachent, et elles
 plaçaient le 49.3 au milieu des autres statuts, comme une issue parmi d'autres.
 Elles partent avec le mur de cartes.
 
+## Une quatrième section : ce qu'on n'a pas pu lire
+
+Ajoutée le 18/09 après relecture : la limite de couverture vivait en
+avertissement au-dessus des textes, où elle se lisait comme un défaut de la
+figure. Elle rejoint une section dédiée, comme sur la fiche de lignée, avec
+**trois causes qui ne se confondent pas** (DESIGN_SYSTEM §7 règle 7) : une
+archive que la source ne publie pas, une position que la source ne déclare
+plus, une activité qui n'existe pas au niveau d'un gouvernement — un
+gouvernement ne vote pas.
+
+**Deux entrées sans portefeuille** apparaissent avec la collecte complète de
+#996 : Damien Abad et Yaël Braun-Pivet portent chacun, sous Borne, un second
+mandat d'appartenance libellé « Gouvernement » sans sigle, aux dates
+chevauchantes. C'est fidèle à la source ; en faire un bloc « Portefeuille non
+renseigné » afficherait la personne deux fois. L'entrée muette est donc écartée
+**uniquement quand la personne est déjà placée ailleurs** — jamais quand elle
+est sa seule trace.
+
 ## Ce que ce lot ne fait pas
 
 - **Il ne touche pas au pipeline** : ni au statut `depose`, ni aux populations de

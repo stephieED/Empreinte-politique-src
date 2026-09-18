@@ -327,10 +327,17 @@ function Ministere({ pole, ouvert, onBasculer }) {
 
 function QuiLeComposait({ government }) {
   const [deplie, setDeplie] = useState(null);
-  const poles = useMemo(
-    () => organigramme(government.membres, government.premierMinistre, government.periode),
-    [government],
-  );
+  const poles = useMemo(() => {
+    /* La source publie parfois DEUX mandats d'appartenance pour la même
+       personne, dont un sans portefeuille — Damien Abad et Yaël Braun-Pivet
+       sous Borne (#996). L'entrée muette ne dit rien de plus que celle qui
+       nomme le ministère, et en faire un bloc « Portefeuille non renseigné »
+       ferait apparaître la personne deux fois. Elle est donc écartée
+       UNIQUEMENT quand la personne est déjà placée ailleurs. */
+    const nommes = new Set(government.membres.filter((m) => m.portefeuille).map((m) => m.nom));
+    const membres = government.membres.filter((m) => m.portefeuille || !nommes.has(m.nom));
+    return organigramme(membres, government.premierMinistre, government.periode);
+  }, [government]);
   const piles = colonnes(poles, 3);
 
   return (
@@ -476,29 +483,11 @@ function CeQuIlAFaitDeposer({ government }) {
       </div>
       <h2 className="gvp-section-titre"><span>Ce qu’il a fait déposer</span></h2>
       <div className="gvp-carte">
-        {horsCouverture && government.textes.length > 0 && (
-          <p className="gvp-avertissement">
-            {`Les archives de dossiers de l’Assemblée nationale commencent au 21 juin 2017, après la fin de ce gouvernement : ${government.textes.length === 1 ? 'le texte ci-dessous vient' : 'les textes ci-dessous viennent'} de la traîne d’une archive plus récente, et la liste n’est pas complète.`}
-          </p>
-        )}
-
-        {partielle && (
-          /* La phrase NOMME la fenêtre non couverte, au lieu d'annoncer une
-             couverture partielle en général : sur Philippe II, formé la veille
-             de l'ouverture des archives, « une partie de cette période » se
-             lisait comme un trou béant pour un seul jour. Aucun seuil ne fait
-             taire l'avertissement (DESIGN_SYSTEM §7 règle 5) : c'est la durée
-             réelle qui est écrite, et le lecteur en juge. */
-          <p className="gvp-avertissement">
-            {`Les archives de dossiers de l’Assemblée nationale commencent au 21 juin 2017. Ce gouvernement était en fonction depuis le ${jour(government.periode.debut)} : ${duree(government.periode.debut, couverture.borne)} de son activité n’est pas couvert.`}
-          </p>
-        )}
-
         {government.textes.length === 0 ? (
           <p className="gvp-vide">
             {horsCouverture || partielle
-              ? `Les archives ouvertes de dossiers législatifs de l’Assemblée nationale commencent au 21 juin 2017 : le nombre de projets de loi déposés par ce gouvernement n’est pas mesurable ici. Ce n’est pas « aucun texte déposé ».`
-              : `Aucun projet de loi n’a été déposé entre le ${jour(government.periode.debut)} et le ${jour(government.periode.fin)}. Cette période est couverte par les archives : c’est un zéro mesuré, pas une absence de source.`}
+              ? 'Aucun texte lisible sur cette période — voir « Ce qu’on n’a pas pu lire ».'
+              : `Aucun projet de loi n’a été déposé entre le ${jour(government.periode.debut)} et le ${jour(government.periode.fin)} : un zéro mesuré, pas une absence de source.`}
           </p>
         ) : (
           <FluxEtListe textes={government.textes} />
@@ -591,6 +580,82 @@ function ListeDesTextes({ textes }) {
   );
 }
 
+/* ── 04 · Ce qu'on n'a pas pu lire ──────────────────────────────────────── */
+
+/*
+ * Ce que CETTE fiche ne peut pas lire, et pourquoi — jamais le corpus entier,
+ * qui a sa page (`/couverture`). Deux absences ne se confondent pas
+ * (DESIGN_SYSTEM §7 règle 7) : une archive que la source ne publie pas, une
+ * position que la source ne déclare plus, et une activité qui n'existe pas au
+ * niveau d'un gouvernement sont trois lignes distinctes.
+ */
+function limitesDeLaFiche(government) {
+  const lignes = [];
+  const couverture = government.textesCouverture || {};
+
+  if (couverture.statut === 'hors_couverture') {
+    lignes.push({
+      quoi: 'Textes déposés',
+      texte: government.textes.length
+        ? `Les archives de dossiers de l’Assemblée nationale commencent au 21 juin 2017, après la fin de ce gouvernement. ${government.textes.length === 1 ? 'Le texte affiché vient' : 'Les textes affichés viennent'} de la traîne d’une archive plus récente : la liste n’est pas complète.`
+        : 'Les archives de dossiers de l’Assemblée nationale commencent au 21 juin 2017, après la fin de ce gouvernement. Rien n’en est lisible, et ce n’est pas « aucun texte déposé ».',
+    });
+  } else if (couverture.statut === 'partielle') {
+    lignes.push({
+      quoi: 'Textes déposés',
+      texte: `Les archives de dossiers de l’Assemblée nationale commencent au 21 juin 2017. Ce gouvernement était en fonction depuis le ${jour(government.periode.debut)} : ${duree(government.periode.debut, couverture.borne)} de son activité n’est pas couvert.`,
+    });
+  }
+
+  if (!government.majorite.length) {
+    lignes.push({
+      quoi: 'Majorité à l’Assemblée',
+      texte: 'Nous ne collectons les groupes parlementaires qu’à partir de 2017 : pour ce gouvernement, la position déclarée des groupes n’est pas lisible.',
+    });
+  } else if (government.majorite.some((m) => !m.declaree)) {
+    lignes.push({
+      quoi: 'Majorité à l’Assemblée',
+      texte: 'Depuis 2024, l’Assemblée nationale ne déclare plus la position de ses groupes. Aucun n’est donc déclaré majoritaire, et nous ne désignons pas le plus nombreux à sa place.',
+    });
+  }
+
+  lignes.push({
+    quoi: 'Votes et prises de parole',
+    texte: 'Un gouvernement ne vote pas et ne siège pas : ce que ses membres ont voté ou dit se lit sur leur propre fiche.',
+  });
+
+  return lignes;
+}
+
+function CeQuOnNaPasPuLire({ government }) {
+  const lignes = limitesDeLaFiche(government);
+
+  return (
+    <section className="gvp-section" data-section="Ce qu’on n’a pas pu lire" id="section-limites">
+      <div className="gvp-section-tete">
+        <span className="gvp-section-numero">04</span>
+        <span className="gvp-section-trait" />
+      </div>
+      <h2 className="gvp-section-titre"><span>Ce qu’on n’a pas pu lire</span></h2>
+      <p className="gvp-section-critere">Les limites propres à cette fiche, et leur cause.</p>
+
+      <div className="gvp-carte">
+        <dl className="gvp-limites">
+          {lignes.map((l) => (
+            <div className="gvp-limite" key={l.quoi}>
+              <dt>{l.quoi}</dt>
+              <dd>{l.texte}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+      <p className="gvp-methodo">
+        <Link to="/methodologie#couverture">Pourquoi ces limites se déclarent au lieu de se combler →</Link>
+      </p>
+    </section>
+  );
+}
+
 /* ── La fiche ────────────────────────────────────────────────────────────── */
 
 export default function GovernmentProfile({ government, chronologie = [] }) {
@@ -608,6 +673,7 @@ export default function GovernmentProfile({ government, chronologie = [] }) {
       <EnBref government={government} chronologie={chronologie} />
       <QuiLeComposait government={government} />
       <CeQuIlAFaitDeposer government={government} />
+      <CeQuOnNaPasPuLire government={government} />
     </main>
   );
 }

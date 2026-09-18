@@ -135,6 +135,25 @@ def test_les_renvois_remplacent_l_explication_et_atteignent_une_ancre():
     assert ancres <= ids, f"renvois vers des ancres inexistantes : {ancres - ids}"
 
 
+def test_la_fiche_dit_ce_qu_elle_n_a_pas_pu_lire():
+    """Trois absences, trois causes, jamais confondues (DESIGN_SYSTEM §7 règle 7)."""
+    source = COMPOSANT.read_text(encoding="utf-8")
+    assert "function limitesDeLaFiche" in source
+    for cause in (
+        "commencent au 21 juin 2017",          # une archive que la source ne publie pas
+        "ne déclare plus la position de ses groupes",  # une position qu'elle ne déclare plus
+        "Un gouvernement ne vote pas",         # une activité qui n'existe pas à ce niveau
+    ):
+        assert cause in source, f"limite disparue : {cause}"
+
+
+def test_une_entree_sans_portefeuille_ne_dedouble_pas_une_personne():
+    """La source publie deux mandats pour Abad et Braun-Pivet sous Borne, dont
+    un sans portefeuille : le muet n'ajoute rien et ne fait pas un second bloc."""
+    source = COMPOSANT.read_text(encoding="utf-8")
+    assert "!nommes.has(m.nom)" in source
+
+
 def test_la_decision_existe_et_porte_sa_date():
     contenu = DECISION.read_text(encoding="utf-8")
     assert contenu.startswith("# "), "un titre de niveau 1 ouvre la décision"
