@@ -53,6 +53,8 @@ from pathlib import Path
 from typing import Any, Optional
 
 from gouvernement_profile import build_gouvernement_profile
+from gouvernement_roster_an import CLE_ROSTER as CLE_ROSTER_GOUVERNEMENTS
+from group_roster import charger_rosters_bruts
 from gouvernement_roster import load_profils_from_dir
 from gouvernement_textes import AN_DOSSIERS_ARCHIVES, fetch_dossiers_gouvernementaux
 from merge_profile import load_existing_document, preserve_stable_freshness_timestamps
@@ -78,13 +80,18 @@ def generate_all(
     out_dir: Path,
     validate: bool = False,
     commissions_par_dossier: Optional[dict[str, Any]] = None,
+    membres_roster: Optional[list[dict[str, Any]]] = None,
 ) -> Any:
     """Génère tous les profils de gouvernement de `gouvernements`, un seul
     chargement des profils pivot et un seul fetch des dossiers législatifs
     gouvernementaux, partagés entre tous les gouvernements. Retourne le
     nombre d'échecs, ou la sentinelle `COLLECTE_INCOMPLETE` si les archives
     de dossiers n'ont pas toutes pu être lues — auquel cas AUCUN profil n'est
-    réécrit (#427)."""
+    réécrit (#427).
+
+    `membres_roster` (#996 lot 4) : la clé `gouvernements` de
+    `rosters_bruts.json`, lue UNE fois pour les 17 fiches. `None` rebranche le
+    rattachement par libellé, et les fiches sont produites quand même."""
     profils = load_profils_from_dir(profiles_dir)
     print(f"→ {len(profils)} profil(s) pivot chargé(s).", file=sys.stderr)
 
@@ -141,6 +148,8 @@ def generate_all(
                 profils=profils,
                 dossiers_gouvernementaux=dossiers,
                 commissions_par_dossier=commissions_par_dossier,
+                membres_roster=membres_roster,
+                organe_ref=gouvernement.get("organe_ref"),
             )
         except Exception as exc:  # noqa: BLE001 - un échec sur un gouvernement ne doit pas arrêter les autres
             print(f"  [!] Échec de génération pour {gouvernement_id} : {exc}", file=sys.stderr)
@@ -207,11 +216,63 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--rosters-bruts",
+        default=None,
+        metavar="FICHIER",
+        help=(
+            "raw_data/rosters_bruts.json du run (#996 lot 4). Sa clé "
+            "`gouvernements` rattache les membres par `organe_ref`, au lieu de "
+            "comparer `mandats[].label` au libellé de la config — une jointure "
+            "de chaînes entre deux sources. Absent ou illisible : le repli par "
+            "libellé s'applique et les fiches sont produites quand même."
+        ),
+    )
+    parser.add_argument(
         "--validate",
         action="store_true",
         help="Valide chaque profil de gouvernement produit et affiche les erreurs éventuelles.",
     )
     return parser
+
+
+def charger_membres_roster(chemin: Optional[Path]) -> Optional[list[dict[str, Any]]]:
+    """Les membres de gouvernement du roster brut du run, ou `None` (#996 lot 4).
+
+    `None` a un sens précis et un seul : **pas de roster, applique le repli par
+    libellé**. Il couvre les quatre façons de ne pas en avoir — option absente,
+    fichier absent, fichier illisible, clé `gouvernements` non écrite par ce
+    run. Aucune ne fait échouer la génération : la fiche produite par la voie
+    fragile vaut mieux que pas de fiche (§2 règle 5, même arbitrage que #427).
+
+    Chaque échec est **dit sur stderr**, jamais absorbé en silence : c'est la
+    seule trace qu'un run aura de ce qu'il a rattaché par libellé plutôt que
+    par `organe_ref`.
+    """
+    if chemin is None:
+        return None
+    try:
+        rosters = charger_rosters_bruts(chemin)
+    except (OSError, ValueError) as exc:
+        print(
+            f"  [!] Roster brut illisible ({chemin}) : {exc} — rattachement des "
+            "membres par libellé (repli).",
+            file=sys.stderr,
+        )
+        return None
+    membres = rosters.get(CLE_ROSTER_GOUVERNEMENTS)
+    if not membres:
+        print(
+            f"  [!] {chemin} ne porte pas de roster de gouvernements — "
+            "rattachement des membres par libellé (repli).",
+            file=sys.stderr,
+        )
+        return None
+    print(
+        f"→ {len(membres)} membre(s) de gouvernement lus dans {chemin} : "
+        "rattachement par organe_ref.",
+        file=sys.stderr,
+    )
+    return membres
 
 
 def charger_commissions_dossiers(chemin: Optional[Path]) -> Optional[dict[str, Any]]:
@@ -286,6 +347,8 @@ def main(argv: Optional[list[str]] = None) -> int:
         out_dir=out_dir,
         validate=args.validate,
         commissions_par_dossier=commissions_par_dossier,
+        membres_roster=charger_membres_roster(
+            Path(args.rosters_bruts) if args.rosters_bruts else None),
     )
 
     # Collecte incomplète : aucun profil n'a été écrit, le compteur d'échecs

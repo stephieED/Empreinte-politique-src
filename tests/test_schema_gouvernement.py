@@ -55,10 +55,12 @@ def test_make_empty_periode_defaults():
 
 def test_make_empty_comptages_defaults():
     g = make_empty_profil_gouvernement("gouvernement:LECORNU", "Gouvernement Lecornu")
-    # #996 : le dénominateur `membres_recenses` naît à `None` — « inconnu »,
-    # pas « zéro membre ».
+    # #996 : le recensement `membres_recenses` naît à `None` — « inconnu »,
+    # pas « zéro membre ». `membres_distincts`, lui, naît à `0` et c'est juste :
+    # une fiche vide porte zéro membre, ce n'est pas une inconnue (#996 lot 4).
     assert g["comptages"] == {
         "membres_recenses": None,
+        "membres_distincts": 0,
         "par_statut": make_empty_comptages_statuts(),
     }
     for statut in KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL:

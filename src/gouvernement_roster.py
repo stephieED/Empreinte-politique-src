@@ -399,23 +399,113 @@ def _mandate_matches_gouvernement(
     libelle_an: str,
     g_debut: Optional[date],
     g_fin: Optional[date],
+    est_membre_declare: Optional[bool] = None,
 ) -> bool:
     """Détermine si un mandat individuel appartient au gouvernement ciblé.
 
-    Voir la note de désambiguïsation en tête de module : correspondance
-    exacte du libellé d'abord, chevauchement de période ensuite (garde-fou,
-    pas critère principal).
+    **Deux voies, et la première est celle qu'on veut (#996 lot 4).**
+
+    `est_membre_declare` fourni — le roster AMO30 a déjà tranché
+    l'appartenance, sur `organe_ref`. Il reste à retenir les mandats
+    d'appartenance du profil, et **la période du gouvernement** les départage :
+    un ministre reconduit porte un mandat par gouvernement, et la période de
+    l'organe est bornée.
+
+    **Pourquoi le garde temporel est la période DU GOUVERNEMENT et non celle
+    que le roster déclare.** AMO30 publie des périodes d'appartenance non
+    bornées : Amélie de Montchalin porte deux périodes `BAYROU`, dont une
+    `2024-12-24 → None` (relevé le 18/09/2026). Cette borne ouverte recouvre
+    ses mandats `LECORNU` et `LECORNU II` suivants, et lui attribuait 4 entrées
+    de Lecornu sur la fiche Bayrou. La période de l'organe, elle, est bornée
+    par le référentiel — c'est elle qui fait foi.
+
+    `est_membre_declare` absent — repli historique : correspondance exacte du
+    libellé, puis chevauchement de période. Conservé pour qu'un run sans
+    artifact de roster continue de produire les fiches (§2 règle 5 : mieux vaut
+    la voie fragile que pas de fiche), et **seulement** pour ça.
+
+    Pourquoi la première voie existe : le repli compare deux chaînes qui
+    viennent de **deux sources différentes** — `libelle_an` de l'organe AMO30
+    (`gouvernements_amo30.py`), `mandats[].label` de l'endpoint « positions
+    dans l'hémicycle » (`candidate_profile.py`). Elles s'accordent au
+    18/09/2026, écart `+0` sur les 650 personnes des 17 fiches, mais rien ne
+    l'impose : une divergence retirerait des membres sans qu'aucune étape
+    n'échoue. La voie roster joint sur un identifiant, dans une seule source.
+    → `docs/decisions/rattachement-des-membres-par-organe-996.md`
     """
     if mandat.get("categorie") != "fonction_gouvernementale":
         return False
+
+    m_debut = _parse_date(mandat.get("debut"))
+    m_fin = _parse_date(mandat.get("fin"))
+
+    if est_membre_declare is not None:
+        if not est_membre_declare:
+            return False
+        # Le mandat doit être celui d'APPARTENANCE, pas un `MINISTERE` : les
+        # deux portent `fonction_gouvernementale`, et c'est le portefeuille
+        # qu'on irait chercher deux fois sinon. Le libellé sert ici à séparer
+        # les DEUX TYPES D'ORGANE, pas à identifier le gouvernement — et il
+        # accepte donc `"Gouvernement"` nu, que l'égalité stricte du repli
+        # rejette : Damien Abad et Yaël Braun-Pivet en portent un sous Borne.
+        label = mandat.get("label") or ""
+        if not _est_mandat_appartenance_gouvernement(label):
+            return False
+        # Le libellé garde UN rôle, et un seul : départager les mandats
+        # d'appartenance DE CETTE PERSONNE. Un `Gouvernement (<autre sigle>)`
+        # est le mandat d'un autre gouvernement et se rejette ici — sans quoi
+        # deux gouvernements qui se touchent d'un jour (`FILLON 1` finit le
+        # 2007-06-18, `FILLON 2` commence le 2007-06-18) se volent leurs
+        # entrées : +19 sur Fillon II et +27 sur Valls II, mesuré le
+        # 18/09/2026. Le chevauchement de période ne peut pas les séparer,
+        # puisqu'ils se chevauchent réellement, d'un jour.
+        #
+        # Ce n'est PAS la jointure inter-sources que ce lot retire : elle
+        # décidait de l'APPARTENANCE — un libellé divergent faisait disparaître
+        # la personne. Ici la personne est déjà retenue par le roster, et le
+        # libellé ne trie que ses propres mandats, tous issus du même endpoint.
+        # Si aucun ne porte le sigle attendu, le repli ci-dessous la garde.
+        if label != "Gouvernement" and label != _expected_label(libelle_an):
+            return False
+        # `"Gouvernement"` nu : la source n'a pas donné de sigle. Le roster
+        # déclare la personne membre de CE gouvernement, la période le
+        # confirme — l'égalité stricte du repli, elle, le jetait. Damien Abad
+        # et Yaël Braun-Pivet en portent un sous Borne.
+        return _periods_overlap(m_debut, m_fin, g_debut, g_fin)
+
     if (mandat.get("label") or "") != _expected_label(libelle_an):
         return False
-    return _periods_overlap(
-        _parse_date(mandat.get("debut")),
-        _parse_date(mandat.get("fin")),
-        g_debut,
-        g_fin,
-    )
+    return _periods_overlap(m_debut, m_fin, g_debut, g_fin)
+
+
+def slugs_du_gouvernement(
+    membres_roster: Optional[list[dict[str, Any]]], organe_ref: Optional[str]
+) -> Optional[set[str]]:
+    """Les slugs que le roster AMO30 déclare membres de CE gouvernement.
+
+    Entrée : la valeur de la clé `gouvernements` de `rosters_bruts.json`, telle
+    que `gouvernement_roster_an.deriver_membres` la rend — une entrée par
+    personne, avec `mandat_periodes[]` portant chacune son `organe_ref`.
+
+    Rend `None` — et non un ensemble vide — quand le roster ou l'`organe_ref`
+    manque : `None` dit « pas de roster, prends le repli », un ensemble vide
+    dirait « ce gouvernement n'a aucun membre », ce qui viderait la fiche
+    (§2 règle 5). La distinction est la raison d'être de ce type de retour.
+
+    **Seules les appartenances sont rendues, pas leurs dates** : les dates que
+    le roster déclare ne sont pas toutes bornées (voir
+    `_mandate_matches_gouvernement`), et c'est la période de l'organe qui sert
+    de garde temporel.
+    """
+    if not membres_roster or not organe_ref:
+        return None
+    return {
+        membre["slug"]
+        for membre in membres_roster
+        if membre.get("slug")
+        and any((p or {}).get("organe_ref") == organe_ref
+                for p in (membre.get("mandat_periodes") or []))
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -542,6 +632,7 @@ def build_gouvernement_roster(
     periode_fin: Optional[str],
     profils: list[dict[str, Any]],
     warnings: Optional[list[str]] = None,
+    slugs_roster: Optional[set[str]] = None,
 ) -> list[dict[str, Any]]:
     """Construit la liste `membres[]` d'un gouvernement à partir de profils pivot.
 
@@ -562,6 +653,13 @@ def build_gouvernement_roster(
                   dans `meta.warnings` du profil de gouvernement par
                   `gouvernement_profile.build_gouvernement_profile`, donc
                   visible dans le jeu de données publié.
+        slugs_roster: les slugs que `slugs_du_gouvernement` tire du roster
+                  AMO30 pour CE gouvernement (#996 lot 4). Fourni, il
+                  **remplace** la correspondance de libellé : l'appartenance
+                  est jointe sur `organe_ref`, dans une seule source. `None` —
+                  et non un ensemble vide — rebranche le repli historique ; la
+                  distinction compte, un ensemble vide viderait la fiche au
+                  lieu de la laisser telle quelle.
 
     Returns:
         Liste de dicts conformes à la structure `membres[]` de
@@ -582,8 +680,18 @@ def build_gouvernement_roster(
 
     membres: list[dict[str, Any]] = []
     for profil in profils:
+        # #996 lot 4 — quand le roster est là, il dit QUI appartient à ce
+        # gouvernement, sur `organe_ref`. Un profil qu'il ne nomme pas n'est
+        # pas examiné : c'est la jointure de chaînes inter-sources qui saute.
+        est_membre_declare = None
+        if slugs_roster is not None:
+            est_membre_declare = (profil.get("id") or "") in slugs_roster
+            if not est_membre_declare:
+                continue
         for mandat in profil.get("mandats") or []:
-            if not _mandate_matches_gouvernement(mandat, libelle_an, g_debut, g_fin):
+            if not _mandate_matches_gouvernement(
+                mandat, libelle_an, g_debut, g_fin, est_membre_declare
+            ):
                 continue
 
             # Tous les portefeuilles chevauchants sont retenus, jamais un seul

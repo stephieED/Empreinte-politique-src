@@ -102,11 +102,24 @@ Format d'un profil de gouvernement v1 :
 
     "comptages": {                           # entiers bruts uniquement — aucun taux, pourcentage
                                               # ou classement (règle AGENTS.md §2.1)
-        # #996 : combien de personnes l'AN recense dans ce gouvernement, qu'elles
-        # aient un profil chez nous ou non. C'est le DÉNOMINATEUR de `membres[]`,
-        # pas un taux : la fiche écrit « 2 des 21 membres recensés ». `null`
-        # quand la liste des gouvernements ne le porte pas.
+        # #996 : combien de PERSONNES l'AN recense dans ce gouvernement,
+        # qu'elles aient un profil chez nous ou non. `null` quand la liste des
+        # gouvernements ne le porte pas.
         "membres_recenses": 21,
+        # #996 lot 4 : combien de personnes DISTINCTES `membres[]` porte.
+        #
+        # Les deux nombres existent parce que `membres[]` ne compte pas des
+        # personnes : il porte une entrée par PÉRIODE — un ministre qui change
+        # de portefeuille en cours de gouvernement en a plusieurs (#398).
+        # Mesuré le 18/09/2026 sur les 17 fiches : 770 entrées pour 650
+        # personnes, et Fillon II à lui seul 89 entrées pour 52 personnes.
+        #
+        # Sans ce compteur, `len(membres)` et `membres_recenses` sont deux
+        # nombres de populations différentes posés côte à côte, et « 89 des 52
+        # membres recensés » est ce qu'on lit. Le rapprochement qui a un sens
+        # est `membres_distincts` / `membres_recenses` — et il reste deux
+        # entiers, jamais un taux (§2 règle 7, et le commentaire ci-dessus).
+        "membres_distincts": 19,
         "par_statut": {
             "depose": 0,
             "navette_en_cours": 0,
@@ -334,6 +347,7 @@ def make_empty_profil_gouvernement(gouvernement_id: str, nom: str) -> dict[str, 
         "textes": [],
         "comptages": {
             "membres_recenses": None,
+            "membres_distincts": 0,
             "par_statut": make_empty_comptages_statuts(),
         },
         "sources": [],
