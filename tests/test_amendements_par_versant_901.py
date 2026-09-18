@@ -118,36 +118,27 @@ def test_le_dossier_europeen_n_est_pose_que_s_il_existe() -> None:
     ]
 
 
-def test_l_axe_europeen_est_la_commission_saisie_au_fond() -> None:
-    """Une saisine conjointe ne vaut qu'à défaut d'une saisine au fond, et un
-    dossier sans commission ne s'invente pas de matière."""
-    out = _executer("""
-      const dossiers = {
-        'deux': { commissions_au_fond: [
-          { nom: 'Budgets', statut: 'au_fond_conjointe' },
-          { nom: 'Legal Affairs', statut: 'au_fond' },
-        ] },
-        'conjointe': { commissions_au_fond: [{ nom: 'Budgets', statut: 'au_fond_conjointe' }] },
-        'sans_statut': { commissions_au_fond: [{ nom: 'Foreign Affairs' }] },
-        'vide': { commissions_au_fond: [] },
-      };
-      const f = a.commissionAuFondEuropeenne((r) => dossiers[r] || null);
-      console.log(JSON.stringify(['deux', 'conjointe', 'sans_statut', 'vide', 'absent'].map((r) => f(r)?.nom ?? null)));
-    """)
-    assert out == ["Legal Affairs", "Budgets", "Foreign Affairs", None, None]
+def test_l_axe_europeen_a_quitte_la_commission_pour_les_themes() -> None:
+    """L'axe « commission saisie au fond » a été essayé puis écarté le
+    17/09/2026 — « les catégories doivent être en cohérence entre le sankey des
+    textes et les amendements ». Ce que ce test tenait (une saisine conjointe ne
+    vaut qu'à défaut d'une saisine au fond) n'a plus de lecteur ; ce qu'il tient
+    maintenant, c'est qu'aucune règle sans lecteur ne survit dans le module, et
+    que la cascade des thèmes a pris sa place. Les thèmes eux-mêmes sont tenus
+    par `tests/test_lecture_europeenne_901.py`."""
+    regles = REGLES.read_text(encoding="utf-8")
+    assert "commissionAuFondEuropeenne" not in regles
+    adaptateur = ADAPTATEUR.read_text(encoding="utf-8")
+    assert "themesDuDossier" in adaptateur
 
 
 def test_les_deux_populations_sont_agregees_separement(adaptateur) -> None:
     """Chacune avec SON référentiel de commissions : mélanger les résolveurs
     renverrait les dépôts européens dans « Matière non établie »."""
     bloc = adaptateur.split("const amendementsParVersant")[1].split("};")[0]
-    assert "estAmendementEuropeen(a)" in bloc and "filter(estAmendementEuropeen)" in bloc, (
-        "les deux versants se filtrent sur le même prédicat"
-    )
+    assert "estAmendementEuropeen(a)" in bloc, "le versant français exclut les dépôts européens"
+    assert "joinsEuropeens" in bloc, "le versant européen consomme la liste jointe européenne"
     assert "commissionDuDossier" in bloc, "le versant français garde les commissions de l'AN"
-    assert "commissionAuFondEuropeenne(dossierEuropeen)" in bloc, (
-        "le versant européen prend la commission au fond du dossier"
-    )
 
 
 def test_la_population_entiere_reste_celle_des_grands_chiffres(adaptateur) -> None:
@@ -157,7 +148,10 @@ def test_la_population_entiere_reste_celle_des_grands_chiffres(adaptateur) -> No
     la fiche (§2 règle 5)."""
     assert "grandsChiffres({" in adaptateur
     grands = adaptateur.split("grandsChiffres({")[1].split("})")[0]
-    assert "amendements," in grands and "amendementsParVersant" not in grands
+    assert "amendements," in grands
+    # Depuis le 17/09/2026, les grands chiffres reçoivent AUSSI le partage : la
+    # colonne « À l'Assemblée » comptait les 2 609 dépôts européens de Maurel.
+    assert "amendementsParVersant," in grands
 
 
 # ---------------------------------------------------------------------------
@@ -169,11 +163,15 @@ def test_les_deux_commutateurs_reglent_le_meme_etat(fiche) -> None:
     """Celui des textes et celui des amendements appellent `changerVersant` :
     on change de parlement sans remonter d'un écran, et les deux figures ne
     peuvent pas se contredire."""
-    assert fiche.count("<CommutateurVersant") == 3, (
-        "textes, amendements, et la carte du versant vide"
+    assert fiche.count("<CommutateurVersant") == 4, (
+        "textes, amendements, la carte du versant vide, et les votes (#901)"
     )
     assert "const [versantAmdt" not in fiche, "aucun second état de versant"
-    for bloc in fiche.split("<CommutateurVersant")[1:]:
+    # Les trois commutateurs de « Ce qu'il a proposé » règlent le MÊME état ;
+    # celui des votes (#901) est dans une autre section, donc dans un autre état.
+    section = fiche.split("function Propositions({")[1].split("function Paroles")[0]
+    assert section.count("<CommutateurVersant") == 3
+    for bloc in section.split("<CommutateurVersant")[1:]:
         entete = bloc.split("/>")[0]
         assert "changerVersant('fr')" in entete and "changerVersant('ue')" in entete
 

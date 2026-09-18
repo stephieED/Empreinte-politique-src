@@ -1033,21 +1033,6 @@ export function* rattacheDossierEuropeen(amendementsJoints, dossierEuropeen) {
   }
 }
 
-/** L'axe de la figure européenne : la commission SAISIE AU FOND du dossier,
- *  sous le nom que le Parlement européen publie — en anglais, comme les
- *  familles OEIL de la cascade (#901). 3 557 des 3 690 dépôts des candidats
- *  déclarés en portent une (96 %) ; une saisine conjointe ne vaut qu'à défaut
- *  d'une saisine au fond, et l'ordre de la source départage le reste. */
-export const commissionAuFondEuropeenne = (dossierEuropeen) => (reference) => {
-  const saisines = dossierEuropeen(reference)?.commissions_au_fond || [];
-  const fond = saisines.find((c) => c.statut === 'au_fond')
-    || saisines.find((c) => c.statut === 'au_fond_conjointe')
-    || saisines[0];
-  if (!fond) return null;
-  const nom = fond.nom || fond.sigle || null;
-  return nom ? { sigle: nom, nom } : null;
-};
-
 /*
  * UNE SEULE PASSE sur les amendements, et jamais de forme plate rematérialisée.
  *
@@ -1633,7 +1618,7 @@ export function referenceDocumentDoceo(url) {
 /* Le libellé d'un domaine EuroVoc, verbatim, se publie en capitales et numéroté
  * (« 08 RELATIONS INTERNATIONALES »). L'affichage retire le numéro et la casse ;
  * il n'écrit aucun mot. */
-function libelleDomaine(libelle) {
+export function libelleDomaine(libelle) {
   const nu = String(libelle).replace(/^\d+\s+/, '').toLocaleLowerCase('fr');
   return nu.charAt(0).toLocaleUpperCase('fr') + nu.slice(1);
 }
@@ -2755,6 +2740,7 @@ export function grandsChiffres({
   roles = [],
   mandats = [],
   amendements = null,
+  amendementsParVersant = null,
   textes = null,
   interventions = [],
   appartenances = [],
@@ -2846,12 +2832,28 @@ export function grandsChiffres({
     lot.length
       ? cellule({ nombre: lot.length, objet, detail: detail || null })
       : null;
+  /* LES TEXTES PORTÉS AU PARLEMENT EUROPÉEN (#901). `textes.publies` ne porte
+   * que la liste française depuis que les textes européens ont leur propre
+   * cascade : filtrer dessus rendait une cellule toujours vide, et les 45 textes
+   * européens d'Emmanuel Maurel n'apparaissaient pas ici. Le compte est celui
+   * que publie la cascade européenne — tout stade sauf la phase préparatoire
+   * (AGENTS.md §6) —, et ce qu'elle écarte se dit, comme côté français. */
+  const europe = textes?.europe ?? null;
+  const celluleTextesEuropeens = europe?.total
+    ? cellule({
+      nombre: europe.total,
+      objet: pluriel(europe.total, 'texte porté', 'textes portés'),
+      detail: europe.horsSeuil
+        ? `${formatNumber(europe.horsSeuil)} ${pluriel(europe.horsSeuil, 'texte en phase préparatoire n’est pas compté', 'textes en phase préparatoire ne sont pas comptés')} : la fiche ne publie que ce qui a dépassé cette phase`
+        : null,
+    })
+    : null;
   lignes.push({
     cle: 'textes',
     titre: 'Textes portés',
     cellules: {
       [pisteFrancaise]: celluleTextes(propositions, 'propositions de loi', detailTextes),
-      [INSTITUTION_PE]: celluleTextes(europeens, 'textes portés', null),
+      [INSTITUTION_PE]: celluleTextesEuropeens,
       [COLONNE_GOUVERNEMENT]: celluleTextes(projets, 'projets de loi', null),
     },
   });
@@ -2859,10 +2861,19 @@ export function grandsChiffres({
   // 2. Amendements. Le COUPLE dépôts / dossiers, jamais le compte seul : deux
   //    nombres qui varient en sens inverse appellent une lecture, un nombre seul
   //    appelle un classement (§2 règle 1).
-  const d = amendements?.dossiers ?? null;
-  const totalAuteur = amendements?.totalAuteur ?? 0;
-  let celluleAmendements = null;
-  if (totalAuteur > 0) {
+  /* DEUX CELLULES, UNE PAR PARLEMENT (#901). La cellule « À l'Assemblée »
+   * comptait tous les dépôts mais seulement les dossiers de l'AN : Emmanuel
+   * Maurel y lisait « 2 944 amendements sur 18 dossiers législatifs », dont
+   * 2 609 déposés au Parlement européen. Chaque parlement a désormais sa
+   * cellule, avec ses dépôts ET ses dossiers.
+   *
+   * Côté européen, le mot « législatif » n'est pas repris : 105 des 170
+   * dossiers amendés par Maurel sont des rapports d'initiative (INI), et les
+   * 5 de Jean-Luc Mélenchon le sont tous. */
+  const celluleDepots = (lot, dossier, dossiers) => {
+    const d = lot?.dossiers ?? null;
+    const totalAuteur = lot?.totalAuteur ?? 0;
+    if (totalAuteur === 0) return null;
     // La CONCENTRATION ne s'affirme que là où elle se prouve : ce dossier doit
     // porter plus que tous les autres réunis. Aucune constante arbitraire —
     // c'est un fait, pas un seuil. Un percentile a été essayé et écarté : il
@@ -2871,11 +2882,11 @@ export function grandsChiffres({
     const concentre = tete && tete.depots * 2 > totalAuteur ? tete : null;
     // LE TOTAL EN TÊTE, LE DÉTAIL DESSOUS (maquette « En bref », 11/09/2026) :
     // « 2 968 et 25 » au même corps se lisaient comme une fraction.
-    celluleAmendements = cellule({
+    return cellule({
       nombre: totalAuteur,
       objet: 'amendements',
       quantifieur: d?.distincts != null
-        ? { avant: 'sur', nombre: d.distincts, texte: pluriel(d.distincts, 'dossier législatif', 'dossiers législatifs') }
+        ? { avant: 'sur', nombre: d.distincts, texte: pluriel(d.distincts, dossier, dossiers) }
         : null,
       detail: concentre
         ? `${formatNumber(concentre.depots)} d’entre eux sur « ${concentre.titre} »`
@@ -2884,12 +2895,22 @@ export function grandsChiffres({
       // sur un texte peut être un travail de fond comme une stratégie de
       // blocage, et le nombre ne les distingue pas.
     });
-  }
+  };
+  const celluleAmendements = celluleDepots(
+    amendementsParVersant?.francais ?? amendements,
+    'dossier législatif',
+    'dossiers législatifs',
+  );
+  /* « dossier », et non « dossier législatif » : 105 des 170 dossiers amendés
+   * par Emmanuel Maurel sont des rapports d'initiative, et les 5 de Jean-Luc
+   * Mélenchon le sont tous. */
+  const celluleAmendementsUe = celluleDepots(amendementsParVersant?.europeens, 'dossier', 'dossiers');
   lignes.push({
     cle: 'amendements',
     titre: 'Amendements',
     cellules: {
       [pisteFrancaise]: celluleAmendements,
+      [INSTITUTION_PE]: celluleAmendementsUe,
       [COLONNE_GOUVERNEMENT]: celluleAbsente('un ministre ne dépose pas d’amendement'),
     },
   });

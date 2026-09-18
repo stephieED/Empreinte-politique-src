@@ -16,7 +16,7 @@ import '../styles/shell.css';
 import './CandidateProfile.css';
 import { BadgeSource, ListeVide } from './Lecture';
 import { BarreFiltre, EtiquetteFiltre, MOT, VideDuFiltre } from './Recherche';
-import { teinteMatiere } from '../utils/matiere';
+import { teinteMatiere, teinteThemeUe } from '../utils/matiere';
 import { MATIERE_NON_ETABLIE, NATURES_UE } from '../utils/profilCandidat';
 import { Cascade, ListeCascade } from './CascadeTextes';
 import { cascadeDessinee, disposerCascadeUE, selectionDeTousLesTextes } from '../utils/cascadeTextes';
@@ -535,7 +535,7 @@ function Fonctions({ fonctions }) {
  * dont la commission n'est pas résolue n'a pas de dénominateur, et lui en
  * inventer un le ferait disparaître dans les autres (§2 règle 5).
  */
-function Matieres({ chute, matiere, onMatiere }) {
+function Matieres({ chute, matiere, onMatiere, ue = false }) {
   const rang = useMemo(
     () => new Map(chute.matieres.map((m, i) => [m, i])),
     [chute.matieres],
@@ -569,7 +569,7 @@ function Matieres({ chute, matiere, onMatiere }) {
       </div>
       {lignes.map((x) => {
         const dens = x.textes ? x.amdt / x.textes : null;
-        const teinte = teinteMatiere(x.m, rang.get(x.m));
+        const teinte = ue ? teinteThemeUe(x.m, rang.get(x.m)) : teinteMatiere(x.m, rang.get(x.m));
         return (
           <button
             aria-pressed={matiere === x.m}
@@ -667,7 +667,7 @@ function CommutateurVersant({ ue, onFr, onUe, compteFr, compteUe, libelle }) {
   );
 }
 
-function Propositions({ amendements, amendementsParVersant, textes, causeAmendements, causeTextes, voix, filtre = null }) {
+function Propositions({ amendements, amendementsParVersant, amendementsUe, textes, causeAmendements, causeTextes, voix, filtre = null }) {
   const mot = filtre?.mot || '';
   const [matiere, setMatiere] = useState(null);
   const [selTexte, setSelTexte] = useState(null);
@@ -677,6 +677,8 @@ function Propositions({ amendements, amendementsParVersant, textes, causeAmendem
   // Une sélection est un intervalle de crans : elle ne veut rien dire sur
   // l'autre échelle, et la garder ouvrirait une liste sans rapport.
   const [nature, setNature] = useState('tous');
+  // Le filtre par nature des dossiers amendés au Parlement européen (#901).
+  const [natureAmdt, setNatureAmdt] = useState('tous');
   const changerVersant = (v) => {
     setVersant(v);
     setSelTexte(null);
@@ -684,6 +686,7 @@ function Propositions({ amendements, amendementsParVersant, textes, causeAmendem
     // « Finances » et « Legal Affairs » ne vivent pas dans le même référentiel :
     // garder la matière choisie ouvrirait une liste de dossiers sans rapport.
     setMatiere(null);
+    setNatureAmdt('tous');
   };
   const ue = versant === 'ue' || (!deuxVersants && textes.total === 0);
   /* LE FILTRE PAR NATURE (#901, arbitré le 17/09/2026) : une sous-cascade par
@@ -710,12 +713,23 @@ function Propositions({ amendements, amendementsParVersant, textes, causeAmendem
   const deuxVersantsAmdt = amdtFr.totalAuteur > 0 && amdtUe.totalAuteur > 0;
   const commutateur = deuxVersants || deuxVersantsAmdt;
   const amdt = ue ? amdtUe : amdtFr;
-  /* Sous un mot, la liste des dossiers est dépliée sur toutes les commissions
-   * (#979) : la fiche réduite se lit sans chercher la commission du bon dossier. */
+  /* LE FILTRE PAR NATURE DES AMENDEMENTS EUROPÉENS (#901) : les puces des
+   * textes portés, sur les dossiers amendés. Comme pour les textes, il ne
+   * s'affiche que si la fiche porte au moins deux natures, et une procédure
+   * hors des quatre natures reste comptée dans « Toutes natures ». */
+  const naturesAmdt = ue && amendementsUe
+    ? NATURES_UE.filter((n) => amendementsUe.depotsParNature[n.cle] > 0)
+    : [];
+  const filtreNatureAmdt = naturesAmdt.length > 1;
+  const figureAmdt = ue && amendementsUe
+    ? (filtreNatureAmdt && natureAmdt !== 'tous' ? amendementsUe.parNature[natureAmdt] : amendementsUe.figure)
+    : amdt;
+  /* Sous un mot, la liste des dossiers est dépliée sur toutes les matières
+   * (#979) : la fiche réduite se lit sans chercher la matière du bon dossier. */
   const dossiersDeLaMatiere = matiere || mot
     ? (matiere
-        ? (amdt.chute?.dossiersParMatiere?.[matiere] || [])
-        : Object.values(amdt.chute?.dossiersParMatiere || {}).flat())
+        ? (figureAmdt.chute?.dossiersParMatiere?.[matiere] || [])
+        : Object.values(figureAmdt.chute?.dossiersParMatiere || {}).flat())
         .slice()
         .sort((a, b) => b.n - a.n)
     : [];
@@ -786,6 +800,7 @@ function Propositions({ amendements, amendementsParVersant, textes, causeAmendem
               <Cascade
                 cascade={cascade}
                 disposer={disposer}
+                ue={ue}
                 onSelection={setSelTexte}
                 selection={selTexte}
               />
@@ -877,11 +892,31 @@ function Propositions({ amendements, amendementsParVersant, textes, causeAmendem
               ue={ue}
             />
           )}
-          <Matieres
-            chute={amdt.chute}
-            matiere={matiere}
-            onMatiere={choisirMatiere}
-          />
+          {filtreNatureAmdt && (
+            <div className="cp-natures" role="group" aria-label="Nature des dossiers amendés">
+              {[{ cle: 'tous', libelle: 'Toutes natures', total: amdt.totalAuteur }]
+                .concat(naturesAmdt.map((n) => ({ ...n, total: amendementsUe.depotsParNature[n.cle] })))
+                .map((n) => (
+                  <button
+                    aria-pressed={natureAmdt === n.cle}
+                    className="cp-nature"
+                    key={n.cle}
+                    onClick={() => { setNatureAmdt(n.cle); setMatiere(null); }}
+                    type="button"
+                  >
+                    {n.libelle} <b className="cp-num">{formatNumber(n.total)}</b>
+                  </button>
+                ))}
+            </div>
+          )}
+          {figureAmdt.chute && (
+            <Matieres
+              ue={ue}
+              chute={figureAmdt.chute}
+              matiere={matiere}
+              onMatiere={choisirMatiere}
+            />
+          )}
           {/* CE QUI RESTAIT EN TROIS CARTES TIENT EN UNE LIGNE. Les adoptés et
               les deux motifs d'irrecevabilité étaient rendus en `cp-bloc`, la
               forme réservée aux grands chiffres : trois nombres de la taille des
@@ -1005,22 +1040,63 @@ function Paroles({ interventions, cause, mot = '' }) {
 }
 
 /* ── § 5 — ce qu'il a voté ─────────────────────────────────────────────────── */
+/* ── § 3 — CE QU'IL A VOTÉ, DES DEUX CÔTÉS (#901) ───────────────────────────
+ *
+ * Le même commutateur que « Ce qu'il a proposé », et la même figure que côté
+ * français — le composant est partagé, seuls trois traits changent, chacun
+ * parce que la source ne publie pas la même chose à Strasbourg : aucun
+ * découpage par période, aucune origine de texte, et le thème du dossier à la
+ * place de la commission saisie au fond.
+ */
 function Votes({ votes, cause, mot = '' }) {
-  /* Sous un mot, un vote qui ne s'affiche pas n'est pas un vote qui n'existe
-   * pas : les positions européennes non rattachées portent un intitulé que le
-   * filtre trouve, et la fiche ne les montre pas davantage sans lui. Le message
-   * le dit, avec leur nombre (§2 règle 5). */
-  if (mot && votes.derniereLectureDisponible !== false && (!votes.textes || !votes.periodes?.length)) {
-    const europeennes = votes.nonResolusEuropeens || 0;
+  const europe = votes.europe || { textes: 0 };
+  const deuxVersants = votes.textes > 0 && europe.textes > 0;
+  const [versant, setVersant] = useState(votes.textes > 0 ? 'fr' : 'ue');
+  const ue = europe.textes > 0 && (versant === 'ue' || !deuxVersants);
+  /* Sous un mot, rien à afficher n'est pas rien à dire : la carte le dit
+   * plutôt que de disparaître (§2 règle 5). Depuis #901, les positions
+   * européennes sont rattachées et filtrées comme les autres : la phrase
+   * qui les déclarait absentes n'a plus lieu d'être. */
+  if (mot && votes.derniereLectureDisponible !== false
+    && !europe.textes && (!votes.textes || !votes.periodes?.length)) {
     return (
       <VideDuFiltre mot={mot}>
         Aucun vote affiché dont l’intitulé contient {MOT(mot)}.
-        {europeennes > 0
-          ? ` ${formatNumber(europeennes)} position${europeennes > 1 ? 's' : ''} au Parlement européen le contien${europeennes > 1 ? 'nent' : 't'}, mais aucune n’est rattachée à un scrutin identifié : ${europeennes > 1 ? 'elles ne sont pas affichées' : 'elle n’est pas affichée'}.`
-          : ''}
       </VideDuFiltre>
     );
   }
+  if (ue || deuxVersants) {
+    return (
+      <>
+        {deuxVersants && (
+          <CommutateurVersant
+            compteFr={votes.textes}
+            compteUe={europe.textes}
+            libelle="Parlement des votes"
+            onFr={() => setVersant('fr')}
+            onUe={() => setVersant('ue')}
+            ue={ue}
+          />
+        )}
+        {ue ? (
+          <VotesParPeriode
+            key="ue"
+            periodes={europe.periodes}
+            portee={europe.portee}
+            regle={`${formatNumber(europe.textes)} textes — dernier vote retenu pour chaque texte`}
+            reperes={europe.reperes}
+            ue
+          />
+        ) : (
+          <VotesFrancais cause={cause} mot={mot} votes={votes} />
+        )}
+      </>
+    );
+  }
+  return <VotesFrancais cause={cause} mot={mot} votes={votes} />;
+}
+
+function VotesFrancais({ votes, cause, mot = '' }) {
   if (!votes.total) {
     return (
       <div className="cp-carte">
@@ -1055,22 +1131,14 @@ function Votes({ votes, cause, mot = '' }) {
             motif="L’index des scrutins n’a pas pu être lu. Sans lui, la dernière lecture de chaque texte n’est pas déterminable, et un décompte non replié afficherait une position de première lecture comme sa position sur la loi."
           />
         </div>
-      ) : votes.surEnsemble === 0 && votes.nonResolusEuropeens === votes.total ? (
-        /* TOUS SES VOTES SONT EUROPÉENS, ET AUCUN N'EST RATTACHÉ À UN SCRUTIN.
-           Le motif générique — « aucune position ne porte sur l'ensemble d'un
-           texte » — est une règle de l'Assemblée : la servir ici attribuerait à
-           la personne une limite qui est la nôtre (§2 règle 2). */
-        <div className="cp-carte">
-          {/* `couvert`, et non `non_collecte` : ces positions SONT collectées —
-              le tableau « ce que chaque liste porte » les compte, et dire
-              l'inverse ici recréerait la contradiction que ce correctif retire.
-              Ce qui manque n'est pas la donnée, c'est notre rattachement. */}
-          <ListeVide
-            cause="couvert"
-            motif={`Ses ${formatNumber(votes.total)} positions au Parlement européen sont collectées, mais aucune n’est rattachée à un scrutin identifié : la source ne publie pas d’identifiant que notre index sache résoudre. Elles ne sont donc ni repliées sur une dernière lecture, ni affichées ici — et aucune n’est perdue.`}
-          />
-        </div>
       ) : votes.surEnsemble === 0 ? (
+        /* CE QUE CETTE BRANCHE NE DIT PLUS (#901). Elle portait, pour les fiches
+           dont tous les votes sont européens, « ses N positions au Parlement
+           européen sont collectées, mais aucune n'est rattachée à un scrutin
+           identifié ». Ce n'est plus vrai : elles le sont, par numéro et date,
+           et le versant européen les affiche — la carte française n'est plus
+           atteinte dans ce cas. */
+
         <div className="cp-carte">
           <ListeVide
             cause="couvert"
@@ -1592,6 +1660,7 @@ export default function CandidateProfile({ candidate, mot = '', saisie = '', onS
           key={`propose-${mot}`}
           amendements={c.amendements}
           amendementsParVersant={c.amendementsParVersant}
+          amendementsUe={c.amendementsUe}
           textes={c.textes}
           causeAmendements={c.causes.amendements}
           causeTextes={c.causes.textes_portes}

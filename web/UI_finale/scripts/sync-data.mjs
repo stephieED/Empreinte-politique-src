@@ -114,6 +114,12 @@ if (existsSync(dossiersEuropeensPath)) {
   );
 }
 
+// --- scrutins_europeens.json (scrutins nominatifs du Parlement européen — #901) ---
+const scrutinsEuropeensPath = path.join(repoRoot, 'pivot_data', 'scrutins_europeens.json');
+if (existsSync(scrutinsEuropeensPath)) {
+  cpSync(scrutinsEuropeensPath, path.join(outDir, 'scrutins_europeens.json'));
+}
+
 // --- documents_europeens.json (document doceo → matières EuroVoc et leur domaine — #901) ---
 // L'axe de la cascade européenne : le domaine EuroVoc de chaque concept d'un
 // texte porté. Sans lui, les textes sans dossier restent en « matière non

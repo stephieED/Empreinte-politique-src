@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 368 décisions
+gouverne sans avoir à fouiller les 369 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -1211,7 +1211,7 @@ Le mentionnent sans le gouverner : [`gouvernement-premier-ministre-portefeuille`
 
 ## `src/scrutins_europeens.py`
 
-Le mentionnent sans le gouverner : [`cascade-europeenne-une-porte-901`](decisions/cascade-europeenne-une-porte-901.md), [`index-scrutins-europeens-901`](decisions/index-scrutins-europeens-901.md), [`pas-d-ecarts-groupe-europeens-901`](decisions/pas-d-ecarts-groupe-europeens-901.md).
+Le mentionnent sans le gouverner : [`cascade-europeenne-une-porte-901`](decisions/cascade-europeenne-une-porte-901.md), [`index-scrutins-europeens-901`](decisions/index-scrutins-europeens-901.md), [`lecture-europeenne-themes-et-votes-901`](decisions/lecture-europeenne-themes-et-votes-901.md), [`pas-d-ecarts-groupe-europeens-901`](decisions/pas-d-ecarts-groupe-europeens-901.md).
 
 ## `src/scrutins_index.py`
 

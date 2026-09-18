@@ -283,7 +283,9 @@ def test_chaque_figure_porte_le_mot():
         "Aucun dossier amendé dont l’intitulé contient",
         " Au Parlement européen, ces intitulés sont publiés en anglais.",
         "Aucun vote affiché dont l’intitulé contient",
-        "mais aucune n’est rattachée à un scrutin identifié",
+        # La phrase qui déclarait les positions européennes non rattachées est
+        # partie avec #901 : elles le sont, par numéro et date, et la fiche les
+        # affiche. Le message du filtre n'a plus à les excepter.
         "Aucun scrutin comparable avec son groupe dont l’intitulé contient",
         "Aucune intervention dont le sujet ou le propos contient",
     ],
@@ -308,14 +310,17 @@ def test_un_vide_du_filtre_passe_avant_le_vide_de_collecte():
 
 def test_les_listes_se_deplient_sous_un_mot():
     fiche = _lire(FICHE)
-    assert "Object.values(amdt.chute?.dossiersParMatiere || {}).flat()" in fiche
+    # `figureAmdt` depuis #901 : la population affichée est celle du versant et
+    # de la nature retenus, le dépliage sous un mot ne change pas.
+    assert "Object.values(figureAmdt.chute?.dossiersParMatiere || {}).flat()" in fiche
     assert "'Toutes les commissions'" in fiche
     assert "deplie={Boolean(mot)}" in fiche
     paroles = _lire(PAROLES)
     assert "useState(deplie && !sansDecoupage ? null : periodes.length - 1)" in paroles
     assert "{!sujet && !deplie ? (" in paroles
     votes = _lire(VOTES)
-    assert "{!periode.cumul && (" in votes
+    # `&& !ue` depuis #901 : le versant européen n'a pas de période du tout.
+    assert "{!periode.cumul && !ue && (" in votes
 
 
 # ---------------------------------------------------------------------------

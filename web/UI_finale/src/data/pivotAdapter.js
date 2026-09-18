@@ -15,15 +15,18 @@
 
 import {
   INSTITUTION_PARLEMENT,
+  MATIERE_NON_ETABLIE,
   agregerAmendements,
   appartenancesGouvernementales,
   bornesDuParcours,
   causeListeVide,
-  commissionAuFondEuropeenne,
   couvertureDesListes,
   directionQuestionsGouvernement,
   essentiel,
   estAmendementEuropeen,
+  libelleDomaine,
+  NATURES_UE,
+  natureEuropeenne,
   grandsChiffres,
   fonctionsExercees,
   limitesDeclarees,
@@ -37,6 +40,7 @@ import {
 } from '../utils/profilCandidat';
 import { LIBELLE_SORT_TEXTE, legislatureDeAmendementId } from '../utils/lecture';
 import { ecartsAvecLeGroupe } from '../utils/ecartsGroupe';
+import { figureVotesEuropeens, themesDuDossier, votesEuropeensRetenus } from '../utils/votesEuropeens';
 import {
   couvertureDesReperes,
   periodesDeVote,
@@ -276,6 +280,7 @@ export function buildCandidateView(
   ficheDuGroupe = null,
   dossiersEuropeens = null,
   documentsEuropeens = null,
+  scrutinsEuropeens = null,
 ) {
   const mandats = pivot.mandats || [];
   const votes = joinVotes(pivot.votes || [], scrutinsIndex);
@@ -334,20 +339,65 @@ export function buildCandidateView(
     positionALaDate,
     commissionDuDossier,
   );
+  /* ── L'AXE DES AMENDEMENTS EUROPÉENS : LES THÈMES, ET LE FILTRE PAR NATURE ──
+   *
+   * La figure range les dépôts par MATIÈRE, et la matière d'un dépôt européen
+   * est celle de son dossier : les mêmes thèmes que le sankey des textes
+   * portés, par la même cascade (`themesDuDossier`). La commission saisie au
+   * fond a été essayée puis écartée le 17/09/2026 — « les catégories doivent
+   * être en cohérence entre le sankey des textes et les amendements ».
+   *
+   * UN DÉPÔT COMPTE SOUS CHACUN DES THÈMES DE SON DOSSIER, et les lignes ne
+   * s'additionnent donc pas au total annoncé. C'est assumé : ce n'est pas un
+   * sankey qui répartit un tout, mais un diagramme en barres, où deux lignes ne
+   * se lisent jamais comme une somme. Les effectifs des puces de nature, eux,
+   * comptent des DÉPÔTS, jamais les copies par thème.
+   *
+   * La duplication passe par la clé de dossier (`référence§thème`), parce que
+   * `agregerAmendements` lit la matière depuis cette clé : rien d'autre à
+   * réécrire, et un seul endroit qui sait répartir. */
+  const SEPARATEUR_THEME = '§';
+  const joinsEuropeens = [...rattacheDossierEuropeen(
+    joinAmendements((pivot.amendements || []).filter(estAmendementEuropeen), amendementsIndex),
+    dossierEuropeen,
+  )];
+  const natureDuDepot = (a) => (a.texte_vise
+    ? natureEuropeenne({ reference_dossier: a.texte_vise }, dossierEuropeen)
+    : 'sans_dossier');
+  const parThemes = (liste) => {
+    const copies = [];
+    for (const a of liste) {
+      const themes = themesDuDossier(a.dossier_id ? dossierEuropeen(a.dossier_id) : null);
+      if (!themes.length) { copies.push(a); continue; }
+      for (const theme of themes) {
+        copies.push({ ...a, dossier_id: `${a.dossier_id}${SEPARATEUR_THEME}${theme}` });
+      }
+    }
+    return agregerAmendements(copies, positionALaDate, (cle) => {
+      const i = String(cle || '').indexOf(SEPARATEUR_THEME);
+      if (i < 0) return null;
+      const nom = cle.slice(i + 1);
+      return { sigle: nom, nom };
+    });
+  };
+  const amendementsUe = {
+    figure: parThemes(joinsEuropeens),
+    parNature: Object.fromEntries(
+      NATURES_UE.map((n) => [n.cle, parThemes(joinsEuropeens.filter((a) => natureDuDepot(a) === n.cle))]),
+    ),
+    depotsParNature: Object.fromEntries(NATURES_UE.map((n) => [
+      n.cle,
+      joinsEuropeens.filter((a) => a.role_signataire === 'auteur_principal' && natureDuDepot(a) === n.cle).length,
+    ])),
+  };
+
   const amendementsParVersant = {
     francais: agregerAmendements(
       joinAmendements((pivot.amendements || []).filter((a) => !estAmendementEuropeen(a)), amendementsIndex),
       positionALaDate,
       commissionDuDossier,
     ),
-    europeens: agregerAmendements(
-      rattacheDossierEuropeen(
-        joinAmendements((pivot.amendements || []).filter(estAmendementEuropeen), amendementsIndex),
-        dossierEuropeen,
-      ),
-      positionALaDate,
-      commissionAuFondEuropeenne(dossierEuropeen),
-    ),
+    europeens: agregerAmendements(joinsEuropeens, positionALaDate, () => null),
   };
   /* Le document doceo d'un texte porté, résolu dans
    * `pivot_data/documents_europeens.json` : ses matières EuroVoc et leur
@@ -392,6 +442,27 @@ export function buildCandidateView(
     commissionDuDossier,
   });
   const periodesDeVotes = periodesDeVote(votesQualifies);
+
+  /* « Ce qu'il a voté » AU PARLEMENT EUROPÉEN : un texte, une position, et les
+   * mêmes thèmes que le sankey (`utils/votesEuropeens.js`). Les 11 013
+   * positions européennes ne portent aucun `scrutin_id` — l'index de l'AN ne
+   * les résout pas, par contrat (`index-scrutins-europeens-901`) — et se
+   * joignent par NUMÉRO + DATE à `pivot_data/scrutins_europeens.json`. */
+  const selectionEuropeenne = votesEuropeensRetenus(pivot.votes || [], scrutinsEuropeens);
+  const figureEuropeenne = figureVotesEuropeens(
+    selectionEuropeenne.retenus,
+    mandats,
+    dossierEuropeen,
+    selectionEuropeenne.joints,
+  );
+  const votesEuropeens = {
+    positions: selectionEuropeenne.total,
+    joints: selectionEuropeenne.joints,
+    textes: figureEuropeenne.textes,
+    periodes: figureEuropeenne.periodes,
+    portee: porteeCommune(figureEuropeenne.periodes),
+    reperes: figureEuropeenne.reperes,
+  };
 
   /* « Ce qu'il a dit » : les interventions rangées par période politique
    * (#328). Le découpage vient des MÊMES repères que les votes — le banc lu
@@ -454,6 +525,7 @@ export function buildCandidateView(
       roles,
       mandats,
       amendements,
+      amendementsParVersant,
       textes,
       interventions,
       appartenances,
@@ -473,6 +545,7 @@ export function buildCandidateView(
     fonctions,
     amendements,
     amendementsParVersant,
+    amendementsUe,
     textes,
     /* `natures` a disparu d'ici avec #328 : la nature de l'intervention est
      * devenue une FACETTE de la section, comptée sous la période et le sujet
@@ -506,6 +579,7 @@ export function buildCandidateView(
       // manquent pour TOUS les votes, ce qui n'est pas la même chose que « ces
       // textes n'ont pas de commission saisie au fond ».
       rattachementDisponible: scrutinsDossiers !== null,
+      europe: votesEuropeens,
     },
     ecarts,
 

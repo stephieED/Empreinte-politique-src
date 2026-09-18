@@ -10,7 +10,7 @@
  */
 import { Fragment, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import './CandidateProfile.css';
-import { teinteMatiere } from '../utils/matiere';
+import { teinteMatiere, teinteThemeUe } from '../utils/matiere';
 import { croise, disposerCascade, textesDeLaSelection } from '../utils/cascadeTextes';
 import { LIBELLE_SORT_TEXTE, MOTIF_SORT, estProcedure49_3, formatNumber } from '../utils/lecture';
 import { LIBELLE_PISTE, LIBELLE_STADE } from '../utils/profilCandidat';
@@ -59,7 +59,7 @@ function useLargeur() {
  * la sienne — `disposerCascadeUE`, un seul palier, parce que les seize stades
  * européens ne s'ordonnent pas (#901). Le rendu, lui, ne change pas : c'est la
  * même figure, les mêmes teintes de matière, le même clic. */
-export function Cascade({ cascade, selection, onSelection, rangs = null, disposer = disposerCascade }) {
+export function Cascade({ cascade, selection, onSelection, rangs = null, disposer = disposerCascade, ue = false }) {
   const [ref, largeur] = useLargeur();
   const rang = useMemo(() => {
     if (!rangs) return new Map((cascade.matieres || []).map((m, i) => [m, i]));
@@ -68,7 +68,7 @@ export function Cascade({ cascade, selection, onSelection, rangs = null, dispose
     return r;
   }, [cascade.matieres, rangs]);
   const teinteDe = useMemo(
-    () => (m) => teinteMatiere(m, rang.get(m) ?? 0),
+    () => (m) => (ue ? teinteThemeUe(m, rang.get(m) ?? 0) : teinteMatiere(m, rang.get(m) ?? 0)),
     [rang],
   );
   const vue = useMemo(
