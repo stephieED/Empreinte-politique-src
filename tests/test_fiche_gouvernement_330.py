@@ -140,8 +140,14 @@ def test_la_fiche_dit_ce_qu_elle_n_a_pas_pu_lire():
     """Trois absences, trois causes, jamais confondues (DESIGN_SYSTEM §7 règle 7)."""
     source = COMPOSANT.read_text(encoding="utf-8")
     assert "function limitesDeLaFiche" in source
+    # Hors commentaires : la mention de la borne d'hier y explique le piège.
+    sans_commentaires = re.sub(r"/\*.*?\*/", "", source, flags=re.S)
+    assert "21 juin 2017" not in sans_commentaires, (
+        "la borne de couverture se lit sur `textesCouverture.borne` : écrite en dur, "
+        "elle a menti le jour où l'archive de la XIVe a reculé la borne à 2012 (#1019)"
+    )
     for cause in (
-        "commencent au 21 juin 2017",          # une archive que la source ne publie pas
+        "commencent au ${jour(couverture.borne)}",  # une archive que la source ne publie pas
         "ne déclare plus la position de ses groupes",  # une position qu'elle ne déclare plus
         "Un gouvernement ne vote pas",         # une activité qui n'existe pas à ce niveau
     ):
