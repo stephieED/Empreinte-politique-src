@@ -148,19 +148,30 @@ pas au même moment : voir *Les deux index partagés*.
 
 ## Les deux sources d'entrée de l'extraction individuelle
 
-`generate_all_profiles.py --candidats` accepte deux fichiers, qui pilotent deux
-périmètres différents :
+`generate_all_profiles.py --candidats` accepte deux fichiers, qui pilotent
+**trois** périmètres : `raw_data/roster_candidats.json` en porte deux depuis
+#996 lot 3, distingués par leur `statut`, repris tel quel en `meta.provenance`.
 
 | Source | Fichier | Qui la produit | Portée | `meta.provenance` |
 |---|---|---|---|---|
 | Éditoriale (défaut) | `raw_data/candidats.json` | tenue à la main | candidats/présidentiables déclarés ou pressentis — **13** au 30/08/2026 | `candidat_declare` |
 | Roster-driven | `raw_data/roster_candidats.json` | `generate_roster_candidats.py`, depuis `raw_data/groupes_reels.json` | tous les membres réels des groupes configurés **dont l'extraction n'est pas suspendue** — 10 des 12 depuis #700 (5 XVIe + 5 XVIIe), les 2 groupes Sénat restant gelés (#516). Un membre **sans slug** n'entre pas dans le roster (`build_roster_candidats_detaille` le laisse tomber). **Depuis #708** un acteur AMO30 qu'aucune entrée de `raw_data/correspondance_acteurs_an.json` ne couvre reçoit `text_utils.slugify(état civil)`, la table gardant la priorité absolue ; `ROSTER_SANS_SLUG` ne compte plus que les **collisions** non tranchées, et `ROSTER_SLUG_FABRIQUE` (`::notice::`) nomme qui entre sans correspondance relue — la §5b du portail bloque leur publication tant qu'elle manque (#525). **Depuis #715**, `merge-and-pivot` écrit cette entrée dans le run même qui crée le profil — `build_correspondance_acteurs_an.py --completer-derivees`, passe additive et hors ligne, estampille `origine: "derivee"` — de sorte que le slug est gelé avant d'être publié, et la table entre dans le `git add` du workflow. | `roster_groupe` |
+| Roster-driven — gouvernements | `raw_data/roster_candidats.json` (mêmes entrées, `statut` distinct) | `generate_roster_candidats.candidats_des_gouvernements`, depuis les organes `GOUVERNEMENT` d'AMO30 (#996 lot 3) | les membres des gouvernements qu'AMO30 recense et qu'aucun roster de groupe n'amène. **Le roster des groupes gagne la déduplication** : une personne à la fois députée et ministre reste `roster_groupe`, sans quoi elle sortirait de la cohésion de son groupe. Son rattachement au gouvernement passe par `acteur_ref`, pas par la provenance. `acteur_ref` est transmis à la collecte — une part de ces personnes n'a jamais été députée, donc aucune recherche par nom ne les retrouve dans AMO30 (#850). `--sans-gouvernements` débranche la passe ; un échec de lecture de l'archive est non fatal et ne collecte alors aucun membre, plutôt que d'en publier une liste amputée (§2 règle 5). | `roster_gouvernement` |
 
 Même format d'entrée, même pipeline de collecte et de normalisation. Un même
 `slug` peut apparaître dans les deux : `merge_profile.merge_pivot_profile()` ne
-rétrograde **jamais** un profil `candidat_declare` vers `roster_groupe`, la
-source éditoriale prime.
-→ [`docs/decisions/provenance-pivot.md`](./decisions/provenance-pivot.md)
+rétrograde **jamais** un profil `candidat_declare` vers une provenance de
+roster, la source éditoriale prime.
+
+`meta.provenance` est un vocabulaire **fermé** de trois valeurs
+(`schema_pivot.KNOWN_PROVENANCES`), une par population de `pivot_data/profiles/`,
+que `src/population_profils.py` nomme et ventile — tout compte de profils
+affiché par un outil porte sa ventilation (#630). `PROVENANCES_ROSTER` y
+regroupe les deux provenances de roster, pour les modules qui les traitent de
+la même façon : collecte réduite au thème, `acteur_ref` transmis, preuve de
+couverture.
+→ [`docs/decisions/provenance-pivot.md`](./decisions/provenance-pivot.md),
+  [`docs/decisions/provenance-roster-gouvernement-996.md`](./decisions/provenance-roster-gouvernement-996.md)
 
 En CI, la voie roster-driven est un job dédié, `extract-roster-groupes`, distinct
 d'`extract-an`/`extract-ue-officiel` et longtemps fixé au **mode d'extraction
@@ -549,7 +560,7 @@ Trois pièges de lecture, sur ce fichier précisément :
 
 - **`meta.provenance_champs` et `meta.provenance` ne disent pas la même chose**
   (#603). Le second dit *pourquoi ce profil existe* (`candidat_declare` /
-  `roster_groupe`) ; le premier dit *d'où vient chaque valeur d'`identite`, et
+  `roster_groupe` / `roster_gouvernement`) ; le premier dit *d'où vient chaque valeur d'`identite`, et
   de quand*. Il ne décrit **que** `identite`, seul bloc composé champ par champ
   (#601), et il est **facultatif** : les 481 profils publiés avant ce lot ne le
   portent pas. Une provenance inconnue s'y lit `{"source": null,

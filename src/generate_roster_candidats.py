@@ -148,11 +148,12 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Iterable, Optional
 
 import gha
 from candidate_profile import acteur_ref_to_pseudo_url
 from gouvernement_roster_an import CLE_ROSTER as CLE_ROSTER_GOUVERNEMENTS
+from population_profils import ROSTER_GOUVERNEMENT
 from group_roster import (
     ERREURS_ROSTER,
     ecrire_rosters_bruts,
@@ -250,6 +251,70 @@ def membres_des_gouvernements(
     slugs, origines, _ = resoudre_slugs_des_membres(
         index, charger_index_gp(), chemin_correspondance)
     return deriver_membres(index, slugs, origines)
+
+
+def candidats_des_gouvernements(
+    membres_gouv: list[dict[str, Any]],
+    deja_pris: Iterable[str] = (),
+) -> list[dict[str, Any]]:
+    """Les membres de gouvernement au format `roster_candidats.json` (#996 lot 3).
+
+    `deja_pris` porte les slugs que le roster des groupes a déjà retenus, et
+    **ils gagnent** : une personne à la fois députée et ministre entre par son
+    groupe, avec `statut: "roster_groupe"`. Ce n'est pas un détail de tri —
+    `group_profile.py` agrège sur la provenance, et rétrograder un membre de
+    groupe en membre de gouvernement le retirerait de la cohésion de son
+    groupe. Le rattachement au gouvernement, lui, ne passe pas par la
+    provenance : il se fait sur `acteur_ref` (lot 4), donc rien n'est perdu.
+
+    Le `statut` écrit ici est repris **tel quel** comme `meta.provenance` par
+    `generate_all_profiles` : c'est la seule raison pour laquelle il vaut
+    exactement `roster_gouvernement`, valeur de `KNOWN_PROVENANCES`.
+    """
+    connus = set(deja_pris)
+    candidats: list[dict[str, Any]] = []
+    for membre in membres_gouv:
+        slug = membre.get("slug")
+        if not slug or slug in connus:
+            continue
+        connus.add(slug)
+        # Les libellés d'organe des gouvernements où la personne a siégé, sans
+        # doublon et dans l'ordre des périodes. `notes` est du texte libre : il
+        # nomme d'où le membre vient, il n'est pas relu par la collecte.
+        libelles = []
+        for periode in membre.get("mandat_periodes") or []:
+            libelle = periode.get("libelle_an")
+            if libelle and libelle not in libelles:
+                libelles.append(libelle)
+        candidats.append({
+            "nom": membre.get("nom"),
+            "slug": slug,
+            # Un membre de gouvernement n'a pas de parti collecté : AMO30 ne
+            # publie aucune étiquette politique sur un mandat de gouvernement.
+            # `None` dit « non porté », jamais « sans parti » (§2 règle 5).
+            "parti": None,
+            "famille_politique": None,
+            "statut": ROSTER_GOUVERNEMENT,
+            "date_declaration": None,
+            # Même forme que pour un membre de groupe : la fiche AN de l'acteur,
+            # vérifiable (§2 règle 2). `None` si AMO30 n'a pas rendu d'acteur —
+            # jamais une URL inventée (§2 règle 5).
+            "source": (
+                acteur_ref_to_pseudo_url(membre["acteur_ref"])
+                if membre.get("acteur_ref")
+                else None
+            ),
+            "notes": (
+                "Membre du gouvernement " + ", ".join(libelles)
+                + ", issu du roster réel AMO30."
+            ) if libelles else "Membre de gouvernement, issu du roster réel AMO30.",
+            # #850, et il compte plus encore ici : 124 des membres de
+            # gouvernement n'ont jamais été députés, donc aucune recherche par
+            # nom ne les retrouve dans AMO30. Sans cet identifiant, leur
+            # collecte ne pourrait pas partir.
+            "acteur_ref": membre.get("acteur_ref"),
+        })
+    return candidats
 
 
 def fetch_rosters_bruts(
@@ -640,7 +705,8 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--sans-gouvernements",
         action="store_true",
-        help="Ne pas ajouter les membres des gouvernements au roster brut (#996). "
+        help="Ne pas ajouter les membres des gouvernements, ni au roster brut ni "
+             "au roster de candidats (#996). Débranche donc leur collecte. "
              "Le roster des groupes est inchangé.",
     )
     parser.add_argument(
@@ -767,6 +833,44 @@ def main(argv: Optional[list[str]] = None) -> int:
             f"écrit avec {len(candidats)} candidat(s) malgré {len(anomalies)} anomalie(s).",
         )
 
+    # #996 lot 2 — les membres des gouvernements entrent dans le roster BRUT,
+    # sous leur propre clé, pour que la passe de correspondance dérive leurs
+    # entrées. #996 lot 3 — ils entrent AUSSI dans `roster_candidats.json`,
+    # sous `statut: "roster_gouvernement"` : c'est ce fichier que les shards
+    # lisent, donc c'est par lui que leur collecte part.
+    #
+    # APRÈS le portail d'anomalies, et AVANT l'écriture : après, parce qu'un
+    # roster de groupe incomplet ne doit pas déclencher un téléchargement
+    # d'AMO30 de plus ; avant, parce que les deux fichiers doivent décrire la
+    # même collecte à la même seconde (#518).
+    #
+    # Un échec de lecture de l'archive est non fatal : le roster des groupes
+    # est déjà constitué, et une clé absente vaut mieux qu'une liste vide
+    # (§2 règle 5). Conséquence assumée — ce run ne collecte alors aucun
+    # membre de gouvernement, et la fusion additive garde ceux du run
+    # précédent ; il ne publie pas une composition amputée.
+    if not args.sans_gouvernements:
+        try:
+            membres_gouv = membres_des_gouvernements()
+        except Exception as exc:  # noqa: BLE001 — voir le commentaire ci-dessus
+            print(f"  [!] Roster des gouvernements indisponible : {exc}", file=sys.stderr)
+        else:
+            rosters_bruts[CLE_ROSTER_GOUVERNEMENTS] = membres_gouv
+            fabriques_gouv = sum(1 for m in membres_gouv if m["slug_origine"] == "fabrique")
+            # `deja_pris` : les slugs du roster des groupes gagnent. Une
+            # personne à la fois députée et ministre reste `roster_groupe`,
+            # sans quoi elle sortirait de la cohésion de son groupe.
+            candidats_gouv = candidats_des_gouvernements(
+                membres_gouv, deja_pris=(c["slug"] for c in candidats))
+            candidats.extend(candidats_gouv)
+            print(
+                f"→ {len(membres_gouv)} membre(s) de gouvernement, dont "
+                f"{fabriques_gouv} slug(s) fabriqué(s) ; "
+                f"{len(candidats_gouv)} ajouté(s) au roster de candidats, "
+                f"{len(membres_gouv) - len(candidats_gouv)} déjà porté(s) par un groupe.",
+                file=sys.stderr,
+            )
+
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps({"candidats": candidats}, ensure_ascii=False, indent=2), encoding="utf-8")
 
@@ -775,26 +879,6 @@ def main(argv: Optional[list[str]] = None) -> int:
     # la même seconde. Publier l'un sans l'autre rendrait au consommateur une
     # composition de groupe qui n'est pas celle sur laquelle les profils ont
     # été collectés — le défaut même que ce transit ferme.
-    # #996 lot 2 — les membres des gouvernements entrent dans le roster BRUT,
-    # sous leur propre clé. Ils n'entrent PAS dans `roster_candidats.json` :
-    # ce lot leur donne un identifiant et une entrée de correspondance, la
-    # collecte de leurs profils vient après. Un échec de lecture de l'archive
-    # est non fatal ici : le roster des groupes, lui, est déjà constitué, et
-    # une clé absente vaut mieux qu'une liste vide (§2 règle 5).
-    if args.rosters_bruts_out and not args.sans_gouvernements:
-        try:
-            membres_gouv = membres_des_gouvernements()
-        except Exception as exc:  # noqa: BLE001 — voir le commentaire ci-dessus
-            print(f"  [!] Roster des gouvernements indisponible : {exc}", file=sys.stderr)
-        else:
-            rosters_bruts[CLE_ROSTER_GOUVERNEMENTS] = membres_gouv
-            fabriques_gouv = sum(1 for m in membres_gouv if m["slug_origine"] == "fabrique")
-            print(
-                f"→ {len(membres_gouv)} membre(s) de gouvernement, dont "
-                f"{fabriques_gouv} slug(s) fabriqué(s).",
-                file=sys.stderr,
-            )
-
     if args.rosters_bruts_out:
         chemin_bruts = Path(args.rosters_bruts_out)
         cles_ecrites = ecrire_rosters_bruts(chemin_bruts, rosters_bruts)
@@ -803,7 +887,14 @@ def main(argv: Optional[list[str]] = None) -> int:
             file=sys.stderr,
         )
 
-    print(f"→ {len(candidats)} candidat(s) écrit(s) dans {out_path}.", file=sys.stderr)
+    # Le compte nomme sa population (#630, §9) : depuis #996 lot 3 ce fichier
+    # porte deux rosters, et « 1 350 candidats » n'aurait dit lequel.
+    nb_gouv = sum(1 for c in candidats if c["statut"] == ROSTER_GOUVERNEMENT)
+    detail = f" ({len(candidats) - nb_gouv} de groupe · {nb_gouv} de gouvernement)" if nb_gouv else ""
+    print(
+        f"→ {len(candidats)} entrée(s) de roster écrite(s){detail} dans {out_path}.",
+        file=sys.stderr,
+    )
     for libelle, nombre in sorted(membres_par_groupe.items()):
         print(f"   · {libelle} : {nombre} membre(s)", file=sys.stderr)
     return 0

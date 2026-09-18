@@ -112,6 +112,7 @@ from candidate_profile_ue import build_profile_ue
 import correspondance_acteurs_an
 import couverture_profil
 import perimetre_candidats as perimetre
+from population_profils import PROVENANCES_ROSTER
 from groupes_config import (
     CHEMIN_CONFIG_GROUPES,
     index_membres_de_groupes_suspendus,
@@ -1188,13 +1189,19 @@ def process_candidat(
 
     source = getattr(args, "source", "all")
 
-    # provenance (#189) : "roster_groupe" pour les entrées produites par
-    # generate_roster_candidats.py (#188, statut="roster_groupe"), "candidat_declare"
-    # sinon (raw_data/candidats.json, comportement historique par défaut).
+    # provenance (#189) : reprise du `statut` que generate_roster_candidats.py
+    # écrit dans le roster (#188), "candidat_declare" sinon
+    # (raw_data/candidats.json, comportement historique par défaut).
     # Calculée ici, et plus seulement au moment de la normalisation pivot : depuis
     # #488 elle décide aussi si la collecte est bicamérale (voir
     # build_profile_any_chambre).
-    provenance = "roster_groupe" if candidat.get("statut") == "roster_groupe" else "candidat_declare"
+    #
+    # #996 lot 3 — le test portait sur l'égalité à "roster_groupe" ; un membre de
+    # gouvernement aurait donc été publié "candidat_declare", donc collecté en
+    # bicaméral et sans son `acteur_ref`. L'appartenance à PROVENANCES_ROSTER
+    # remplace l'égalité partout où « membre de roster » est ce qui est voulu.
+    statut = candidat.get("statut")
+    provenance = statut if statut in PROVENANCES_ROSTER else "candidat_declare"
 
     # ── Collecte réduite au thème (#657) ────────────────────────────────────
     # Le mode s'applique aux membres de roster, et à EUX SEULS. Un candidat
@@ -1339,7 +1346,10 @@ def process_candidat(
             # collecte à le re-deviner par son nom : 6 membres « introuvables »
             # au run 34575181245, pour une apostrophe, une barre ou un homonyme.
             # Un candidat déclaré n'en porte pas : il passe par la table (#757).
-            acteur_ref=candidat.get("acteur_ref") if provenance == "roster_groupe" else None,
+            # #996 lot 3 — les membres de gouvernement en dépendent plus encore
+            # que les membres de groupe : 124 n'ont jamais été députés, donc
+            # aucune recherche par nom ne les retrouve dans AMO30.
+            acteur_ref=candidat.get("acteur_ref") if provenance in PROVENANCES_ROSTER else None,
         )
         if result[0] is None:
             _tprint(f"  [!] Aucune identité trouvée pour {slug} dans {chambres_fr}.")

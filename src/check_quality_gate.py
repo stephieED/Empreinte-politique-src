@@ -118,8 +118,11 @@ from correspondance_acteurs_an import (  # noqa: E402
 # des candidats, et le libellé ment à chaque exécution.
 from population_profils import (  # noqa: E402
     CANDIDAT_DECLARE,
+    LIBELLE_GOUVERNEMENT,
     LIBELLE_ROSTER,
-    ROSTER_GROUPE,
+    PROVENANCES_ROSTER,
+    ROSTER_GOUVERNEMENT,
+    SEPARATEUR,
     lire_provenances,
     provenance_du_profil,
     ventiler_provenances,
@@ -292,6 +295,27 @@ def _report_incomplete_reads(
 # Section 2 — Profils générés vs candidats déclarés attendus
 # ---------------------------------------------------------------------------
 
+def _detail_roster(
+    slugs: list[str], provenances: dict[str, str]
+) -> str:
+    """`(1145 membres de roster · 205 membres de gouvernement)` — la ventilation
+    des profils publiés qui ne sont pas des candidats déclarés (#996 lot 3).
+
+    `Ventilation.detail()` n'est pas réutilisée ici : elle affiche toujours le
+    poste « candidats », qui vaut 0 par construction sur cette sous-population
+    et n'y apprendrait rien. Le poste gouvernement, lui, suit la même règle
+    qu'ailleurs — affiché seulement s'il pèse (§9 : chaque chiffre nomme sa
+    population, et un `0` masqué dit qu'il n'y en a pas).
+    """
+    gouvernement = sum(
+        1 for slug in slugs if provenances.get(slug) == ROSTER_GOUVERNEMENT
+    )
+    postes = [f"{len(slugs) - gouvernement} {LIBELLE_ROSTER}"]
+    if gouvernement:
+        postes.append(f"{gouvernement} {LIBELLE_GOUVERNEMENT}")
+    return "(" + SEPARATEUR.join(postes) + ")"
+
+
 def _report_coverage(
     candidats_path: Path,
     profiles_dir: Path,
@@ -358,9 +382,13 @@ def _report_coverage(
     # qu'il n'est pas un candidat déclaré. Ne reste « inattendu » qu'un profil
     # qui se DIT `candidat_declare` sans figurer dans la liste éditoriale —
     # celui-là, personne ne sait d'où il vient.
+    # #996 lot 3 — `PROVENANCES_ROSTER` et non l'égalité à `ROSTER_GROUPE` :
+    # sans elle, les 205 membres de gouvernement seraient comptés « inattendus »
+    # et nommés un par un, soit exactement les 468 lignes de fausse alerte que
+    # #630 a retirées du rapport. Un garde-fou qui crie pour rien finit désactivé.
     hors_liste = sorted(slug for slug in generated_slugs if slug not in expected_slugs)
     roster = sorted(slug for slug in hors_liste
-                    if provenances.get(slug, CANDIDAT_DECLARE) == ROSTER_GROUPE)
+                    if provenances.get(slug, CANDIDAT_DECLARE) in PROVENANCES_ROSTER)
     unexpected = [slug for slug in hors_liste if slug not in set(roster)]
 
     total_expected = len(all_candidats)
@@ -387,11 +415,11 @@ def _report_coverage(
         lines.append(f"│  {icon} Tous les candidats déclarés avec slug ont un profil généré.")
     if roster:
         lines.append(
-            f"│  ℹ {len(roster)} {LIBELLE_ROSTER} hors candidats.json — attendu : "
-            "ils alimentent les agrégats"
+            f"│  ℹ {len(roster)} profil(s) hors candidats.json {_detail_roster(roster, provenances)}"
+            " — attendu : ils alimentent"
         )
         lines.append(
-            "│    de groupe et de gouvernement, pas une fiche publiée (#630)."
+            "│    les agrégats de groupe et de gouvernement, pas une fiche publiée (#630)."
         )
     if unexpected:
         lines.append(
@@ -418,7 +446,8 @@ def _report_coverage(
         f"| 📋 Candidats déclarés attendus (avec slug) | {len(with_slug)} |",
         f"| ❌ Manquants | {len(missing)} |",
         f"| ⬜ Sans slug (identité non fabriquée) | {len(without_slug)} |",
-        f"| ℹ️ {LIBELLE_ROSTER.capitalize()} hors candidats.json (attendu) | {len(roster)} |",
+        f"| ℹ️ Profils hors candidats.json (attendu) | "
+        f"{len(roster)} {_detail_roster(roster, provenances)} |",
         "",
     ]
     if missing:

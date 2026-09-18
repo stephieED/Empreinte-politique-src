@@ -1,25 +1,39 @@
-"""population_profils.py — les deux populations de `pivot_data/profiles/`, et
-la seule façon d'en afficher un compte.
+"""population_profils.py — les populations de `pivot_data/profiles/`, et la
+seule façon d'en afficher un compte.
 
-`pivot_data/profiles/` porte **deux populations** que rien, dans le système de
-fichiers, ne distingue : un répertoire, un motif de nommage, 481 fichiers. Un
-`glob("*.pivot.json")` rend 481 slugs — c'est délibéré (#580 a préservé cette
-énumérabilité), et c'est aussi ce qui fait qu'un agent qui mesure quoi que ce
-soit lit « 481 » sans savoir ce qu'il compte :
+`pivot_data/profiles/` porte **trois populations** que rien, dans le système de
+fichiers, ne distingue : un répertoire, un motif de nommage, un fichier par
+personne. Un `glob("*.pivot.json")` rend tous les slugs — c'est délibéré (#580 a
+préservé cette énumérabilité), et c'est aussi ce qui fait qu'un agent qui mesure
+quoi que ce soit lit un total sans savoir ce qu'il compte :
 
-  - `meta.provenance == "candidat_declare"` (**13**) — les candidats déclarés à
-    la présidentielle, ceux dont `web/` publie une fiche. Un correctif de
+  - `meta.provenance == "candidat_declare"` — les candidats déclarés à la
+    présidentielle, ceux dont `web/` publie une fiche. Un correctif de
     **fusion d'identité** porte sur cette population-là ;
-  - `meta.provenance == "roster_groupe"` (**468**) — les membres des groupes
+  - `meta.provenance == "roster_groupe"` — les membres des groupes
     parlementaires, collectés pour **alimenter les agrégats** de groupe et de
     gouvernement. `src/group_profile.py` ne lit pas leur bloc `identite` : il
     consomme `nom`, `mandats`, `votes`, `interventions`, `amendements`, qui sont
-    des listes.
+    des listes ;
+  - `meta.provenance == "roster_gouvernement"` (#996, lot 3) — les membres des
+    gouvernements qu'AMO30 recense et qu'aucun roster de groupe n'amène. Même
+    usage que les précédents, un étage plus haut : ils existent pour que la
+    fiche d'un gouvernement agrège les 311 personnes de sa composition réelle,
+    et non les seules qui ont été députées.
+
+**Les comptes ne sont pas ici.** Chaque run les déplace, et ce fichier est lu
+comme courant : ils se lisent dans la sortie des outils, qui les ventilent.
 
 **Ce qui diffère est l'usage, pas l'exigence.** Un correctif de *qualité*
-d'identité porte sur les 481 : c'est dans les 468 que se trouvaient les 191
-marqueurs HATVP publiés comme des URI et les 28 lieux de naissance faits de
-plomberie XML (#556).
+d'identité porte sur tout le corpus : c'est chez les membres de roster que se
+trouvaient les 191 marqueurs HATVP publiés comme des URI et les 28 lieux de
+naissance faits de plomberie XML (#556).
+
+**Un membre de roster n'appartient qu'à une population.** Une personne qui est
+à la fois députée et ministre entre par le roster de son groupe, et le
+gouvernement la retrouve par `acteur_ref` : `PROVENANCES_ROSTER` dit ce que
+« membre de roster » désigne, pour les modules qui traitent les deux de la même
+façon (collecte réduite au thème, `acteur_ref` transmis, couverture).
 
 Pourquoi un module plutôt qu'une consigne : voir
 `docs/decisions/populations-profils-portees-par-les-outils-630.md`. En résumé,
@@ -43,6 +57,16 @@ from typing import Any, Iterable, Mapping
 
 CANDIDAT_DECLARE = "candidat_declare"
 ROSTER_GROUPE = "roster_groupe"
+ROSTER_GOUVERNEMENT = "roster_gouvernement"
+
+#: Les provenances dont le profil existe **pour être agrégé**, par opposition au
+#: candidat déclaré dont la fiche est publiée. Un module qui traite « les
+#: membres de roster » doit tester cette appartenance et non l'égalité à
+#: `ROSTER_GROUPE` : c'est cette égalité, écrite à six endroits, qui aurait
+#: laissé les membres de gouvernement sans `acteur_ref` transmis à la collecte
+#: — et 124 d'entre eux n'ont jamais été députés, donc rien ne les retrouve par
+#: leur nom (#996 lot 3, même défaut que #850).
+PROVENANCES_ROSTER = frozenset({ROSTER_GROUPE, ROSTER_GOUVERNEMENT})
 
 #: Libellés affichés. Au singulier près, ce sont les seuls mots qui doivent
 #: nommer les deux populations dans une sortie d'outil — un libellé stable est
@@ -58,6 +82,11 @@ ROSTER_GROUPE = "roster_groupe"
 #: éditoriale, et aucun outil ne le publie.
 LIBELLE_CANDIDATS = "candidats"
 LIBELLE_ROSTER = "membres de roster"
+#: « de gouvernement », et non « ministres » : `mandat_periodes` porte le
+#: libellé AMO30 de l'organe, qui recense aussi les secrétaires d'État et les
+#: ministres délégués. Nommer la population par le plus prestigieux de ses
+#: membres est la même faute que « 32 candidats déclarés » (#873).
+LIBELLE_GOUVERNEMENT = "membres de gouvernement"
 LIBELLE_AUTRE = "provenance inconnue"
 LIBELLE_ILLISIBLES = "illisibles"
 
@@ -86,8 +115,8 @@ def provenance_du_profil(profil: Mapping[str, Any] | None) -> str:
     `meta.provenance` absente vaut `"candidat_declare"` — rétro-compatibilité
     décidée par `docs/decisions/provenance-pivot.md`, et déjà appliquée par
     `validate_profil()`. Une valeur inconnue est rendue **telle quelle** : la
-    ranger d'office dans l'un des deux camps est exactement l'approximation que
-    ce module existe pour empêcher (AGENTS.md §2 règle 5).
+    ranger d'office dans l'un des camps connus est exactement l'approximation
+    que ce module existe pour empêcher (AGENTS.md §2 règle 5).
     """
     if not isinstance(profil, Mapping):
         return CANDIDAT_DECLARE
@@ -103,27 +132,45 @@ class Ventilation:
     """Un compte de profils et sa ventilation par population.
 
     `total` est la **somme des postes**, jamais un compte tenu à part : un
-    fichier illisible reste dans le total, sous son propre poste, pour que
-    « 481 » et « 13 + 468 » ne puissent pas diverger en silence.
+    fichier illisible reste dans le total, sous son propre poste, pour que le
+    total et la somme de ses parts ne puissent pas diverger en silence.
+
+    `membres_gouvernement` s'insère **après** `membres_roster` et non à la fin :
+    l'ordre des champs est celui des postes affichés, et les deux derniers sont
+    des anomalies. Les deux seuls appels positionnels connus passent en
+    nommé par ce lot, pour que le prochain champ n'ait pas à déplacer de valeur.
     """
 
     candidats_declares: int = 0
     membres_roster: int = 0
+    membres_gouvernement: int = 0
     provenance_autre: int = 0
     illisibles: int = 0
 
     @property
     def total(self) -> int:
         return (self.candidats_declares + self.membres_roster
+                + self.membres_gouvernement
                 + self.provenance_autre + self.illisibles)
 
     def postes(self) -> list[tuple[int, str]]:
         """Les postes affichables, dans l'ordre : les deux populations
-        toujours, les deux anomalies seulement si elles pèsent."""
+        historiques toujours, les trois autres seulement si elles pèsent.
+
+        **Les membres de gouvernement ne s'affichent qu'une fois collectés**, et
+        c'est voulu : avant le premier run de collecte de #996 lot 3, le poste
+        vaudrait `0` sur chaque ligne de chaque rapport, ce qui est du bruit et
+        non une ventilation. Un `0` masqué ne cache aucune population — il dit
+        qu'il n'y en a pas. Les deux populations historiques, elles, restent
+        affichées même à zéro : c'est le zéro d'un corpus vide, et le voir est
+        le premier signe qu'on ventile le mauvais répertoire.
+        """
         postes = [
             (self.candidats_declares, LIBELLE_CANDIDATS),
             (self.membres_roster, LIBELLE_ROSTER),
         ]
+        if self.membres_gouvernement:
+            postes.append((self.membres_gouvernement, LIBELLE_GOUVERNEMENT))
         if self.provenance_autre:
             postes.append((self.provenance_autre, LIBELLE_AUTRE))
         if self.illisibles:
@@ -131,22 +178,22 @@ class Ventilation:
         return postes
 
     def detail(self) -> str:
-        """`(13 candidats déclarés · 468 membres de roster)`."""
+        """`(32 candidats · 1145 membres de roster · 205 membres de gouvernement)`."""
         return "(" + SEPARATEUR.join(
             f"{effectif} {libelle}" for effectif, libelle in self.postes()
         ) + ")"
 
     def compte(self) -> str:
-        """`481   (13 candidats déclarés · 468 membres de roster)` — la forme
+        """`1382   (32 candidats · 1145 membres de roster · …)` — la forme
         à coller derrière n'importe quel libellé de compteur console."""
         return f"{self.total}   {self.detail()}"
 
     def ligne(self, libelle: str) -> str:
-        """`Profils publiés : 481   (13 candidats déclarés · …)`."""
+        """`Profils publiés : 1382   (32 candidats · 1145 membres de roster · …)`."""
         return f"{libelle} : {self.compte()}"
 
     def cellule_markdown(self) -> str:
-        """`481 (13 candidats déclarés · 468 membres de roster)` — une cellule
+        """`1382 (32 candidats · 1145 membres de roster · …)` — une cellule
         de tableau ne supporte pas les espaces d'alignement."""
         return f"{self.total} {self.detail()}"
 
@@ -157,10 +204,13 @@ class Ventilation:
         if not isinstance(valeurs, Mapping):
             return cls()
         return cls(
-            int(valeurs.get(CANDIDAT_DECLARE) or 0),
-            int(valeurs.get(ROSTER_GROUPE) or 0),
-            int(valeurs.get("provenance_autre") or 0),
-            int(valeurs.get("illisibles") or 0),
+            candidats_declares=int(valeurs.get(CANDIDAT_DECLARE) or 0),
+            membres_roster=int(valeurs.get(ROSTER_GROUPE) or 0),
+            # Absente des rapports d'avant #996 lot 3, et `0` y est la valeur
+            # juste : ces corpus ne portaient aucun membre de gouvernement.
+            membres_gouvernement=int(valeurs.get(ROSTER_GOUVERNEMENT) or 0),
+            provenance_autre=int(valeurs.get("provenance_autre") or 0),
+            illisibles=int(valeurs.get("illisibles") or 0),
         )
 
     def as_dict(self) -> dict[str, int]:
@@ -168,6 +218,7 @@ class Ventilation:
             "total": self.total,
             CANDIDAT_DECLARE: self.candidats_declares,
             ROSTER_GROUPE: self.membres_roster,
+            ROSTER_GOUVERNEMENT: self.membres_gouvernement,
             "provenance_autre": self.provenance_autre,
             "illisibles": self.illisibles,
         }
@@ -175,15 +226,23 @@ class Ventilation:
 
 def ventiler_provenances(provenances: Iterable[str], *, illisibles: int = 0) -> Ventilation:
     """Ventile des valeurs de `meta.provenance` déjà lues."""
-    declares = roster = autres = 0
+    declares = roster = gouvernement = autres = 0
     for provenance in provenances:
         if provenance == ROSTER_GROUPE:
             roster += 1
+        elif provenance == ROSTER_GOUVERNEMENT:
+            gouvernement += 1
         elif provenance == CANDIDAT_DECLARE:
             declares += 1
         else:
             autres += 1
-    return Ventilation(declares, roster, autres, illisibles)
+    return Ventilation(
+        candidats_declares=declares,
+        membres_roster=roster,
+        membres_gouvernement=gouvernement,
+        provenance_autre=autres,
+        illisibles=illisibles,
+    )
 
 
 def ventiler(profils: Iterable[Mapping[str, Any]], *, illisibles: int = 0) -> Ventilation:
