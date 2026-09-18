@@ -7,6 +7,7 @@ import CandidateProfilePage from './pages/CandidateProfilePage';
 import GroupProfilePage from './pages/GroupProfilePage';
 import GovernmentProfilePage from './pages/GovernmentProfilePage';
 import MethodologyPage from './pages/MethodologyPage';
+import AboutPage from './pages/AboutPage';
 import CoveragePage from './pages/CoveragePage';
 import FaqPage from './pages/FaqPage';
 import LegalNoticePage from './pages/LegalNoticePage';
@@ -35,6 +36,7 @@ function App() {
         </Route>
         {/* Pages statiques hors ExplorerLayout : pas de candidat/groupe sélectionné,
             les bandeaux Groupes/Gouvernements/Candidats n'ont pas de sens ici. */}
+        <Route path="/a-propos" element={<AboutPage />} />
         <Route path="/methodologie" element={<MethodologyPage />} />
         <Route path="/sources" element={<CoveragePage />} />
         {/* /couverture est devenue /sources (#951). Elle REDIRIGE, et garde
