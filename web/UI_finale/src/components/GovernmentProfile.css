@@ -21,29 +21,34 @@
   margin-bottom: 12px;
 }
 
-.gvp-tete {
-  display: grid;
-  gap: 10px;
-  padding: 22px 24px;
-  background: var(--card);
-  border: 1px solid var(--border-strong);
-  border-left: 3px solid var(--gouv);
-  border-radius: 12px;
-}
+/* Mêmes valeurs que `.cp-entete` / `.cp-sourcil` / `.cp-qui` sur la fiche
+   candidat : une fiche ne s'ouvre pas d'une autre voix que sa voisine. */
+.gvp-entete { padding-bottom: 8px; }
 
 .gvp-sourcil {
   font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
+  font-weight: 700;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: var(--gouv);
+  color: var(--muted);
 }
 
-.gvp-tete h1 {
-  font-size: 30px;
+.gvp-entete h1 {
+  font-size: 34px;
   font-weight: 800;
-  letter-spacing: -0.025em;
-  text-wrap: balance;
+  letter-spacing: -0.01em;
+  margin: 8px 0 0;
+  line-height: 1.06;
+}
+
+.gvp-qui {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin: 9px 0 12px;
+  font-size: 15px;
+  color: var(--texte-2);
 }
 
 /* ── Sections ───────────────────────────────────────────────────────────── */
@@ -496,7 +501,7 @@
 
 @media (max-width: 720px) {
   .gvp-main { padding: 20px 16px 56px; }
-  .gvp-tete h1 { font-size: 24px; }
+  .gvp-entete h1 { font-size: 26px; }
   .gvp-fait,
   .gvp-limite,
   .gvp-texte { grid-template-columns: 1fr; gap: 4px; }

@@ -195,22 +195,6 @@ function EnBref({ government, chronologie }) {
         )}
 
         <div className="gvp-faits">
-          <Fait cle="Premier ministre">
-            {government.premierMinistre ? (
-              <>
-                <a className="gvp-lien" href={`/candidats/${government.premierMinistreId || ''}`}>
-                  {government.premierMinistre}
-                </a>
-                {' · '}
-              </>
-            ) : (
-              <><span className="gvp-nd">non publié</span>{' · '}</>
-            )}
-            {periode.fin
-              ? `du ${jour(periode.debut)} au ${jour(periode.fin)} · ${duree(periode.debut, periode.fin)}`
-              : `depuis le ${jour(periode.debut)} · ${duree(periode.debut, null)}`}
-          </Fait>
-
           <Fait cle="Composition">
             {effectif && (effectif.mini === effectif.maxi
               ? <span className="gvp-nombre">{`${effectif.mini} membre${effectif.mini > 1 ? 's' : ''}`}</span>
@@ -665,9 +649,30 @@ export default function GovernmentProfile({ government, chronologie = [] }) {
         Gouvernement / <strong>{government.title}</strong>
       </div>
 
-      <header className="gvp-tete">
-        <span className="gvp-sourcil">Gouvernement</span>
+      {/* Même en-tête que les fiches candidat et de lignée : un sourcil, le
+          nom, puis UNE ligne d'identité — qui l'a dirigé et pendant combien de
+          temps. Pas de carte ni de filet de couleur : l'en-tête n'est pas un
+          bloc de contenu. */}
+      <header className="gvp-entete">
+        <p className="gvp-sourcil">Gouvernement</p>
         <h1>{government.title}</h1>
+        <p className="gvp-qui">
+          {government.premierMinistre ? (
+            <span>
+              <a className="gvp-lien" href={`/candidats/${government.premierMinistreId || ''}`}>
+                {government.premierMinistre}
+              </a>
+              {', Premier ministre · '}
+            </span>
+          ) : (
+            <span><span className="gvp-nd">Premier ministre non publié</span>{' · '}</span>
+          )}
+          <span>
+            {government.periode.fin
+              ? `du ${jour(government.periode.debut)} au ${jour(government.periode.fin)} · ${duree(government.periode.debut, government.periode.fin)}`
+              : `depuis le ${jour(government.periode.debut)} · ${duree(government.periode.debut, null)}`}
+          </span>
+        </p>
       </header>
 
       <EnBref government={government} chronologie={chronologie} />
