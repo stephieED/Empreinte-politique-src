@@ -8,9 +8,13 @@
   flex-direction: column;
 }
 
-/* Le bandeau d'encre, aux cotes de celui de l'accueil. */
+/* Le bandeau d'encre, aux cotes de celui de l'accueil — mais SANS gouttière à
+   lui : `.static-main` porte déjà 40 px de chaque côté (20 px sous 680 px). Une
+   marge de 40 px ajoutée ici rendait le bandeau 740 px de large quand les
+   cartes en dessous en faisaient 820 : deux largeurs sur une même page, mesuré
+   le 18/09/2026 à 1 440 px. */
 .apropos-bandeau {
-  margin: 18px 40px 26px;
+  margin: 0 0 26px;
   padding: 34px 40px 30px;
   border-radius: 24px;
   background: var(--ink);
@@ -63,9 +67,11 @@
   color: var(--ink);
 }
 
-@media (max-width: 720px) {
+/* Le seuil est celui des pages statiques, 680 px, et non les 720 px du bandeau
+   du site : c'est la gouttière de `.static-main` qui change ici. */
+@media (max-width: 680px) {
   .apropos-bandeau {
-    margin: 12px 16px 20px;
+    margin: 0 0 20px;
     padding: 22px 18px 20px;
     border-radius: 18px;
   }

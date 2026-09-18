@@ -126,6 +126,24 @@ def test_le_bandeau_reprend_la_baseline_et_ses_puces_en_accent(apropos: str) -> 
     assert "background: var(--ink)" in bandeau
 
 
+def test_le_bandeau_a_la_meme_largeur_que_les_cartes() -> None:
+    """Deux largeurs sur une même page, et c'est la propriétaire qui l'a vu.
+
+    `.static-main` porte déjà la gouttière — 40 px de chaque côté, 20 px sous
+    680 px. Le bandeau en ajoutait 40 : il rendait 740 px de large quand les
+    cartes en dessous en faisaient 820, mesuré à 1 440 px le 18/09/2026. Il ne
+    porte donc aucune marge horizontale, ni au repos ni sous le seuil.
+    """
+    css = APROPOS_CSS.read_text(encoding="utf-8")
+    for bloc in css.split(".apropos-bandeau {")[1:]:
+        marge = [l for l in bloc.split("}")[0].splitlines() if "margin" in l]
+        assert marge, "le bandeau déclare sa marge, pour qu'elle se relise"
+        for ligne in marge:
+            valeurs = ligne.split(":", 1)[1].strip().rstrip(";").split()
+            horizontale = valeurs[1] if len(valeurs) > 1 else valeurs[0]
+            assert horizontale == "0", f"marge horizontale {horizontale} : la gouttière est celle de .static-main"
+
+
 def test_le_surtitre_ne_garde_pas_le_gris_des_pages_claires() -> None:
     """`--muted` est calibré sur le fond clair : sur l'encre il tombe sous AA."""
     css = APROPOS_CSS.read_text(encoding="utf-8")
