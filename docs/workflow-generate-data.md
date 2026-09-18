@@ -18,7 +18,7 @@ Ce fichier existe pour être lu **avant** d'ouvrir
 | `extract-amendements-an` | — | AN open data (dumps amendements) | artifact `amendements-index-an` + cache `public-data-cache-amendements-<semaine>` |
 | `extract-ue-officiel` | — | Europarl Open Data | artifact `raw-profiles-ue-officiel`, cache `public-data-cache-ue-<semaine>` |
 | `extract-parltrack` | — | 5 dumps ParlTrack (232 Mio) | artifact `parltrack-dumps`, cache `public-data-cache-parltrack-<semaine>` |
-| `prepare-roster-matrix` | — | `raw_data/groupes_reels.json` | `raw_data/roster_candidats.json` → artifact `roster-candidats`, et la matrice roster |
+| `prepare-roster-matrix` | — | `raw_data/groupes_reels.json`, l'archive AMO30 | `raw_data/roster_candidats.json` → artifact `roster-candidats`, la matrice roster, et `rosters_bruts.json` — qui porte depuis #996 une clé `gouvernements:` : les 311 membres des 17 gouvernements, 205 slugs fabriqués, **non collectés** à ce stade |
 | `extract-an` | `extract-amendements-an`, `prepare-an-matrix` | AN open data, Syceron, l'index amendements | un artifact `raw-profiles-an-<slug>` par shard, cache `public-data-cache-an-<semaine>[-interv-<empreinte>]` |
 | `extract-roster-groupes` | les quatre `extract-*` + `prepare-roster-matrix` | l'artifact `roster-candidats`, les mêmes sources | un artifact `raw-profiles-roster-groupes-<shard>` par shard |
 | `extract-senat` | — | `export_sens.zip` de `data.senat.fr` (#885) | artifact `raw-profiles-senat`, cache `public-data-cache-senat-<date>` |

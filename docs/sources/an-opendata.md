@@ -257,6 +257,19 @@ friendship groups, extra-parliamentary engagements, political group).
 `fetch_positions_hemicycle_officielles`) — the two are independent and do not
 replace each other.
 
+**`codeType == "GOUVERNEMENT"`: one organe per government, and its members
+include people who were never deputies (#996, measured 17/09/2026 on the
+17/08 archive).** 17 such organes, from `libelleAbrege` `FILLON 1`
+(`viMoDe.dateDebut` 2007-05-17) to `LECORNU II`; nothing before 2007, so
+Raffarin and Villepin are simply absent. `libelleAbrege` is what the collection
+writes into `mandats[].label` as `"Gouvernement (<libelleAbrege>)"`, and
+`viMoDe` carries the period verbatim. Mandates targeting these organes
+(`typeOrgane == "GOUVERNEMENT"`) name **311 distinct people**, of whom **124
+never held an `ASSEMBLEE` mandate** — Rachida Dati (`PA387829`) is in the zip
+like any deputy, with her `etatCivil`. A roster built on `GP` mandates alone
+cannot see them, which is why `gouvernement_roster_an.py` reads the organes
+directly.
+
 ## Legislative files (bulk, multi-legislature in one file)
 
 `.../17/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip` (~10 MB,
