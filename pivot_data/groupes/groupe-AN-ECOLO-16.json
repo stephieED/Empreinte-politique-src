@@ -62407,8 +62407,8 @@
           "membre_id": "cyrielle-chatelain",
           "nom": "Cyrielle Chatelain",
           "fonction": "Membre",
-          "debut": "2026-05-20",
-          "fin": "2026-05-20",
+          "debut": "2026-09-19",
+          "fin": null,
           "actif": false
         },
         {
@@ -62611,8 +62611,8 @@
           "membre_id": "julie-laernoes",
           "nom": "Julie Laernoes",
           "fonction": "Membre",
-          "debut": "2026-06-03",
-          "fin": "2026-06-03",
+          "debut": "2026-09-19",
+          "fin": null,
           "actif": false
         },
         {
@@ -69354,6 +69354,50 @@
     },
     {
       "categorie": "commission_enquete",
+      "label": "Commission spéciale chargée d'examiner la proposition de loi apportant une réponse intégrale au phénomène des violences sexuelles et sexistes contre les femmes et les enfants et la proposition de loi organique visant à adapter l'autorité judiciaire à la lutte contre les violences sexuelles et intrafamiliales",
+      "nb_membres_a_la_date_de_reference": 0,
+      "nb_membres_cumul_historique": 4,
+      "effectif_reference": 23,
+      "par_fonction": {
+        "membre": 4
+      },
+      "membres": [
+        {
+          "membre_id": "sandra-regol",
+          "nom": "Sandra Regol",
+          "fonction": "Membre",
+          "debut": "2026-09-19",
+          "fin": null,
+          "actif": false
+        },
+        {
+          "membre_id": "marie-charlotte-garin",
+          "nom": "Marie-Charlotte Garin",
+          "fonction": "Membre",
+          "debut": "2026-07-24",
+          "fin": null,
+          "actif": false
+        },
+        {
+          "membre_id": "sandrine-rousseau",
+          "nom": "Sandrine Rousseau",
+          "fonction": "Membre",
+          "debut": "2026-07-24",
+          "fin": null,
+          "actif": false
+        },
+        {
+          "membre_id": "sabrina-sebaihi",
+          "nom": "Sabrina Sebaihi",
+          "fonction": "Membre",
+          "debut": "2026-09-01",
+          "fin": null,
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission_enquete",
       "label": "Commission spéciale chargée d'examiner le projet de loi relatif à la résilience des infrastructures critiques et au renforcement de la cybersécurité",
       "nb_membres_a_la_date_de_reference": 0,
       "nb_membres_cumul_historique": 4,
@@ -69567,42 +69611,6 @@
           "nom": "Sabrina Sebaihi",
           "fonction": "Membre",
           "debut": "2025-01-23",
-          "fin": null,
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission_enquete",
-      "label": "Commission spéciale chargée d'examiner la proposition de loi apportant une réponse intégrale au phénomène des violences sexuelles et sexistes contre les femmes et les enfants et la proposition de loi organique visant à adapter l'autorité judiciaire à la lutte contre les violences sexuelles et intrafamiliales",
-      "nb_membres_a_la_date_de_reference": 0,
-      "nb_membres_cumul_historique": 3,
-      "effectif_reference": 23,
-      "par_fonction": {
-        "membre": 3
-      },
-      "membres": [
-        {
-          "membre_id": "marie-charlotte-garin",
-          "nom": "Marie-Charlotte Garin",
-          "fonction": "Membre",
-          "debut": "2026-07-24",
-          "fin": null,
-          "actif": false
-        },
-        {
-          "membre_id": "sandrine-rousseau",
-          "nom": "Sandrine Rousseau",
-          "fonction": "Membre",
-          "debut": "2026-07-24",
-          "fin": null,
-          "actif": false
-        },
-        {
-          "membre_id": "sabrina-sebaihi",
-          "nom": "Sabrina Sebaihi",
-          "fonction": "Membre",
-          "debut": "2026-09-01",
           "fin": null,
           "actif": false
         }
@@ -74140,122 +74148,122 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335999",
-      "synchro_le": "2026-09-18T13:25:11+0000"
+      "synchro_le": "2026-09-19T08:34:56+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA610002",
-      "synchro_le": "2026-09-18T13:26:26+0000"
+      "synchro_le": "2026-09-19T08:35:25+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720952",
-      "synchro_le": "2026-09-18T13:25:09+0000"
+      "synchro_le": "2026-09-19T08:34:54+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722344",
-      "synchro_le": "2026-09-18T13:26:43+0000"
+      "synchro_le": "2026-09-19T08:35:58+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA736201",
-      "synchro_le": "2026-09-18T13:18:34+0000"
+      "synchro_le": "2026-09-19T08:27:42+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793664",
-      "synchro_le": "2026-09-18T13:19:10+0000"
+      "synchro_le": "2026-09-19T08:27:55+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793708",
-      "synchro_le": "2026-09-18T13:19:14+0000"
+      "synchro_le": "2026-09-19T08:28:00+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793780",
-      "synchro_le": "2026-09-18T13:18:30+0000"
+      "synchro_le": "2026-09-19T08:27:32+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793948",
-      "synchro_le": "2026-09-18T13:25:21+0000"
+      "synchro_le": "2026-09-19T08:34:59+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793980",
-      "synchro_le": "2026-09-18T13:25:13+0000"
+      "synchro_le": "2026-09-19T08:34:57+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794008",
-      "synchro_le": "2026-09-18T13:26:26+0000"
+      "synchro_le": "2026-09-19T08:35:25+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794022",
-      "synchro_le": "2026-09-18T13:26:43+0000"
+      "synchro_le": "2026-09-19T08:35:58+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794146",
-      "synchro_le": "2026-09-18T13:18:34+0000"
+      "synchro_le": "2026-09-19T08:27:43+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794154",
-      "synchro_le": "2026-09-18T13:19:10+0000"
+      "synchro_le": "2026-09-19T08:27:55+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794778",
-      "synchro_le": "2026-09-18T13:19:15+0000"
+      "synchro_le": "2026-09-19T08:28:02+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795010",
-      "synchro_le": "2026-09-18T13:18:31+0000"
+      "synchro_le": "2026-09-19T08:27:32+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795058",
-      "synchro_le": "2026-09-18T13:25:22+0000"
+      "synchro_le": "2026-09-19T08:35:00+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795076",
-      "synchro_le": "2026-09-18T13:25:14+0000"
+      "synchro_le": "2026-09-19T08:34:59+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795362",
-      "synchro_le": "2026-09-18T13:26:27+0000"
+      "synchro_le": "2026-09-19T08:35:26+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795454",
-      "synchro_le": "2026-09-18T13:26:43+0000"
+      "synchro_le": "2026-09-19T08:35:59+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795636",
-      "synchro_le": "2026-09-18T13:18:35+0000"
+      "synchro_le": "2026-09-19T08:27:43+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795794",
-      "synchro_le": "2026-09-18T13:19:11+0000"
+      "synchro_le": "2026-09-19T08:27:56+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795808",
-      "synchro_le": "2026-09-18T13:19:15+0000"
+      "synchro_le": "2026-09-19T08:28:03+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-09-18T14:13:45+0000",
+    "genere_le": "2026-09-19T09:25:08+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr",
     "profils_sources": [
       "delphine-batho",
