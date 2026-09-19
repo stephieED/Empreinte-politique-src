@@ -1525,15 +1525,40 @@ def merge_raw_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dic
         key=lambda v: v.get("date") or "",
         reverse=True,
     )
-    # #689 : la nature du texte déposé est reportée sur les dossiers déjà
-    # collectés. Sans elle, l'entrée ancienne gagne et le profil brut n'acquiert
-    # jamais `nature_texte` — donc `normalize_profil` republie indéfiniment
-    # `role: "auteur"` sur un projet de loi porté au nom du Gouvernement.
+    # #997 — LA NEUVE GAGNE ICI AUSSI, comme au pivot depuis toujours.
+    #
+    # Cette liste se fusionnait en **additif pur** (`merge_lists_by_key`) :
+    # l'entrée ancienne était conservée INCHANGÉE, et une entrée neuve de même
+    # `_dossier_key` était simplement ignorée. Un dossier déjà collecté ne
+    # pouvait donc plus rien apprendre d'une régénération — ni sa nature (#689),
+    # ni son sort (#743), ni **son stade**.
+    #
+    # C'est ce qui a fait traverser QUATRE runs au correctif de #997 sans qu'il
+    # atteigne le corpus. Le pivot, lui, fusionne par `merge_dossier_records`
+    # (la neuve gagne) — mais il normalise depuis le brut, donc il recevait la
+    # vieille valeur et n'avait rien à écraser. Les deux étages étaient
+    # d'accord, sur une donnée périmée.
+    #
+    # Mesuré le 18/09/2026 sur Édouard Philippe, collecte réelle contre brut
+    # publié : **290 dossiers de part et d'autre, exactement les mêmes clés,
+    # aucun champ perdu**, et **118 transitions `examine_commission` →
+    # `depose`** — `examine_commission` tombe de 127 à 9. C'est cette mesure,
+    # et non un raisonnement, qui autorise le remplacement : la collecte ne
+    # rend pas moins que ce qu'elle a rendu la fois d'avant.
+    #
+    # Le vide reste protégé en amont par `CHAMPS_PROTEGES_DU_VIDE` : une
+    # collecte qui ne rend RIEN ne remplace rien, et un dossier que l'AN ne sert
+    # plus reste publié tel quel (§2 règle 5).
+    #
+    # #689 et #743 : les deux reports restent en place. Sur le chemin nominal
+    # ils n'ont plus rien à faire — la neuve porte déjà sa nature et son sort —
+    # mais les retirer est un autre lot, avec sa propre mesure : ils sont la
+    # seule chose qui rattrape une entrée que la fusion n'a pas remplacée.
     merged["dossiers_legislatifs"] = sorted(
         (
             d for d in backfill_sort_texte_porte(
                 backfill_dossier_nature(
-                    merge_lists_by_key(old.get("dossiers_legislatifs"), new.get("dossiers_legislatifs"), _dossier_key),
+                    merge_dossier_records(old.get("dossiers_legislatifs"), new.get("dossiers_legislatifs"), _dossier_key),
                     new.get("dossiers_legislatifs"),
                     _dossier_key,
                 ),
