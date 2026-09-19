@@ -160,3 +160,52 @@ def test_une_contribution_reduite_ecrit_des_qu_une_collecte_complete_parle(tmp_p
     assert publie["mandats_locaux"] == [{"a": 1}]
     assert publie["votes"] == [{"scrutin_id": "s1"}]
     assert "contribution_partielle" not in publie
+
+
+# ---------------------------------------------------------------------------
+# #997 — un champ qu'AUCUNE source ne reprend ne disparaît pas
+# ---------------------------------------------------------------------------
+#
+# `merge_raw_profile` construisait son résultat par `dict(new)` : tout champ que
+# la contribution ne portait pas était EFFACÉ. Invisible tant que chaque
+# artifact publiait le profil entier ; depuis les contributions réduites, une
+# source qui parle en dernier efface ce qu'une source précédente a apporté.
+#
+# Mesuré sur le run 35442990475, corpus entier : `mandat_senatorial` perdu sur
+# 2 profils — Bruno Retailleau et Jean-Luc Mélenchon. Reproduit en rejouant la
+# fusion sur les trois artifacts réels, dans l'ordre réel des `--dirs`.
+#
+# `mandats_locaux` n'a survécu que parce que sa source passe en DERNIER. De la
+# chance, pas un contrat : ces deux champs sont les seuls que le traitement
+# explicite de `merge_raw_profile` ne rattrape pas.
+
+
+def test_un_champ_absent_de_la_contribution_survit(tmp_path):
+    """Le cas Retailleau : le Sénat apporte, les mandats locaux parlent après."""
+    out = tmp_path / "out"
+    out.mkdir()
+    an = _staging(tmp_path, "an", _profil("x"))
+    sn = _staging(tmp_path, "sn", {"slug": "x", "mandat_senatorial": {"actif": True}})
+    ml = _staging(tmp_path, "ml", {"slug": "x", "mandats_locaux": [{"a": 1}]})
+    projeter_staging(sn, ["mandat_senatorial"])
+    projeter_staging(ml, ["mandats_locaux"])
+
+    merge_raw_dirs([an, sn, ml], out)
+
+    publie = json.loads((out / "x.json").read_text(encoding="utf-8"))
+    assert publie["mandat_senatorial"] == {"actif": True}
+    assert publie["mandats_locaux"] == [{"a": 1}]
+
+
+def test_une_contribution_peut_toujours_vider_un_champ_qu_elle_porte(tmp_path):
+    """L'autre moitié : conserver l'absent ne doit pas empêcher d'écraser."""
+    out = tmp_path / "out"
+    out.mkdir()
+    an = _staging(tmp_path, "an", _profil("x", mandats_locaux=[{"a": 1}]))
+    ml = _staging(tmp_path, "ml", {"slug": "x", "mandats_locaux": []})
+    projeter_staging(ml, ["mandats_locaux"])
+
+    merge_raw_dirs([an, ml], out)
+
+    publie = json.loads((out / "x.json").read_text(encoding="utf-8"))
+    assert publie["mandats_locaux"] == []

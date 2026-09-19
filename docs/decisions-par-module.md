@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 385 décisions
+gouverne sans avoir à fouiller les 386 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -43,10 +43,10 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 | `src/audit_pipeline.py` | 3 |
 | `src/budget_collecte.py` | 3 |
 | `src/purge_mandats_dupliques.py` | 3 |
+| `src/rne_opendata.py` | 3 |
 | `src/audit_gouvernement_dataset.py` | 2 |
 | `src/avertissements.py` | 2 |
 | `src/fetch_candidats_declares.py` | 2 |
-| `src/rne_opendata.py` | 2 |
 | `src/titres_europeens.py` | 2 |
 | `src/build_amendements_index.py` | 1 |
 | `src/candidate_profile_ue.py` | 1 |
@@ -866,7 +866,7 @@ Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambr
 
 ## `src/merge_profile.py`
 
-67 décision(s) le gouvernent ; le module en cite 5.
+68 décision(s) le gouvernent ; le module en cite 5.
 
 | Décision | Nomme |
 | --- | --- |
@@ -896,6 +896,7 @@ Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambr
 | [Borner l'historique de données : ce que ça rend vraiment, et quand (#434) (2026-08-20)](decisions/fenetre-historique-donnees.md) | `merge_raw_profile` |
 | [Un filtre de publication posé avant la fusion ne filtre rien (#641, réouverture) (2026-08-31)](decisions/filtre-publication-apres-fusion-641.md) | `FILTRES_PUBLICATION_IDENTITE`, `_composer_identite`, `bloc_sans_fond`, `deriver_provenance_champs`, `filtrer_identite_publiee`, `merge_pivot_profile` |
 | [Extension de la stabilité des horodatages aux profils groupe/gouvernement/parti (#343, complet) (2026-08-17)](decisions/freshness-timestamps-groupes-gouvernements-partis.md) | `load_existing_document`, `preserve_stable_freshness_timestamps` |
+| [Un champ qu'une contribution ne porte pas n'est plus effacé (#997) (2026-09-19)](decisions/fusion-conserve-les-champs-absents-997.md) | `CHAMPS_PROTEGES_DU_VIDE`, `_prefer_non_empty`, `merge_raw_profile` |
 | [Un dossier déjà collecté n'apprenait plus rien : au brut aussi, la neuve gagne (#997) (2026-09-18)](decisions/fusion-dossiers-brut-la-neuve-gagne-997.md) | `CHAMPS_PROTEGES_DU_VIDE`, `_dossier_key`, `backfill_dossier_nature`, `backfill_sort_texte_porte`, `merge_dossier_records`, `merge_lists_by_key`, `merge_raw_profile` |
 | [Profils de gouvernement : ne jamais réécrire sur une collecte incomplète, et cache dossiers dédié (#427) (2026-08-18)](decisions/gouvernement-textes-non-ecrasement.md) | `preserve_stable_freshness_timestamps` |
 | [L'`id` d'un profil pivot est le slug : le préfixe de provenance était instable (#487) (2026-08-20)](decisions/id-pivot-sans-prefixe.md) | `merge_pivot_profile`, `merge_raw_profile` |
@@ -1119,11 +1120,12 @@ Le mentionnent sans le gouverner : [`purge-doublons-herites-729`](decisions/purg
 
 ## `src/rne_opendata.py`
 
-2 décision(s) le gouvernent ; le module en cite 0.
+3 décision(s) le gouvernent ; le module en cite 0.
 
 | Décision | Nomme |
 | --- | --- |
 | [Un artifact ne porte plus que les champs que son job a collectés (#997) (2026-09-19)](decisions/contribution-par-champs-997.md) | `mandats_locaux` |
+| [Un champ qu'une contribution ne porte pas n'est plus effacé (#997) (2026-09-19)](decisions/fusion-conserve-les-champs-absents-997.md) | `mandats_locaux` |
 | [Le fichier des sortants a vieilli ses élus d'un siècle, et cinq mandats ont disparu (#922) (2026-09-16)](decisions/sortants-annee-decalee-922.md) | `PAGES_MAX` |
 
 Le mentionnent sans le gouverner : [`collecte-mandats-locaux-rne-922`](decisions/collecte-mandats-locaux-rne-922.md).

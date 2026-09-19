@@ -1485,7 +1485,27 @@ def merge_raw_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dic
     if not old:
         return new
 
-    merged = dict(new)
+    # #997 — ON PART DE `old`, ET `new` ÉCRIT PAR-DESSUS.
+    #
+    # Cette ligne était `dict(new)`, et elle effaçait tout champ que `new` ne
+    # porte pas. Le défaut est resté invisible tant que chaque artifact
+    # publiait le profil ENTIER : `new` portait toujours tous les champs.
+    # Depuis qu'un job d'enrichissement ne publie que ce qu'il collecte
+    # (`profil_brut.projeter_contribution`), une contribution réduite efface
+    # les champs qu'aucune ligne ci-dessous ne rattrape.
+    #
+    # Mesuré sur le run 35442990475, corpus entier : **`mandat_senatorial`
+    # perdu sur 2 profils** — Bruno Retailleau et Jean-Luc Mélenchon. Deux
+    # champs seulement échappent au traitement explicite qui suit,
+    # `mandats_locaux` et `mandat_senatorial` ; le premier n'a survécu que
+    # parce que sa source passe en DERNIER dans `--dirs`. C'est de la chance,
+    # pas un contrat.
+    #
+    # Ce que cela ne change pas : un champ que `new` porte gagne, **y compris
+    # vide** — vider délibérément reste possible, et les protections du vide
+    # (`CHAMPS_PROTEGES_DU_VIDE`, `_prefer_non_empty`) sont ailleurs. Seuls les
+    # champs ABSENTS de `new` sont désormais conservés.
+    merged = {**old, **new}
 
     # `meta` composé clé par clé (#600), là où c'était `dict(new)` : le bloc du
     # dernier écrivain, warnings compris. Le rattrapage de `synchro_sources` qui
