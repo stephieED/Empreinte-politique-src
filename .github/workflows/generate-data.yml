@@ -2556,6 +2556,10 @@ jobs:
         if: always()
         with:
           manifest: _publish/manifeste-senat.txt
+          # #997 — ce job collecte les appartenances sénatoriales, et rien
+          # d'autre. Mesuré sur le run 35430469408 : `mandat_senatorial` est le
+          # SEUL champ qui diffère de la baseline, sur ses 2 profils.
+          champs: mandat_senatorial
 
       - name: Upload artifact profils bruts (Sénat)
         if: always()
@@ -2595,6 +2599,10 @@ jobs:
         if: always()
         with:
           manifest: _publish/manifeste-mandats-locaux.txt
+          # #997 — mesuré sur le run 35430469408 : `mandats_locaux` est le SEUL
+          # champ qui diffère de la baseline, sur ses 33 profils. Le reste
+          # partait figé au run précédent et écrasait les stades corrigés.
+          champs: mandats_locaux
 
       - name: Upload artifact profils bruts (mandats locaux)
         if: always()
@@ -2902,6 +2910,23 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: python3 src/verifier_transport_artifacts.py
 
+      # #997 — L'ORDRE NE SE TOUCHE PAS, ET LA MESURE L'A TRANCHÉ.
+      #
+      # `merge_raw_profile` fait gagner la source la plus récente : la DERNIÈRE
+      # de cette liste l'emporte. Mettre les jobs d'enrichissement en tête
+      # paraissait le filet évident — ils reposaient une baseline périmée sur
+      # ce que l'extraction AN venait de corriger. Rejoué sur les artifacts
+      # réels du run 35430469408, ce filet FAIT PERDRE ce qu'il devait
+      # protéger : `_artifacts/an` porte `mandats_locaux: []`, le job AN ne les
+      # collectant pas, et repasser en dernier lui fait écraser les 5 mandats
+      # locaux d'Édouard Philippe.
+      #
+      # Une source qui APPORTE un champ doit rester la dernière à parler : cet
+      # ordre-ci est le bon, et il n'y a pas de filet qui rende l'ordre
+      # indifférent. `CHAMPS_PROTEGES_DU_VIDE` n'en est pas un : il ne sert
+      # qu'à `preserver_collectes_non_vides`, en mode `--no-merge`, et ne
+      # traverse pas `merge_raw_dirs` — vérifié avant de l'écrire ici.
+      # Ce qui tient, c'est que chaque job ne publie que ses champs.
       - name: Fusion des profils bruts (AN + UE + roster + Sénat + locaux)
         run: |
           python3 src/merge_profile.py \

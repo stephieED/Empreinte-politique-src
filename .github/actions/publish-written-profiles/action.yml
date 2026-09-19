@@ -64,6 +64,17 @@ inputs:
       `path:` de l'upload doit pointer ici, jamais sur `source-dir`.
     required: false
     default: _publish/profiles
+  champs:
+    description: >
+      Les champs que ce job a RÉELLEMENT collectés, séparés par des espaces
+      (#997). Fournis, la contribution publiée y est réduite : tout le reste
+      est de la baseline recopiée du checkout, et depuis que la fusion fait
+      gagner la source la plus récente, cette copie périmée écrase du neuf.
+      Absent : le profil entier part, comportement d'avant — c'est ce qu'il
+      faut pour un job de collecte complète (AN, roster), qui n'a pas de
+      baseline à reposer.
+    required: false
+    default: ''
 
 runs:
   using: composite
@@ -147,3 +158,21 @@ runs:
           echo "L'artifact ne contient que la contribution de ce job (#450) : la"
           echo "baseline committée reste dans le checkout de \`merge-and-pivot\`."
         } >> "$GITHUB_STEP_SUMMARY"
+
+    # #997 — et la contribution ne porte que les CHAMPS collectés.
+    #
+    # Mesuré sur le run 35430469408, artifact contre baseline : la contribution
+    # réelle de `extract-mandats-locaux` est `mandats_locaux` et rien d'autre
+    # (33 profils), celle de `extract-senat` est `mandat_senatorial` (2). Le
+    # reste partait avec, figé au run précédent — et depuis que la fusion fait
+    # gagner la source la plus récente, il écrasait les stades que l'extraction
+    # AN venait de corriger.
+    - name: Réduire la contribution aux champs collectés
+      if: ${{ inputs.champs != '' }}
+      shell: bash
+      env:
+        STAGING_DIR: ${{ inputs.staging-dir }}
+        CHAMPS: ${{ inputs.champs }}
+      run: |
+        set -euo pipefail
+        python3 scripts/projeter_contribution.py "$STAGING_DIR" $CHAMPS

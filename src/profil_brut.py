@@ -154,6 +154,77 @@ class PartitionIllisible(RuntimeError):
 
 
 # ---------------------------------------------------------------------------
+# Un artifact = les CHAMPS qu'un job a collectés (#997, après #450)
+# ---------------------------------------------------------------------------
+#
+# #450 a rétabli « un artifact = les SLUGS d'un job » : un job ne publie plus
+# que les profils qu'il a écrits. Il restait l'autre moitié, et elle a coûté un
+# run : un job publie le profil **entier**, donc tous les champs qu'il n'a pas
+# collectés, recopiés de la baseline de son checkout.
+#
+# Mesuré le 19/09/2026 sur le run 35430469408, artifact contre baseline : la
+# contribution réelle de ces deux jobs est **un seul champ**.
+#
+#     extract-mandats-locaux   `mandats_locaux`      33 profils
+#     extract-senat            `mandat_senatorial`    2 profils
+#
+# Tout le reste — `dossiers_legislatifs`, `votes`, `interventions` — partait
+# avec, figé au run précédent. Tant que `merge_raw_profile` fusionnait
+# `dossiers_legislatifs[]` en additif pur, cette copie périmée ne pouvait rien
+# écraser. Depuis que la neuve gagne (#997), **la dernière source l'emporte** :
+# `_artifacts/mandats-locaux` est la dernière de `--dirs`, et il a reposé les
+# vieux stades sur les 17 candidats déclarés qui portent des textes portés,
+# après que l'extraction AN eut publié les bons (Édouard Philippe : 9 en
+# artifact, 127 committés).
+#
+# → `docs/decisions/contribution-par-champs-997.md`
+
+#: Ce qu'une contribution garde toujours, quels que soient les champs déclarés :
+#: `slug` est la clé de `merge_raw_dirs`, et sans lui le fichier n'identifie rien.
+CHAMPS_IDENTIFIANTS_CONTRIBUTION: tuple[str, ...] = ("slug",)
+
+#: Marque une contribution réduite, et porte les champs qu'elle déclare.
+#:
+#: **Sans ce marqueur, une contribution réduite est indistinguable d'un profil
+#: qui aurait tout perdu.** `merge_raw_dirs` écrit l'union des SOURCES et
+#: `ecrire_profil_brut` écrase : un slug dont SEUL un job d'enrichissement
+#: parle — parce que son extraction complète a échoué, `continue-on-error`
+#: étant la règle — serait republié amputé de tout le reste.
+#:
+#: La baseline ne peut pas servir de filet ici : la remettre en première source
+#: réinjecte ce que #450 a supprimé, et `test_publication_scopee_laisse_aboutir_la_correction_de_cle`
+#: le fait tomber — une correction de clé d'amendement cesse d'aboutir.
+#: Le marqueur fait donc l'inverse : une contribution réduite seule ne réécrit
+#: RIEN, et le profil committé reste, comme pour un slug qu'aucun job n'a
+#: touché (#450). L'apport du run est perdu, il est **dit**, et le run suivant
+#: le reprend.
+CLE_CONTRIBUTION_PARTIELLE = "contribution_partielle"
+
+
+def projeter_contribution(profil: dict[str, Any], champs: Iterable[str]) -> dict[str, Any]:
+    """Le profil réduit aux champs que le job déclare avoir collectés.
+
+    Ce que la fusion fait du reste est déjà écrit et n'a pas à changer : un
+    champ absent d'une contribution laisse en place celui de la source
+    précédente (`_prefer_non_empty`, `CHAMPS_PROTEGES_DU_VIDE`). C'est la
+    fusion additive telle qu'elle a toujours été décrite — elle n'avait
+    simplement jamais reçu de contribution partielle.
+
+    **Le manifeste de partition part avec les amendements.** `charger_profil_brut`
+    refuse, bruyamment, un socle qui annonce une tranche absente : une
+    contribution qui ne porte pas `amendements` ne doit pas porter le manifeste
+    qui les annonce, sans quoi elle serait illisible plutôt que partielle.
+    """
+    declares = sorted(set(champs))
+    gardes = set(declares) | set(CHAMPS_IDENTIFIANTS_CONTRIBUTION)
+    projete = {c: v for c, v in profil.items() if c in gardes}
+    if CLE_PARTITIONNEE not in gardes:
+        projete.pop(CLE_MANIFESTE, None)
+    projete[CLE_CONTRIBUTION_PARTIELLE] = declares
+    return projete
+
+
+# ---------------------------------------------------------------------------
 # Chemins
 # ---------------------------------------------------------------------------
 
