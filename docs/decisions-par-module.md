@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 384 décisions
+gouverne sans avoir à fouiller les 385 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -46,6 +46,7 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 | `src/audit_gouvernement_dataset.py` | 2 |
 | `src/avertissements.py` | 2 |
 | `src/fetch_candidats_declares.py` | 2 |
+| `src/rne_opendata.py` | 2 |
 | `src/titres_europeens.py` | 2 |
 | `src/build_amendements_index.py` | 1 |
 | `src/candidate_profile_ue.py` | 1 |
@@ -61,7 +62,6 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 | `src/normalize_senat.py` | 1 |
 | `src/purge_interventions_heritees.py` | 1 |
 | `src/retrait_heritage_senat.py` | 1 |
-| `src/rne_opendata.py` | 1 |
 | `src/scrutins_dossiers_an.py` | 1 |
 | `src/scrutins_legislature.py` | 1 |
 | `src/senat_mandats.py` | 1 |
@@ -866,7 +866,7 @@ Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambr
 
 ## `src/merge_profile.py`
 
-66 décision(s) le gouvernent ; le module en cite 5.
+67 décision(s) le gouvernent ; le module en cite 5.
 
 | Décision | Nomme |
 | --- | --- |
@@ -883,6 +883,7 @@ Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambr
 | [Un index Syceron en cache est un parsage en cache, et l'existence n'y est pas la conformité (#719) (2026-09-02)](decisions/conformite-index-syceron-719.md) | `backfill_sujet_seance` |
 | [Les consommateurs de `chambre` migrés vers `chambres`, et le garde-fou qui datera son retrait (#494) (2026-08-20)](decisions/consommateurs-chambres-migres.md) | `_prefer_non_empty`, `merge_pivot_profile`, `merge_raw_profile` |
 | [Un constat « aucune donnée » ne survit pas à l'arrivée de données (#683, lot 3)](decisions/constats-parltrack-perimes-683.md) | `FAMILLES_WARNINGS`, `clean_stale_interventions`, `clean_stale_textes_portes`, `merge_pivot_profile`, `retirer_constats_parltrack_perimes`, `unir_warnings` |
+| [Un artifact ne porte plus que les champs que son job a collectés (#997) (2026-09-19)](decisions/contribution-par-champs-997.md) | `CHAMPS_PROTEGES_DU_VIDE`, `merge_raw_dirs`, `preserver_collectes_non_vides` |
 | [La corroboration porte sur les chambres publiées, pas sur la complétude des mandats — et la condition de retrait de `chambre` devient atteignable (#486) (2026-08-30)](decisions/corroboration-chambres-publiees-486.md) | `FAMILLES_WARNINGS`, `_prefer_non_empty`, `backfill_mandat_chambre`, `merge_pivot_profile` |
 | [La couverture européenne n'atteignait pas la fiche (#683, lot 4)](decisions/couverture-europeenne-tranchee-683.md) | `retirer_constats_parltrack_perimes` |
 | [Ce qu'une liste vide veut dire : les quatre états de couverture (#539) (2026-08-28)](decisions/couverture-listes-539.md) | `_prefer_non_empty` |
@@ -1055,13 +1056,14 @@ Le mentionnent sans le gouverner : [`agents-sans-comptes-volatils`](decisions/ag
 
 ## `src/profil_brut.py`
 
-7 décision(s) le gouvernent ; le module en cite 3.
+8 décision(s) le gouvernent ; le module en cite 4.
 
 | Décision | Nomme |
 | --- | --- |
 | [La fusion défaisait le marquage de la collecte : un run vert qui n'a rien basculé (#691, lot 3c)](decisions/amorcage-du-marquage-par-la-fusion-691.md) | `partitionner` |
 | [Un audit lit le corpus par projection, et son plafond de mémoire est dans un test (#628, 2026-08-30)](decisions/audit-599-projection-blocs-lus-628.md) | `charger_socle` |
 | [« Collecté = publié » compte une tranche dérivée dans l'archive (#691, lot 3a)](decisions/audit-compte-les-tranches-derivees-691.md) | `partitionner`, `recomposer` |
+| [Un artifact ne porte plus que les champs que son job a collectés (#997) (2026-09-19)](decisions/contribution-par-champs-997.md) | `charger_profil_brut`, `projeter_contribution` |
 | [L'écriture marque les tranches closes, et le `nombre` vient de l'archive (#691, lot 3b)](decisions/marquage-tranches-derivees-691.md) | `ecrire_profil_brut`, `partitionner`, `recomposer` |
 | [Le seuil de blob sort du critère de sortie, et les profils bruts se partitionnent par législature (#580) (2026-08-29)](decisions/partition-profils-legislature-580.md) | `PartitionIllisible`, `charger_profil_brut`, `ecrire_profil_brut`, `partitionner`, `recomposer` |
 | [Un shard d'extraction ne matérialise que son propre profil (#674) — 31/08/2026](decisions/sparse-checkout-extract-an-674.md) | `slugs_du_repertoire` |
@@ -1117,10 +1119,11 @@ Le mentionnent sans le gouverner : [`purge-doublons-herites-729`](decisions/purg
 
 ## `src/rne_opendata.py`
 
-1 décision(s) le gouvernent ; le module en cite 0.
+2 décision(s) le gouvernent ; le module en cite 0.
 
 | Décision | Nomme |
 | --- | --- |
+| [Un artifact ne porte plus que les champs que son job a collectés (#997) (2026-09-19)](decisions/contribution-par-champs-997.md) | `mandats_locaux` |
 | [Le fichier des sortants a vieilli ses élus d'un siècle, et cinq mandats ont disparu (#922) (2026-09-16)](decisions/sortants-annee-decalee-922.md) | `PAGES_MAX` |
 
 Le mentionnent sans le gouverner : [`collecte-mandats-locaux-rne-922`](decisions/collecte-mandats-locaux-rne-922.md).

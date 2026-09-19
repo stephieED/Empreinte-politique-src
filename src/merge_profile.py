@@ -91,6 +91,7 @@ from normalize_profil import (
 )
 from profil_brut import (
     CLE_ACTEUR_TRANCHE,
+    CLE_CONTRIBUTION_PARTIELLE,
     CLE_MANIFESTE,
     CLE_TRANCHE_DERIVEE,
     PartitionIllisible,
@@ -2950,15 +2951,26 @@ def merge_raw_dirs(source_dirs: list[Path], out_dir: Path) -> int:
     # Un mode de test ne vaut que ce que le log donne à voir. « ✓ N profil(s)
     # écrits » ne disait rien de la bascule ; ces trois nombres, si.
     n_derivees = n_fichiers = n_supprimees = 0
+    n_partiels_seuls = 0
     for filename, paths in sorted(slug_paths.items()):
         merged: Optional[dict[str, Any]] = None
         acteur: Optional[str] = None
+        # #997 — une contribution RÉDUITE ne peut pas écrire un profil à elle
+        # seule. Elle ne porte que ce que son job a collecté (cf.
+        # `profil_brut.projeter_contribution`) : si aucune collecte complète ne
+        # parle de ce slug — extraction en échec, `continue-on-error` étant la
+        # règle —, l'écrire republierait un profil amputé de tout le reste.
+        # On laisse alors le profil committé en place, comme pour un slug
+        # qu'aucun job n'a touché (#450), et on le DIT.
+        complet = False
         for path in paths:
             try:
                 profile = charger_profil_brut(path)
             except (json.JSONDecodeError, OSError, PartitionIllisible) as exc:
                 print(f"  [!] Lecture impossible de {path}, ignoré : {exc}")
                 continue
+            partielle = profile.pop(CLE_CONTRIBUTION_PARTIELLE, None)
+            complet = complet or partielle is None
             # L'acteur se relit dans le manifeste des profils SOURCES (#691) —
             # ceux que les shards viennent d'écrire —, jamais dans celui de la
             # destination.
@@ -2973,6 +2985,14 @@ def merge_raw_dirs(source_dirs: list[Path], out_dir: Path) -> int:
             # `gabriel-attal`), et la fusion les a défaits.
             acteur = acteur or _acteur_du_socle(path.parent, path.stem)
             merged = merge_raw_profile(merged, profile)
+        if merged is not None and not complet:
+            n_partiels_seuls += 1
+            print(
+                f"  [!] {filename} : seules des contributions réduites ont parlé "
+                "de ce profil — rien réécrit, la version committée reste (#997). "
+                "L'apport de ce run est perdu pour ce slug ; le prochain run le reprend."
+            )
+            continue
         if merged is not None:
             slug = filename[: -len(".json")]
             avant_derivees, avant_fichiers = _tranches_du_socle(out_dir, slug)
@@ -2986,6 +3006,8 @@ def merge_raw_dirs(source_dirs: list[Path], out_dir: Path) -> int:
             n_supprimees += max(0, (avant_fichiers - apres_fichiers))
             n_written += 1
 
+    if n_partiels_seuls:
+        print(f"  · {n_partiels_seuls} profil(s) non réécrits : contribution réduite seule (#997).")
     if n_derivees or n_supprimees:
         print(
             f"  · tranches d'amendements : {n_derivees} dérivée(s) de l'archive, "
